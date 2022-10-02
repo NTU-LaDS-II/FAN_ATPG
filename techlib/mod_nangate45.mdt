@@ -1,0 +1,1842 @@
+// -------------------------------------------------------------------//
+// LibComp : v8.2008_4.10                                             //
+// Date : Sat Nov 22 12:40:19 PST 2008                                //
+//                                                                    //
+// -------------------------------------------------------------------//
+// ATPG Library Created on Fri Jan  6 14:45:38 2012
+array_delimiter = "[]";
+
+
+
+model seq3
+  (IQ, nextstate, CK, NOTIFIER)
+(
+  input (nextstate) ( )
+  input (CK) ( )  // ActiveLO Level Sensitive Clock.
+  input (NOTIFIER) (no_fault = sa0 sa1; used = false;)  // Notifier.
+  output (IQ) ( 
+    primitive = _inv mlc_C_gate (CK, mlc_clock_net);
+    primitive = _dlat mlc_latch (  ,  , mlc_clock_net, nextstate, IQ, );
+  )
+)
+
+
+model seq3_1
+  (IQ, SN, RN, nextstate, CK, NOTIFIER)
+(
+  input (SN) ( )  //  ActiveLO Asynch. Set.
+  input (RN) ( )  //  ActiveLO Asynch. Reset.
+  input (nextstate) ( )
+  input (CK) ( )  // Posedge Triggered Clock.
+  input (NOTIFIER) (no_fault = sa0 sa1; used = false;)  // Notifier.
+  output (IQ) ( 
+    primitive = _inv mlc_set_gate (SN, mlc_set_net);
+    primitive = _inv mlc_reset_gate (RN, mlc_reset_net);
+    primitive = _and mlc_set_and_gate (RN, mlc_set_net, mlc_set_and_net);
+    primitive = _dff mlc_dff ( mlc_set_and_net, mlc_reset_net, CK, nextstate, IQ, );
+  )
+)
+
+
+model seq3_2
+  (IQ, RN, nextstate, CK, NOTIFIER)
+(
+  input (RN) ( )  //  ActiveLO Asynch. Reset.
+  input (nextstate) ( )
+  input (CK) ( )  // Posedge Triggered Clock.
+  input (NOTIFIER) (no_fault = sa0 sa1; used = false;)  // Notifier.
+  output (IQ) ( 
+    primitive = _inv mlc_reset_gate (RN, mlc_reset_net);
+    primitive = _dff mlc_dff (  , mlc_reset_net, CK, nextstate, IQ, );
+  )
+)
+
+
+model seq3_3
+  (IQ, SN, nextstate, CK, NOTIFIER)
+(
+  input (SN) ( )  //  ActiveLO Asynch. Set.
+  input (nextstate) ( )
+  input (CK) ( )  // Posedge Triggered Clock.
+  input (NOTIFIER) (no_fault = sa0 sa1; used = false;)  // Notifier.
+  output (IQ) ( 
+    primitive = _inv mlc_set_gate (SN, mlc_set_net);
+    primitive = _dff mlc_dff ( mlc_set_net,  , CK, nextstate, IQ, );
+  )
+)
+
+
+model seq3_4
+  (IQ, nextstate, G, NOTIFIER)
+(
+  input (nextstate) ( )
+  input (G) ( )  // ActiveHI Level Sensitive Clock.
+  input (NOTIFIER) (no_fault = sa0 sa1; used = false;)  // Notifier.
+  output (IQ) ( 
+    primitive = _dlat mlc_latch (  ,  , G, nextstate, IQ, );
+  )
+)
+
+
+model seq3_5
+  (IQ, nextstate, GN, NOTIFIER)
+(
+  input (nextstate) ( )
+  input (GN) ( )  // ActiveLO Level Sensitive Clock.
+  input (NOTIFIER) (no_fault = sa0 sa1; used = false;)  // Notifier.
+  output (IQ) ( 
+    primitive = _inv mlc_C_gate (GN, mlc_clock_net);
+    primitive = _dlat mlc_latch (  ,  , mlc_clock_net, nextstate, IQ, );
+  )
+)
+
+
+model udp_dff
+  (out, in, clk, clr_, set_, NOTIFIER)
+(
+  input (in) ( )
+  input (clk) ( )  // Posedge Triggered Clock.
+  input (clr_) ( )  //  ActiveLO Asynch. Reset.
+  input (set_) ( )  //  ActiveLO Asynch. Set.
+  input (NOTIFIER) (no_fault = sa0 sa1; used = false;)  // Notifier.
+  output (out) ( 
+    primitive = _inv mlc_set_gate (set_, mlc_set_net);
+    primitive = _inv mlc_reset_gate (clr_, mlc_reset_net);
+    primitive = _and mlc_reset_and_gate (set_, mlc_reset_net, mlc_reset_and_net);
+    primitive = _dff mlc_dff ( mlc_set_net, mlc_reset_and_net, clk, in, out, );
+  )
+)
+
+
+model udp_mux
+  (out, in, s_in, s_sel)
+(
+  input (in, s_in, s_sel) ( )
+  output (out) ( 
+    primitive = _mux mlc_gate0 (in, s_in, s_sel, out);
+  )
+)
+
+model AND2_X1
+  (A1, A2, ZN)
+(
+  input (A1) ( )
+  input (A2) ( )
+  output (ZN) (
+    primitive = _and  mlc_and_1 ( A1, A2, ZN );
+  )
+)
+
+model AND2_X2
+  (A1, A2, ZN)
+(
+  input (A1) ( )
+  input (A2) ( )
+  output (ZN) (
+    primitive = _and  mlc_and_1 ( A1, A2, ZN );
+  )
+)
+
+model AND2_X4
+  (A1, A2, ZN)
+(
+  input (A1) ( )
+  input (A2) ( )
+  output (ZN) (
+    primitive = _and  mlc_and_1 ( A1, A2, ZN );
+  )
+)
+
+model AND3_X1
+  (A1, A2, A3, ZN)
+(
+  input (A1) ( )
+  input (A2) ( )
+  input (A3) ( )
+  output (ZN) (
+    primitive = _and  mlc_and_1 ( A1, A2, A3, ZN );
+  )
+)
+
+model AND3_X2
+  (A1, A2, A3, ZN)
+(
+  input (A1) ( )
+  input (A2) ( )
+  input (A3) ( )
+  output (ZN) (
+    primitive = _and  mlc_and_1 ( A1, A2, A3, ZN );
+  )
+)
+
+model AND3_X4
+  (A1, A2, A3, ZN)
+(
+  input (A1) ( )
+  input (A2) ( )
+  input (A3) ( )
+  output (ZN) (
+    primitive = _and  mlc_and_1 ( A1, A2, A3, ZN );
+  )
+)
+
+model AND4_X1
+  (A1, A2, A3, A4, ZN)
+(
+  input (A1) ( )
+  input (A2) ( )
+  input (A3) ( )
+  input (A4) ( )
+  output (ZN) (
+    primitive = _and  mlc_and_1 ( A1, A2, A3, A4, ZN );
+  )
+)
+
+model AND4_X2
+  (A1, A2, A3, A4, ZN)
+(
+  input (A1) ( )
+  input (A2) ( )
+  input (A3) ( )
+  input (A4) ( )
+  output (ZN) (
+    primitive = _and  mlc_and_1 ( A1, A2, A3, A4, ZN );
+  )
+)
+
+model AND4_X4
+  (A1, A2, A3, A4, ZN)
+(
+  input (A1) ( )
+  input (A2) ( )
+  input (A3) ( )
+  input (A4) ( )
+  output (ZN) (
+    primitive = _and  mlc_and_1 ( A1, A2, A3, A4, ZN );
+  )
+)
+
+model ANTENNA_X1
+  (A)
+(
+  input (A) (used=false;)
+)
+
+model AOI211_X1
+  (A, B, C1, C2, ZN)
+(
+  input (A) ( )
+  input (B) ( )
+  input (C1) ( )
+  input (C2) ( )
+  output (ZN) (
+    primitive = _inv  mlc_inv_1 ( i_18, ZN );
+    primitive = _or  mlc_or_1 ( i_19, A, i_18 );
+    primitive = _or  mlc_or_2 ( i_20, B, i_19 );
+    primitive = _and  mlc_and_1 ( C1, C2, i_20 );
+  )
+)
+
+model AOI211_X2
+  (A, B, C1, C2, ZN)
+(
+  input (A) ( )
+  input (B) ( )
+  input (C1) ( )
+  input (C2) ( )
+  output (ZN) (
+    primitive = _inv  mlc_inv_1 ( i_18, ZN );
+    primitive = _or  mlc_or_1 ( i_19, A, i_18 );
+    primitive = _or  mlc_or_2 ( i_20, B, i_19 );
+    primitive = _and  mlc_and_1 ( C1, C2, i_20 );
+  )
+)
+
+model AOI211_X4
+  (A, B, C1, C2, ZN)
+(
+  input (A) ( )
+  input (B) ( )
+  input (C1) ( )
+  input (C2) ( )
+  output (ZN) (
+    primitive = _inv  mlc_inv_1 ( i_18, ZN );
+    primitive = _or  mlc_or_1 ( i_19, A, i_18 );
+    primitive = _or  mlc_or_2 ( i_20, B, i_19 );
+    primitive = _and  mlc_and_1 ( C1, C2, i_20 );
+  )
+)
+
+model AOI21_X1
+  (A, B1, B2, ZN)
+(
+  input (A) ( )
+  input (B1) ( )
+  input (B2) ( )
+  output (ZN) (
+    primitive = _inv  mlc_inv_1 ( i_12, ZN );
+    primitive = _or  mlc_or_1 ( A, i_13, i_12 );
+    primitive = _and  mlc_and_1 ( B1, B2, i_13 );
+  )
+)
+
+model AOI21_X2
+  (A, B1, B2, ZN)
+(
+  input (A) ( )
+  input (B1) ( )
+  input (B2) ( )
+  output (ZN) (
+    primitive = _inv  mlc_inv_1 ( i_52, ZN );
+    primitive = _or  mlc_or_1 ( A, i_53, i_52 );
+    primitive = _and  mlc_and_1 ( B1, B2, i_53 );
+  )
+)
+
+model AOI21_X4
+  (A, B1, B2, ZN)
+(
+  input (A) ( )
+  input (B1) ( )
+  input (B2) ( )
+  output (ZN) (
+    primitive = _inv  mlc_inv_1 ( i_52, ZN );
+    primitive = _or  mlc_or_1 ( A, i_53, i_52 );
+    primitive = _and  mlc_and_1 ( B1, B2, i_53 );
+  )
+)
+
+model AOI221_X1
+  (A, B1, B2, C1,
+  C2, ZN)
+(
+  input (A) ( )
+  input (B1) ( )
+  input (B2) ( )
+  input (C1) ( )
+  input (C2) ( )
+  output (ZN) (
+    primitive = _inv  mlc_inv_1 ( i_24, ZN );
+    primitive = _or  mlc_or_1 ( i_25, i_27, i_24 );
+    primitive = _or  mlc_or_2 ( i_26, A, i_25 );
+    primitive = _and  mlc_and_1 ( C1, C2, i_26 );
+    primitive = _and  mlc_and_2 ( B1, B2, i_27 );
+  )
+)
+
+model AOI221_X2
+  (A, B1, B2, C1,
+  C2, ZN)
+(
+  input (A) ( )
+  input (B1) ( )
+  input (B2) ( )
+  input (C1) ( )
+  input (C2) ( )
+  output (ZN) (
+    primitive = _inv  mlc_inv_1 ( i_24, ZN );
+    primitive = _or  mlc_or_1 ( i_25, i_27, i_24 );
+    primitive = _or  mlc_or_2 ( i_26, A, i_25 );
+    primitive = _and  mlc_and_1 ( C1, C2, i_26 );
+    primitive = _and  mlc_and_2 ( B1, B2, i_27 );
+  )
+)
+
+model AOI221_X4
+  (A, B1, B2, C1,
+  C2, ZN)
+(
+  input (A) ( )
+  input (B1) ( )
+  input (B2) ( )
+  input (C1) ( )
+  input (C2) ( )
+  output (ZN) (
+    primitive = _inv  mlc_inv_1 ( i_24, ZN );
+    primitive = _or  mlc_or_1 ( i_25, i_27, i_24 );
+    primitive = _or  mlc_or_2 ( i_26, A, i_25 );
+    primitive = _and  mlc_and_1 ( C1, C2, i_26 );
+    primitive = _and  mlc_and_2 ( B1, B2, i_27 );
+  )
+)
+
+model AOI222_X1
+  (A1, A2, B1, B2,
+  C1, C2, ZN)
+(
+  input (A1) ( )
+  input (A2) ( )
+  input (B1) ( )
+  input (B2) ( )
+  input (C1) ( )
+  input (C2) ( )
+  output (ZN) (
+    primitive = _inv  mlc_inv_1 ( i_30, ZN );
+    primitive = _or  mlc_or_1 ( i_31, i_34, i_30 );
+    primitive = _or  mlc_or_2 ( i_32, i_33, i_31 );
+    primitive = _and  mlc_and_1 ( A1, A2, i_32 );
+    primitive = _and  mlc_and_2 ( B1, B2, i_33 );
+    primitive = _and  mlc_and_3 ( C1, C2, i_34 );
+  )
+)
+
+model AOI222_X2
+  (A1, A2, B1, B2,
+  C1, C2, ZN)
+(
+  input (A1) ( )
+  input (A2) ( )
+  input (B1) ( )
+  input (B2) ( )
+  input (C1) ( )
+  input (C2) ( )
+  output (ZN) (
+    primitive = _inv  mlc_inv_1 ( i_30, ZN );
+    primitive = _or  mlc_or_1 ( i_31, i_34, i_30 );
+    primitive = _or  mlc_or_2 ( i_32, i_33, i_31 );
+    primitive = _and  mlc_and_1 ( A1, A2, i_32 );
+    primitive = _and  mlc_and_2 ( B1, B2, i_33 );
+    primitive = _and  mlc_and_3 ( C1, C2, i_34 );
+  )
+)
+
+model AOI222_X4
+  (A1, A2, B1, B2,
+  C1, C2, ZN)
+(
+  input (A1) ( )
+  input (A2) ( )
+  input (B1) ( )
+  input (B2) ( )
+  input (C1) ( )
+  input (C2) ( )
+  output (ZN) (
+    primitive = _inv  mlc_inv_1 ( i_30, ZN );
+    primitive = _or  mlc_or_1 ( i_31, i_34, i_30 );
+    primitive = _or  mlc_or_2 ( i_32, i_33, i_31 );
+    primitive = _and  mlc_and_1 ( A1, A2, i_32 );
+    primitive = _and  mlc_and_2 ( B1, B2, i_33 );
+    primitive = _and  mlc_and_3 ( C1, C2, i_34 );
+  )
+)
+
+model AOI22_X1
+  (A1, A2, B1, B2, ZN)
+(
+  input (A1) ( )
+  input (A2) ( )
+  input (B1) ( )
+  input (B2) ( )
+  output (ZN) (
+    primitive = _inv  mlc_inv_1 ( i_18, ZN );
+    primitive = _or  mlc_or_1 ( i_19, i_20, i_18 );
+    primitive = _and  mlc_and_1 ( A1, A2, i_19 );
+    primitive = _and  mlc_and_2 ( B1, B2, i_20 );
+  )
+)
+
+model AOI22_X2
+  (A1, A2, B1, B2, ZN)
+(
+  input (A1) ( )
+  input (A2) ( )
+  input (B1) ( )
+  input (B2) ( )
+  output (ZN) (
+    primitive = _inv  mlc_inv_1 ( i_18, ZN );
+    primitive = _or  mlc_or_1 ( i_19, i_20, i_18 );
+    primitive = _and  mlc_and_1 ( A1, A2, i_19 );
+    primitive = _and  mlc_and_2 ( B1, B2, i_20 );
+  )
+)
+
+model AOI22_X4
+  (A1, A2, B1, B2, ZN)
+(
+  input (A1) ( )
+  input (A2) ( )
+  input (B1) ( )
+  input (B2) ( )
+  output (ZN) (
+    primitive = _inv  mlc_inv_1 ( i_18, ZN );
+    primitive = _or  mlc_or_1 ( i_19, i_20, i_18 );
+    primitive = _and  mlc_and_1 ( A1, A2, i_19 );
+    primitive = _and  mlc_and_2 ( B1, B2, i_20 );
+  )
+)
+
+model BUF_X1
+  (A, Z)
+(
+  input (A) ( )
+  output (Z) (
+    primitive = _buf  mlc_buf_1 ( A, Z );
+  )
+)
+
+model BUF_X16
+  (A, Z)
+(
+  input (A) ( )
+  output (Z) (
+    primitive = _buf  mlc_buf_1 ( A, Z );
+  )
+)
+
+model BUF_X2
+  (A, Z)
+(
+  input (A) ( )
+  output (Z) (
+    primitive = _buf  mlc_buf_1 ( A, Z );
+  )
+)
+
+model BUF_X3
+  (A, Z)
+(
+  input (A) ( )
+  output (Z) (
+    primitive = _buf  mlc_buf_1 ( A, Z );
+  )
+)
+
+model BUF_X32
+  (A, Z)
+(
+  input (A) ( )
+  output (Z) (
+    primitive = _buf  mlc_buf_1 ( A, Z );
+  )
+)
+
+model BUF_X4
+  (A, Z)
+(
+  input (A) ( )
+  output (Z) (
+    primitive = _buf  mlc_buf_1 ( A, Z );
+  )
+)
+
+model BUF_X8
+  (A, Z)
+(
+  input (A) ( )
+  output (Z) (
+    primitive = _buf  mlc_buf_1 ( A, Z );
+  )
+)
+
+model CLKBUF_X1
+  (A, Z)
+(
+  input (A) ( )
+  output (Z) (
+    primitive = _buf  mlc_buf_1 ( A, Z );
+  )
+)
+
+model CLKBUF_X2
+  (A, Z)
+(
+  input (A) ( )
+  output (Z) (
+    primitive = _buf  mlc_buf_1 ( A, Z );
+  )
+)
+
+model CLKBUF_X3
+  (A, Z)
+(
+  input (A) ( )
+  output (Z) (
+    primitive = _buf  mlc_buf_1 ( A, Z );
+  )
+)
+
+model CLKGATETST_X1
+  (CK, E, SE, GCK)
+(
+  input (CK) ( )
+  input (E) ( )
+  input (SE) ( )
+  output (GCK) (
+    primitive = _and  mlc_and_1 ( IQ, CK, GCK );
+    instance = seq3  mlc_inst1 ( IQ, nextstate, CK, NOTIFIER );
+    primitive = _or  mlc_or_1 ( E, SE, nextstate );
+  )
+)
+
+model CLKGATETST_X2
+  (CK, E, SE, GCK)
+(
+  input (CK) ( )
+  input (E) ( )
+  input (SE) ( )
+  output (GCK) (
+    primitive = _and  mlc_and_1 ( IQ, CK, GCK );
+    instance = seq3  mlc_inst2 ( IQ, nextstate, CK, NOTIFIER );
+    primitive = _or  mlc_or_1 ( E, SE, nextstate );
+  )
+)
+
+model CLKGATETST_X4
+  (CK, E, SE, GCK)
+(
+  input (CK) ( )
+  input (E) ( )
+  input (SE) ( )
+  output (GCK) (
+    primitive = _and  mlc_and_1 ( IQ, CK, GCK );
+    instance = seq3  mlc_inst3 ( IQ, nextstate, CK, NOTIFIER );
+    primitive = _or  mlc_or_1 ( E, SE, nextstate );
+  )
+)
+
+model CLKGATETST_X8
+  (CK, E, SE, GCK)
+(
+  input (CK) ( )
+  input (E) ( )
+  input (SE) ( )
+  output (GCK) (
+    primitive = _and  mlc_and_1 ( IQ, CK, GCK );
+    instance = seq3  mlc_inst4 ( IQ, nextstate, CK, NOTIFIER );
+    primitive = _or  mlc_or_1 ( E, SE, nextstate );
+  )
+)
+
+model CLKGATE_X1
+  (CK, E, GCK)
+(
+  input (CK) ( )
+  input (E) ( )
+  output (GCK) (
+    primitive = _and  mlc_and_1 ( CK, IQ, GCK );
+    instance = seq3  mlc_inst5 ( IQ, nextstate, CK, NOTIFIER );
+    primitive = _buf  mlc_buf_1 ( E, nextstate );
+  )
+)
+
+model CLKGATE_X2
+  (CK, E, GCK)
+(
+  input (CK) ( )
+  input (E) ( )
+  output (GCK) (
+    primitive = _and  mlc_and_1 ( CK, IQ, GCK );
+    instance = seq3  mlc_inst6 ( IQ, nextstate, CK, NOTIFIER );
+    primitive = _buf  mlc_buf_1 ( E, nextstate );
+  )
+)
+
+model CLKGATE_X4
+  (CK, E, GCK)
+(
+  input (CK) ( )
+  input (E) ( )
+  output (GCK) (
+    primitive = _and  mlc_and_1 ( CK, IQ, GCK );
+    instance = seq3  mlc_inst7 ( IQ, nextstate, CK, NOTIFIER );
+    primitive = _buf  mlc_buf_1 ( E, nextstate );
+  )
+)
+
+model CLKGATE_X8
+  (CK, E, GCK)
+(
+  input (CK) ( )
+  input (E) ( )
+  output (GCK) (
+    primitive = _and  mlc_and_1 ( CK, IQ, GCK );
+    instance = seq3  mlc_inst8 ( IQ, nextstate, CK, NOTIFIER );
+    primitive = _buf  mlc_buf_1 ( E, nextstate );
+  )
+)
+
+model DFFRS_X1
+  (CK, D, RN, SN,
+  Q, QN)
+(
+  input (CK) ( )
+  input (D) ( )
+  input (RN) ( )
+  input (SN) ( )
+  output (Q) ()
+  output (QN) (
+    instance = seq3_1  mlc_inst9 ( IQ, SN, RN, nextstate, CK, NOTIFIER );
+    primitive = _and  mlc_and_1 ( i_15, i_16, IQN );
+    primitive = _inv  mlc_inv_1 ( IQ, i_15 );
+    primitive = _inv  mlc_inv_2 ( i_17, i_16 );
+    primitive = _and  mlc_and_2 ( i_18, i_19, i_17 );
+    primitive = _inv  mlc_inv_3 ( SN, i_18 );
+    primitive = _inv  mlc_inv_4 ( RN, i_19 );
+    primitive = _buf  mlc_buf_1 ( IQ, Q );
+    primitive = _buf  mlc_buf_2 ( IQN, QN );
+    primitive = _buf  mlc_buf_3 ( D, nextstate );
+  )
+)
+
+model DFFRS_X2
+  (CK, D, RN, SN,
+  Q, QN)
+(
+  input (CK) ( )
+  input (D) ( )
+  input (RN) ( )
+  input (SN) ( )
+  output (Q) ()
+  output (QN) (
+    instance = seq3_1  mlc_inst10 ( IQ, SN, RN, nextstate, CK, NOTIFIER );
+    primitive = _and  mlc_and_1 ( i_15, i_16, IQN );
+    primitive = _inv  mlc_inv_1 ( IQ, i_15 );
+    primitive = _inv  mlc_inv_2 ( i_17, i_16 );
+    primitive = _and  mlc_and_2 ( i_18, i_19, i_17 );
+    primitive = _inv  mlc_inv_3 ( SN, i_18 );
+    primitive = _inv  mlc_inv_4 ( RN, i_19 );
+    primitive = _buf  mlc_buf_1 ( IQ, Q );
+    primitive = _buf  mlc_buf_2 ( IQN, QN );
+    primitive = _buf  mlc_buf_3 ( D, nextstate );
+  )
+)
+
+model DFFR_X1
+  (CK, D, RN, Q, QN)
+(
+  input (CK) ( )
+  input (D) ( )
+  input (RN) ( )
+  output (Q) ()
+  output (QN) (
+    instance = seq3_2  mlc_inst11 ( IQ, RN, nextstate, CK, NOTIFIER );
+    primitive = _inv  mlc_inv_1 ( IQ, IQN );
+    primitive = _buf  mlc_buf_1 ( IQ, Q );
+    primitive = _buf  mlc_buf_2 ( IQN, QN );
+    primitive = _buf  mlc_buf_3 ( D, nextstate );
+  )
+)
+
+model DFFR_X2
+  (CK, D, RN, Q, QN)
+(
+  input (CK) ( )
+  input (D) ( )
+  input (RN) ( )
+  output (Q) ()
+  output (QN) (
+    instance = seq3_2  mlc_inst12 ( IQ, RN, nextstate, CK, NOTIFIER );
+    primitive = _inv  mlc_inv_1 ( IQ, IQN );
+    primitive = _buf  mlc_buf_1 ( IQ, Q );
+    primitive = _buf  mlc_buf_2 ( IQN, QN );
+    primitive = _buf  mlc_buf_3 ( D, nextstate );
+  )
+)
+
+model DFFS_X1
+  (CK, D, SN, Q, QN)
+(
+  input (CK) ( )
+  input (D) ( )
+  input (SN) ( )
+  output (Q) ()
+  output (QN) (
+    instance = seq3_3  mlc_inst13 ( IQ, SN, nextstate, CK, NOTIFIER );
+    primitive = _inv  mlc_inv_1 ( IQ, IQN );
+    primitive = _buf  mlc_buf_1 ( IQ, Q );
+    primitive = _buf  mlc_buf_2 ( IQN, QN );
+    primitive = _buf  mlc_buf_3 ( D, nextstate );
+  )
+)
+
+model DFFS_X2
+  (CK, D, SN, Q, QN)
+(
+  input (CK) ( )
+  input (D) ( )
+  input (SN) ( )
+  output (Q) ()
+  output (QN) (
+    instance = seq3_3  mlc_inst14 ( IQ, SN, nextstate, CK, NOTIFIER );
+    primitive = _inv  mlc_inv_1 ( IQ, IQN );
+    primitive = _buf  mlc_buf_1 ( IQ, Q );
+    primitive = _buf  mlc_buf_2 ( IQN, QN );
+    primitive = _buf  mlc_buf_3 ( D, nextstate );
+  )
+)
+
+model DFF_X1
+  (CK, D, Q, QN)
+(
+  input (CK) ( )
+  input (D) ( )
+  output (Q) ()
+  output (QN) (
+    instance = seq3  mlc_inst15 ( IQ, nextstate, CK, NOTIFIER );
+    primitive = _inv  mlc_inv_1 ( IQ, IQN );
+    primitive = _buf  mlc_buf_1 ( IQ, Q );
+    primitive = _buf  mlc_buf_2 ( IQN, QN );
+    primitive = _buf  mlc_buf_3 ( D, nextstate );
+  )
+)
+
+model DFF_X2
+  (CK, D, Q, QN)
+(
+  input (CK) ( )
+  input (D) ( )
+  output (Q) ()
+  output (QN) (
+    instance = seq3  mlc_inst16 ( IQ, nextstate, CK, NOTIFIER );
+    primitive = _inv  mlc_inv_1 ( IQ, IQN );
+    primitive = _buf  mlc_buf_1 ( IQ, Q );
+    primitive = _buf  mlc_buf_2 ( IQN, QN );
+    primitive = _buf  mlc_buf_3 ( D, nextstate );
+  )
+)
+
+model DLH_X1
+  (D, G, Q)
+(
+  input (D) ( )
+  input (G) ( )
+  output (Q) (
+    instance = seq3_4  mlc_inst17 ( IQ, nextstate, G, NOTIFIER );
+    primitive = _buf  mlc_buf_1 ( IQ, Q );
+    primitive = _buf  mlc_buf_2 ( D, nextstate );
+  )
+)
+
+model DLH_X2
+  (D, G, Q)
+(
+  input (D) ( )
+  input (G) ( )
+  output (Q) (
+    instance = seq3_4  mlc_inst18 ( IQ, nextstate, G, NOTIFIER );
+    primitive = _buf  mlc_buf_1 ( IQ, Q );
+    primitive = _buf  mlc_buf_2 ( D, nextstate );
+  )
+)
+
+model DLL_X1
+  (D, GN, Q)
+(
+  input (D) ( )
+  input (GN) ( )
+  output (Q) (
+    instance = seq3_5  mlc_inst19 ( IQ, nextstate, GN, NOTIFIER );
+    primitive = _buf  mlc_buf_1 ( IQ, Q );
+    primitive = _buf  mlc_buf_2 ( D, nextstate );
+  )
+)
+
+model DLL_X2
+  (D, GN, Q)
+(
+  input (D) ( )
+  input (GN) ( )
+  output (Q) (
+    instance = seq3_5  mlc_inst20 ( IQ, nextstate, GN, NOTIFIER );
+    primitive = _buf  mlc_buf_1 ( IQ, Q );
+    primitive = _buf  mlc_buf_2 ( D, nextstate );
+  )
+)
+
+model FA_X1
+  (A, B, CI, CO, S)
+(
+  input (A) ( )
+  input (B) ( )
+  input (CI) ( )
+  output (CO) ()
+  output (S) (
+    primitive = _or  mlc_or_1 ( i_24, i_25, CO );
+    primitive = _and  mlc_and_1 ( A, B, i_24 );
+    primitive = _and  mlc_and_2 ( CI, i_26, i_25 );
+    primitive = _or  mlc_or_2 ( A, B, i_26 );
+    primitive = _xor  mlc_xor_1 ( CI, i_30, S );
+    primitive = _xor  mlc_xor_2 ( A, B, i_30 );
+  )
+)
+
+model HA_X1
+  (A, B, CO, S)
+(
+  input (A) ( )
+  input (B) ( )
+  output (CO) ()
+  output (S) (
+    primitive = _and  mlc_and_1 ( A, B, CO );
+    primitive = _xor  mlc_xor_1 ( A, B, S );
+  )
+)
+
+model INV_X1
+  (A, ZN)
+(
+  input (A) ( )
+  output (ZN) (
+    primitive = _inv  mlc_inv_1 ( A, ZN );
+  )
+)
+
+model INV_X16
+  (A, ZN)
+(
+  input (A) ( )
+  output (ZN) (
+    primitive = _inv  mlc_inv_1 ( A, ZN );
+  )
+)
+
+model INV_X2
+  (A, ZN)
+(
+  input (A) ( )
+  output (ZN) (
+    primitive = _inv  mlc_inv_1 ( A, ZN );
+  )
+)
+
+model INV_X32
+  (A, ZN)
+(
+  input (A) ( )
+  output (ZN) (
+    primitive = _inv  mlc_inv_1 ( A, ZN );
+  )
+)
+
+model INV_X4
+  (A, ZN)
+(
+  input (A) ( )
+  output (ZN) (
+    primitive = _inv  mlc_inv_1 ( A, ZN );
+  )
+)
+
+model INV_X8
+  (A, ZN)
+(
+  input (A) ( )
+  output (ZN) (
+    primitive = _inv  mlc_inv_1 ( A, ZN );
+  )
+)
+
+model LOGIC0_X1
+  (Z)
+(
+  output (Z) (
+    primitive = _buf  mlc_buf_1 ( mlc_n0, Z );
+    primitive = _tie0  mlc_tie0_1 ( mlc_n0 );
+  )
+)
+
+model LOGIC1_X1
+  (Z)
+(
+  output (Z) (
+    primitive = _buf  mlc_buf_1 ( mlc_n1, Z );
+    primitive = _tie1  mlc_tie1_1 ( mlc_n1 );
+  )
+)
+
+model MUX2_X1
+  (A, B, S, Z)
+(
+  input (A) ( )
+  input (B) ( )
+  input (S) ( )
+  output (Z) (
+    primitive = _or  mlc_or_1 ( i_38, i_39, Z );
+    primitive = _and  mlc_and_1 ( S, B, i_38 );
+    primitive = _and  mlc_and_2 ( A, i_40, i_39 );
+    primitive = _inv  mlc_inv_1 ( S, i_40 );
+  )
+)
+
+model MUX2_X2
+  (A, B, S, Z)
+(
+  input (A) ( )
+  input (B) ( )
+  input (S) ( )
+  output (Z) (
+    primitive = _or  mlc_or_1 ( i_58, i_59, Z );
+    primitive = _and  mlc_and_1 ( S, B, i_58 );
+    primitive = _and  mlc_and_2 ( A, i_60, i_59 );
+    primitive = _inv  mlc_inv_1 ( S, i_60 );
+  )
+)
+
+model NAND2_X1
+  (A1, A2, ZN)
+(
+  input (A1) ( )
+  input (A2) ( )
+  output (ZN) (
+    primitive = _nand  mlc_and_1 ( A1, A2, ZN );
+  )
+)
+
+model NAND2_X2
+  (A1, A2, ZN)
+(
+  input (A1) ( )
+  input (A2) ( )
+  output (ZN) (
+    primitive = _nand  mlc_and_1 ( A1, A2, ZN );
+  )
+)
+
+model NAND2_X4
+  (A1, A2, ZN)
+(
+  input (A1) ( )
+  input (A2) ( )
+  output (ZN) (
+    primitive = _nand  mlc_and_1 ( A1, A2, ZN );
+  )
+)
+
+model NAND3_X1
+  (A1, A2, A3, ZN)
+(
+  input (A1) ( )
+  input (A2) ( )
+  input (A3) ( )
+  output (ZN) (
+    primitive = _nand  mlc_and_1 ( A1, A2, A3, ZN );
+  )
+)
+
+model NAND3_X2
+  (A1, A2, A3, ZN)
+(
+  input (A1) ( )
+  input (A2) ( )
+  input (A3) ( )
+  output (ZN) (
+    primitive = _nand  mlc_and_1 ( A1, A2, A3, ZN );
+  )
+)
+
+model NAND3_X4
+  (A1, A2, A3, ZN)
+(
+  input (A1) ( )
+  input (A2) ( )
+  input (A3) ( )
+  output (ZN) (
+    primitive = _nand  mlc_and_1 ( A1, A2, A3, ZN );
+  )
+)
+
+model NAND4_X1
+  (A1, A2, A3, A4, ZN)
+(
+  input (A1) ( )
+  input (A2) ( )
+  input (A3) ( )
+  input (A4) ( )
+  output (ZN) (
+    primitive = _nand  mlc_and_1 ( A1, A2, A3, A4, ZN );
+  )
+)
+
+model NAND4_X2
+  (A1, A2, A3, A4, ZN)
+(
+  input (A1) ( )
+  input (A2) ( )
+  input (A3) ( )
+  input (A4) ( )
+  output (ZN) (
+    primitive = _nand  mlc_and_1 ( A1, A2, A3, A4, ZN );
+  )
+)
+
+model NAND4_X4
+  (A1, A2, A3, A4, ZN)
+(
+  input (A1) ( )
+  input (A2) ( )
+  input (A3) ( )
+  input (A4) ( )
+  output (ZN) (
+    primitive = _nand  mlc_and_1 ( A1, A2, A3, A4, ZN );
+  )
+)
+
+model NOR2_X1
+  (A1, A2, ZN)
+(
+  input (A1) ( )
+  input (A2) ( )
+  output (ZN) (
+    primitive = _nor  mlc_or_1 ( A1, A2, ZN );
+  )
+)
+
+model NOR2_X2
+  (A1, A2, ZN)
+(
+  input (A1) ( )
+  input (A2) ( )
+  output (ZN) (
+    primitive = _nor  mlc_or_1 ( A1, A2, ZN );
+  )
+)
+
+model NOR2_X4
+  (A1, A2, ZN)
+(
+  input (A1) ( )
+  input (A2) ( )
+  output (ZN) (
+    primitive = _nor  mlc_or_1 ( A1, A2, ZN );
+  )
+)
+
+model NOR3_X1
+  (A1, A2, A3, ZN)
+(
+  input (A1) ( )
+  input (A2) ( )
+  input (A3) ( )
+  output (ZN) (
+    primitive = _nor  mlc_or_1 ( A1, A2, A3, ZN );
+  )
+)
+
+model NOR3_X2
+  (A1, A2, A3, ZN)
+(
+  input (A1) ( )
+  input (A2) ( )
+  input (A3) ( )
+  output (ZN) (
+    primitive = _nor  mlc_or_1 ( A1, A2, A3, ZN );
+  )
+)
+
+model NOR3_X4
+  (A1, A2, A3, ZN)
+(
+  input (A1) ( )
+  input (A2) ( )
+  input (A3) ( )
+  output (ZN) (
+    primitive = _nor  mlc_or_1 ( A1, A2, A3, ZN );
+  )
+)
+
+model NOR4_X1
+  (A1, A2, A3, A4, ZN)
+(
+  input (A1) ( )
+  input (A2) ( )
+  input (A3) ( )
+  input (A4) ( )
+  output (ZN) (
+    primitive = _nor  mlc_or_1 ( A1, A2, A3, A4, ZN );
+  )
+)
+
+model NOR4_X2
+  (A1, A2, A3, A4, ZN)
+(
+  input (A1) ( )
+  input (A2) ( )
+  input (A3) ( )
+  input (A4) ( )
+  output (ZN) (
+    primitive = _nor  mlc_or_1 ( A1, A2, A3, A4, ZN );
+  )
+)
+
+model NOR4_X4
+  (A1, A2, A3, A4, ZN)
+(
+  input (A1) ( )
+  input (A2) ( )
+  input (A3) ( )
+  input (A4) ( )
+  output (ZN) (
+    primitive = _nor  mlc_or_1 ( A1, A2, A3, A4, ZN );
+  )
+)
+
+model OAI211_X1
+  (A, B, C1, C2, ZN)
+(
+  input (A) ( )
+  input (B) ( )
+  input (C1) ( )
+  input (C2) ( )
+  output (ZN) (
+    primitive = _inv  mlc_inv_1 ( i_18, ZN );
+    primitive = _and  mlc_and_1 ( i_19, B, i_18 );
+    primitive = _and  mlc_and_2 ( i_20, A, i_19 );
+    primitive = _or  mlc_or_1 ( C1, C2, i_20 );
+  )
+)
+
+model OAI211_X2
+  (A, B, C1, C2, ZN)
+(
+  input (A) ( )
+  input (B) ( )
+  input (C1) ( )
+  input (C2) ( )
+  output (ZN) (
+    primitive = _inv  mlc_inv_1 ( i_18, ZN );
+    primitive = _and  mlc_and_1 ( i_19, B, i_18 );
+    primitive = _and  mlc_and_2 ( i_20, A, i_19 );
+    primitive = _or  mlc_or_1 ( C1, C2, i_20 );
+  )
+)
+
+model OAI211_X4
+  (A, B, C1, C2, ZN)
+(
+  input (A) ( )
+  input (B) ( )
+  input (C1) ( )
+  input (C2) ( )
+  output (ZN) (
+    primitive = _inv  mlc_inv_1 ( i_18, ZN );
+    primitive = _and  mlc_and_1 ( i_19, B, i_18 );
+    primitive = _and  mlc_and_2 ( i_20, A, i_19 );
+    primitive = _or  mlc_or_1 ( C1, C2, i_20 );
+  )
+)
+
+model OAI21_X1
+  (A, B1, B2, ZN)
+(
+  input (A) ( )
+  input (B1) ( )
+  input (B2) ( )
+  output (ZN) (
+    primitive = _inv  mlc_inv_1 ( i_12, ZN );
+    primitive = _and  mlc_and_1 ( A, i_13, i_12 );
+    primitive = _or  mlc_or_1 ( B1, B2, i_13 );
+  )
+)
+
+model OAI21_X2
+  (A, B1, B2, ZN)
+(
+  input (A) ( )
+  input (B1) ( )
+  input (B2) ( )
+  output (ZN) (
+    primitive = _inv  mlc_inv_1 ( i_12, ZN );
+    primitive = _and  mlc_and_1 ( A, i_13, i_12 );
+    primitive = _or  mlc_or_1 ( B1, B2, i_13 );
+  )
+)
+
+model OAI21_X4
+  (A, B1, B2, ZN)
+(
+  input (A) ( )
+  input (B1) ( )
+  input (B2) ( )
+  output (ZN) (
+    primitive = _inv  mlc_inv_1 ( i_12, ZN );
+    primitive = _and  mlc_and_1 ( A, i_13, i_12 );
+    primitive = _or  mlc_or_1 ( B1, B2, i_13 );
+  )
+)
+
+model OAI221_X1
+  (A, B1, B2, C1,
+  C2, ZN)
+(
+  input (A) ( )
+  input (B1) ( )
+  input (B2) ( )
+  input (C1) ( )
+  input (C2) ( )
+  output (ZN) (
+    primitive = _inv  mlc_inv_1 ( i_24, ZN );
+    primitive = _and  mlc_and_1 ( i_25, i_27, i_24 );
+    primitive = _and  mlc_and_2 ( i_26, A, i_25 );
+    primitive = _or  mlc_or_1 ( C1, C2, i_26 );
+    primitive = _or  mlc_or_2 ( B1, B2, i_27 );
+  )
+)
+
+model OAI221_X2
+  (A, B1, B2, C1,
+  C2, ZN)
+(
+  input (A) ( )
+  input (B1) ( )
+  input (B2) ( )
+  input (C1) ( )
+  input (C2) ( )
+  output (ZN) (
+    primitive = _inv  mlc_inv_1 ( i_24, ZN );
+    primitive = _and  mlc_and_1 ( i_25, i_27, i_24 );
+    primitive = _and  mlc_and_2 ( i_26, A, i_25 );
+    primitive = _or  mlc_or_1 ( C1, C2, i_26 );
+    primitive = _or  mlc_or_2 ( B1, B2, i_27 );
+  )
+)
+
+model OAI221_X4
+  (A, B1, B2, C1,
+  C2, ZN)
+(
+  input (A) ( )
+  input (B1) ( )
+  input (B2) ( )
+  input (C1) ( )
+  input (C2) ( )
+  output (ZN) (
+    primitive = _inv  mlc_inv_1 ( i_24, ZN );
+    primitive = _and  mlc_and_1 ( i_25, i_27, i_24 );
+    primitive = _and  mlc_and_2 ( i_26, A, i_25 );
+    primitive = _or  mlc_or_1 ( C1, C2, i_26 );
+    primitive = _or  mlc_or_2 ( B1, B2, i_27 );
+  )
+)
+
+model OAI222_X1
+  (A1, A2, B1, B2,
+  C1, C2, ZN)
+(
+  input (A1) ( )
+  input (A2) ( )
+  input (B1) ( )
+  input (B2) ( )
+  input (C1) ( )
+  input (C2) ( )
+  output (ZN) (
+    primitive = _inv  mlc_inv_1 ( i_30, ZN );
+    primitive = _and  mlc_and_1 ( i_31, i_34, i_30 );
+    primitive = _and  mlc_and_2 ( i_32, i_33, i_31 );
+    primitive = _or  mlc_or_1 ( A1, A2, i_32 );
+    primitive = _or  mlc_or_2 ( B1, B2, i_33 );
+    primitive = _or  mlc_or_3 ( C1, C2, i_34 );
+  )
+)
+
+model OAI222_X2
+  (A1, A2, B1, B2,
+  C1, C2, ZN)
+(
+  input (A1) ( )
+  input (A2) ( )
+  input (B1) ( )
+  input (B2) ( )
+  input (C1) ( )
+  input (C2) ( )
+  output (ZN) (
+    primitive = _inv  mlc_inv_1 ( i_30, ZN );
+    primitive = _and  mlc_and_1 ( i_31, i_34, i_30 );
+    primitive = _and  mlc_and_2 ( i_32, i_33, i_31 );
+    primitive = _or  mlc_or_1 ( A1, A2, i_32 );
+    primitive = _or  mlc_or_2 ( B1, B2, i_33 );
+    primitive = _or  mlc_or_3 ( C1, C2, i_34 );
+  )
+)
+
+model OAI222_X4
+  (A1, A2, B1, B2,
+  C1, C2, ZN)
+(
+  input (A1) ( )
+  input (A2) ( )
+  input (B1) ( )
+  input (B2) ( )
+  input (C1) ( )
+  input (C2) ( )
+  output (ZN) (
+    primitive = _inv  mlc_inv_1 ( i_30, ZN );
+    primitive = _and  mlc_and_1 ( i_31, i_34, i_30 );
+    primitive = _and  mlc_and_2 ( i_32, i_33, i_31 );
+    primitive = _or  mlc_or_1 ( A1, A2, i_32 );
+    primitive = _or  mlc_or_2 ( B1, B2, i_33 );
+    primitive = _or  mlc_or_3 ( C1, C2, i_34 );
+  )
+)
+
+model OAI22_X1
+  (A1, A2, B1, B2, ZN)
+(
+  input (A1) ( )
+  input (A2) ( )
+  input (B1) ( )
+  input (B2) ( )
+  output (ZN) (
+    primitive = _inv  mlc_inv_1 ( i_18, ZN );
+    primitive = _and  mlc_and_1 ( i_19, i_20, i_18 );
+    primitive = _or  mlc_or_1 ( A1, A2, i_19 );
+    primitive = _or  mlc_or_2 ( B1, B2, i_20 );
+  )
+)
+
+model OAI22_X2
+  (A1, A2, B1, B2, ZN)
+(
+  input (A1) ( )
+  input (A2) ( )
+  input (B1) ( )
+  input (B2) ( )
+  output (ZN) (
+    primitive = _inv  mlc_inv_1 ( i_18, ZN );
+    primitive = _and  mlc_and_1 ( i_19, i_20, i_18 );
+    primitive = _or  mlc_or_1 ( A1, A2, i_19 );
+    primitive = _or  mlc_or_2 ( B1, B2, i_20 );
+  )
+)
+
+model OAI22_X4
+  (A1, A2, B1, B2, ZN)
+(
+  input (A1) ( )
+  input (A2) ( )
+  input (B1) ( )
+  input (B2) ( )
+  output (ZN) (
+    primitive = _inv  mlc_inv_1 ( i_18, ZN );
+    primitive = _and  mlc_and_1 ( i_19, i_20, i_18 );
+    primitive = _or  mlc_or_1 ( A1, A2, i_19 );
+    primitive = _or  mlc_or_2 ( B1, B2, i_20 );
+  )
+)
+
+model OAI33_X1
+  (A1, A2, A3, B1,
+  B2, B3, ZN)
+(
+  input (A1) ( )
+  input (A2) ( )
+  input (A3) ( )
+  input (B1) ( )
+  input (B2) ( )
+  input (B3) ( )
+  output (ZN) (
+    primitive = _inv  mlc_inv_1 ( i_30, ZN );
+    primitive = _and  mlc_and_1 ( i_31, i_33, i_30 );
+    primitive = _or  mlc_or_1 ( i_32, A3, i_31 );
+    primitive = _or  mlc_or_2 ( A1, A2, i_32 );
+    primitive = _or  mlc_or_3 ( i_34, B3, i_33 );
+    primitive = _or  mlc_or_4 ( B1, B2, i_34 );
+  )
+)
+
+model OR2_X1
+  (A1, A2, ZN)
+(
+  input (A1) ( )
+  input (A2) ( )
+  output (ZN) (
+    primitive = _or  mlc_or_1 ( A1, A2, ZN );
+  )
+)
+
+model OR2_X2
+  (A1, A2, ZN)
+(
+  input (A1) ( )
+  input (A2) ( )
+  output (ZN) (
+    primitive = _or  mlc_or_1 ( A1, A2, ZN );
+  )
+)
+
+model OR2_X4
+  (A1, A2, ZN)
+(
+  input (A1) ( )
+  input (A2) ( )
+  output (ZN) (
+    primitive = _or  mlc_or_1 ( A1, A2, ZN );
+  )
+)
+
+model OR3_X1
+  (A1, A2, A3, ZN)
+(
+  input (A1) ( )
+  input (A2) ( )
+  input (A3) ( )
+  output (ZN) (
+    primitive = _or  mlc_or_1 ( A1, A2, A3, ZN );
+  )
+)
+
+model OR3_X2
+  (A1, A2, A3, ZN)
+(
+  input (A1) ( )
+  input (A2) ( )
+  input (A3) ( )
+  output (ZN) (
+    primitive = _or  mlc_or_1 ( A1, A2, A3, ZN );
+  )
+)
+
+model OR3_X4
+  (A1, A2, A3, ZN)
+(
+  input (A1) ( )
+  input (A2) ( )
+  input (A3) ( )
+  output (ZN) (
+    primitive = _or  mlc_or_1 ( A1, A2, A3, ZN );
+  )
+)
+
+model OR4_X1
+  (A1, A2, A3, A4, ZN)
+(
+  input (A1) ( )
+  input (A2) ( )
+  input (A3) ( )
+  input (A4) ( )
+  output (ZN) (
+    primitive = _or  mlc_or_1 ( A1, A2, A3, A4, ZN );
+  )
+)
+
+model OR4_X2
+  (A1, A2, A3, A4, ZN)
+(
+  input (A1) ( )
+  input (A2) ( )
+  input (A3) ( )
+  input (A4) ( )
+  output (ZN) (
+    primitive = _or  mlc_or_1 ( A1, A2, A3, A4, ZN );
+  )
+)
+
+model OR4_X4
+  (A1, A2, A3, A4, ZN)
+(
+  input (A1) ( )
+  input (A2) ( )
+  input (A3) ( )
+  input (A4) ( )
+  output (ZN) (
+    primitive = _or  mlc_or_1 ( A1, A2, A3, A4, ZN );
+  )
+)
+
+model SDFFRS_X1
+  (CK, D, RN, SE,
+  SI, SN, Q, QN)
+(
+  input (CK) ( )
+  input (D) ( )
+  input (RN) ( )
+  input (SE) ( )
+  input (SI) ( )
+  input (SN) ( )
+  output (Q) ()
+  output (QN) (
+    instance = seq3_1  mlc_inst21 ( IQ, SN, RN, nextstate, CK, NOTIFIER );
+    primitive = _and  mlc_and_1 ( i_33, i_34, IQN );
+    primitive = _inv  mlc_inv_1 ( IQ, i_33 );
+    primitive = _inv  mlc_inv_2 ( i_35, i_34 );
+    primitive = _and  mlc_and_2 ( i_36, i_37, i_35 );
+    primitive = _inv  mlc_inv_3 ( SN, i_36 );
+    primitive = _inv  mlc_inv_4 ( RN, i_37 );
+    primitive = _buf  mlc_buf_1 ( IQ, Q );
+    primitive = _buf  mlc_buf_2 ( IQN, QN );
+    primitive = _or  mlc_or_1 ( i_38, i_39, nextstate );
+    primitive = _and  mlc_and_3 ( SE, SI, i_38 );
+    primitive = _and  mlc_and_4 ( D, i_40, i_39 );
+    primitive = _inv  mlc_inv_5 ( SE, i_40 );
+  )
+)
+
+model SDFFRS_X2
+  (CK, D, RN, SE,
+  SI, SN, Q, QN)
+(
+  input (CK) ( )
+  input (D) ( )
+  input (RN) ( )
+  input (SE) ( )
+  input (SI) ( )
+  input (SN) ( )
+  output (Q) ()
+  output (QN) (
+    instance = seq3_1  mlc_inst22 ( IQ, SN, RN, nextstate, CK, NOTIFIER );
+    primitive = _and  mlc_and_1 ( i_33, i_34, IQN );
+    primitive = _inv  mlc_inv_1 ( IQ, i_33 );
+    primitive = _inv  mlc_inv_2 ( i_35, i_34 );
+    primitive = _and  mlc_and_2 ( i_36, i_37, i_35 );
+    primitive = _inv  mlc_inv_3 ( SN, i_36 );
+    primitive = _inv  mlc_inv_4 ( RN, i_37 );
+    primitive = _buf  mlc_buf_1 ( IQ, Q );
+    primitive = _buf  mlc_buf_2 ( IQN, QN );
+    primitive = _or  mlc_or_1 ( i_38, i_39, nextstate );
+    primitive = _and  mlc_and_3 ( SE, SI, i_38 );
+    primitive = _and  mlc_and_4 ( D, i_40, i_39 );
+    primitive = _inv  mlc_inv_5 ( SE, i_40 );
+  )
+)
+
+model SDFFR_X1
+  (CK, D, RN, SE,
+  SI, Q, QN)
+(
+  input (CK) ( )
+  input (D) ( )
+  input (RN) ( )
+  input (SE) ( )
+  input (SI) ( )
+  output (Q) ()
+  output (QN) (
+    instance = seq3_2  mlc_inst23 ( IQ, RN, nextstate, CK, NOTIFIER );
+    primitive = _inv  mlc_inv_1 ( IQ, IQN );
+    primitive = _buf  mlc_buf_1 ( IQ, Q );
+    primitive = _buf  mlc_buf_2 ( IQN, QN );
+    primitive = _or  mlc_or_1 ( i_18, i_19, nextstate );
+    primitive = _and  mlc_and_1 ( SE, SI, i_18 );
+    primitive = _and  mlc_and_2 ( D, i_20, i_19 );
+    primitive = _inv  mlc_inv_2 ( SE, i_20 );
+  )
+)
+
+model SDFFR_X2
+  (CK, D, RN, SE,
+  SI, Q, QN)
+(
+  input (CK) ( )
+  input (D) ( )
+  input (RN) ( )
+  input (SE) ( )
+  input (SI) ( )
+  output (Q) ()
+  output (QN) (
+    instance = seq3_2  mlc_inst24 ( IQ, RN, nextstate, CK, NOTIFIER );
+    primitive = _inv  mlc_inv_1 ( IQ, IQN );
+    primitive = _buf  mlc_buf_1 ( IQ, Q );
+    primitive = _buf  mlc_buf_2 ( IQN, QN );
+    primitive = _or  mlc_or_1 ( i_18, i_19, nextstate );
+    primitive = _and  mlc_and_1 ( SE, SI, i_18 );
+    primitive = _and  mlc_and_2 ( D, i_20, i_19 );
+    primitive = _inv  mlc_inv_2 ( SE, i_20 );
+  )
+)
+
+model SDFFS_X1
+  (CK, D, SE, SI,
+  SN, Q, QN)
+(
+  input (CK) ( )
+  input (D) ( )
+  input (SE) ( )
+  input (SI) ( )
+  input (SN) ( )
+  output (Q) ()
+  output (QN) (
+    instance = seq3_3  mlc_inst25 ( IQ, SN, nextstate, CK, NOTIFIER );
+    primitive = _inv  mlc_inv_1 ( IQ, IQN );
+    primitive = _buf  mlc_buf_1 ( IQ, Q );
+    primitive = _buf  mlc_buf_2 ( IQN, QN );
+    primitive = _or  mlc_or_1 ( i_18, i_19, nextstate );
+    primitive = _and  mlc_and_1 ( SE, SI, i_18 );
+    primitive = _and  mlc_and_2 ( D, i_20, i_19 );
+    primitive = _inv  mlc_inv_2 ( SE, i_20 );
+  )
+)
+
+model SDFFS_X2
+  (CK, D, SE, SI,
+  SN, Q, QN)
+(
+  input (CK) ( )
+  input (D) ( )
+  input (SE) ( )
+  input (SI) ( )
+  input (SN) ( )
+  output (Q) ()
+  output (QN) (
+    instance = seq3_3  mlc_inst26 ( IQ, SN, nextstate, CK, NOTIFIER );
+    primitive = _inv  mlc_inv_1 ( IQ, IQN );
+    primitive = _buf  mlc_buf_1 ( IQ, Q );
+    primitive = _buf  mlc_buf_2 ( IQN, QN );
+    primitive = _or  mlc_or_1 ( i_18, i_19, nextstate );
+    primitive = _and  mlc_and_1 ( SE, SI, i_18 );
+    primitive = _and  mlc_and_2 ( D, i_20, i_19 );
+    primitive = _inv  mlc_inv_2 ( SE, i_20 );
+  )
+)
+
+model SDFF_X1
+  (Q, QN, D, SI,
+  SE, CK)
+(
+  input (D) ( )
+  input (SI) ( )
+  input (SE) ( )
+  input (CK) ( )
+  output (Q, QN) ()
+  intern(NN0) (
+    primitive = _mux  IC (D,SI,SE,NN0);
+    primitive = _dff  ID (,,CK,NN0,Q,QN);
+  )
+)
+
+model SDFF_X2
+  (CK, D, SE, SI,
+  Q, QN)
+(
+  input (CK) ( )
+  input (D) ( )
+  input (SE) ( )
+  input (SI) ( )
+  output (Q) ()
+  output (QN) (
+    instance = seq3  mlc_inst27 ( IQ, nextstate, CK, NOTIFIER );
+    primitive = _inv  mlc_inv_1 ( IQ, IQN );
+    primitive = _buf  mlc_buf_1 ( IQ, Q );
+    primitive = _buf  mlc_buf_2 ( IQN, QN );
+    primitive = _or  mlc_or_1 ( i_18, i_19, nextstate );
+    primitive = _and  mlc_and_1 ( SE, SI, i_18 );
+    primitive = _and  mlc_and_2 ( D, i_20, i_19 );
+    primitive = _inv  mlc_inv_2 ( SE, i_20 );
+  )
+)
+
+model TBUF_X1
+  (A, EN, Z)
+(
+  input (A) ( )
+  input (EN) ( )
+  output (Z) (
+    primitive = _tsl  mlc_tsl_1 ( Z_in, Z_enable, Z );
+    primitive = _buf  mlc_buf_1 ( EN, Z_enable );
+    primitive = _buf  mlc_buf_2 ( A, Z_in );
+  )
+)
+
+model TBUF_X16
+  (A, EN, Z)
+(
+  input (A) ( )
+  input (EN) ( )
+  output (Z) (
+    primitive = _tsl  mlc_tsl_1 ( Z_in, Z_enable, Z );
+    primitive = _buf  mlc_buf_1 ( EN, Z_enable );
+    primitive = _buf  mlc_buf_2 ( A, Z_in );
+  )
+)
+
+model TBUF_X2
+  (A, EN, Z)
+(
+  input (A) ( )
+  input (EN) ( )
+  output (Z) (
+    primitive = _tsl  mlc_tsl_1 ( Z_in, Z_enable, Z );
+    primitive = _buf  mlc_buf_1 ( EN, Z_enable );
+    primitive = _buf  mlc_buf_2 ( A, Z_in );
+  )
+)
+
+model TBUF_X4
+  (A, EN, Z)
+(
+  input (A) ( )
+  input (EN) ( )
+  output (Z) (
+    primitive = _tsl  mlc_tsl_1 ( Z_in, Z_enable, Z );
+    primitive = _buf  mlc_buf_1 ( EN, Z_enable );
+    primitive = _buf  mlc_buf_2 ( A, Z_in );
+  )
+)
+
+model TBUF_X8
+  (A, EN, Z)
+(
+  input (A) ( )
+  input (EN) ( )
+  output (Z) (
+    primitive = _tsl  mlc_tsl_1 ( Z_in, Z_enable, Z );
+    primitive = _buf  mlc_buf_1 ( EN, Z_enable );
+    primitive = _buf  mlc_buf_2 ( A, Z_in );
+  )
+)
+
+model TINV_X1
+  (EN, I, ZN)
+(
+  input (EN) ( )
+  input (I) ( )
+  output (ZN) (
+    primitive = _tsl  mlc_tsl_1 ( ZN_in, ZN_enable, ZN );
+    primitive = _buf  mlc_buf_1 ( EN, ZN_enable );
+    primitive = _inv  mlc_inv_1 ( I, ZN_in );
+  )
+)
+
+model TLAT_X1
+  (D, G, OE, Q)
+(
+  input (D) ( )
+  input (G) ( )
+  input (OE) ( )
+  output (Q) (
+    primitive = _tsl  mlc_tsl_1 ( Q_in, Q_enable, Q );
+    primitive = _inv  mlc_inv_1 ( OE, Q_enable );
+    instance = seq3_4  mlc_inst28 ( IQ, nextstate, G, NOTIFIER );
+    primitive = _buf  mlc_buf_1 ( IQ, Q_in );
+    primitive = _buf  mlc_buf_2 ( D, nextstate );
+  )
+)
+
+model XNOR2_X1
+  (A, B, ZN)
+(
+  input (A) ( )
+  input (B) ( )
+  output (ZN) (
+    primitive = _inv  mlc_inv_1 ( i_46, ZN );
+    primitive = _xor  mlc_xor_1 ( A, B, i_46 );
+  )
+)
+
+model XNOR2_X2
+  (A, B, ZN)
+(
+  input (A) ( )
+  input (B) ( )
+  output (ZN) (
+    primitive = _inv  mlc_inv_1 ( i_46, ZN );
+    primitive = _xor  mlc_xor_1 ( A, B, i_46 );
+  )
+)
+
+model XOR2_X1
+  (A, B, Z)
+(
+  input (A) ( )
+  input (B) ( )
+  output (Z) (
+    primitive = _xor  mlc_xor_1 ( A, B, Z );
+  )
+)
+
+model XOR2_X2
+  (A, B, Z)
+(
+  input (A) ( )
+  input (B) ( )
+  output (Z) (
+    primitive = _xor  mlc_xor_1 ( A, B, Z );
+  )
+)

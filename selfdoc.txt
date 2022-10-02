@@ -1,0 +1,134 @@
+CoreNs;
+
+atpg.cpp
+
+atpg.h
+
+circuit.cpp
+
+circuit.h
+
+compression.cpp
+
+decision_tree.h
+
+fault.cpp
+
+fault.h
+
+gate.h
+
+logic.cpp
+
+logic.h
+
+pattern_rw.cpp
+
+pattern_rw.h
+
+simulator.cpp
+
+/**
+* @brief : for each pattern generated assign it to the circuit call goodSim()
+* @param pcoll : patterns generated
+*/
+void Simulator::ppGoodSim(PatternProcessor *pcoll)
+
+/**
+* @brief : perform faulteval() on gate id stored in stack event and if good 
+*          value is same as faulty value no more process is needed if not the
+*          same push all the fanout gate id of current gate id into stack event
+*/
+void Simulator::eventFaultSim()
+
+
+/**
+* @brief : call pfFaultSim(FaultList &remain) for each pattern
+* @param pcoll : patterns generated
+* @param fListExtract : remain undetected fault
+*/
+void Simulator::pfFaultSim(PatternProcessor *pcoll, FaultListExtract *fListExtract)
+
+/**
+* @brief : call pfFaultSim(FaultList &remain) to do faultsim for this pattern
+* @param p : a test pattern
+* @param remain : remain undetected fault
+*/
+void Simulator::pfFaultSim(const Pattern *const p, FaultList &remain)
+
+/**
+* @brief : do faultsim for the fault in fault list
+* @param remain : remain undetected fault
+*/
+void Simulator::pfFaultSim(FaultList &remain)
+
+/**
+* @brief : check if fault f can be activated, if good value is equal to the stuck at value
+* than the fault cannot be activated, hence return false
+* @param f : undetected fault
+* @return : return true if fault f is activated
+*/
+bool Simulator::pfCheckActivation(const Fault *const f)
+
+/**
+* @brief : push faulty gate to event list
+* @param f : injected fault
+* @param i : injected fault index
+*/
+void Simulator::pfInject(const Fault *const f, const size_t &i)
+
+/**
+* @brief : compare the good sim and fault sim result and check whether 
+*          the injected fault can be detected by the pattern(at po or ppo)
+* @param remain : remain undetected fault
+*/
+void Simulator::pfCheckDetection(FaultList &remain)
+
+//the pp function is highly similar to pf
+
+simulator.h
+
+/**
+* @brief : construct the simulator with cir
+* @param cir : a circuit
+*/
+Simulator::Simulator(Circuit *cir)
+
+/**
+* @brief : assign pattern to pi and ppi with pat
+* @param pat : a test pattern
+*/
+void Simulator::assignPatternToPi(const Pattern *const pat)
+
+/**
+* @brief : assign good value to every good gate output of the circuit
+*/
+void Simulator::goodSim()
+
+/**
+* @brief : assign good value to every good and faulty gate output of the circuit
+*/
+void Simulator::goodSimCopyToFault()
+
+/**
+* @brief : reset faulty gate output to good gate output, remove all the injected fault
+*/
+void Simulator::pfReset()
+
+/**
+* @brief : reset faulty gate output to good gate output, remove all the injected fault
+*/
+void Simulator::ppReset()
+
+/**
+* @brief : assign good gate output to cir_->gates_[i] according to its input value
+* @param i : gate id
+*/
+void Simulator::goodEval(const int &i)
+
+/**
+* @brief : assign faulty gate output to cir_->gates_[i] according to its faulty input 
+*          value with fault masking by faultInjectH
+* @param i : gate id
+*/
+void Simulator::faultEval(const int &i)

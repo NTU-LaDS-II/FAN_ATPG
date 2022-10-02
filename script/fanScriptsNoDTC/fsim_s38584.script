@@ -1,0 +1,13 @@
+read_lib techlib/mod_nangate45.mdt
+read_netlist mod_netlist/s38584.v
+report_netlist
+build_circuit --frame 1
+report_circuit
+read_pattern pat/FAN_s38584.pat
+report_pattern
+set_fault_type saf
+add_fault -a
+run_fault_sim
+report_statistics > rpt/s38584_fsim.rpt
+report_memory_usage
+exit
