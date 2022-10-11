@@ -1194,7 +1194,7 @@ bool WritePatCmd::exec(const vector<string> &argv) {
             return false;
         }
     }
-    else 
+    else
 	cerr << "**ERROR WritePatternCmd::exec(): undefined parameter in -f" << endl;
 
     return true;
@@ -1228,7 +1228,7 @@ bool AddScanChainsCmd::exec(const vector<string> &argv) {
         cerr << "**ERROR AddScanChainsCmd::exec(): circuit needed" << endl;
         return false;
     }
-	
+
     cout << "#  Add Scan Chains " << endl;
 
     return true;
@@ -1334,7 +1334,7 @@ bool WriteStilCmd::exec(const vector<string> &argv) {
     cout << "#  Writing pattern to STIL...";
     cout << endl;
     PatternWriter writer(fanMgr_->pcoll, fanMgr_->cir);
-    
+
     if (!writer.writeSTIL(optMgr_.getParsedArg(0).c_str())) {
 		cerr << "**ERROR WriteSTILCmd::exec(): writer failed" << endl;
 		return false;
@@ -1342,4 +1342,3 @@ bool WriteStilCmd::exec(const vector<string> &argv) {
 
     return true;
 } //}}}
-

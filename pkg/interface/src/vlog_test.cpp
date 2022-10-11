@@ -13,21 +13,22 @@
 using namespace std;
 using namespace IntfNs;
 
+int main(int argc, char **argv)
+{
+	if (argc < 2)
+	{
+		fprintf(stderr, "**ERROR main(): please provide input verilog\n");
+		exit(0);
+	}
 
-int main(int argc, char **argv) {
-    if (argc < 2) {
-        fprintf(stderr, "**ERROR main(): please provide input verilog\n");
-        exit(0);
-    }
+	VlogFile *vlog = new VlogFile;
+	if (!vlog->read(argv[1], true))
+	{
+		fprintf(stderr, "**ERROR main(): verilog parser failed\n");
+		exit(0);
+	}
 
-    VlogFile *vlog = new VlogFile;
-    if (!vlog->read(argv[1], true)) {
-        fprintf(stderr, "**ERROR main(): verilog parser failed\n");
-        exit(0);
-    }
+	delete vlog;
 
-    delete vlog;
-
-    return 0;
+	return 0;
 }
-
