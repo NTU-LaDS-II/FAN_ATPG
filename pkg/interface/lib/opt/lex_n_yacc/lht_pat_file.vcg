@@ -1,0 +1,357 @@
+graph: {
+	display_edge_labels:	yes
+	priority_phase:	yes
+	port_sharing:	no
+	crossing_weight:	median
+	splines:	yes
+	node: {
+		title:	"0"
+		label:	"state  0\n $accept -> . start $end"
+	}
+	edge: {
+		sourcename:	"0"
+		targetname:	"1"
+		label:	"start"
+		color:	green
+		textcolor:	black
+	}
+	edge: {
+		sourcename:	"0"
+		targetname:	"2"
+		label:	"initialize"
+		color:	green
+		textcolor:	black
+	}
+	node: {
+		title:	"1"
+		label:	"state  1\n $accept -> start . $end"
+	}
+	edge: {
+		sourcename:	"1"
+		targetname:	"3"
+		label:	"$end"
+		color:	blue
+		textcolor:	black
+	}
+	node: {
+		title:	"2"
+		label:	"state  2\n start -> initialize . patterns"
+	}
+	edge: {
+		sourcename:	"2"
+		targetname:	"4"
+		label:	"patterns"
+		color:	green
+		textcolor:	black
+	}
+	node: {
+		title:	"3"
+		label:	"state  3\n $accept -> start $end ."
+	}
+	node: {
+		title:	"4"
+		label:	"state  4\n start -> initialize patterns .\n patterns -> patterns . pattern"
+	}
+	edge: {
+		sourcename:	"4"
+		targetname:	"5"
+		label:	"PATTERN"
+		color:	blue
+		textcolor:	black
+	}
+	edge: {
+		sourcename:	"4"
+		targetname:	"6"
+		label:	"pattern"
+		color:	green
+		textcolor:	black
+	}
+	node: {
+		title:	"5"
+		label:	"state  5\n pattern -> PATTERN . VALUE '_' valueq '|' VALUE '_' valueq\n pattern -> PATTERN . VALUE '-' '>' VALUE '_' VALUE '@' VALUE '|' VALUE '_' VALUE\n pattern -> PATTERN . VALUE '-' '>' VALUE '_' valueq '|' VALUE '_' valueq"
+	}
+	edge: {
+		sourcename:	"5"
+		targetname:	"7"
+		label:	"VALUE"
+		color:	blue
+		textcolor:	black
+	}
+	node: {
+		title:	"6"
+		label:	"state  6\n patterns -> patterns pattern ."
+	}
+	node: {
+		title:	"7"
+		label:	"state  7\n pattern -> PATTERN VALUE . '_' valueq '|' VALUE '_' valueq\n pattern -> PATTERN VALUE . '-' '>' VALUE '_' VALUE '@' VALUE '|' VALUE '_' VALUE\n pattern -> PATTERN VALUE . '-' '>' VALUE '_' valueq '|' VALUE '_' valueq"
+	}
+	edge: {
+		sourcename:	"7"
+		targetname:	"8"
+		label:	"'_'"
+		color:	blue
+		textcolor:	black
+	}
+	edge: {
+		sourcename:	"7"
+		targetname:	"9"
+		label:	"'-'"
+		color:	blue
+		textcolor:	black
+	}
+	node: {
+		title:	"8"
+		label:	"state  8\n pattern -> PATTERN VALUE '_' . valueq '|' VALUE '_' valueq"
+	}
+	edge: {
+		sourcename:	"8"
+		targetname:	"10"
+		label:	"VALUE"
+		color:	blue
+		textcolor:	black
+	}
+	edge: {
+		sourcename:	"8"
+		targetname:	"11"
+		label:	"valueq"
+		color:	green
+		textcolor:	black
+	}
+	node: {
+		title:	"9"
+		label:	"state  9\n pattern -> PATTERN VALUE '-' . '>' VALUE '_' VALUE '@' VALUE '|' VALUE '_' VALUE\n pattern -> PATTERN VALUE '-' . '>' VALUE '_' valueq '|' VALUE '_' valueq"
+	}
+	edge: {
+		sourcename:	"9"
+		targetname:	"12"
+		label:	"'>'"
+		color:	blue
+		textcolor:	black
+	}
+	node: {
+		title:	"10"
+		label:	"state 10\n valueq -> VALUE ."
+	}
+	node: {
+		title:	"11"
+		label:	"state 11\n pattern -> PATTERN VALUE '_' valueq . '|' VALUE '_' valueq"
+	}
+	edge: {
+		sourcename:	"11"
+		targetname:	"13"
+		label:	"'|'"
+		color:	blue
+		textcolor:	black
+	}
+	node: {
+		title:	"12"
+		label:	"state 12\n pattern -> PATTERN VALUE '-' '>' . VALUE '_' VALUE '@' VALUE '|' VALUE '_' VALUE\n pattern -> PATTERN VALUE '-' '>' . VALUE '_' valueq '|' VALUE '_' valueq"
+	}
+	edge: {
+		sourcename:	"12"
+		targetname:	"14"
+		label:	"VALUE"
+		color:	blue
+		textcolor:	black
+	}
+	node: {
+		title:	"13"
+		label:	"state 13\n pattern -> PATTERN VALUE '_' valueq '|' . VALUE '_' valueq"
+	}
+	edge: {
+		sourcename:	"13"
+		targetname:	"15"
+		label:	"VALUE"
+		color:	blue
+		textcolor:	black
+	}
+	node: {
+		title:	"14"
+		label:	"state 14\n pattern -> PATTERN VALUE '-' '>' VALUE . '_' VALUE '@' VALUE '|' VALUE '_' VALUE\n pattern -> PATTERN VALUE '-' '>' VALUE . '_' valueq '|' VALUE '_' valueq"
+	}
+	edge: {
+		sourcename:	"14"
+		targetname:	"16"
+		label:	"'_'"
+		color:	blue
+		textcolor:	black
+	}
+	node: {
+		title:	"15"
+		label:	"state 15\n pattern -> PATTERN VALUE '_' valueq '|' VALUE . '_' valueq"
+	}
+	edge: {
+		sourcename:	"15"
+		targetname:	"17"
+		label:	"'_'"
+		color:	blue
+		textcolor:	black
+	}
+	node: {
+		title:	"16"
+		label:	"state 16\n pattern -> PATTERN VALUE '-' '>' VALUE '_' . VALUE '@' VALUE '|' VALUE '_' VALUE\n pattern -> PATTERN VALUE '-' '>' VALUE '_' . valueq '|' VALUE '_' valueq"
+	}
+	edge: {
+		sourcename:	"16"
+		targetname:	"18"
+		label:	"VALUE"
+		color:	blue
+		textcolor:	black
+	}
+	edge: {
+		sourcename:	"16"
+		targetname:	"19"
+		label:	"valueq"
+		color:	green
+		textcolor:	black
+	}
+	node: {
+		title:	"17"
+		label:	"state 17\n pattern -> PATTERN VALUE '_' valueq '|' VALUE '_' . valueq"
+	}
+	backedge: {
+		sourcename:	"17"
+		targetname:	"10"
+		label:	"VALUE"
+		color:	blue
+		textcolor:	black
+	}
+	edge: {
+		sourcename:	"17"
+		targetname:	"20"
+		label:	"valueq"
+		color:	green
+		textcolor:	black
+	}
+	node: {
+		title:	"18"
+		label:	"state 18\n pattern -> PATTERN VALUE '-' '>' VALUE '_' VALUE . '@' VALUE '|' VALUE '_' VALUE\n valueq -> VALUE ."
+	}
+	edge: {
+		sourcename:	"18"
+		targetname:	"21"
+		label:	"'@'"
+		color:	blue
+		textcolor:	black
+	}
+	node: {
+		title:	"19"
+		label:	"state 19\n pattern -> PATTERN VALUE '-' '>' VALUE '_' valueq . '|' VALUE '_' valueq"
+	}
+	edge: {
+		sourcename:	"19"
+		targetname:	"22"
+		label:	"'|'"
+		color:	blue
+		textcolor:	black
+	}
+	node: {
+		title:	"20"
+		label:	"state 20\n pattern -> PATTERN VALUE '_' valueq '|' VALUE '_' valueq ."
+	}
+	node: {
+		title:	"21"
+		label:	"state 21\n pattern -> PATTERN VALUE '-' '>' VALUE '_' VALUE '@' . VALUE '|' VALUE '_' VALUE"
+	}
+	edge: {
+		sourcename:	"21"
+		targetname:	"23"
+		label:	"VALUE"
+		color:	blue
+		textcolor:	black
+	}
+	node: {
+		title:	"22"
+		label:	"state 22\n pattern -> PATTERN VALUE '-' '>' VALUE '_' valueq '|' . VALUE '_' valueq"
+	}
+	edge: {
+		sourcename:	"22"
+		targetname:	"24"
+		label:	"VALUE"
+		color:	blue
+		textcolor:	black
+	}
+	node: {
+		title:	"23"
+		label:	"state 23\n pattern -> PATTERN VALUE '-' '>' VALUE '_' VALUE '@' VALUE . '|' VALUE '_' VALUE"
+	}
+	edge: {
+		sourcename:	"23"
+		targetname:	"25"
+		label:	"'|'"
+		color:	blue
+		textcolor:	black
+	}
+	node: {
+		title:	"24"
+		label:	"state 24\n pattern -> PATTERN VALUE '-' '>' VALUE '_' valueq '|' VALUE . '_' valueq"
+	}
+	edge: {
+		sourcename:	"24"
+		targetname:	"26"
+		label:	"'_'"
+		color:	blue
+		textcolor:	black
+	}
+	node: {
+		title:	"25"
+		label:	"state 25\n pattern -> PATTERN VALUE '-' '>' VALUE '_' VALUE '@' VALUE '|' . VALUE '_' VALUE"
+	}
+	edge: {
+		sourcename:	"25"
+		targetname:	"27"
+		label:	"VALUE"
+		color:	blue
+		textcolor:	black
+	}
+	node: {
+		title:	"26"
+		label:	"state 26\n pattern -> PATTERN VALUE '-' '>' VALUE '_' valueq '|' VALUE '_' . valueq"
+	}
+	backedge: {
+		sourcename:	"26"
+		targetname:	"10"
+		label:	"VALUE"
+		color:	blue
+		textcolor:	black
+	}
+	edge: {
+		sourcename:	"26"
+		targetname:	"28"
+		label:	"valueq"
+		color:	green
+		textcolor:	black
+	}
+	node: {
+		title:	"27"
+		label:	"state 27\n pattern -> PATTERN VALUE '-' '>' VALUE '_' VALUE '@' VALUE '|' VALUE . '_' VALUE"
+	}
+	edge: {
+		sourcename:	"27"
+		targetname:	"29"
+		label:	"'_'"
+		color:	blue
+		textcolor:	black
+	}
+	node: {
+		title:	"28"
+		label:	"state 28\n pattern -> PATTERN VALUE '-' '>' VALUE '_' valueq '|' VALUE '_' valueq ."
+	}
+	node: {
+		title:	"29"
+		label:	"state 29\n pattern -> PATTERN VALUE '-' '>' VALUE '_' VALUE '@' VALUE '|' VALUE '_' . VALUE"
+	}
+	edge: {
+		sourcename:	"29"
+		targetname:	"30"
+		label:	"VALUE"
+		color:	blue
+		textcolor:	black
+	}
+	node: {
+		title:	"30"
+		label:	"state 30\n pattern -> PATTERN VALUE '-' '>' VALUE '_' VALUE '@' VALUE '|' VALUE '_' VALUE ."
+	}
+
+
+}

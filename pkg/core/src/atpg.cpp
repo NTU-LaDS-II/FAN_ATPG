@@ -19,7 +19,6 @@ using namespace CoreNs;
 //            ]
 // Date       [ Ver. 1.0 started 2013/08/13 ]
 // **************************************************************************
-
 void Atpg::generation(PatternProcessor *pcoll, FaultListExtract *fListExtract)
 {
 	setupCircuitParameter();
@@ -92,7 +91,6 @@ void Atpg::generation(PatternProcessor *pcoll, FaultListExtract *fListExtract)
 //            ]
 // Date       [ HKY Ver. 1.0 started 2014/09/01 ]
 // **************************************************************************
-
 void Atpg::TransitionDelayFaultATPG(FaultList &faultListToGen, PatternProcessor *pcoll, int &untest)
 {
 	Fault fTDF = *faultListToGen.front();
@@ -142,7 +140,6 @@ void Atpg::TransitionDelayFaultATPG(FaultList &faultListToGen, PatternProcessor 
 //            ]
 // Date       [ HKY Ver. 1.0 started 2014/09/01 ]
 // **************************************************************************
-
 void Atpg::StuckAtFaultATPG(FaultList &faultListToGen, PatternProcessor *pcoll, int &untest)
 {
 	GENERATION_STATUS result = patternGeneration(*faultListToGen.front(), false);
@@ -189,7 +186,6 @@ void Atpg::StuckAtFaultATPG(FaultList &faultListToGen, PatternProcessor *pcoll, 
 //            ]
 // Date       [ HKY Ver. 1.0 started 2014/09/01 ]
 // **************************************************************************
-
 void Atpg::XFill(PatternProcessor *pcoll)
 {
 	for (int i = 0; i < (int)pcoll->pats_.size(); ++i)

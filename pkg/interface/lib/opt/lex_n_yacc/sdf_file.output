@@ -1,0 +1,6944 @@
+Terminals which are not used
+
+   ONE_CONST
+   ZERO_CONST
+
+
+Grammar
+
+    0 $accept: start $end
+
+    1 start: initialize delay_file
+
+    2 initialize: /* empty */
+
+    3 delay_file: '(' DELAYFILE sdf_header cells ')'
+
+    4 sdf_header: sdf_header design_name
+    5           | sdf_header date
+    6           | sdf_header vendor
+    7           | sdf_header program_name
+    8           | sdf_header program_version
+    9           | sdf_header hierarchy_divider
+   10           | sdf_header voltage
+   11           | sdf_header process
+   12           | sdf_header temperature
+   13           | sdf_header time_scale
+   14           | sdf_version
+
+   15 sdf_version: '(' SDFVERSION QSTRING ')'
+
+   16 design_name: '(' DESIGN QSTRING ')'
+
+   17 date: '(' DATE QSTRING ')'
+
+   18 vendor: '(' VENDOR QSTRING ')'
+
+   19 program_name: '(' PROGRAM QSTRING ')'
+
+   20 program_version: '(' VERSION QSTRING ')'
+
+   21 hierarchy_divider: '(' DIVIDER hchar ')'
+
+   22 hchar: '/'
+   23      | '.'
+
+   24 voltage: '(' VOLTAGE triple ')'
+   25        | '(' VOLTAGE NUMBER ')'
+
+   26 process: '(' PROCESS QSTRING ')'
+
+   27 temperature: '(' TEMPERATURE triple ')'
+   28            | '(' TEMPERATURE NUMBER ')'
+
+   29 time_scale: '(' TIMESCALE tsvalue ')'
+
+   30 tsvalue: NUMBER IDENTIFIER
+
+   31 cells: cells cell
+   32      | cell
+
+   33 cell: '(' CELL add_cell ')'
+   34     | '(' CELL add_cell timing_specs ')'
+
+   35 add_cell: cell_type cell_instance
+
+   36 cell_type: '(' CELLTYPE QSTRING ')'
+
+   37 cell_instance: '(' INSTANCE ')'
+   38              | '(' INSTANCE PATH ')'
+   39              | '(' INSTANCE IDENTIFIER ')'
+   40              | '(' INSTANCE '*' ')'
+
+   41 timing_specs: timing_specs timing_spec
+   42             | timing_spec
+
+   43 timing_spec: del_spec
+   44            | tc_spec
+   45            | te_spec
+
+   46 del_spec: '(' DELAY deltypes ')'
+
+   47 deltypes: deltypes deltype
+   48         | deltype
+
+   49 tc_spec: '(' TIMINGCHECK tchk_defs ')'
+
+   50 tchk_defs: tchk_defs tchk_def
+   51          | tchk_def
+
+   52 te_spec: '(' TIMINGENV te_defs ')'
+
+   53 te_defs: te_defs te_def
+   54        | te_def
+
+   55 deltype: '(' pathtype del_path ')'
+   56        | '(' valuetype del_defs ')'
+
+   57 pathtype: PATHPULSE
+   58         | PATHPULSEPERCENT
+
+   59 valuetype: ABSOLUTE
+   60          | INCREMENT
+
+   61 del_path: value
+   62         | input_output_path value
+   63         | value value
+   64         | input_output_path value value
+
+   65 del_defs: del_defs del_def
+   66         | del_def
+
+   67 input_output_path: port_instance port_instance
+
+   68 del_def: del_def_iopath
+   69        | '(' del_cond del_def_iopath ')'
+   70        | '(' cond_else_type del_def_iopath ')'
+   71        | '(' PORT port_instance delval_list ')'
+   72        | '(' INTERCONNECT port_instance port_instance delval_list ')'
+   73        | '(' DEVICE delval_list ')'
+   74        | '(' DEVICE port_instance delval_list ')'
+
+   75 del_cond: COND expression
+   76         | COND QSTRING expression
+
+   77 del_def_iopath: '(' IOPATH port_spec port_instance delval_list ')'
+   78               | '(' IOPATH port_spec port_instance '(' RETAIN delval_list ')' ')'
+
+   79 cond_else_type: CONDELSE
+
+   80 tchk_def: '(' SETUP port_tchk port_tchk value ')'
+   81         | '(' HOLD port_tchk port_tchk value ')'
+   82         | '(' SETUPHOLD port_tchk port_tchk value value ')'
+   83         | '(' SETUPHOLD port_tchk port_tchk value value scond ')'
+   84         | '(' SETUPHOLD port_tchk port_tchk value value ccond ')'
+   85         | '(' SETUPHOLD port_tchk port_tchk value value scond ccond ')'
+   86         | '(' RECOVERY port_tchk port_tchk value ')'
+   87         | '(' REMOVAL port_tchk port_tchk value ')'
+   88         | '(' RECREM port_tchk port_tchk value value ')'
+   89         | '(' RECREM port_tchk port_tchk value value scond ')'
+   90         | '(' RECREM port_tchk port_tchk value value ccond ')'
+   91         | '(' RECREM port_tchk port_tchk value value scond ccond ')'
+   92         | '(' SKEW port_tchk port_tchk value ')'
+   93         | '(' WIDTH port_tchk value ')'
+   94         | '(' PERIOD port_tchk value ')'
+   95         | '(' NOCHANGE port_tchk port_tchk value value ')'
+
+   96 port_tchk: port_spec
+   97          | '(' COND timing_check_condition port_spec ')'
+   98          | '(' COND QSTRING timing_check_condition port_spec ')'
+
+   99 scond: '(' SCOND timing_check_condition ')'
+  100      | '(' SCOND QSTRING timing_check_condition ')'
+
+  101 ccond: '(' CCOND timing_check_condition ')'
+  102      | '(' CCOND QSTRING timing_check_condition ')'
+
+  103 name: '(' NAME ')'
+  104     | '(' NAME QSTRING ')'
+
+  105 exception: '(' EXCEPTION cell_instances ')'
+
+  106 cell_instances: cell_instances cell_instance
+  107               | cell_instance
+
+  108 te_def: cns_def
+  109       | tenv_def
+
+  110 cns_def: '(' PATHCONSTRAINT port_instance port_instances value value ')'
+  111        | '(' PATHCONSTRAINT name port_instance port_instances value value ')'
+  112        | '(' PERIODCONSTRAINT port_instance value ')'
+  113        | '(' PERIODCONSTRAINT port_instance value exception ')'
+  114        | '(' SUM constraint_path constraint_path value ')'
+  115        | '(' SUM constraint_path constraint_path value value ')'
+  116        | '(' SUM constraint_path constraint_path constraint_paths value ')'
+  117        | '(' SUM constraint_path constraint_path constraint_paths value value ')'
+  118        | '(' DIFF constraint_path constraint_path value ')'
+  119        | '(' DIFF constraint_path constraint_path value value ')'
+  120        | '(' SKEWCONSTRAINT port_spec value ')'
+
+  121 port_instances: port_instances port_instance
+  122               | port_instance
+
+  123 constraint_paths: constraint_paths constraint_path
+  124                 | constraint_path
+
+  125 tenv_def: '(' ARRIVAL port_instance value value value value ')'
+  126         | '(' ARRIVAL port_edge port_instance value value value value ')'
+  127         | '(' DEPARTURE port_instance value value value value ')'
+  128         | '(' DEPARTURE port_edge port_instance value value value value ')'
+  129         | '(' SLACK port_instance value value value value ')'
+  130         | '(' SLACK port_instance value value value value NUMBER ')'
+  131         | '(' WAVEFORM port_instance NUMBER edge_list ')'
+
+  132 number_q: NUMBER
+  133         | /* empty */
+
+  134 constraint_path: '(' port_instance port_instance ')'
+
+  135 port_spec: port_instance
+  136          | port_edge
+
+  137 port_edge: '(' edge_identifier port_instance ')'
+
+  138 edge_identifier: POSEDGE
+  139                | NEGEDGE
+  140                | EDGE
+  141                | IDENTIFIER
+  142                | NUMBER
+
+  143 port_instance: port
+
+  144 port: scalar_port
+  145     | bus_port
+
+  146 scalar_port: IDENTIFIER
+  147            | PATH
+  148            | IDENTIFIER '[' NUMBER ']'
+  149            | PATH '[' NUMBER ']'
+
+  150 bus_port: IDENTIFIER '[' NUMBER ':' NUMBER ']'
+  151         | PATH '[' NUMBER ':' NUMBER ']'
+
+  152 edge_list: pos_pairs
+  153          | neg_pairs
+
+  154 pos_pairs: pos_pairs pos_pair
+  155          | pos_pair
+
+  156 neg_pairs: neg_pairs neg_pair
+  157          | neg_pair
+
+  158 pos_pair: '(' POSEDGE NUMBER number_q ')' '(' NEGEDGE NUMBER number_q ')'
+
+  159 neg_pair: '(' NEGEDGE NUMBER number_q ')' '(' POSEDGE NUMBER number_q ')'
+
+  160 value: '(' NUMBER ')'
+  161      | '(' triple ')'
+  162      | '(' ')'
+
+  163 triple: NUMBER ':' ':'
+  164       | NUMBER ':' NUMBER ':'
+  165       | NUMBER ':' ':' NUMBER
+  166       | ':' NUMBER ':'
+  167       | ':' NUMBER ':' NUMBER
+  168       | ':' ':' NUMBER
+  169       | NUMBER ':' NUMBER ':' NUMBER
+
+  170 delval: value
+  171       | '(' value value ')'
+  172       | '(' value value value ')'
+
+  173 delval_list: delval
+  174            | delval delval
+  175            | delval delval delval
+  176            | delval delval delval delval delval delval
+  177            | delval delval delval delval delval delval delval delval delval delval delval delval
+
+  178 expression: conditional_expression
+  179           | '{' conditional_expression '}'
+  180           | '{' expression ',' conditional_expression '}'
+
+  181 conditional_expression: simple_expression
+  182                       | simple_expression '?' expression ':' conditional_expression
+
+  183 simple_expression: '(' simple_expression ')'
+  184                  | unary_op '(' simple_expression ')'
+  185                  | port
+  186                  | unary_op port
+  187                  | scalar_constant
+  188                  | unary_op scalar_constant
+  189                  | binary_expression
+
+  190 binary_expression: simple_expression '+' simple_expression
+  191                  | simple_expression '-' simple_expression
+  192                  | simple_expression '*' simple_expression
+  193                  | simple_expression '/' simple_expression
+  194                  | simple_expression '%' simple_expression
+  195                  | simple_expression EQU simple_expression
+  196                  | simple_expression INEQU simple_expression
+  197                  | simple_expression CASE_EQU simple_expression
+  198                  | simple_expression CASE_INEQU simple_expression
+  199                  | simple_expression L_AND simple_expression
+  200                  | simple_expression L_OR simple_expression
+  201                  | simple_expression '<' simple_expression
+  202                  | simple_expression LESS_OR_EQU simple_expression
+  203                  | simple_expression '>' simple_expression
+  204                  | simple_expression GREATER_OR_EQU simple_expression
+  205                  | simple_expression '&' simple_expression
+  206                  | simple_expression '^' simple_expression
+  207                  | simple_expression '|' simple_expression
+  208                  | simple_expression RIGHT_SHIFT simple_expression
+  209                  | simple_expression LEFT_SHIFT simple_expression
+
+  210 timing_check_condition: scalar_node
+  211                       | inv_op scalar_node
+  212                       | scalar_node equ_op scalar_constant
+
+  213 scalar_node: scalar_port
+
+  214 scalar_constant: BIT_CONST
+  215                | NUMBER
+
+  216 unary_op: '+'
+  217         | '-'
+  218         | '!'
+  219         | '~'
+  220         | '&'
+  221         | U_NAND
+  222         | '|'
+  223         | U_NOR
+  224         | '^'
+  225         | U_XNOR
+  226         | U_XNOR_ALT
+
+  227 inv_op: '!'
+  228       | '~'
+
+  229 equ_op: EQU
+  230       | INEQU
+  231       | CASE_EQU
+  232       | CASE_INEQU
+
+
+Terminals, with rules where they appear
+
+$end (0) 0
+'!' (33) 218 227
+'%' (37) 194
+'&' (38) 205 220
+'(' (40) 3 15 16 17 18 19 20 21 24 25 26 27 28 29 33 34 36 37 38 39
+    40 46 49 52 55 56 69 70 71 72 73 74 77 78 80 81 82 83 84 85 86
+    87 88 89 90 91 92 93 94 95 97 98 99 100 101 102 103 104 105 110
+    111 112 113 114 115 116 117 118 119 120 125 126 127 128 129 130
+    131 134 137 158 159 160 161 162 171 172 183 184
+')' (41) 3 15 16 17 18 19 20 21 24 25 26 27 28 29 33 34 36 37 38 39
+    40 46 49 52 55 56 69 70 71 72 73 74 77 78 80 81 82 83 84 85 86
+    87 88 89 90 91 92 93 94 95 97 98 99 100 101 102 103 104 105 110
+    111 112 113 114 115 116 117 118 119 120 125 126 127 128 129 130
+    131 134 137 158 159 160 161 162 171 172 183 184
+'*' (42) 40 192
+'+' (43) 190 216
+',' (44) 180
+'-' (45) 191 217
+'.' (46) 23
+'/' (47) 22 193
+':' (58) 150 151 163 164 165 166 167 168 169 182
+'<' (60) 201
+'>' (62) 203
+'?' (63) 182
+'[' (91) 148 149 150 151
+']' (93) 148 149 150 151
+'^' (94) 206 224
+'{' (123) 179 180
+'|' (124) 207 222
+'}' (125) 179 180
+'~' (126) 219 228
+error (256)
+DELAYFILE (258) 3
+SDFVERSION (259) 15
+DESIGN (260) 16
+DATE (261) 17
+VENDOR (262) 18
+PROGRAM (263) 19
+VERSION (264) 20
+DIVIDER (265) 21
+VOLTAGE (266) 24 25
+PROCESS (267) 26
+TEMPERATURE (268) 27 28
+TIMESCALE (269) 29
+CELL (270) 33 34
+CELLTYPE (271) 36
+INSTANCE (272) 37 38 39 40
+DELAY (273) 46
+TIMINGCHECK (274) 49
+TIMINGENV (275) 52
+PATHPULSE (276) 57
+PATHPULSEPERCENT (277) 58
+ABSOLUTE (278) 59
+INCREMENT (279) 60
+IOPATH (280) 77 78
+RETAIN (281) 78
+COND (282) 75 76 97 98
+SCOND (283) 99 100
+CCOND (284) 101 102
+CONDELSE (285) 79
+PORT (286) 71
+INTERCONNECT (287) 72
+DEVICE (288) 73 74
+SETUP (289) 80
+HOLD (290) 81
+SETUPHOLD (291) 82 83 84 85
+RECOVERY (292) 86
+REMOVAL (293) 87
+RECREM (294) 88 89 90 91
+SKEW (295) 92
+WIDTH (296) 93
+PERIOD (297) 94
+NOCHANGE (298) 95
+NAME (299) 103 104
+EXCEPTION (300) 105
+PATHCONSTRAINT (301) 110 111
+PERIODCONSTRAINT (302) 112 113
+SUM (303) 114 115 116 117
+DIFF (304) 118 119
+SKEWCONSTRAINT (305) 120
+ARRIVAL (306) 125 126
+DEPARTURE (307) 127 128
+SLACK (308) 129 130
+WAVEFORM (309) 131
+POSEDGE (310) 138 158 159
+NEGEDGE (311) 139 158 159
+CASE_EQU (312) 197 231
+CASE_INEQU (313) 198 232
+EQU (314) 195 229
+INEQU (315) 196 230
+L_AND (316) 199
+L_OR (317) 200
+LESS_OR_EQU (318) 202
+GREATER_OR_EQU (319) 204
+RIGHT_SHIFT (320) 208
+LEFT_SHIFT (321) 209
+U_NAND (322) 221
+U_NOR (323) 223
+U_XNOR (324) 225
+U_XNOR_ALT (325) 226
+BIT_CONST (326) 214
+ONE_CONST (327)
+ZERO_CONST (328)
+EDGE (329) 140
+PATH (330) 38 147 149 151
+IDENTIFIER (331) 30 39 141 146 148 150
+QSTRING (332) 15 16 17 18 19 20 26 36 76 98 100 102 104
+NUMBER (333) 25 28 30 130 131 132 142 148 149 150 151 158 159 160 163
+    164 165 166 167 168 169 215
+
+
+Nonterminals, with rules where they appear
+
+$accept (101)
+    on left: 0
+start (102)
+    on left: 1, on right: 0
+initialize (103)
+    on left: 2, on right: 1
+delay_file (104)
+    on left: 3, on right: 1
+sdf_header (105)
+    on left: 4 5 6 7 8 9 10 11 12 13 14, on right: 3 4 5 6 7 8 9 10
+    11 12 13
+sdf_version (106)
+    on left: 15, on right: 14
+design_name (107)
+    on left: 16, on right: 4
+date (108)
+    on left: 17, on right: 5
+vendor (109)
+    on left: 18, on right: 6
+program_name (110)
+    on left: 19, on right: 7
+program_version (111)
+    on left: 20, on right: 8
+hierarchy_divider (112)
+    on left: 21, on right: 9
+hchar (113)
+    on left: 22 23, on right: 21
+voltage (114)
+    on left: 24 25, on right: 10
+process (115)
+    on left: 26, on right: 11
+temperature (116)
+    on left: 27 28, on right: 12
+time_scale (117)
+    on left: 29, on right: 13
+tsvalue (118)
+    on left: 30, on right: 29
+cells (119)
+    on left: 31 32, on right: 3 31
+cell (120)
+    on left: 33 34, on right: 31 32
+add_cell (121)
+    on left: 35, on right: 33 34
+cell_type (122)
+    on left: 36, on right: 35
+cell_instance (123)
+    on left: 37 38 39 40, on right: 35 106 107
+timing_specs (124)
+    on left: 41 42, on right: 34 41
+timing_spec (125)
+    on left: 43 44 45, on right: 41 42
+del_spec (126)
+    on left: 46, on right: 43
+deltypes (127)
+    on left: 47 48, on right: 46 47
+tc_spec (128)
+    on left: 49, on right: 44
+tchk_defs (129)
+    on left: 50 51, on right: 49 50
+te_spec (130)
+    on left: 52, on right: 45
+te_defs (131)
+    on left: 53 54, on right: 52 53
+deltype (132)
+    on left: 55 56, on right: 47 48
+pathtype (133)
+    on left: 57 58, on right: 55
+valuetype (134)
+    on left: 59 60, on right: 56
+del_path (135)
+    on left: 61 62 63 64, on right: 55
+del_defs (136)
+    on left: 65 66, on right: 56 65
+input_output_path (137)
+    on left: 67, on right: 62 64
+del_def (138)
+    on left: 68 69 70 71 72 73 74, on right: 65 66
+del_cond (139)
+    on left: 75 76, on right: 69
+del_def_iopath (140)
+    on left: 77 78, on right: 68 69 70
+cond_else_type (141)
+    on left: 79, on right: 70
+tchk_def (142)
+    on left: 80 81 82 83 84 85 86 87 88 89 90 91 92 93 94 95,
+    on right: 50 51
+port_tchk (143)
+    on left: 96 97 98, on right: 80 81 82 83 84 85 86 87 88 89 90 91
+    92 93 94 95
+scond (144)
+    on left: 99 100, on right: 83 85 89 91
+ccond (145)
+    on left: 101 102, on right: 84 85 90 91
+name (146)
+    on left: 103 104, on right: 111
+exception (147)
+    on left: 105, on right: 113
+cell_instances (148)
+    on left: 106 107, on right: 105 106
+te_def (149)
+    on left: 108 109, on right: 53 54
+cns_def (150)
+    on left: 110 111 112 113 114 115 116 117 118 119 120,
+    on right: 108
+port_instances (151)
+    on left: 121 122, on right: 110 111 121
+constraint_paths (152)
+    on left: 123 124, on right: 116 117 123
+tenv_def (153)
+    on left: 125 126 127 128 129 130 131, on right: 109
+number_q (154)
+    on left: 132 133, on right: 158 159
+constraint_path (155)
+    on left: 134, on right: 114 115 116 117 118 119 123 124
+port_spec (156)
+    on left: 135 136, on right: 77 78 96 97 98 120
+port_edge (157)
+    on left: 137, on right: 126 128 136
+edge_identifier (158)
+    on left: 138 139 140 141 142, on right: 137
+port_instance (159)
+    on left: 143, on right: 67 71 72 74 77 78 110 111 112 113 121 122
+    125 126 127 128 129 130 131 134 135 137
+port (160)
+    on left: 144 145, on right: 143 185 186
+scalar_port (161)
+    on left: 146 147 148 149, on right: 144 213
+bus_port (162)
+    on left: 150 151, on right: 145
+edge_list (163)
+    on left: 152 153, on right: 131
+pos_pairs (164)
+    on left: 154 155, on right: 152 154
+neg_pairs (165)
+    on left: 156 157, on right: 153 156
+pos_pair (166)
+    on left: 158, on right: 154 155
+neg_pair (167)
+    on left: 159, on right: 156 157
+value (168)
+    on left: 160 161 162, on right: 61 62 63 64 80 81 82 83 84 85 86
+    87 88 89 90 91 92 93 94 95 110 111 112 113 114 115 116 117 118
+    119 120 125 126 127 128 129 130 170 171 172
+triple (169)
+    on left: 163 164 165 166 167 168 169, on right: 24 27 161
+delval (170)
+    on left: 170 171 172, on right: 173 174 175 176 177
+delval_list (171)
+    on left: 173 174 175 176 177, on right: 71 72 73 74 77 78
+expression (172)
+    on left: 178 179 180, on right: 75 76 180 182
+conditional_expression (173)
+    on left: 181 182, on right: 178 179 180 182
+simple_expression (174)
+    on left: 183 184 185 186 187 188 189, on right: 181 182 183 184
+    190 191 192 193 194 195 196 197 198 199 200 201 202 203 204 205
+    206 207 208 209
+binary_expression (175)
+    on left: 190 191 192 193 194 195 196 197 198 199 200 201 202 203
+    204 205 206 207 208 209, on right: 189
+timing_check_condition (176)
+    on left: 210 211 212, on right: 97 98 99 100 101 102
+scalar_node (177)
+    on left: 213, on right: 210 211 212
+scalar_constant (178)
+    on left: 214 215, on right: 187 188 212
+unary_op (179)
+    on left: 216 217 218 219 220 221 222 223 224 225 226,
+    on right: 184 186 188
+inv_op (180)
+    on left: 227 228, on right: 211
+equ_op (181)
+    on left: 229 230 231 232, on right: 212
+
+
+state 0
+
+    0 $accept: . start $end
+
+    $default  reduce using rule 2 (initialize)
+
+    start       go to state 1
+    initialize  go to state 2
+
+
+state 1
+
+    0 $accept: start . $end
+
+    $end  shift, and go to state 3
+
+
+state 2
+
+    1 start: initialize . delay_file
+
+    '('  shift, and go to state 4
+
+    delay_file  go to state 5
+
+
+state 3
+
+    0 $accept: start $end .
+
+    $default  accept
+
+
+state 4
+
+    3 delay_file: '(' . DELAYFILE sdf_header cells ')'
+
+    DELAYFILE  shift, and go to state 6
+
+
+state 5
+
+    1 start: initialize delay_file .
+
+    $default  reduce using rule 1 (start)
+
+
+state 6
+
+    3 delay_file: '(' DELAYFILE . sdf_header cells ')'
+
+    '('  shift, and go to state 7
+
+    sdf_header   go to state 8
+    sdf_version  go to state 9
+
+
+state 7
+
+   15 sdf_version: '(' . SDFVERSION QSTRING ')'
+
+    SDFVERSION  shift, and go to state 10
+
+
+state 8
+
+    3 delay_file: '(' DELAYFILE sdf_header . cells ')'
+    4 sdf_header: sdf_header . design_name
+    5           | sdf_header . date
+    6           | sdf_header . vendor
+    7           | sdf_header . program_name
+    8           | sdf_header . program_version
+    9           | sdf_header . hierarchy_divider
+   10           | sdf_header . voltage
+   11           | sdf_header . process
+   12           | sdf_header . temperature
+   13           | sdf_header . time_scale
+
+    '('  shift, and go to state 11
+
+    design_name        go to state 12
+    date               go to state 13
+    vendor             go to state 14
+    program_name       go to state 15
+    program_version    go to state 16
+    hierarchy_divider  go to state 17
+    voltage            go to state 18
+    process            go to state 19
+    temperature        go to state 20
+    time_scale         go to state 21
+    cells              go to state 22
+    cell               go to state 23
+
+
+state 9
+
+   14 sdf_header: sdf_version .
+
+    $default  reduce using rule 14 (sdf_header)
+
+
+state 10
+
+   15 sdf_version: '(' SDFVERSION . QSTRING ')'
+
+    QSTRING  shift, and go to state 24
+
+
+state 11
+
+   16 design_name: '(' . DESIGN QSTRING ')'
+   17 date: '(' . DATE QSTRING ')'
+   18 vendor: '(' . VENDOR QSTRING ')'
+   19 program_name: '(' . PROGRAM QSTRING ')'
+   20 program_version: '(' . VERSION QSTRING ')'
+   21 hierarchy_divider: '(' . DIVIDER hchar ')'
+   24 voltage: '(' . VOLTAGE triple ')'
+   25        | '(' . VOLTAGE NUMBER ')'
+   26 process: '(' . PROCESS QSTRING ')'
+   27 temperature: '(' . TEMPERATURE triple ')'
+   28            | '(' . TEMPERATURE NUMBER ')'
+   29 time_scale: '(' . TIMESCALE tsvalue ')'
+   33 cell: '(' . CELL add_cell ')'
+   34     | '(' . CELL add_cell timing_specs ')'
+
+    DESIGN       shift, and go to state 25
+    DATE         shift, and go to state 26
+    VENDOR       shift, and go to state 27
+    PROGRAM      shift, and go to state 28
+    VERSION      shift, and go to state 29
+    DIVIDER      shift, and go to state 30
+    VOLTAGE      shift, and go to state 31
+    PROCESS      shift, and go to state 32
+    TEMPERATURE  shift, and go to state 33
+    TIMESCALE    shift, and go to state 34
+    CELL         shift, and go to state 35
+
+
+state 12
+
+    4 sdf_header: sdf_header design_name .
+
+    $default  reduce using rule 4 (sdf_header)
+
+
+state 13
+
+    5 sdf_header: sdf_header date .
+
+    $default  reduce using rule 5 (sdf_header)
+
+
+state 14
+
+    6 sdf_header: sdf_header vendor .
+
+    $default  reduce using rule 6 (sdf_header)
+
+
+state 15
+
+    7 sdf_header: sdf_header program_name .
+
+    $default  reduce using rule 7 (sdf_header)
+
+
+state 16
+
+    8 sdf_header: sdf_header program_version .
+
+    $default  reduce using rule 8 (sdf_header)
+
+
+state 17
+
+    9 sdf_header: sdf_header hierarchy_divider .
+
+    $default  reduce using rule 9 (sdf_header)
+
+
+state 18
+
+   10 sdf_header: sdf_header voltage .
+
+    $default  reduce using rule 10 (sdf_header)
+
+
+state 19
+
+   11 sdf_header: sdf_header process .
+
+    $default  reduce using rule 11 (sdf_header)
+
+
+state 20
+
+   12 sdf_header: sdf_header temperature .
+
+    $default  reduce using rule 12 (sdf_header)
+
+
+state 21
+
+   13 sdf_header: sdf_header time_scale .
+
+    $default  reduce using rule 13 (sdf_header)
+
+
+state 22
+
+    3 delay_file: '(' DELAYFILE sdf_header cells . ')'
+   31 cells: cells . cell
+
+    '('  shift, and go to state 36
+    ')'  shift, and go to state 37
+
+    cell  go to state 38
+
+
+state 23
+
+   32 cells: cell .
+
+    $default  reduce using rule 32 (cells)
+
+
+state 24
+
+   15 sdf_version: '(' SDFVERSION QSTRING . ')'
+
+    ')'  shift, and go to state 39
+
+
+state 25
+
+   16 design_name: '(' DESIGN . QSTRING ')'
+
+    QSTRING  shift, and go to state 40
+
+
+state 26
+
+   17 date: '(' DATE . QSTRING ')'
+
+    QSTRING  shift, and go to state 41
+
+
+state 27
+
+   18 vendor: '(' VENDOR . QSTRING ')'
+
+    QSTRING  shift, and go to state 42
+
+
+state 28
+
+   19 program_name: '(' PROGRAM . QSTRING ')'
+
+    QSTRING  shift, and go to state 43
+
+
+state 29
+
+   20 program_version: '(' VERSION . QSTRING ')'
+
+    QSTRING  shift, and go to state 44
+
+
+state 30
+
+   21 hierarchy_divider: '(' DIVIDER . hchar ')'
+
+    '/'  shift, and go to state 45
+    '.'  shift, and go to state 46
+
+    hchar  go to state 47
+
+
+state 31
+
+   24 voltage: '(' VOLTAGE . triple ')'
+   25        | '(' VOLTAGE . NUMBER ')'
+
+    NUMBER  shift, and go to state 48
+    ':'     shift, and go to state 49
+
+    triple  go to state 50
+
+
+state 32
+
+   26 process: '(' PROCESS . QSTRING ')'
+
+    QSTRING  shift, and go to state 51
+
+
+state 33
+
+   27 temperature: '(' TEMPERATURE . triple ')'
+   28            | '(' TEMPERATURE . NUMBER ')'
+
+    NUMBER  shift, and go to state 52
+    ':'     shift, and go to state 49
+
+    triple  go to state 53
+
+
+state 34
+
+   29 time_scale: '(' TIMESCALE . tsvalue ')'
+
+    NUMBER  shift, and go to state 54
+
+    tsvalue  go to state 55
+
+
+state 35
+
+   33 cell: '(' CELL . add_cell ')'
+   34     | '(' CELL . add_cell timing_specs ')'
+
+    '('  shift, and go to state 56
+
+    add_cell   go to state 57
+    cell_type  go to state 58
+
+
+state 36
+
+   33 cell: '(' . CELL add_cell ')'
+   34     | '(' . CELL add_cell timing_specs ')'
+
+    CELL  shift, and go to state 35
+
+
+state 37
+
+    3 delay_file: '(' DELAYFILE sdf_header cells ')' .
+
+    $default  reduce using rule 3 (delay_file)
+
+
+state 38
+
+   31 cells: cells cell .
+
+    $default  reduce using rule 31 (cells)
+
+
+state 39
+
+   15 sdf_version: '(' SDFVERSION QSTRING ')' .
+
+    $default  reduce using rule 15 (sdf_version)
+
+
+state 40
+
+   16 design_name: '(' DESIGN QSTRING . ')'
+
+    ')'  shift, and go to state 59
+
+
+state 41
+
+   17 date: '(' DATE QSTRING . ')'
+
+    ')'  shift, and go to state 60
+
+
+state 42
+
+   18 vendor: '(' VENDOR QSTRING . ')'
+
+    ')'  shift, and go to state 61
+
+
+state 43
+
+   19 program_name: '(' PROGRAM QSTRING . ')'
+
+    ')'  shift, and go to state 62
+
+
+state 44
+
+   20 program_version: '(' VERSION QSTRING . ')'
+
+    ')'  shift, and go to state 63
+
+
+state 45
+
+   22 hchar: '/' .
+
+    $default  reduce using rule 22 (hchar)
+
+
+state 46
+
+   23 hchar: '.' .
+
+    $default  reduce using rule 23 (hchar)
+
+
+state 47
+
+   21 hierarchy_divider: '(' DIVIDER hchar . ')'
+
+    ')'  shift, and go to state 64
+
+
+state 48
+
+   25 voltage: '(' VOLTAGE NUMBER . ')'
+  163 triple: NUMBER . ':' ':'
+  164       | NUMBER . ':' NUMBER ':'
+  165       | NUMBER . ':' ':' NUMBER
+  169       | NUMBER . ':' NUMBER ':' NUMBER
+
+    ')'  shift, and go to state 65
+    ':'  shift, and go to state 66
+
+
+state 49
+
+  166 triple: ':' . NUMBER ':'
+  167       | ':' . NUMBER ':' NUMBER
+  168       | ':' . ':' NUMBER
+
+    NUMBER  shift, and go to state 67
+    ':'     shift, and go to state 68
+
+
+state 50
+
+   24 voltage: '(' VOLTAGE triple . ')'
+
+    ')'  shift, and go to state 69
+
+
+state 51
+
+   26 process: '(' PROCESS QSTRING . ')'
+
+    ')'  shift, and go to state 70
+
+
+state 52
+
+   28 temperature: '(' TEMPERATURE NUMBER . ')'
+  163 triple: NUMBER . ':' ':'
+  164       | NUMBER . ':' NUMBER ':'
+  165       | NUMBER . ':' ':' NUMBER
+  169       | NUMBER . ':' NUMBER ':' NUMBER
+
+    ')'  shift, and go to state 71
+    ':'  shift, and go to state 66
+
+
+state 53
+
+   27 temperature: '(' TEMPERATURE triple . ')'
+
+    ')'  shift, and go to state 72
+
+
+state 54
+
+   30 tsvalue: NUMBER . IDENTIFIER
+
+    IDENTIFIER  shift, and go to state 73
+
+
+state 55
+
+   29 time_scale: '(' TIMESCALE tsvalue . ')'
+
+    ')'  shift, and go to state 74
+
+
+state 56
+
+   36 cell_type: '(' . CELLTYPE QSTRING ')'
+
+    CELLTYPE  shift, and go to state 75
+
+
+state 57
+
+   33 cell: '(' CELL add_cell . ')'
+   34     | '(' CELL add_cell . timing_specs ')'
+
+    '('  shift, and go to state 76
+    ')'  shift, and go to state 77
+
+    timing_specs  go to state 78
+    timing_spec   go to state 79
+    del_spec      go to state 80
+    tc_spec       go to state 81
+    te_spec       go to state 82
+
+
+state 58
+
+   35 add_cell: cell_type . cell_instance
+
+    '('  shift, and go to state 83
+
+    cell_instance  go to state 84
+
+
+state 59
+
+   16 design_name: '(' DESIGN QSTRING ')' .
+
+    $default  reduce using rule 16 (design_name)
+
+
+state 60
+
+   17 date: '(' DATE QSTRING ')' .
+
+    $default  reduce using rule 17 (date)
+
+
+state 61
+
+   18 vendor: '(' VENDOR QSTRING ')' .
+
+    $default  reduce using rule 18 (vendor)
+
+
+state 62
+
+   19 program_name: '(' PROGRAM QSTRING ')' .
+
+    $default  reduce using rule 19 (program_name)
+
+
+state 63
+
+   20 program_version: '(' VERSION QSTRING ')' .
+
+    $default  reduce using rule 20 (program_version)
+
+
+state 64
+
+   21 hierarchy_divider: '(' DIVIDER hchar ')' .
+
+    $default  reduce using rule 21 (hierarchy_divider)
+
+
+state 65
+
+   25 voltage: '(' VOLTAGE NUMBER ')' .
+
+    $default  reduce using rule 25 (voltage)
+
+
+state 66
+
+  163 triple: NUMBER ':' . ':'
+  164       | NUMBER ':' . NUMBER ':'
+  165       | NUMBER ':' . ':' NUMBER
+  169       | NUMBER ':' . NUMBER ':' NUMBER
+
+    NUMBER  shift, and go to state 85
+    ':'     shift, and go to state 86
+
+
+state 67
+
+  166 triple: ':' NUMBER . ':'
+  167       | ':' NUMBER . ':' NUMBER
+
+    ':'  shift, and go to state 87
+
+
+state 68
+
+  168 triple: ':' ':' . NUMBER
+
+    NUMBER  shift, and go to state 88
+
+
+state 69
+
+   24 voltage: '(' VOLTAGE triple ')' .
+
+    $default  reduce using rule 24 (voltage)
+
+
+state 70
+
+   26 process: '(' PROCESS QSTRING ')' .
+
+    $default  reduce using rule 26 (process)
+
+
+state 71
+
+   28 temperature: '(' TEMPERATURE NUMBER ')' .
+
+    $default  reduce using rule 28 (temperature)
+
+
+state 72
+
+   27 temperature: '(' TEMPERATURE triple ')' .
+
+    $default  reduce using rule 27 (temperature)
+
+
+state 73
+
+   30 tsvalue: NUMBER IDENTIFIER .
+
+    $default  reduce using rule 30 (tsvalue)
+
+
+state 74
+
+   29 time_scale: '(' TIMESCALE tsvalue ')' .
+
+    $default  reduce using rule 29 (time_scale)
+
+
+state 75
+
+   36 cell_type: '(' CELLTYPE . QSTRING ')'
+
+    QSTRING  shift, and go to state 89
+
+
+state 76
+
+   46 del_spec: '(' . DELAY deltypes ')'
+   49 tc_spec: '(' . TIMINGCHECK tchk_defs ')'
+   52 te_spec: '(' . TIMINGENV te_defs ')'
+
+    DELAY        shift, and go to state 90
+    TIMINGCHECK  shift, and go to state 91
+    TIMINGENV    shift, and go to state 92
+
+
+state 77
+
+   33 cell: '(' CELL add_cell ')' .
+
+    $default  reduce using rule 33 (cell)
+
+
+state 78
+
+   34 cell: '(' CELL add_cell timing_specs . ')'
+   41 timing_specs: timing_specs . timing_spec
+
+    '('  shift, and go to state 76
+    ')'  shift, and go to state 93
+
+    timing_spec  go to state 94
+    del_spec     go to state 80
+    tc_spec      go to state 81
+    te_spec      go to state 82
+
+
+state 79
+
+   42 timing_specs: timing_spec .
+
+    $default  reduce using rule 42 (timing_specs)
+
+
+state 80
+
+   43 timing_spec: del_spec .
+
+    $default  reduce using rule 43 (timing_spec)
+
+
+state 81
+
+   44 timing_spec: tc_spec .
+
+    $default  reduce using rule 44 (timing_spec)
+
+
+state 82
+
+   45 timing_spec: te_spec .
+
+    $default  reduce using rule 45 (timing_spec)
+
+
+state 83
+
+   37 cell_instance: '(' . INSTANCE ')'
+   38              | '(' . INSTANCE PATH ')'
+   39              | '(' . INSTANCE IDENTIFIER ')'
+   40              | '(' . INSTANCE '*' ')'
+
+    INSTANCE  shift, and go to state 95
+
+
+state 84
+
+   35 add_cell: cell_type cell_instance .
+
+    $default  reduce using rule 35 (add_cell)
+
+
+state 85
+
+  164 triple: NUMBER ':' NUMBER . ':'
+  169       | NUMBER ':' NUMBER . ':' NUMBER
+
+    ':'  shift, and go to state 96
+
+
+state 86
+
+  163 triple: NUMBER ':' ':' .
+  165       | NUMBER ':' ':' . NUMBER
+
+    NUMBER  shift, and go to state 97
+
+    $default  reduce using rule 163 (triple)
+
+
+state 87
+
+  166 triple: ':' NUMBER ':' .
+  167       | ':' NUMBER ':' . NUMBER
+
+    NUMBER  shift, and go to state 98
+
+    $default  reduce using rule 166 (triple)
+
+
+state 88
+
+  168 triple: ':' ':' NUMBER .
+
+    $default  reduce using rule 168 (triple)
+
+
+state 89
+
+   36 cell_type: '(' CELLTYPE QSTRING . ')'
+
+    ')'  shift, and go to state 99
+
+
+state 90
+
+   46 del_spec: '(' DELAY . deltypes ')'
+
+    '('  shift, and go to state 100
+
+    deltypes  go to state 101
+    deltype   go to state 102
+
+
+state 91
+
+   49 tc_spec: '(' TIMINGCHECK . tchk_defs ')'
+
+    '('  shift, and go to state 103
+
+    tchk_defs  go to state 104
+    tchk_def   go to state 105
+
+
+state 92
+
+   52 te_spec: '(' TIMINGENV . te_defs ')'
+
+    '('  shift, and go to state 106
+
+    te_defs   go to state 107
+    te_def    go to state 108
+    cns_def   go to state 109
+    tenv_def  go to state 110
+
+
+state 93
+
+   34 cell: '(' CELL add_cell timing_specs ')' .
+
+    $default  reduce using rule 34 (cell)
+
+
+state 94
+
+   41 timing_specs: timing_specs timing_spec .
+
+    $default  reduce using rule 41 (timing_specs)
+
+
+state 95
+
+   37 cell_instance: '(' INSTANCE . ')'
+   38              | '(' INSTANCE . PATH ')'
+   39              | '(' INSTANCE . IDENTIFIER ')'
+   40              | '(' INSTANCE . '*' ')'
+
+    PATH        shift, and go to state 111
+    IDENTIFIER  shift, and go to state 112
+    '*'         shift, and go to state 113
+    ')'         shift, and go to state 114
+
+
+state 96
+
+  164 triple: NUMBER ':' NUMBER ':' .
+  169       | NUMBER ':' NUMBER ':' . NUMBER
+
+    NUMBER  shift, and go to state 115
+
+    $default  reduce using rule 164 (triple)
+
+
+state 97
+
+  165 triple: NUMBER ':' ':' NUMBER .
+
+    $default  reduce using rule 165 (triple)
+
+
+state 98
+
+  167 triple: ':' NUMBER ':' NUMBER .
+
+    $default  reduce using rule 167 (triple)
+
+
+state 99
+
+   36 cell_type: '(' CELLTYPE QSTRING ')' .
+
+    $default  reduce using rule 36 (cell_type)
+
+
+state 100
+
+   55 deltype: '(' . pathtype del_path ')'
+   56        | '(' . valuetype del_defs ')'
+
+    PATHPULSE         shift, and go to state 116
+    PATHPULSEPERCENT  shift, and go to state 117
+    ABSOLUTE          shift, and go to state 118
+    INCREMENT         shift, and go to state 119
+
+    pathtype   go to state 120
+    valuetype  go to state 121
+
+
+state 101
+
+   46 del_spec: '(' DELAY deltypes . ')'
+   47 deltypes: deltypes . deltype
+
+    '('  shift, and go to state 100
+    ')'  shift, and go to state 122
+
+    deltype  go to state 123
+
+
+state 102
+
+   48 deltypes: deltype .
+
+    $default  reduce using rule 48 (deltypes)
+
+
+state 103
+
+   80 tchk_def: '(' . SETUP port_tchk port_tchk value ')'
+   81         | '(' . HOLD port_tchk port_tchk value ')'
+   82         | '(' . SETUPHOLD port_tchk port_tchk value value ')'
+   83         | '(' . SETUPHOLD port_tchk port_tchk value value scond ')'
+   84         | '(' . SETUPHOLD port_tchk port_tchk value value ccond ')'
+   85         | '(' . SETUPHOLD port_tchk port_tchk value value scond ccond ')'
+   86         | '(' . RECOVERY port_tchk port_tchk value ')'
+   87         | '(' . REMOVAL port_tchk port_tchk value ')'
+   88         | '(' . RECREM port_tchk port_tchk value value ')'
+   89         | '(' . RECREM port_tchk port_tchk value value scond ')'
+   90         | '(' . RECREM port_tchk port_tchk value value ccond ')'
+   91         | '(' . RECREM port_tchk port_tchk value value scond ccond ')'
+   92         | '(' . SKEW port_tchk port_tchk value ')'
+   93         | '(' . WIDTH port_tchk value ')'
+   94         | '(' . PERIOD port_tchk value ')'
+   95         | '(' . NOCHANGE port_tchk port_tchk value value ')'
+
+    SETUP      shift, and go to state 124
+    HOLD       shift, and go to state 125
+    SETUPHOLD  shift, and go to state 126
+    RECOVERY   shift, and go to state 127
+    REMOVAL    shift, and go to state 128
+    RECREM     shift, and go to state 129
+    SKEW       shift, and go to state 130
+    WIDTH      shift, and go to state 131
+    PERIOD     shift, and go to state 132
+    NOCHANGE   shift, and go to state 133
+
+
+state 104
+
+   49 tc_spec: '(' TIMINGCHECK tchk_defs . ')'
+   50 tchk_defs: tchk_defs . tchk_def
+
+    '('  shift, and go to state 103
+    ')'  shift, and go to state 134
+
+    tchk_def  go to state 135
+
+
+state 105
+
+   51 tchk_defs: tchk_def .
+
+    $default  reduce using rule 51 (tchk_defs)
+
+
+state 106
+
+  110 cns_def: '(' . PATHCONSTRAINT port_instance port_instances value value ')'
+  111        | '(' . PATHCONSTRAINT name port_instance port_instances value value ')'
+  112        | '(' . PERIODCONSTRAINT port_instance value ')'
+  113        | '(' . PERIODCONSTRAINT port_instance value exception ')'
+  114        | '(' . SUM constraint_path constraint_path value ')'
+  115        | '(' . SUM constraint_path constraint_path value value ')'
+  116        | '(' . SUM constraint_path constraint_path constraint_paths value ')'
+  117        | '(' . SUM constraint_path constraint_path constraint_paths value value ')'
+  118        | '(' . DIFF constraint_path constraint_path value ')'
+  119        | '(' . DIFF constraint_path constraint_path value value ')'
+  120        | '(' . SKEWCONSTRAINT port_spec value ')'
+  125 tenv_def: '(' . ARRIVAL port_instance value value value value ')'
+  126         | '(' . ARRIVAL port_edge port_instance value value value value ')'
+  127         | '(' . DEPARTURE port_instance value value value value ')'
+  128         | '(' . DEPARTURE port_edge port_instance value value value value ')'
+  129         | '(' . SLACK port_instance value value value value ')'
+  130         | '(' . SLACK port_instance value value value value NUMBER ')'
+  131         | '(' . WAVEFORM port_instance NUMBER edge_list ')'
+
+    PATHCONSTRAINT    shift, and go to state 136
+    PERIODCONSTRAINT  shift, and go to state 137
+    SUM               shift, and go to state 138
+    DIFF              shift, and go to state 139
+    SKEWCONSTRAINT    shift, and go to state 140
+    ARRIVAL           shift, and go to state 141
+    DEPARTURE         shift, and go to state 142
+    SLACK             shift, and go to state 143
+    WAVEFORM          shift, and go to state 144
+
+
+state 107
+
+   52 te_spec: '(' TIMINGENV te_defs . ')'
+   53 te_defs: te_defs . te_def
+
+    '('  shift, and go to state 106
+    ')'  shift, and go to state 145
+
+    te_def    go to state 146
+    cns_def   go to state 109
+    tenv_def  go to state 110
+
+
+state 108
+
+   54 te_defs: te_def .
+
+    $default  reduce using rule 54 (te_defs)
+
+
+state 109
+
+  108 te_def: cns_def .
+
+    $default  reduce using rule 108 (te_def)
+
+
+state 110
+
+  109 te_def: tenv_def .
+
+    $default  reduce using rule 109 (te_def)
+
+
+state 111
+
+   38 cell_instance: '(' INSTANCE PATH . ')'
+
+    ')'  shift, and go to state 147
+
+
+state 112
+
+   39 cell_instance: '(' INSTANCE IDENTIFIER . ')'
+
+    ')'  shift, and go to state 148
+
+
+state 113
+
+   40 cell_instance: '(' INSTANCE '*' . ')'
+
+    ')'  shift, and go to state 149
+
+
+state 114
+
+   37 cell_instance: '(' INSTANCE ')' .
+
+    $default  reduce using rule 37 (cell_instance)
+
+
+state 115
+
+  169 triple: NUMBER ':' NUMBER ':' NUMBER .
+
+    $default  reduce using rule 169 (triple)
+
+
+state 116
+
+   57 pathtype: PATHPULSE .
+
+    $default  reduce using rule 57 (pathtype)
+
+
+state 117
+
+   58 pathtype: PATHPULSEPERCENT .
+
+    $default  reduce using rule 58 (pathtype)
+
+
+state 118
+
+   59 valuetype: ABSOLUTE .
+
+    $default  reduce using rule 59 (valuetype)
+
+
+state 119
+
+   60 valuetype: INCREMENT .
+
+    $default  reduce using rule 60 (valuetype)
+
+
+state 120
+
+   55 deltype: '(' pathtype . del_path ')'
+
+    PATH        shift, and go to state 150
+    IDENTIFIER  shift, and go to state 151
+    '('         shift, and go to state 152
+
+    del_path           go to state 153
+    input_output_path  go to state 154
+    port_instance      go to state 155
+    port               go to state 156
+    scalar_port        go to state 157
+    bus_port           go to state 158
+    value              go to state 159
+
+
+state 121
+
+   56 deltype: '(' valuetype . del_defs ')'
+
+    '('  shift, and go to state 160
+
+    del_defs        go to state 161
+    del_def         go to state 162
+    del_def_iopath  go to state 163
+
+
+state 122
+
+   46 del_spec: '(' DELAY deltypes ')' .
+
+    $default  reduce using rule 46 (del_spec)
+
+
+state 123
+
+   47 deltypes: deltypes deltype .
+
+    $default  reduce using rule 47 (deltypes)
+
+
+state 124
+
+   80 tchk_def: '(' SETUP . port_tchk port_tchk value ')'
+
+    PATH        shift, and go to state 150
+    IDENTIFIER  shift, and go to state 151
+    '('         shift, and go to state 164
+
+    port_tchk      go to state 165
+    port_spec      go to state 166
+    port_edge      go to state 167
+    port_instance  go to state 168
+    port           go to state 156
+    scalar_port    go to state 157
+    bus_port       go to state 158
+
+
+state 125
+
+   81 tchk_def: '(' HOLD . port_tchk port_tchk value ')'
+
+    PATH        shift, and go to state 150
+    IDENTIFIER  shift, and go to state 151
+    '('         shift, and go to state 164
+
+    port_tchk      go to state 169
+    port_spec      go to state 166
+    port_edge      go to state 167
+    port_instance  go to state 168
+    port           go to state 156
+    scalar_port    go to state 157
+    bus_port       go to state 158
+
+
+state 126
+
+   82 tchk_def: '(' SETUPHOLD . port_tchk port_tchk value value ')'
+   83         | '(' SETUPHOLD . port_tchk port_tchk value value scond ')'
+   84         | '(' SETUPHOLD . port_tchk port_tchk value value ccond ')'
+   85         | '(' SETUPHOLD . port_tchk port_tchk value value scond ccond ')'
+
+    PATH        shift, and go to state 150
+    IDENTIFIER  shift, and go to state 151
+    '('         shift, and go to state 164
+
+    port_tchk      go to state 170
+    port_spec      go to state 166
+    port_edge      go to state 167
+    port_instance  go to state 168
+    port           go to state 156
+    scalar_port    go to state 157
+    bus_port       go to state 158
+
+
+state 127
+
+   86 tchk_def: '(' RECOVERY . port_tchk port_tchk value ')'
+
+    PATH        shift, and go to state 150
+    IDENTIFIER  shift, and go to state 151
+    '('         shift, and go to state 164
+
+    port_tchk      go to state 171
+    port_spec      go to state 166
+    port_edge      go to state 167
+    port_instance  go to state 168
+    port           go to state 156
+    scalar_port    go to state 157
+    bus_port       go to state 158
+
+
+state 128
+
+   87 tchk_def: '(' REMOVAL . port_tchk port_tchk value ')'
+
+    PATH        shift, and go to state 150
+    IDENTIFIER  shift, and go to state 151
+    '('         shift, and go to state 164
+
+    port_tchk      go to state 172
+    port_spec      go to state 166
+    port_edge      go to state 167
+    port_instance  go to state 168
+    port           go to state 156
+    scalar_port    go to state 157
+    bus_port       go to state 158
+
+
+state 129
+
+   88 tchk_def: '(' RECREM . port_tchk port_tchk value value ')'
+   89         | '(' RECREM . port_tchk port_tchk value value scond ')'
+   90         | '(' RECREM . port_tchk port_tchk value value ccond ')'
+   91         | '(' RECREM . port_tchk port_tchk value value scond ccond ')'
+
+    PATH        shift, and go to state 150
+    IDENTIFIER  shift, and go to state 151
+    '('         shift, and go to state 164
+
+    port_tchk      go to state 173
+    port_spec      go to state 166
+    port_edge      go to state 167
+    port_instance  go to state 168
+    port           go to state 156
+    scalar_port    go to state 157
+    bus_port       go to state 158
+
+
+state 130
+
+   92 tchk_def: '(' SKEW . port_tchk port_tchk value ')'
+
+    PATH        shift, and go to state 150
+    IDENTIFIER  shift, and go to state 151
+    '('         shift, and go to state 164
+
+    port_tchk      go to state 174
+    port_spec      go to state 166
+    port_edge      go to state 167
+    port_instance  go to state 168
+    port           go to state 156
+    scalar_port    go to state 157
+    bus_port       go to state 158
+
+
+state 131
+
+   93 tchk_def: '(' WIDTH . port_tchk value ')'
+
+    PATH        shift, and go to state 150
+    IDENTIFIER  shift, and go to state 151
+    '('         shift, and go to state 164
+
+    port_tchk      go to state 175
+    port_spec      go to state 166
+    port_edge      go to state 167
+    port_instance  go to state 168
+    port           go to state 156
+    scalar_port    go to state 157
+    bus_port       go to state 158
+
+
+state 132
+
+   94 tchk_def: '(' PERIOD . port_tchk value ')'
+
+    PATH        shift, and go to state 150
+    IDENTIFIER  shift, and go to state 151
+    '('         shift, and go to state 164
+
+    port_tchk      go to state 176
+    port_spec      go to state 166
+    port_edge      go to state 167
+    port_instance  go to state 168
+    port           go to state 156
+    scalar_port    go to state 157
+    bus_port       go to state 158
+
+
+state 133
+
+   95 tchk_def: '(' NOCHANGE . port_tchk port_tchk value value ')'
+
+    PATH        shift, and go to state 150
+    IDENTIFIER  shift, and go to state 151
+    '('         shift, and go to state 164
+
+    port_tchk      go to state 177
+    port_spec      go to state 166
+    port_edge      go to state 167
+    port_instance  go to state 168
+    port           go to state 156
+    scalar_port    go to state 157
+    bus_port       go to state 158
+
+
+state 134
+
+   49 tc_spec: '(' TIMINGCHECK tchk_defs ')' .
+
+    $default  reduce using rule 49 (tc_spec)
+
+
+state 135
+
+   50 tchk_defs: tchk_defs tchk_def .
+
+    $default  reduce using rule 50 (tchk_defs)
+
+
+state 136
+
+  110 cns_def: '(' PATHCONSTRAINT . port_instance port_instances value value ')'
+  111        | '(' PATHCONSTRAINT . name port_instance port_instances value value ')'
+
+    PATH        shift, and go to state 150
+    IDENTIFIER  shift, and go to state 151
+    '('         shift, and go to state 178
+
+    name           go to state 179
+    port_instance  go to state 180
+    port           go to state 156
+    scalar_port    go to state 157
+    bus_port       go to state 158
+
+
+state 137
+
+  112 cns_def: '(' PERIODCONSTRAINT . port_instance value ')'
+  113        | '(' PERIODCONSTRAINT . port_instance value exception ')'
+
+    PATH        shift, and go to state 150
+    IDENTIFIER  shift, and go to state 151
+
+    port_instance  go to state 181
+    port           go to state 156
+    scalar_port    go to state 157
+    bus_port       go to state 158
+
+
+state 138
+
+  114 cns_def: '(' SUM . constraint_path constraint_path value ')'
+  115        | '(' SUM . constraint_path constraint_path value value ')'
+  116        | '(' SUM . constraint_path constraint_path constraint_paths value ')'
+  117        | '(' SUM . constraint_path constraint_path constraint_paths value value ')'
+
+    '('  shift, and go to state 182
+
+    constraint_path  go to state 183
+
+
+state 139
+
+  118 cns_def: '(' DIFF . constraint_path constraint_path value ')'
+  119        | '(' DIFF . constraint_path constraint_path value value ')'
+
+    '('  shift, and go to state 182
+
+    constraint_path  go to state 184
+
+
+state 140
+
+  120 cns_def: '(' SKEWCONSTRAINT . port_spec value ')'
+
+    PATH        shift, and go to state 150
+    IDENTIFIER  shift, and go to state 151
+    '('         shift, and go to state 185
+
+    port_spec      go to state 186
+    port_edge      go to state 167
+    port_instance  go to state 168
+    port           go to state 156
+    scalar_port    go to state 157
+    bus_port       go to state 158
+
+
+state 141
+
+  125 tenv_def: '(' ARRIVAL . port_instance value value value value ')'
+  126         | '(' ARRIVAL . port_edge port_instance value value value value ')'
+
+    PATH        shift, and go to state 150
+    IDENTIFIER  shift, and go to state 151
+    '('         shift, and go to state 185
+
+    port_edge      go to state 187
+    port_instance  go to state 188
+    port           go to state 156
+    scalar_port    go to state 157
+    bus_port       go to state 158
+
+
+state 142
+
+  127 tenv_def: '(' DEPARTURE . port_instance value value value value ')'
+  128         | '(' DEPARTURE . port_edge port_instance value value value value ')'
+
+    PATH        shift, and go to state 150
+    IDENTIFIER  shift, and go to state 151
+    '('         shift, and go to state 185
+
+    port_edge      go to state 189
+    port_instance  go to state 190
+    port           go to state 156
+    scalar_port    go to state 157
+    bus_port       go to state 158
+
+
+state 143
+
+  129 tenv_def: '(' SLACK . port_instance value value value value ')'
+  130         | '(' SLACK . port_instance value value value value NUMBER ')'
+
+    PATH        shift, and go to state 150
+    IDENTIFIER  shift, and go to state 151
+
+    port_instance  go to state 191
+    port           go to state 156
+    scalar_port    go to state 157
+    bus_port       go to state 158
+
+
+state 144
+
+  131 tenv_def: '(' WAVEFORM . port_instance NUMBER edge_list ')'
+
+    PATH        shift, and go to state 150
+    IDENTIFIER  shift, and go to state 151
+
+    port_instance  go to state 192
+    port           go to state 156
+    scalar_port    go to state 157
+    bus_port       go to state 158
+
+
+state 145
+
+   52 te_spec: '(' TIMINGENV te_defs ')' .
+
+    $default  reduce using rule 52 (te_spec)
+
+
+state 146
+
+   53 te_defs: te_defs te_def .
+
+    $default  reduce using rule 53 (te_defs)
+
+
+state 147
+
+   38 cell_instance: '(' INSTANCE PATH ')' .
+
+    $default  reduce using rule 38 (cell_instance)
+
+
+state 148
+
+   39 cell_instance: '(' INSTANCE IDENTIFIER ')' .
+
+    $default  reduce using rule 39 (cell_instance)
+
+
+state 149
+
+   40 cell_instance: '(' INSTANCE '*' ')' .
+
+    $default  reduce using rule 40 (cell_instance)
+
+
+state 150
+
+  147 scalar_port: PATH .
+  149            | PATH . '[' NUMBER ']'
+  151 bus_port: PATH . '[' NUMBER ':' NUMBER ']'
+
+    '['  shift, and go to state 193
+
+    $default  reduce using rule 147 (scalar_port)
+
+
+state 151
+
+  146 scalar_port: IDENTIFIER .
+  148            | IDENTIFIER . '[' NUMBER ']'
+  150 bus_port: IDENTIFIER . '[' NUMBER ':' NUMBER ']'
+
+    '['  shift, and go to state 194
+
+    $default  reduce using rule 146 (scalar_port)
+
+
+state 152
+
+  160 value: '(' . NUMBER ')'
+  161      | '(' . triple ')'
+  162      | '(' . ')'
+
+    NUMBER  shift, and go to state 195
+    ')'     shift, and go to state 196
+    ':'     shift, and go to state 49
+
+    triple  go to state 197
+
+
+state 153
+
+   55 deltype: '(' pathtype del_path . ')'
+
+    ')'  shift, and go to state 198
+
+
+state 154
+
+   62 del_path: input_output_path . value
+   64         | input_output_path . value value
+
+    '('  shift, and go to state 152
+
+    value  go to state 199
+
+
+state 155
+
+   67 input_output_path: port_instance . port_instance
+
+    PATH        shift, and go to state 150
+    IDENTIFIER  shift, and go to state 151
+
+    port_instance  go to state 200
+    port           go to state 156
+    scalar_port    go to state 157
+    bus_port       go to state 158
+
+
+state 156
+
+  143 port_instance: port .
+
+    $default  reduce using rule 143 (port_instance)
+
+
+state 157
+
+  144 port: scalar_port .
+
+    $default  reduce using rule 144 (port)
+
+
+state 158
+
+  145 port: bus_port .
+
+    $default  reduce using rule 145 (port)
+
+
+state 159
+
+   61 del_path: value .
+   63         | value . value
+
+    '('  shift, and go to state 152
+
+    $default  reduce using rule 61 (del_path)
+
+    value  go to state 201
+
+
+state 160
+
+   69 del_def: '(' . del_cond del_def_iopath ')'
+   70        | '(' . cond_else_type del_def_iopath ')'
+   71        | '(' . PORT port_instance delval_list ')'
+   72        | '(' . INTERCONNECT port_instance port_instance delval_list ')'
+   73        | '(' . DEVICE delval_list ')'
+   74        | '(' . DEVICE port_instance delval_list ')'
+   77 del_def_iopath: '(' . IOPATH port_spec port_instance delval_list ')'
+   78               | '(' . IOPATH port_spec port_instance '(' RETAIN delval_list ')' ')'
+
+    IOPATH        shift, and go to state 202
+    COND          shift, and go to state 203
+    CONDELSE      shift, and go to state 204
+    PORT          shift, and go to state 205
+    INTERCONNECT  shift, and go to state 206
+    DEVICE        shift, and go to state 207
+
+    del_cond        go to state 208
+    cond_else_type  go to state 209
+
+
+state 161
+
+   56 deltype: '(' valuetype del_defs . ')'
+   65 del_defs: del_defs . del_def
+
+    '('  shift, and go to state 160
+    ')'  shift, and go to state 210
+
+    del_def         go to state 211
+    del_def_iopath  go to state 163
+
+
+state 162
+
+   66 del_defs: del_def .
+
+    $default  reduce using rule 66 (del_defs)
+
+
+state 163
+
+   68 del_def: del_def_iopath .
+
+    $default  reduce using rule 68 (del_def)
+
+
+state 164
+
+   97 port_tchk: '(' . COND timing_check_condition port_spec ')'
+   98          | '(' . COND QSTRING timing_check_condition port_spec ')'
+  137 port_edge: '(' . edge_identifier port_instance ')'
+
+    COND        shift, and go to state 212
+    POSEDGE     shift, and go to state 213
+    NEGEDGE     shift, and go to state 214
+    EDGE        shift, and go to state 215
+    IDENTIFIER  shift, and go to state 216
+    NUMBER      shift, and go to state 217
+
+    edge_identifier  go to state 218
+
+
+state 165
+
+   80 tchk_def: '(' SETUP port_tchk . port_tchk value ')'
+
+    PATH        shift, and go to state 150
+    IDENTIFIER  shift, and go to state 151
+    '('         shift, and go to state 164
+
+    port_tchk      go to state 219
+    port_spec      go to state 166
+    port_edge      go to state 167
+    port_instance  go to state 168
+    port           go to state 156
+    scalar_port    go to state 157
+    bus_port       go to state 158
+
+
+state 166
+
+   96 port_tchk: port_spec .
+
+    $default  reduce using rule 96 (port_tchk)
+
+
+state 167
+
+  136 port_spec: port_edge .
+
+    $default  reduce using rule 136 (port_spec)
+
+
+state 168
+
+  135 port_spec: port_instance .
+
+    $default  reduce using rule 135 (port_spec)
+
+
+state 169
+
+   81 tchk_def: '(' HOLD port_tchk . port_tchk value ')'
+
+    PATH        shift, and go to state 150
+    IDENTIFIER  shift, and go to state 151
+    '('         shift, and go to state 164
+
+    port_tchk      go to state 220
+    port_spec      go to state 166
+    port_edge      go to state 167
+    port_instance  go to state 168
+    port           go to state 156
+    scalar_port    go to state 157
+    bus_port       go to state 158
+
+
+state 170
+
+   82 tchk_def: '(' SETUPHOLD port_tchk . port_tchk value value ')'
+   83         | '(' SETUPHOLD port_tchk . port_tchk value value scond ')'
+   84         | '(' SETUPHOLD port_tchk . port_tchk value value ccond ')'
+   85         | '(' SETUPHOLD port_tchk . port_tchk value value scond ccond ')'
+
+    PATH        shift, and go to state 150
+    IDENTIFIER  shift, and go to state 151
+    '('         shift, and go to state 164
+
+    port_tchk      go to state 221
+    port_spec      go to state 166
+    port_edge      go to state 167
+    port_instance  go to state 168
+    port           go to state 156
+    scalar_port    go to state 157
+    bus_port       go to state 158
+
+
+state 171
+
+   86 tchk_def: '(' RECOVERY port_tchk . port_tchk value ')'
+
+    PATH        shift, and go to state 150
+    IDENTIFIER  shift, and go to state 151
+    '('         shift, and go to state 164
+
+    port_tchk      go to state 222
+    port_spec      go to state 166
+    port_edge      go to state 167
+    port_instance  go to state 168
+    port           go to state 156
+    scalar_port    go to state 157
+    bus_port       go to state 158
+
+
+state 172
+
+   87 tchk_def: '(' REMOVAL port_tchk . port_tchk value ')'
+
+    PATH        shift, and go to state 150
+    IDENTIFIER  shift, and go to state 151
+    '('         shift, and go to state 164
+
+    port_tchk      go to state 223
+    port_spec      go to state 166
+    port_edge      go to state 167
+    port_instance  go to state 168
+    port           go to state 156
+    scalar_port    go to state 157
+    bus_port       go to state 158
+
+
+state 173
+
+   88 tchk_def: '(' RECREM port_tchk . port_tchk value value ')'
+   89         | '(' RECREM port_tchk . port_tchk value value scond ')'
+   90         | '(' RECREM port_tchk . port_tchk value value ccond ')'
+   91         | '(' RECREM port_tchk . port_tchk value value scond ccond ')'
+
+    PATH        shift, and go to state 150
+    IDENTIFIER  shift, and go to state 151
+    '('         shift, and go to state 164
+
+    port_tchk      go to state 224
+    port_spec      go to state 166
+    port_edge      go to state 167
+    port_instance  go to state 168
+    port           go to state 156
+    scalar_port    go to state 157
+    bus_port       go to state 158
+
+
+state 174
+
+   92 tchk_def: '(' SKEW port_tchk . port_tchk value ')'
+
+    PATH        shift, and go to state 150
+    IDENTIFIER  shift, and go to state 151
+    '('         shift, and go to state 164
+
+    port_tchk      go to state 225
+    port_spec      go to state 166
+    port_edge      go to state 167
+    port_instance  go to state 168
+    port           go to state 156
+    scalar_port    go to state 157
+    bus_port       go to state 158
+
+
+state 175
+
+   93 tchk_def: '(' WIDTH port_tchk . value ')'
+
+    '('  shift, and go to state 152
+
+    value  go to state 226
+
+
+state 176
+
+   94 tchk_def: '(' PERIOD port_tchk . value ')'
+
+    '('  shift, and go to state 152
+
+    value  go to state 227
+
+
+state 177
+
+   95 tchk_def: '(' NOCHANGE port_tchk . port_tchk value value ')'
+
+    PATH        shift, and go to state 150
+    IDENTIFIER  shift, and go to state 151
+    '('         shift, and go to state 164
+
+    port_tchk      go to state 228
+    port_spec      go to state 166
+    port_edge      go to state 167
+    port_instance  go to state 168
+    port           go to state 156
+    scalar_port    go to state 157
+    bus_port       go to state 158
+
+
+state 178
+
+  103 name: '(' . NAME ')'
+  104     | '(' . NAME QSTRING ')'
+
+    NAME  shift, and go to state 229
+
+
+state 179
+
+  111 cns_def: '(' PATHCONSTRAINT name . port_instance port_instances value value ')'
+
+    PATH        shift, and go to state 150
+    IDENTIFIER  shift, and go to state 151
+
+    port_instance  go to state 230
+    port           go to state 156
+    scalar_port    go to state 157
+    bus_port       go to state 158
+
+
+state 180
+
+  110 cns_def: '(' PATHCONSTRAINT port_instance . port_instances value value ')'
+
+    PATH        shift, and go to state 150
+    IDENTIFIER  shift, and go to state 151
+
+    port_instances  go to state 231
+    port_instance   go to state 232
+    port            go to state 156
+    scalar_port     go to state 157
+    bus_port        go to state 158
+
+
+state 181
+
+  112 cns_def: '(' PERIODCONSTRAINT port_instance . value ')'
+  113        | '(' PERIODCONSTRAINT port_instance . value exception ')'
+
+    '('  shift, and go to state 152
+
+    value  go to state 233
+
+
+state 182
+
+  134 constraint_path: '(' . port_instance port_instance ')'
+
+    PATH        shift, and go to state 150
+    IDENTIFIER  shift, and go to state 151
+
+    port_instance  go to state 234
+    port           go to state 156
+    scalar_port    go to state 157
+    bus_port       go to state 158
+
+
+state 183
+
+  114 cns_def: '(' SUM constraint_path . constraint_path value ')'
+  115        | '(' SUM constraint_path . constraint_path value value ')'
+  116        | '(' SUM constraint_path . constraint_path constraint_paths value ')'
+  117        | '(' SUM constraint_path . constraint_path constraint_paths value value ')'
+
+    '('  shift, and go to state 182
+
+    constraint_path  go to state 235
+
+
+state 184
+
+  118 cns_def: '(' DIFF constraint_path . constraint_path value ')'
+  119        | '(' DIFF constraint_path . constraint_path value value ')'
+
+    '('  shift, and go to state 182
+
+    constraint_path  go to state 236
+
+
+state 185
+
+  137 port_edge: '(' . edge_identifier port_instance ')'
+
+    POSEDGE     shift, and go to state 213
+    NEGEDGE     shift, and go to state 214
+    EDGE        shift, and go to state 215
+    IDENTIFIER  shift, and go to state 216
+    NUMBER      shift, and go to state 217
+
+    edge_identifier  go to state 218
+
+
+state 186
+
+  120 cns_def: '(' SKEWCONSTRAINT port_spec . value ')'
+
+    '('  shift, and go to state 152
+
+    value  go to state 237
+
+
+state 187
+
+  126 tenv_def: '(' ARRIVAL port_edge . port_instance value value value value ')'
+
+    PATH        shift, and go to state 150
+    IDENTIFIER  shift, and go to state 151
+
+    port_instance  go to state 238
+    port           go to state 156
+    scalar_port    go to state 157
+    bus_port       go to state 158
+
+
+state 188
+
+  125 tenv_def: '(' ARRIVAL port_instance . value value value value ')'
+
+    '('  shift, and go to state 152
+
+    value  go to state 239
+
+
+state 189
+
+  128 tenv_def: '(' DEPARTURE port_edge . port_instance value value value value ')'
+
+    PATH        shift, and go to state 150
+    IDENTIFIER  shift, and go to state 151
+
+    port_instance  go to state 240
+    port           go to state 156
+    scalar_port    go to state 157
+    bus_port       go to state 158
+
+
+state 190
+
+  127 tenv_def: '(' DEPARTURE port_instance . value value value value ')'
+
+    '('  shift, and go to state 152
+
+    value  go to state 241
+
+
+state 191
+
+  129 tenv_def: '(' SLACK port_instance . value value value value ')'
+  130         | '(' SLACK port_instance . value value value value NUMBER ')'
+
+    '('  shift, and go to state 152
+
+    value  go to state 242
+
+
+state 192
+
+  131 tenv_def: '(' WAVEFORM port_instance . NUMBER edge_list ')'
+
+    NUMBER  shift, and go to state 243
+
+
+state 193
+
+  149 scalar_port: PATH '[' . NUMBER ']'
+  151 bus_port: PATH '[' . NUMBER ':' NUMBER ']'
+
+    NUMBER  shift, and go to state 244
+
+
+state 194
+
+  148 scalar_port: IDENTIFIER '[' . NUMBER ']'
+  150 bus_port: IDENTIFIER '[' . NUMBER ':' NUMBER ']'
+
+    NUMBER  shift, and go to state 245
+
+
+state 195
+
+  160 value: '(' NUMBER . ')'
+  163 triple: NUMBER . ':' ':'
+  164       | NUMBER . ':' NUMBER ':'
+  165       | NUMBER . ':' ':' NUMBER
+  169       | NUMBER . ':' NUMBER ':' NUMBER
+
+    ')'  shift, and go to state 246
+    ':'  shift, and go to state 66
+
+
+state 196
+
+  162 value: '(' ')' .
+
+    $default  reduce using rule 162 (value)
+
+
+state 197
+
+  161 value: '(' triple . ')'
+
+    ')'  shift, and go to state 247
+
+
+state 198
+
+   55 deltype: '(' pathtype del_path ')' .
+
+    $default  reduce using rule 55 (deltype)
+
+
+state 199
+
+   62 del_path: input_output_path value .
+   64         | input_output_path value . value
+
+    '('  shift, and go to state 152
+
+    $default  reduce using rule 62 (del_path)
+
+    value  go to state 248
+
+
+state 200
+
+   67 input_output_path: port_instance port_instance .
+
+    $default  reduce using rule 67 (input_output_path)
+
+
+state 201
+
+   63 del_path: value value .
+
+    $default  reduce using rule 63 (del_path)
+
+
+state 202
+
+   77 del_def_iopath: '(' IOPATH . port_spec port_instance delval_list ')'
+   78               | '(' IOPATH . port_spec port_instance '(' RETAIN delval_list ')' ')'
+
+    PATH        shift, and go to state 150
+    IDENTIFIER  shift, and go to state 151
+    '('         shift, and go to state 185
+
+    port_spec      go to state 249
+    port_edge      go to state 167
+    port_instance  go to state 168
+    port           go to state 156
+    scalar_port    go to state 157
+    bus_port       go to state 158
+
+
+state 203
+
+   75 del_cond: COND . expression
+   76         | COND . QSTRING expression
+
+    U_NAND      shift, and go to state 250
+    U_NOR       shift, and go to state 251
+    U_XNOR      shift, and go to state 252
+    U_XNOR_ALT  shift, and go to state 253
+    BIT_CONST   shift, and go to state 254
+    PATH        shift, and go to state 150
+    IDENTIFIER  shift, and go to state 151
+    QSTRING     shift, and go to state 255
+    NUMBER      shift, and go to state 256
+    '|'         shift, and go to state 257
+    '^'         shift, and go to state 258
+    '&'         shift, and go to state 259
+    '+'         shift, and go to state 260
+    '-'         shift, and go to state 261
+    '!'         shift, and go to state 262
+    '~'         shift, and go to state 263
+    '('         shift, and go to state 264
+    '{'         shift, and go to state 265
+
+    port                    go to state 266
+    scalar_port             go to state 157
+    bus_port                go to state 158
+    expression              go to state 267
+    conditional_expression  go to state 268
+    simple_expression       go to state 269
+    binary_expression       go to state 270
+    scalar_constant         go to state 271
+    unary_op                go to state 272
+
+
+state 204
+
+   79 cond_else_type: CONDELSE .
+
+    $default  reduce using rule 79 (cond_else_type)
+
+
+state 205
+
+   71 del_def: '(' PORT . port_instance delval_list ')'
+
+    PATH        shift, and go to state 150
+    IDENTIFIER  shift, and go to state 151
+
+    port_instance  go to state 273
+    port           go to state 156
+    scalar_port    go to state 157
+    bus_port       go to state 158
+
+
+state 206
+
+   72 del_def: '(' INTERCONNECT . port_instance port_instance delval_list ')'
+
+    PATH        shift, and go to state 150
+    IDENTIFIER  shift, and go to state 151
+
+    port_instance  go to state 274
+    port           go to state 156
+    scalar_port    go to state 157
+    bus_port       go to state 158
+
+
+state 207
+
+   73 del_def: '(' DEVICE . delval_list ')'
+   74        | '(' DEVICE . port_instance delval_list ')'
+
+    PATH        shift, and go to state 150
+    IDENTIFIER  shift, and go to state 151
+    '('         shift, and go to state 275
+
+    port_instance  go to state 276
+    port           go to state 156
+    scalar_port    go to state 157
+    bus_port       go to state 158
+    value          go to state 277
+    delval         go to state 278
+    delval_list    go to state 279
+
+
+state 208
+
+   69 del_def: '(' del_cond . del_def_iopath ')'
+
+    '('  shift, and go to state 280
+
+    del_def_iopath  go to state 281
+
+
+state 209
+
+   70 del_def: '(' cond_else_type . del_def_iopath ')'
+
+    '('  shift, and go to state 280
+
+    del_def_iopath  go to state 282
+
+
+state 210
+
+   56 deltype: '(' valuetype del_defs ')' .
+
+    $default  reduce using rule 56 (deltype)
+
+
+state 211
+
+   65 del_defs: del_defs del_def .
+
+    $default  reduce using rule 65 (del_defs)
+
+
+state 212
+
+   97 port_tchk: '(' COND . timing_check_condition port_spec ')'
+   98          | '(' COND . QSTRING timing_check_condition port_spec ')'
+
+    PATH        shift, and go to state 283
+    IDENTIFIER  shift, and go to state 284
+    QSTRING     shift, and go to state 285
+    '!'         shift, and go to state 286
+    '~'         shift, and go to state 287
+
+    scalar_port             go to state 288
+    timing_check_condition  go to state 289
+    scalar_node             go to state 290
+    inv_op                  go to state 291
+
+
+state 213
+
+  138 edge_identifier: POSEDGE .
+
+    $default  reduce using rule 138 (edge_identifier)
+
+
+state 214
+
+  139 edge_identifier: NEGEDGE .
+
+    $default  reduce using rule 139 (edge_identifier)
+
+
+state 215
+
+  140 edge_identifier: EDGE .
+
+    $default  reduce using rule 140 (edge_identifier)
+
+
+state 216
+
+  141 edge_identifier: IDENTIFIER .
+
+    $default  reduce using rule 141 (edge_identifier)
+
+
+state 217
+
+  142 edge_identifier: NUMBER .
+
+    $default  reduce using rule 142 (edge_identifier)
+
+
+state 218
+
+  137 port_edge: '(' edge_identifier . port_instance ')'
+
+    PATH        shift, and go to state 150
+    IDENTIFIER  shift, and go to state 151
+
+    port_instance  go to state 292
+    port           go to state 156
+    scalar_port    go to state 157
+    bus_port       go to state 158
+
+
+state 219
+
+   80 tchk_def: '(' SETUP port_tchk port_tchk . value ')'
+
+    '('  shift, and go to state 152
+
+    value  go to state 293
+
+
+state 220
+
+   81 tchk_def: '(' HOLD port_tchk port_tchk . value ')'
+
+    '('  shift, and go to state 152
+
+    value  go to state 294
+
+
+state 221
+
+   82 tchk_def: '(' SETUPHOLD port_tchk port_tchk . value value ')'
+   83         | '(' SETUPHOLD port_tchk port_tchk . value value scond ')'
+   84         | '(' SETUPHOLD port_tchk port_tchk . value value ccond ')'
+   85         | '(' SETUPHOLD port_tchk port_tchk . value value scond ccond ')'
+
+    '('  shift, and go to state 152
+
+    value  go to state 295
+
+
+state 222
+
+   86 tchk_def: '(' RECOVERY port_tchk port_tchk . value ')'
+
+    '('  shift, and go to state 152
+
+    value  go to state 296
+
+
+state 223
+
+   87 tchk_def: '(' REMOVAL port_tchk port_tchk . value ')'
+
+    '('  shift, and go to state 152
+
+    value  go to state 297
+
+
+state 224
+
+   88 tchk_def: '(' RECREM port_tchk port_tchk . value value ')'
+   89         | '(' RECREM port_tchk port_tchk . value value scond ')'
+   90         | '(' RECREM port_tchk port_tchk . value value ccond ')'
+   91         | '(' RECREM port_tchk port_tchk . value value scond ccond ')'
+
+    '('  shift, and go to state 152
+
+    value  go to state 298
+
+
+state 225
+
+   92 tchk_def: '(' SKEW port_tchk port_tchk . value ')'
+
+    '('  shift, and go to state 152
+
+    value  go to state 299
+
+
+state 226
+
+   93 tchk_def: '(' WIDTH port_tchk value . ')'
+
+    ')'  shift, and go to state 300
+
+
+state 227
+
+   94 tchk_def: '(' PERIOD port_tchk value . ')'
+
+    ')'  shift, and go to state 301
+
+
+state 228
+
+   95 tchk_def: '(' NOCHANGE port_tchk port_tchk . value value ')'
+
+    '('  shift, and go to state 152
+
+    value  go to state 302
+
+
+state 229
+
+  103 name: '(' NAME . ')'
+  104     | '(' NAME . QSTRING ')'
+
+    QSTRING  shift, and go to state 303
+    ')'      shift, and go to state 304
+
+
+state 230
+
+  111 cns_def: '(' PATHCONSTRAINT name port_instance . port_instances value value ')'
+
+    PATH        shift, and go to state 150
+    IDENTIFIER  shift, and go to state 151
+
+    port_instances  go to state 305
+    port_instance   go to state 232
+    port            go to state 156
+    scalar_port     go to state 157
+    bus_port        go to state 158
+
+
+state 231
+
+  110 cns_def: '(' PATHCONSTRAINT port_instance port_instances . value value ')'
+  121 port_instances: port_instances . port_instance
+
+    PATH        shift, and go to state 150
+    IDENTIFIER  shift, and go to state 151
+    '('         shift, and go to state 152
+
+    port_instance  go to state 306
+    port           go to state 156
+    scalar_port    go to state 157
+    bus_port       go to state 158
+    value          go to state 307
+
+
+state 232
+
+  122 port_instances: port_instance .
+
+    $default  reduce using rule 122 (port_instances)
+
+
+state 233
+
+  112 cns_def: '(' PERIODCONSTRAINT port_instance value . ')'
+  113        | '(' PERIODCONSTRAINT port_instance value . exception ')'
+
+    '('  shift, and go to state 308
+    ')'  shift, and go to state 309
+
+    exception  go to state 310
+
+
+state 234
+
+  134 constraint_path: '(' port_instance . port_instance ')'
+
+    PATH        shift, and go to state 150
+    IDENTIFIER  shift, and go to state 151
+
+    port_instance  go to state 311
+    port           go to state 156
+    scalar_port    go to state 157
+    bus_port       go to state 158
+
+
+state 235
+
+  114 cns_def: '(' SUM constraint_path constraint_path . value ')'
+  115        | '(' SUM constraint_path constraint_path . value value ')'
+  116        | '(' SUM constraint_path constraint_path . constraint_paths value ')'
+  117        | '(' SUM constraint_path constraint_path . constraint_paths value value ')'
+
+    '('  shift, and go to state 312
+
+    constraint_paths  go to state 313
+    constraint_path   go to state 314
+    value             go to state 315
+
+
+state 236
+
+  118 cns_def: '(' DIFF constraint_path constraint_path . value ')'
+  119        | '(' DIFF constraint_path constraint_path . value value ')'
+
+    '('  shift, and go to state 152
+
+    value  go to state 316
+
+
+state 237
+
+  120 cns_def: '(' SKEWCONSTRAINT port_spec value . ')'
+
+    ')'  shift, and go to state 317
+
+
+state 238
+
+  126 tenv_def: '(' ARRIVAL port_edge port_instance . value value value value ')'
+
+    '('  shift, and go to state 152
+
+    value  go to state 318
+
+
+state 239
+
+  125 tenv_def: '(' ARRIVAL port_instance value . value value value ')'
+
+    '('  shift, and go to state 152
+
+    value  go to state 319
+
+
+state 240
+
+  128 tenv_def: '(' DEPARTURE port_edge port_instance . value value value value ')'
+
+    '('  shift, and go to state 152
+
+    value  go to state 320
+
+
+state 241
+
+  127 tenv_def: '(' DEPARTURE port_instance value . value value value ')'
+
+    '('  shift, and go to state 152
+
+    value  go to state 321
+
+
+state 242
+
+  129 tenv_def: '(' SLACK port_instance value . value value value ')'
+  130         | '(' SLACK port_instance value . value value value NUMBER ')'
+
+    '('  shift, and go to state 152
+
+    value  go to state 322
+
+
+state 243
+
+  131 tenv_def: '(' WAVEFORM port_instance NUMBER . edge_list ')'
+
+    '('  shift, and go to state 323
+
+    edge_list  go to state 324
+    pos_pairs  go to state 325
+    neg_pairs  go to state 326
+    pos_pair   go to state 327
+    neg_pair   go to state 328
+
+
+state 244
+
+  149 scalar_port: PATH '[' NUMBER . ']'
+  151 bus_port: PATH '[' NUMBER . ':' NUMBER ']'
+
+    ']'  shift, and go to state 329
+    ':'  shift, and go to state 330
+
+
+state 245
+
+  148 scalar_port: IDENTIFIER '[' NUMBER . ']'
+  150 bus_port: IDENTIFIER '[' NUMBER . ':' NUMBER ']'
+
+    ']'  shift, and go to state 331
+    ':'  shift, and go to state 332
+
+
+state 246
+
+  160 value: '(' NUMBER ')' .
+
+    $default  reduce using rule 160 (value)
+
+
+state 247
+
+  161 value: '(' triple ')' .
+
+    $default  reduce using rule 161 (value)
+
+
+state 248
+
+   64 del_path: input_output_path value value .
+
+    $default  reduce using rule 64 (del_path)
+
+
+state 249
+
+   77 del_def_iopath: '(' IOPATH port_spec . port_instance delval_list ')'
+   78               | '(' IOPATH port_spec . port_instance '(' RETAIN delval_list ')' ')'
+
+    PATH        shift, and go to state 150
+    IDENTIFIER  shift, and go to state 151
+
+    port_instance  go to state 333
+    port           go to state 156
+    scalar_port    go to state 157
+    bus_port       go to state 158
+
+
+state 250
+
+  221 unary_op: U_NAND .
+
+    $default  reduce using rule 221 (unary_op)
+
+
+state 251
+
+  223 unary_op: U_NOR .
+
+    $default  reduce using rule 223 (unary_op)
+
+
+state 252
+
+  225 unary_op: U_XNOR .
+
+    $default  reduce using rule 225 (unary_op)
+
+
+state 253
+
+  226 unary_op: U_XNOR_ALT .
+
+    $default  reduce using rule 226 (unary_op)
+
+
+state 254
+
+  214 scalar_constant: BIT_CONST .
+
+    $default  reduce using rule 214 (scalar_constant)
+
+
+state 255
+
+   76 del_cond: COND QSTRING . expression
+
+    U_NAND      shift, and go to state 250
+    U_NOR       shift, and go to state 251
+    U_XNOR      shift, and go to state 252
+    U_XNOR_ALT  shift, and go to state 253
+    BIT_CONST   shift, and go to state 254
+    PATH        shift, and go to state 150
+    IDENTIFIER  shift, and go to state 151
+    NUMBER      shift, and go to state 256
+    '|'         shift, and go to state 257
+    '^'         shift, and go to state 258
+    '&'         shift, and go to state 259
+    '+'         shift, and go to state 260
+    '-'         shift, and go to state 261
+    '!'         shift, and go to state 262
+    '~'         shift, and go to state 263
+    '('         shift, and go to state 264
+    '{'         shift, and go to state 265
+
+    port                    go to state 266
+    scalar_port             go to state 157
+    bus_port                go to state 158
+    expression              go to state 334
+    conditional_expression  go to state 268
+    simple_expression       go to state 269
+    binary_expression       go to state 270
+    scalar_constant         go to state 271
+    unary_op                go to state 272
+
+
+state 256
+
+  215 scalar_constant: NUMBER .
+
+    $default  reduce using rule 215 (scalar_constant)
+
+
+state 257
+
+  222 unary_op: '|' .
+
+    $default  reduce using rule 222 (unary_op)
+
+
+state 258
+
+  224 unary_op: '^' .
+
+    $default  reduce using rule 224 (unary_op)
+
+
+state 259
+
+  220 unary_op: '&' .
+
+    $default  reduce using rule 220 (unary_op)
+
+
+state 260
+
+  216 unary_op: '+' .
+
+    $default  reduce using rule 216 (unary_op)
+
+
+state 261
+
+  217 unary_op: '-' .
+
+    $default  reduce using rule 217 (unary_op)
+
+
+state 262
+
+  218 unary_op: '!' .
+
+    $default  reduce using rule 218 (unary_op)
+
+
+state 263
+
+  219 unary_op: '~' .
+
+    $default  reduce using rule 219 (unary_op)
+
+
+state 264
+
+  183 simple_expression: '(' . simple_expression ')'
+
+    U_NAND      shift, and go to state 250
+    U_NOR       shift, and go to state 251
+    U_XNOR      shift, and go to state 252
+    U_XNOR_ALT  shift, and go to state 253
+    BIT_CONST   shift, and go to state 254
+    PATH        shift, and go to state 150
+    IDENTIFIER  shift, and go to state 151
+    NUMBER      shift, and go to state 256
+    '|'         shift, and go to state 257
+    '^'         shift, and go to state 258
+    '&'         shift, and go to state 259
+    '+'         shift, and go to state 260
+    '-'         shift, and go to state 261
+    '!'         shift, and go to state 262
+    '~'         shift, and go to state 263
+    '('         shift, and go to state 264
+
+    port               go to state 266
+    scalar_port        go to state 157
+    bus_port           go to state 158
+    simple_expression  go to state 335
+    binary_expression  go to state 270
+    scalar_constant    go to state 271
+    unary_op           go to state 272
+
+
+state 265
+
+  179 expression: '{' . conditional_expression '}'
+  180           | '{' . expression ',' conditional_expression '}'
+
+    U_NAND      shift, and go to state 250
+    U_NOR       shift, and go to state 251
+    U_XNOR      shift, and go to state 252
+    U_XNOR_ALT  shift, and go to state 253
+    BIT_CONST   shift, and go to state 254
+    PATH        shift, and go to state 150
+    IDENTIFIER  shift, and go to state 151
+    NUMBER      shift, and go to state 256
+    '|'         shift, and go to state 257
+    '^'         shift, and go to state 258
+    '&'         shift, and go to state 259
+    '+'         shift, and go to state 260
+    '-'         shift, and go to state 261
+    '!'         shift, and go to state 262
+    '~'         shift, and go to state 263
+    '('         shift, and go to state 264
+    '{'         shift, and go to state 265
+
+    port                    go to state 266
+    scalar_port             go to state 157
+    bus_port                go to state 158
+    expression              go to state 336
+    conditional_expression  go to state 337
+    simple_expression       go to state 269
+    binary_expression       go to state 270
+    scalar_constant         go to state 271
+    unary_op                go to state 272
+
+
+state 266
+
+  185 simple_expression: port .
+
+    $default  reduce using rule 185 (simple_expression)
+
+
+state 267
+
+   75 del_cond: COND expression .
+
+    $default  reduce using rule 75 (del_cond)
+
+
+state 268
+
+  178 expression: conditional_expression .
+
+    $default  reduce using rule 178 (expression)
+
+
+state 269
+
+  181 conditional_expression: simple_expression .
+  182                       | simple_expression . '?' expression ':' conditional_expression
+  190 binary_expression: simple_expression . '+' simple_expression
+  191                  | simple_expression . '-' simple_expression
+  192                  | simple_expression . '*' simple_expression
+  193                  | simple_expression . '/' simple_expression
+  194                  | simple_expression . '%' simple_expression
+  195                  | simple_expression . EQU simple_expression
+  196                  | simple_expression . INEQU simple_expression
+  197                  | simple_expression . CASE_EQU simple_expression
+  198                  | simple_expression . CASE_INEQU simple_expression
+  199                  | simple_expression . L_AND simple_expression
+  200                  | simple_expression . L_OR simple_expression
+  201                  | simple_expression . '<' simple_expression
+  202                  | simple_expression . LESS_OR_EQU simple_expression
+  203                  | simple_expression . '>' simple_expression
+  204                  | simple_expression . GREATER_OR_EQU simple_expression
+  205                  | simple_expression . '&' simple_expression
+  206                  | simple_expression . '^' simple_expression
+  207                  | simple_expression . '|' simple_expression
+  208                  | simple_expression . RIGHT_SHIFT simple_expression
+  209                  | simple_expression . LEFT_SHIFT simple_expression
+
+    CASE_EQU        shift, and go to state 338
+    CASE_INEQU      shift, and go to state 339
+    EQU             shift, and go to state 340
+    INEQU           shift, and go to state 341
+    L_AND           shift, and go to state 342
+    L_OR            shift, and go to state 343
+    LESS_OR_EQU     shift, and go to state 344
+    GREATER_OR_EQU  shift, and go to state 345
+    RIGHT_SHIFT     shift, and go to state 346
+    LEFT_SHIFT      shift, and go to state 347
+    '|'             shift, and go to state 348
+    '^'             shift, and go to state 349
+    '&'             shift, and go to state 350
+    '<'             shift, and go to state 351
+    '>'             shift, and go to state 352
+    '+'             shift, and go to state 353
+    '-'             shift, and go to state 354
+    '*'             shift, and go to state 355
+    '/'             shift, and go to state 356
+    '%'             shift, and go to state 357
+    '?'             shift, and go to state 358
+
+    $default  reduce using rule 181 (conditional_expression)
+
+
+state 270
+
+  189 simple_expression: binary_expression .
+
+    $default  reduce using rule 189 (simple_expression)
+
+
+state 271
+
+  187 simple_expression: scalar_constant .
+
+    $default  reduce using rule 187 (simple_expression)
+
+
+state 272
+
+  184 simple_expression: unary_op . '(' simple_expression ')'
+  186                  | unary_op . port
+  188                  | unary_op . scalar_constant
+
+    BIT_CONST   shift, and go to state 254
+    PATH        shift, and go to state 150
+    IDENTIFIER  shift, and go to state 151
+    NUMBER      shift, and go to state 256
+    '('         shift, and go to state 359
+
+    port             go to state 360
+    scalar_port      go to state 157
+    bus_port         go to state 158
+    scalar_constant  go to state 361
+
+
+state 273
+
+   71 del_def: '(' PORT port_instance . delval_list ')'
+
+    '('  shift, and go to state 275
+
+    value        go to state 277
+    delval       go to state 278
+    delval_list  go to state 362
+
+
+state 274
+
+   72 del_def: '(' INTERCONNECT port_instance . port_instance delval_list ')'
+
+    PATH        shift, and go to state 150
+    IDENTIFIER  shift, and go to state 151
+
+    port_instance  go to state 363
+    port           go to state 156
+    scalar_port    go to state 157
+    bus_port       go to state 158
+
+
+state 275
+
+  160 value: '(' . NUMBER ')'
+  161      | '(' . triple ')'
+  162      | '(' . ')'
+  171 delval: '(' . value value ')'
+  172       | '(' . value value value ')'
+
+    NUMBER  shift, and go to state 195
+    '('     shift, and go to state 152
+    ')'     shift, and go to state 196
+    ':'     shift, and go to state 49
+
+    value   go to state 364
+    triple  go to state 197
+
+
+state 276
+
+   74 del_def: '(' DEVICE port_instance . delval_list ')'
+
+    '('  shift, and go to state 275
+
+    value        go to state 277
+    delval       go to state 278
+    delval_list  go to state 365
+
+
+state 277
+
+  170 delval: value .
+
+    $default  reduce using rule 170 (delval)
+
+
+state 278
+
+  173 delval_list: delval .
+  174            | delval . delval
+  175            | delval . delval delval
+  176            | delval . delval delval delval delval delval
+  177            | delval . delval delval delval delval delval delval delval delval delval delval delval
+
+    '('  shift, and go to state 275
+
+    $default  reduce using rule 173 (delval_list)
+
+    value   go to state 277
+    delval  go to state 366
+
+
+state 279
+
+   73 del_def: '(' DEVICE delval_list . ')'
+
+    ')'  shift, and go to state 367
+
+
+state 280
+
+   77 del_def_iopath: '(' . IOPATH port_spec port_instance delval_list ')'
+   78               | '(' . IOPATH port_spec port_instance '(' RETAIN delval_list ')' ')'
+
+    IOPATH  shift, and go to state 202
+
+
+state 281
+
+   69 del_def: '(' del_cond del_def_iopath . ')'
+
+    ')'  shift, and go to state 368
+
+
+state 282
+
+   70 del_def: '(' cond_else_type del_def_iopath . ')'
+
+    ')'  shift, and go to state 369
+
+
+state 283
+
+  147 scalar_port: PATH .
+  149            | PATH . '[' NUMBER ']'
+
+    '['  shift, and go to state 370
+
+    $default  reduce using rule 147 (scalar_port)
+
+
+state 284
+
+  146 scalar_port: IDENTIFIER .
+  148            | IDENTIFIER . '[' NUMBER ']'
+
+    '['  shift, and go to state 371
+
+    $default  reduce using rule 146 (scalar_port)
+
+
+state 285
+
+   98 port_tchk: '(' COND QSTRING . timing_check_condition port_spec ')'
+
+    PATH        shift, and go to state 283
+    IDENTIFIER  shift, and go to state 284
+    '!'         shift, and go to state 286
+    '~'         shift, and go to state 287
+
+    scalar_port             go to state 288
+    timing_check_condition  go to state 372
+    scalar_node             go to state 290
+    inv_op                  go to state 291
+
+
+state 286
+
+  227 inv_op: '!' .
+
+    $default  reduce using rule 227 (inv_op)
+
+
+state 287
+
+  228 inv_op: '~' .
+
+    $default  reduce using rule 228 (inv_op)
+
+
+state 288
+
+  213 scalar_node: scalar_port .
+
+    $default  reduce using rule 213 (scalar_node)
+
+
+state 289
+
+   97 port_tchk: '(' COND timing_check_condition . port_spec ')'
+
+    PATH        shift, and go to state 150
+    IDENTIFIER  shift, and go to state 151
+    '('         shift, and go to state 185
+
+    port_spec      go to state 373
+    port_edge      go to state 167
+    port_instance  go to state 168
+    port           go to state 156
+    scalar_port    go to state 157
+    bus_port       go to state 158
+
+
+state 290
+
+  210 timing_check_condition: scalar_node .
+  212                       | scalar_node . equ_op scalar_constant
+
+    CASE_EQU    shift, and go to state 374
+    CASE_INEQU  shift, and go to state 375
+    EQU         shift, and go to state 376
+    INEQU       shift, and go to state 377
+
+    $default  reduce using rule 210 (timing_check_condition)
+
+    equ_op  go to state 378
+
+
+state 291
+
+  211 timing_check_condition: inv_op . scalar_node
+
+    PATH        shift, and go to state 283
+    IDENTIFIER  shift, and go to state 284
+
+    scalar_port  go to state 288
+    scalar_node  go to state 379
+
+
+state 292
+
+  137 port_edge: '(' edge_identifier port_instance . ')'
+
+    ')'  shift, and go to state 380
+
+
+state 293
+
+   80 tchk_def: '(' SETUP port_tchk port_tchk value . ')'
+
+    ')'  shift, and go to state 381
+
+
+state 294
+
+   81 tchk_def: '(' HOLD port_tchk port_tchk value . ')'
+
+    ')'  shift, and go to state 382
+
+
+state 295
+
+   82 tchk_def: '(' SETUPHOLD port_tchk port_tchk value . value ')'
+   83         | '(' SETUPHOLD port_tchk port_tchk value . value scond ')'
+   84         | '(' SETUPHOLD port_tchk port_tchk value . value ccond ')'
+   85         | '(' SETUPHOLD port_tchk port_tchk value . value scond ccond ')'
+
+    '('  shift, and go to state 152
+
+    value  go to state 383
+
+
+state 296
+
+   86 tchk_def: '(' RECOVERY port_tchk port_tchk value . ')'
+
+    ')'  shift, and go to state 384
+
+
+state 297
+
+   87 tchk_def: '(' REMOVAL port_tchk port_tchk value . ')'
+
+    ')'  shift, and go to state 385
+
+
+state 298
+
+   88 tchk_def: '(' RECREM port_tchk port_tchk value . value ')'
+   89         | '(' RECREM port_tchk port_tchk value . value scond ')'
+   90         | '(' RECREM port_tchk port_tchk value . value ccond ')'
+   91         | '(' RECREM port_tchk port_tchk value . value scond ccond ')'
+
+    '('  shift, and go to state 152
+
+    value  go to state 386
+
+
+state 299
+
+   92 tchk_def: '(' SKEW port_tchk port_tchk value . ')'
+
+    ')'  shift, and go to state 387
+
+
+state 300
+
+   93 tchk_def: '(' WIDTH port_tchk value ')' .
+
+    $default  reduce using rule 93 (tchk_def)
+
+
+state 301
+
+   94 tchk_def: '(' PERIOD port_tchk value ')' .
+
+    $default  reduce using rule 94 (tchk_def)
+
+
+state 302
+
+   95 tchk_def: '(' NOCHANGE port_tchk port_tchk value . value ')'
+
+    '('  shift, and go to state 152
+
+    value  go to state 388
+
+
+state 303
+
+  104 name: '(' NAME QSTRING . ')'
+
+    ')'  shift, and go to state 389
+
+
+state 304
+
+  103 name: '(' NAME ')' .
+
+    $default  reduce using rule 103 (name)
+
+
+state 305
+
+  111 cns_def: '(' PATHCONSTRAINT name port_instance port_instances . value value ')'
+  121 port_instances: port_instances . port_instance
+
+    PATH        shift, and go to state 150
+    IDENTIFIER  shift, and go to state 151
+    '('         shift, and go to state 152
+
+    port_instance  go to state 306
+    port           go to state 156
+    scalar_port    go to state 157
+    bus_port       go to state 158
+    value          go to state 390
+
+
+state 306
+
+  121 port_instances: port_instances port_instance .
+
+    $default  reduce using rule 121 (port_instances)
+
+
+state 307
+
+  110 cns_def: '(' PATHCONSTRAINT port_instance port_instances value . value ')'
+
+    '('  shift, and go to state 152
+
+    value  go to state 391
+
+
+state 308
+
+  105 exception: '(' . EXCEPTION cell_instances ')'
+
+    EXCEPTION  shift, and go to state 392
+
+
+state 309
+
+  112 cns_def: '(' PERIODCONSTRAINT port_instance value ')' .
+
+    $default  reduce using rule 112 (cns_def)
+
+
+state 310
+
+  113 cns_def: '(' PERIODCONSTRAINT port_instance value exception . ')'
+
+    ')'  shift, and go to state 393
+
+
+state 311
+
+  134 constraint_path: '(' port_instance port_instance . ')'
+
+    ')'  shift, and go to state 394
+
+
+state 312
+
+  134 constraint_path: '(' . port_instance port_instance ')'
+  160 value: '(' . NUMBER ')'
+  161      | '(' . triple ')'
+  162      | '(' . ')'
+
+    PATH        shift, and go to state 150
+    IDENTIFIER  shift, and go to state 151
+    NUMBER      shift, and go to state 195
+    ')'         shift, and go to state 196
+    ':'         shift, and go to state 49
+
+    port_instance  go to state 234
+    port           go to state 156
+    scalar_port    go to state 157
+    bus_port       go to state 158
+    triple         go to state 197
+
+
+state 313
+
+  116 cns_def: '(' SUM constraint_path constraint_path constraint_paths . value ')'
+  117        | '(' SUM constraint_path constraint_path constraint_paths . value value ')'
+  123 constraint_paths: constraint_paths . constraint_path
+
+    '('  shift, and go to state 312
+
+    constraint_path  go to state 395
+    value            go to state 396
+
+
+state 314
+
+  124 constraint_paths: constraint_path .
+
+    $default  reduce using rule 124 (constraint_paths)
+
+
+state 315
+
+  114 cns_def: '(' SUM constraint_path constraint_path value . ')'
+  115        | '(' SUM constraint_path constraint_path value . value ')'
+
+    '('  shift, and go to state 152
+    ')'  shift, and go to state 397
+
+    value  go to state 398
+
+
+state 316
+
+  118 cns_def: '(' DIFF constraint_path constraint_path value . ')'
+  119        | '(' DIFF constraint_path constraint_path value . value ')'
+
+    '('  shift, and go to state 152
+    ')'  shift, and go to state 399
+
+    value  go to state 400
+
+
+state 317
+
+  120 cns_def: '(' SKEWCONSTRAINT port_spec value ')' .
+
+    $default  reduce using rule 120 (cns_def)
+
+
+state 318
+
+  126 tenv_def: '(' ARRIVAL port_edge port_instance value . value value value ')'
+
+    '('  shift, and go to state 152
+
+    value  go to state 401
+
+
+state 319
+
+  125 tenv_def: '(' ARRIVAL port_instance value value . value value ')'
+
+    '('  shift, and go to state 152
+
+    value  go to state 402
+
+
+state 320
+
+  128 tenv_def: '(' DEPARTURE port_edge port_instance value . value value value ')'
+
+    '('  shift, and go to state 152
+
+    value  go to state 403
+
+
+state 321
+
+  127 tenv_def: '(' DEPARTURE port_instance value value . value value ')'
+
+    '('  shift, and go to state 152
+
+    value  go to state 404
+
+
+state 322
+
+  129 tenv_def: '(' SLACK port_instance value value . value value ')'
+  130         | '(' SLACK port_instance value value . value value NUMBER ')'
+
+    '('  shift, and go to state 152
+
+    value  go to state 405
+
+
+state 323
+
+  158 pos_pair: '(' . POSEDGE NUMBER number_q ')' '(' NEGEDGE NUMBER number_q ')'
+  159 neg_pair: '(' . NEGEDGE NUMBER number_q ')' '(' POSEDGE NUMBER number_q ')'
+
+    POSEDGE  shift, and go to state 406
+    NEGEDGE  shift, and go to state 407
+
+
+state 324
+
+  131 tenv_def: '(' WAVEFORM port_instance NUMBER edge_list . ')'
+
+    ')'  shift, and go to state 408
+
+
+state 325
+
+  152 edge_list: pos_pairs .
+  154 pos_pairs: pos_pairs . pos_pair
+
+    '('  shift, and go to state 409
+
+    $default  reduce using rule 152 (edge_list)
+
+    pos_pair  go to state 410
+
+
+state 326
+
+  153 edge_list: neg_pairs .
+  156 neg_pairs: neg_pairs . neg_pair
+
+    '('  shift, and go to state 411
+
+    $default  reduce using rule 153 (edge_list)
+
+    neg_pair  go to state 412
+
+
+state 327
+
+  155 pos_pairs: pos_pair .
+
+    $default  reduce using rule 155 (pos_pairs)
+
+
+state 328
+
+  157 neg_pairs: neg_pair .
+
+    $default  reduce using rule 157 (neg_pairs)
+
+
+state 329
+
+  149 scalar_port: PATH '[' NUMBER ']' .
+
+    $default  reduce using rule 149 (scalar_port)
+
+
+state 330
+
+  151 bus_port: PATH '[' NUMBER ':' . NUMBER ']'
+
+    NUMBER  shift, and go to state 413
+
+
+state 331
+
+  148 scalar_port: IDENTIFIER '[' NUMBER ']' .
+
+    $default  reduce using rule 148 (scalar_port)
+
+
+state 332
+
+  150 bus_port: IDENTIFIER '[' NUMBER ':' . NUMBER ']'
+
+    NUMBER  shift, and go to state 414
+
+
+state 333
+
+   77 del_def_iopath: '(' IOPATH port_spec port_instance . delval_list ')'
+   78               | '(' IOPATH port_spec port_instance . '(' RETAIN delval_list ')' ')'
+
+    '('  shift, and go to state 415
+
+    value        go to state 277
+    delval       go to state 278
+    delval_list  go to state 416
+
+
+state 334
+
+   76 del_cond: COND QSTRING expression .
+
+    $default  reduce using rule 76 (del_cond)
+
+
+state 335
+
+  183 simple_expression: '(' simple_expression . ')'
+  190 binary_expression: simple_expression . '+' simple_expression
+  191                  | simple_expression . '-' simple_expression
+  192                  | simple_expression . '*' simple_expression
+  193                  | simple_expression . '/' simple_expression
+  194                  | simple_expression . '%' simple_expression
+  195                  | simple_expression . EQU simple_expression
+  196                  | simple_expression . INEQU simple_expression
+  197                  | simple_expression . CASE_EQU simple_expression
+  198                  | simple_expression . CASE_INEQU simple_expression
+  199                  | simple_expression . L_AND simple_expression
+  200                  | simple_expression . L_OR simple_expression
+  201                  | simple_expression . '<' simple_expression
+  202                  | simple_expression . LESS_OR_EQU simple_expression
+  203                  | simple_expression . '>' simple_expression
+  204                  | simple_expression . GREATER_OR_EQU simple_expression
+  205                  | simple_expression . '&' simple_expression
+  206                  | simple_expression . '^' simple_expression
+  207                  | simple_expression . '|' simple_expression
+  208                  | simple_expression . RIGHT_SHIFT simple_expression
+  209                  | simple_expression . LEFT_SHIFT simple_expression
+
+    CASE_EQU        shift, and go to state 338
+    CASE_INEQU      shift, and go to state 339
+    EQU             shift, and go to state 340
+    INEQU           shift, and go to state 341
+    L_AND           shift, and go to state 342
+    L_OR            shift, and go to state 343
+    LESS_OR_EQU     shift, and go to state 344
+    GREATER_OR_EQU  shift, and go to state 345
+    RIGHT_SHIFT     shift, and go to state 346
+    LEFT_SHIFT      shift, and go to state 347
+    '|'             shift, and go to state 348
+    '^'             shift, and go to state 349
+    '&'             shift, and go to state 350
+    '<'             shift, and go to state 351
+    '>'             shift, and go to state 352
+    '+'             shift, and go to state 353
+    '-'             shift, and go to state 354
+    '*'             shift, and go to state 355
+    '/'             shift, and go to state 356
+    '%'             shift, and go to state 357
+    ')'             shift, and go to state 417
+
+
+state 336
+
+  180 expression: '{' expression . ',' conditional_expression '}'
+
+    ','  shift, and go to state 418
+
+
+state 337
+
+  178 expression: conditional_expression .
+  179           | '{' conditional_expression . '}'
+
+    '}'  shift, and go to state 419
+
+    $default  reduce using rule 178 (expression)
+
+
+state 338
+
+  197 binary_expression: simple_expression CASE_EQU . simple_expression
+
+    U_NAND      shift, and go to state 250
+    U_NOR       shift, and go to state 251
+    U_XNOR      shift, and go to state 252
+    U_XNOR_ALT  shift, and go to state 253
+    BIT_CONST   shift, and go to state 254
+    PATH        shift, and go to state 150
+    IDENTIFIER  shift, and go to state 151
+    NUMBER      shift, and go to state 256
+    '|'         shift, and go to state 257
+    '^'         shift, and go to state 258
+    '&'         shift, and go to state 259
+    '+'         shift, and go to state 260
+    '-'         shift, and go to state 261
+    '!'         shift, and go to state 262
+    '~'         shift, and go to state 263
+    '('         shift, and go to state 264
+
+    port               go to state 266
+    scalar_port        go to state 157
+    bus_port           go to state 158
+    simple_expression  go to state 420
+    binary_expression  go to state 270
+    scalar_constant    go to state 271
+    unary_op           go to state 272
+
+
+state 339
+
+  198 binary_expression: simple_expression CASE_INEQU . simple_expression
+
+    U_NAND      shift, and go to state 250
+    U_NOR       shift, and go to state 251
+    U_XNOR      shift, and go to state 252
+    U_XNOR_ALT  shift, and go to state 253
+    BIT_CONST   shift, and go to state 254
+    PATH        shift, and go to state 150
+    IDENTIFIER  shift, and go to state 151
+    NUMBER      shift, and go to state 256
+    '|'         shift, and go to state 257
+    '^'         shift, and go to state 258
+    '&'         shift, and go to state 259
+    '+'         shift, and go to state 260
+    '-'         shift, and go to state 261
+    '!'         shift, and go to state 262
+    '~'         shift, and go to state 263
+    '('         shift, and go to state 264
+
+    port               go to state 266
+    scalar_port        go to state 157
+    bus_port           go to state 158
+    simple_expression  go to state 421
+    binary_expression  go to state 270
+    scalar_constant    go to state 271
+    unary_op           go to state 272
+
+
+state 340
+
+  195 binary_expression: simple_expression EQU . simple_expression
+
+    U_NAND      shift, and go to state 250
+    U_NOR       shift, and go to state 251
+    U_XNOR      shift, and go to state 252
+    U_XNOR_ALT  shift, and go to state 253
+    BIT_CONST   shift, and go to state 254
+    PATH        shift, and go to state 150
+    IDENTIFIER  shift, and go to state 151
+    NUMBER      shift, and go to state 256
+    '|'         shift, and go to state 257
+    '^'         shift, and go to state 258
+    '&'         shift, and go to state 259
+    '+'         shift, and go to state 260
+    '-'         shift, and go to state 261
+    '!'         shift, and go to state 262
+    '~'         shift, and go to state 263
+    '('         shift, and go to state 264
+
+    port               go to state 266
+    scalar_port        go to state 157
+    bus_port           go to state 158
+    simple_expression  go to state 422
+    binary_expression  go to state 270
+    scalar_constant    go to state 271
+    unary_op           go to state 272
+
+
+state 341
+
+  196 binary_expression: simple_expression INEQU . simple_expression
+
+    U_NAND      shift, and go to state 250
+    U_NOR       shift, and go to state 251
+    U_XNOR      shift, and go to state 252
+    U_XNOR_ALT  shift, and go to state 253
+    BIT_CONST   shift, and go to state 254
+    PATH        shift, and go to state 150
+    IDENTIFIER  shift, and go to state 151
+    NUMBER      shift, and go to state 256
+    '|'         shift, and go to state 257
+    '^'         shift, and go to state 258
+    '&'         shift, and go to state 259
+    '+'         shift, and go to state 260
+    '-'         shift, and go to state 261
+    '!'         shift, and go to state 262
+    '~'         shift, and go to state 263
+    '('         shift, and go to state 264
+
+    port               go to state 266
+    scalar_port        go to state 157
+    bus_port           go to state 158
+    simple_expression  go to state 423
+    binary_expression  go to state 270
+    scalar_constant    go to state 271
+    unary_op           go to state 272
+
+
+state 342
+
+  199 binary_expression: simple_expression L_AND . simple_expression
+
+    U_NAND      shift, and go to state 250
+    U_NOR       shift, and go to state 251
+    U_XNOR      shift, and go to state 252
+    U_XNOR_ALT  shift, and go to state 253
+    BIT_CONST   shift, and go to state 254
+    PATH        shift, and go to state 150
+    IDENTIFIER  shift, and go to state 151
+    NUMBER      shift, and go to state 256
+    '|'         shift, and go to state 257
+    '^'         shift, and go to state 258
+    '&'         shift, and go to state 259
+    '+'         shift, and go to state 260
+    '-'         shift, and go to state 261
+    '!'         shift, and go to state 262
+    '~'         shift, and go to state 263
+    '('         shift, and go to state 264
+
+    port               go to state 266
+    scalar_port        go to state 157
+    bus_port           go to state 158
+    simple_expression  go to state 424
+    binary_expression  go to state 270
+    scalar_constant    go to state 271
+    unary_op           go to state 272
+
+
+state 343
+
+  200 binary_expression: simple_expression L_OR . simple_expression
+
+    U_NAND      shift, and go to state 250
+    U_NOR       shift, and go to state 251
+    U_XNOR      shift, and go to state 252
+    U_XNOR_ALT  shift, and go to state 253
+    BIT_CONST   shift, and go to state 254
+    PATH        shift, and go to state 150
+    IDENTIFIER  shift, and go to state 151
+    NUMBER      shift, and go to state 256
+    '|'         shift, and go to state 257
+    '^'         shift, and go to state 258
+    '&'         shift, and go to state 259
+    '+'         shift, and go to state 260
+    '-'         shift, and go to state 261
+    '!'         shift, and go to state 262
+    '~'         shift, and go to state 263
+    '('         shift, and go to state 264
+
+    port               go to state 266
+    scalar_port        go to state 157
+    bus_port           go to state 158
+    simple_expression  go to state 425
+    binary_expression  go to state 270
+    scalar_constant    go to state 271
+    unary_op           go to state 272
+
+
+state 344
+
+  202 binary_expression: simple_expression LESS_OR_EQU . simple_expression
+
+    U_NAND      shift, and go to state 250
+    U_NOR       shift, and go to state 251
+    U_XNOR      shift, and go to state 252
+    U_XNOR_ALT  shift, and go to state 253
+    BIT_CONST   shift, and go to state 254
+    PATH        shift, and go to state 150
+    IDENTIFIER  shift, and go to state 151
+    NUMBER      shift, and go to state 256
+    '|'         shift, and go to state 257
+    '^'         shift, and go to state 258
+    '&'         shift, and go to state 259
+    '+'         shift, and go to state 260
+    '-'         shift, and go to state 261
+    '!'         shift, and go to state 262
+    '~'         shift, and go to state 263
+    '('         shift, and go to state 264
+
+    port               go to state 266
+    scalar_port        go to state 157
+    bus_port           go to state 158
+    simple_expression  go to state 426
+    binary_expression  go to state 270
+    scalar_constant    go to state 271
+    unary_op           go to state 272
+
+
+state 345
+
+  204 binary_expression: simple_expression GREATER_OR_EQU . simple_expression
+
+    U_NAND      shift, and go to state 250
+    U_NOR       shift, and go to state 251
+    U_XNOR      shift, and go to state 252
+    U_XNOR_ALT  shift, and go to state 253
+    BIT_CONST   shift, and go to state 254
+    PATH        shift, and go to state 150
+    IDENTIFIER  shift, and go to state 151
+    NUMBER      shift, and go to state 256
+    '|'         shift, and go to state 257
+    '^'         shift, and go to state 258
+    '&'         shift, and go to state 259
+    '+'         shift, and go to state 260
+    '-'         shift, and go to state 261
+    '!'         shift, and go to state 262
+    '~'         shift, and go to state 263
+    '('         shift, and go to state 264
+
+    port               go to state 266
+    scalar_port        go to state 157
+    bus_port           go to state 158
+    simple_expression  go to state 427
+    binary_expression  go to state 270
+    scalar_constant    go to state 271
+    unary_op           go to state 272
+
+
+state 346
+
+  208 binary_expression: simple_expression RIGHT_SHIFT . simple_expression
+
+    U_NAND      shift, and go to state 250
+    U_NOR       shift, and go to state 251
+    U_XNOR      shift, and go to state 252
+    U_XNOR_ALT  shift, and go to state 253
+    BIT_CONST   shift, and go to state 254
+    PATH        shift, and go to state 150
+    IDENTIFIER  shift, and go to state 151
+    NUMBER      shift, and go to state 256
+    '|'         shift, and go to state 257
+    '^'         shift, and go to state 258
+    '&'         shift, and go to state 259
+    '+'         shift, and go to state 260
+    '-'         shift, and go to state 261
+    '!'         shift, and go to state 262
+    '~'         shift, and go to state 263
+    '('         shift, and go to state 264
+
+    port               go to state 266
+    scalar_port        go to state 157
+    bus_port           go to state 158
+    simple_expression  go to state 428
+    binary_expression  go to state 270
+    scalar_constant    go to state 271
+    unary_op           go to state 272
+
+
+state 347
+
+  209 binary_expression: simple_expression LEFT_SHIFT . simple_expression
+
+    U_NAND      shift, and go to state 250
+    U_NOR       shift, and go to state 251
+    U_XNOR      shift, and go to state 252
+    U_XNOR_ALT  shift, and go to state 253
+    BIT_CONST   shift, and go to state 254
+    PATH        shift, and go to state 150
+    IDENTIFIER  shift, and go to state 151
+    NUMBER      shift, and go to state 256
+    '|'         shift, and go to state 257
+    '^'         shift, and go to state 258
+    '&'         shift, and go to state 259
+    '+'         shift, and go to state 260
+    '-'         shift, and go to state 261
+    '!'         shift, and go to state 262
+    '~'         shift, and go to state 263
+    '('         shift, and go to state 264
+
+    port               go to state 266
+    scalar_port        go to state 157
+    bus_port           go to state 158
+    simple_expression  go to state 429
+    binary_expression  go to state 270
+    scalar_constant    go to state 271
+    unary_op           go to state 272
+
+
+state 348
+
+  207 binary_expression: simple_expression '|' . simple_expression
+
+    U_NAND      shift, and go to state 250
+    U_NOR       shift, and go to state 251
+    U_XNOR      shift, and go to state 252
+    U_XNOR_ALT  shift, and go to state 253
+    BIT_CONST   shift, and go to state 254
+    PATH        shift, and go to state 150
+    IDENTIFIER  shift, and go to state 151
+    NUMBER      shift, and go to state 256
+    '|'         shift, and go to state 257
+    '^'         shift, and go to state 258
+    '&'         shift, and go to state 259
+    '+'         shift, and go to state 260
+    '-'         shift, and go to state 261
+    '!'         shift, and go to state 262
+    '~'         shift, and go to state 263
+    '('         shift, and go to state 264
+
+    port               go to state 266
+    scalar_port        go to state 157
+    bus_port           go to state 158
+    simple_expression  go to state 430
+    binary_expression  go to state 270
+    scalar_constant    go to state 271
+    unary_op           go to state 272
+
+
+state 349
+
+  206 binary_expression: simple_expression '^' . simple_expression
+
+    U_NAND      shift, and go to state 250
+    U_NOR       shift, and go to state 251
+    U_XNOR      shift, and go to state 252
+    U_XNOR_ALT  shift, and go to state 253
+    BIT_CONST   shift, and go to state 254
+    PATH        shift, and go to state 150
+    IDENTIFIER  shift, and go to state 151
+    NUMBER      shift, and go to state 256
+    '|'         shift, and go to state 257
+    '^'         shift, and go to state 258
+    '&'         shift, and go to state 259
+    '+'         shift, and go to state 260
+    '-'         shift, and go to state 261
+    '!'         shift, and go to state 262
+    '~'         shift, and go to state 263
+    '('         shift, and go to state 264
+
+    port               go to state 266
+    scalar_port        go to state 157
+    bus_port           go to state 158
+    simple_expression  go to state 431
+    binary_expression  go to state 270
+    scalar_constant    go to state 271
+    unary_op           go to state 272
+
+
+state 350
+
+  205 binary_expression: simple_expression '&' . simple_expression
+
+    U_NAND      shift, and go to state 250
+    U_NOR       shift, and go to state 251
+    U_XNOR      shift, and go to state 252
+    U_XNOR_ALT  shift, and go to state 253
+    BIT_CONST   shift, and go to state 254
+    PATH        shift, and go to state 150
+    IDENTIFIER  shift, and go to state 151
+    NUMBER      shift, and go to state 256
+    '|'         shift, and go to state 257
+    '^'         shift, and go to state 258
+    '&'         shift, and go to state 259
+    '+'         shift, and go to state 260
+    '-'         shift, and go to state 261
+    '!'         shift, and go to state 262
+    '~'         shift, and go to state 263
+    '('         shift, and go to state 264
+
+    port               go to state 266
+    scalar_port        go to state 157
+    bus_port           go to state 158
+    simple_expression  go to state 432
+    binary_expression  go to state 270
+    scalar_constant    go to state 271
+    unary_op           go to state 272
+
+
+state 351
+
+  201 binary_expression: simple_expression '<' . simple_expression
+
+    U_NAND      shift, and go to state 250
+    U_NOR       shift, and go to state 251
+    U_XNOR      shift, and go to state 252
+    U_XNOR_ALT  shift, and go to state 253
+    BIT_CONST   shift, and go to state 254
+    PATH        shift, and go to state 150
+    IDENTIFIER  shift, and go to state 151
+    NUMBER      shift, and go to state 256
+    '|'         shift, and go to state 257
+    '^'         shift, and go to state 258
+    '&'         shift, and go to state 259
+    '+'         shift, and go to state 260
+    '-'         shift, and go to state 261
+    '!'         shift, and go to state 262
+    '~'         shift, and go to state 263
+    '('         shift, and go to state 264
+
+    port               go to state 266
+    scalar_port        go to state 157
+    bus_port           go to state 158
+    simple_expression  go to state 433
+    binary_expression  go to state 270
+    scalar_constant    go to state 271
+    unary_op           go to state 272
+
+
+state 352
+
+  203 binary_expression: simple_expression '>' . simple_expression
+
+    U_NAND      shift, and go to state 250
+    U_NOR       shift, and go to state 251
+    U_XNOR      shift, and go to state 252
+    U_XNOR_ALT  shift, and go to state 253
+    BIT_CONST   shift, and go to state 254
+    PATH        shift, and go to state 150
+    IDENTIFIER  shift, and go to state 151
+    NUMBER      shift, and go to state 256
+    '|'         shift, and go to state 257
+    '^'         shift, and go to state 258
+    '&'         shift, and go to state 259
+    '+'         shift, and go to state 260
+    '-'         shift, and go to state 261
+    '!'         shift, and go to state 262
+    '~'         shift, and go to state 263
+    '('         shift, and go to state 264
+
+    port               go to state 266
+    scalar_port        go to state 157
+    bus_port           go to state 158
+    simple_expression  go to state 434
+    binary_expression  go to state 270
+    scalar_constant    go to state 271
+    unary_op           go to state 272
+
+
+state 353
+
+  190 binary_expression: simple_expression '+' . simple_expression
+
+    U_NAND      shift, and go to state 250
+    U_NOR       shift, and go to state 251
+    U_XNOR      shift, and go to state 252
+    U_XNOR_ALT  shift, and go to state 253
+    BIT_CONST   shift, and go to state 254
+    PATH        shift, and go to state 150
+    IDENTIFIER  shift, and go to state 151
+    NUMBER      shift, and go to state 256
+    '|'         shift, and go to state 257
+    '^'         shift, and go to state 258
+    '&'         shift, and go to state 259
+    '+'         shift, and go to state 260
+    '-'         shift, and go to state 261
+    '!'         shift, and go to state 262
+    '~'         shift, and go to state 263
+    '('         shift, and go to state 264
+
+    port               go to state 266
+    scalar_port        go to state 157
+    bus_port           go to state 158
+    simple_expression  go to state 435
+    binary_expression  go to state 270
+    scalar_constant    go to state 271
+    unary_op           go to state 272
+
+
+state 354
+
+  191 binary_expression: simple_expression '-' . simple_expression
+
+    U_NAND      shift, and go to state 250
+    U_NOR       shift, and go to state 251
+    U_XNOR      shift, and go to state 252
+    U_XNOR_ALT  shift, and go to state 253
+    BIT_CONST   shift, and go to state 254
+    PATH        shift, and go to state 150
+    IDENTIFIER  shift, and go to state 151
+    NUMBER      shift, and go to state 256
+    '|'         shift, and go to state 257
+    '^'         shift, and go to state 258
+    '&'         shift, and go to state 259
+    '+'         shift, and go to state 260
+    '-'         shift, and go to state 261
+    '!'         shift, and go to state 262
+    '~'         shift, and go to state 263
+    '('         shift, and go to state 264
+
+    port               go to state 266
+    scalar_port        go to state 157
+    bus_port           go to state 158
+    simple_expression  go to state 436
+    binary_expression  go to state 270
+    scalar_constant    go to state 271
+    unary_op           go to state 272
+
+
+state 355
+
+  192 binary_expression: simple_expression '*' . simple_expression
+
+    U_NAND      shift, and go to state 250
+    U_NOR       shift, and go to state 251
+    U_XNOR      shift, and go to state 252
+    U_XNOR_ALT  shift, and go to state 253
+    BIT_CONST   shift, and go to state 254
+    PATH        shift, and go to state 150
+    IDENTIFIER  shift, and go to state 151
+    NUMBER      shift, and go to state 256
+    '|'         shift, and go to state 257
+    '^'         shift, and go to state 258
+    '&'         shift, and go to state 259
+    '+'         shift, and go to state 260
+    '-'         shift, and go to state 261
+    '!'         shift, and go to state 262
+    '~'         shift, and go to state 263
+    '('         shift, and go to state 264
+
+    port               go to state 266
+    scalar_port        go to state 157
+    bus_port           go to state 158
+    simple_expression  go to state 437
+    binary_expression  go to state 270
+    scalar_constant    go to state 271
+    unary_op           go to state 272
+
+
+state 356
+
+  193 binary_expression: simple_expression '/' . simple_expression
+
+    U_NAND      shift, and go to state 250
+    U_NOR       shift, and go to state 251
+    U_XNOR      shift, and go to state 252
+    U_XNOR_ALT  shift, and go to state 253
+    BIT_CONST   shift, and go to state 254
+    PATH        shift, and go to state 150
+    IDENTIFIER  shift, and go to state 151
+    NUMBER      shift, and go to state 256
+    '|'         shift, and go to state 257
+    '^'         shift, and go to state 258
+    '&'         shift, and go to state 259
+    '+'         shift, and go to state 260
+    '-'         shift, and go to state 261
+    '!'         shift, and go to state 262
+    '~'         shift, and go to state 263
+    '('         shift, and go to state 264
+
+    port               go to state 266
+    scalar_port        go to state 157
+    bus_port           go to state 158
+    simple_expression  go to state 438
+    binary_expression  go to state 270
+    scalar_constant    go to state 271
+    unary_op           go to state 272
+
+
+state 357
+
+  194 binary_expression: simple_expression '%' . simple_expression
+
+    U_NAND      shift, and go to state 250
+    U_NOR       shift, and go to state 251
+    U_XNOR      shift, and go to state 252
+    U_XNOR_ALT  shift, and go to state 253
+    BIT_CONST   shift, and go to state 254
+    PATH        shift, and go to state 150
+    IDENTIFIER  shift, and go to state 151
+    NUMBER      shift, and go to state 256
+    '|'         shift, and go to state 257
+    '^'         shift, and go to state 258
+    '&'         shift, and go to state 259
+    '+'         shift, and go to state 260
+    '-'         shift, and go to state 261
+    '!'         shift, and go to state 262
+    '~'         shift, and go to state 263
+    '('         shift, and go to state 264
+
+    port               go to state 266
+    scalar_port        go to state 157
+    bus_port           go to state 158
+    simple_expression  go to state 439
+    binary_expression  go to state 270
+    scalar_constant    go to state 271
+    unary_op           go to state 272
+
+
+state 358
+
+  182 conditional_expression: simple_expression '?' . expression ':' conditional_expression
+
+    U_NAND      shift, and go to state 250
+    U_NOR       shift, and go to state 251
+    U_XNOR      shift, and go to state 252
+    U_XNOR_ALT  shift, and go to state 253
+    BIT_CONST   shift, and go to state 254
+    PATH        shift, and go to state 150
+    IDENTIFIER  shift, and go to state 151
+    NUMBER      shift, and go to state 256
+    '|'         shift, and go to state 257
+    '^'         shift, and go to state 258
+    '&'         shift, and go to state 259
+    '+'         shift, and go to state 260
+    '-'         shift, and go to state 261
+    '!'         shift, and go to state 262
+    '~'         shift, and go to state 263
+    '('         shift, and go to state 264
+    '{'         shift, and go to state 265
+
+    port                    go to state 266
+    scalar_port             go to state 157
+    bus_port                go to state 158
+    expression              go to state 440
+    conditional_expression  go to state 268
+    simple_expression       go to state 269
+    binary_expression       go to state 270
+    scalar_constant         go to state 271
+    unary_op                go to state 272
+
+
+state 359
+
+  184 simple_expression: unary_op '(' . simple_expression ')'
+
+    U_NAND      shift, and go to state 250
+    U_NOR       shift, and go to state 251
+    U_XNOR      shift, and go to state 252
+    U_XNOR_ALT  shift, and go to state 253
+    BIT_CONST   shift, and go to state 254
+    PATH        shift, and go to state 150
+    IDENTIFIER  shift, and go to state 151
+    NUMBER      shift, and go to state 256
+    '|'         shift, and go to state 257
+    '^'         shift, and go to state 258
+    '&'         shift, and go to state 259
+    '+'         shift, and go to state 260
+    '-'         shift, and go to state 261
+    '!'         shift, and go to state 262
+    '~'         shift, and go to state 263
+    '('         shift, and go to state 264
+
+    port               go to state 266
+    scalar_port        go to state 157
+    bus_port           go to state 158
+    simple_expression  go to state 441
+    binary_expression  go to state 270
+    scalar_constant    go to state 271
+    unary_op           go to state 272
+
+
+state 360
+
+  186 simple_expression: unary_op port .
+
+    $default  reduce using rule 186 (simple_expression)
+
+
+state 361
+
+  188 simple_expression: unary_op scalar_constant .
+
+    $default  reduce using rule 188 (simple_expression)
+
+
+state 362
+
+   71 del_def: '(' PORT port_instance delval_list . ')'
+
+    ')'  shift, and go to state 442
+
+
+state 363
+
+   72 del_def: '(' INTERCONNECT port_instance port_instance . delval_list ')'
+
+    '('  shift, and go to state 275
+
+    value        go to state 277
+    delval       go to state 278
+    delval_list  go to state 443
+
+
+state 364
+
+  171 delval: '(' value . value ')'
+  172       | '(' value . value value ')'
+
+    '('  shift, and go to state 152
+
+    value  go to state 444
+
+
+state 365
+
+   74 del_def: '(' DEVICE port_instance delval_list . ')'
+
+    ')'  shift, and go to state 445
+
+
+state 366
+
+  174 delval_list: delval delval .
+  175            | delval delval . delval
+  176            | delval delval . delval delval delval delval
+  177            | delval delval . delval delval delval delval delval delval delval delval delval delval
+
+    '('  shift, and go to state 275
+
+    $default  reduce using rule 174 (delval_list)
+
+    value   go to state 277
+    delval  go to state 446
+
+
+state 367
+
+   73 del_def: '(' DEVICE delval_list ')' .
+
+    $default  reduce using rule 73 (del_def)
+
+
+state 368
+
+   69 del_def: '(' del_cond del_def_iopath ')' .
+
+    $default  reduce using rule 69 (del_def)
+
+
+state 369
+
+   70 del_def: '(' cond_else_type del_def_iopath ')' .
+
+    $default  reduce using rule 70 (del_def)
+
+
+state 370
+
+  149 scalar_port: PATH '[' . NUMBER ']'
+
+    NUMBER  shift, and go to state 447
+
+
+state 371
+
+  148 scalar_port: IDENTIFIER '[' . NUMBER ']'
+
+    NUMBER  shift, and go to state 448
+
+
+state 372
+
+   98 port_tchk: '(' COND QSTRING timing_check_condition . port_spec ')'
+
+    PATH        shift, and go to state 150
+    IDENTIFIER  shift, and go to state 151
+    '('         shift, and go to state 185
+
+    port_spec      go to state 449
+    port_edge      go to state 167
+    port_instance  go to state 168
+    port           go to state 156
+    scalar_port    go to state 157
+    bus_port       go to state 158
+
+
+state 373
+
+   97 port_tchk: '(' COND timing_check_condition port_spec . ')'
+
+    ')'  shift, and go to state 450
+
+
+state 374
+
+  231 equ_op: CASE_EQU .
+
+    $default  reduce using rule 231 (equ_op)
+
+
+state 375
+
+  232 equ_op: CASE_INEQU .
+
+    $default  reduce using rule 232 (equ_op)
+
+
+state 376
+
+  229 equ_op: EQU .
+
+    $default  reduce using rule 229 (equ_op)
+
+
+state 377
+
+  230 equ_op: INEQU .
+
+    $default  reduce using rule 230 (equ_op)
+
+
+state 378
+
+  212 timing_check_condition: scalar_node equ_op . scalar_constant
+
+    BIT_CONST  shift, and go to state 254
+    NUMBER     shift, and go to state 256
+
+    scalar_constant  go to state 451
+
+
+state 379
+
+  211 timing_check_condition: inv_op scalar_node .
+
+    $default  reduce using rule 211 (timing_check_condition)
+
+
+state 380
+
+  137 port_edge: '(' edge_identifier port_instance ')' .
+
+    $default  reduce using rule 137 (port_edge)
+
+
+state 381
+
+   80 tchk_def: '(' SETUP port_tchk port_tchk value ')' .
+
+    $default  reduce using rule 80 (tchk_def)
+
+
+state 382
+
+   81 tchk_def: '(' HOLD port_tchk port_tchk value ')' .
+
+    $default  reduce using rule 81 (tchk_def)
+
+
+state 383
+
+   82 tchk_def: '(' SETUPHOLD port_tchk port_tchk value value . ')'
+   83         | '(' SETUPHOLD port_tchk port_tchk value value . scond ')'
+   84         | '(' SETUPHOLD port_tchk port_tchk value value . ccond ')'
+   85         | '(' SETUPHOLD port_tchk port_tchk value value . scond ccond ')'
+
+    '('  shift, and go to state 452
+    ')'  shift, and go to state 453
+
+    scond  go to state 454
+    ccond  go to state 455
+
+
+state 384
+
+   86 tchk_def: '(' RECOVERY port_tchk port_tchk value ')' .
+
+    $default  reduce using rule 86 (tchk_def)
+
+
+state 385
+
+   87 tchk_def: '(' REMOVAL port_tchk port_tchk value ')' .
+
+    $default  reduce using rule 87 (tchk_def)
+
+
+state 386
+
+   88 tchk_def: '(' RECREM port_tchk port_tchk value value . ')'
+   89         | '(' RECREM port_tchk port_tchk value value . scond ')'
+   90         | '(' RECREM port_tchk port_tchk value value . ccond ')'
+   91         | '(' RECREM port_tchk port_tchk value value . scond ccond ')'
+
+    '('  shift, and go to state 452
+    ')'  shift, and go to state 456
+
+    scond  go to state 457
+    ccond  go to state 458
+
+
+state 387
+
+   92 tchk_def: '(' SKEW port_tchk port_tchk value ')' .
+
+    $default  reduce using rule 92 (tchk_def)
+
+
+state 388
+
+   95 tchk_def: '(' NOCHANGE port_tchk port_tchk value value . ')'
+
+    ')'  shift, and go to state 459
+
+
+state 389
+
+  104 name: '(' NAME QSTRING ')' .
+
+    $default  reduce using rule 104 (name)
+
+
+state 390
+
+  111 cns_def: '(' PATHCONSTRAINT name port_instance port_instances value . value ')'
+
+    '('  shift, and go to state 152
+
+    value  go to state 460
+
+
+state 391
+
+  110 cns_def: '(' PATHCONSTRAINT port_instance port_instances value value . ')'
+
+    ')'  shift, and go to state 461
+
+
+state 392
+
+  105 exception: '(' EXCEPTION . cell_instances ')'
+
+    '('  shift, and go to state 83
+
+    cell_instance   go to state 462
+    cell_instances  go to state 463
+
+
+state 393
+
+  113 cns_def: '(' PERIODCONSTRAINT port_instance value exception ')' .
+
+    $default  reduce using rule 113 (cns_def)
+
+
+state 394
+
+  134 constraint_path: '(' port_instance port_instance ')' .
+
+    $default  reduce using rule 134 (constraint_path)
+
+
+state 395
+
+  123 constraint_paths: constraint_paths constraint_path .
+
+    $default  reduce using rule 123 (constraint_paths)
+
+
+state 396
+
+  116 cns_def: '(' SUM constraint_path constraint_path constraint_paths value . ')'
+  117        | '(' SUM constraint_path constraint_path constraint_paths value . value ')'
+
+    '('  shift, and go to state 152
+    ')'  shift, and go to state 464
+
+    value  go to state 465
+
+
+state 397
+
+  114 cns_def: '(' SUM constraint_path constraint_path value ')' .
+
+    $default  reduce using rule 114 (cns_def)
+
+
+state 398
+
+  115 cns_def: '(' SUM constraint_path constraint_path value value . ')'
+
+    ')'  shift, and go to state 466
+
+
+state 399
+
+  118 cns_def: '(' DIFF constraint_path constraint_path value ')' .
+
+    $default  reduce using rule 118 (cns_def)
+
+
+state 400
+
+  119 cns_def: '(' DIFF constraint_path constraint_path value value . ')'
+
+    ')'  shift, and go to state 467
+
+
+state 401
+
+  126 tenv_def: '(' ARRIVAL port_edge port_instance value value . value value ')'
+
+    '('  shift, and go to state 152
+
+    value  go to state 468
+
+
+state 402
+
+  125 tenv_def: '(' ARRIVAL port_instance value value value . value ')'
+
+    '('  shift, and go to state 152
+
+    value  go to state 469
+
+
+state 403
+
+  128 tenv_def: '(' DEPARTURE port_edge port_instance value value . value value ')'
+
+    '('  shift, and go to state 152
+
+    value  go to state 470
+
+
+state 404
+
+  127 tenv_def: '(' DEPARTURE port_instance value value value . value ')'
+
+    '('  shift, and go to state 152
+
+    value  go to state 471
+
+
+state 405
+
+  129 tenv_def: '(' SLACK port_instance value value value . value ')'
+  130         | '(' SLACK port_instance value value value . value NUMBER ')'
+
+    '('  shift, and go to state 152
+
+    value  go to state 472
+
+
+state 406
+
+  158 pos_pair: '(' POSEDGE . NUMBER number_q ')' '(' NEGEDGE NUMBER number_q ')'
+
+    NUMBER  shift, and go to state 473
+
+
+state 407
+
+  159 neg_pair: '(' NEGEDGE . NUMBER number_q ')' '(' POSEDGE NUMBER number_q ')'
+
+    NUMBER  shift, and go to state 474
+
+
+state 408
+
+  131 tenv_def: '(' WAVEFORM port_instance NUMBER edge_list ')' .
+
+    $default  reduce using rule 131 (tenv_def)
+
+
+state 409
+
+  158 pos_pair: '(' . POSEDGE NUMBER number_q ')' '(' NEGEDGE NUMBER number_q ')'
+
+    POSEDGE  shift, and go to state 406
+
+
+state 410
+
+  154 pos_pairs: pos_pairs pos_pair .
+
+    $default  reduce using rule 154 (pos_pairs)
+
+
+state 411
+
+  159 neg_pair: '(' . NEGEDGE NUMBER number_q ')' '(' POSEDGE NUMBER number_q ')'
+
+    NEGEDGE  shift, and go to state 407
+
+
+state 412
+
+  156 neg_pairs: neg_pairs neg_pair .
+
+    $default  reduce using rule 156 (neg_pairs)
+
+
+state 413
+
+  151 bus_port: PATH '[' NUMBER ':' NUMBER . ']'
+
+    ']'  shift, and go to state 475
+
+
+state 414
+
+  150 bus_port: IDENTIFIER '[' NUMBER ':' NUMBER . ']'
+
+    ']'  shift, and go to state 476
+
+
+state 415
+
+   78 del_def_iopath: '(' IOPATH port_spec port_instance '(' . RETAIN delval_list ')' ')'
+  160 value: '(' . NUMBER ')'
+  161      | '(' . triple ')'
+  162      | '(' . ')'
+  171 delval: '(' . value value ')'
+  172       | '(' . value value value ')'
+
+    RETAIN  shift, and go to state 477
+    NUMBER  shift, and go to state 195
+    '('     shift, and go to state 152
+    ')'     shift, and go to state 196
+    ':'     shift, and go to state 49
+
+    value   go to state 364
+    triple  go to state 197
+
+
+state 416
+
+   77 del_def_iopath: '(' IOPATH port_spec port_instance delval_list . ')'
+
+    ')'  shift, and go to state 478
+
+
+state 417
+
+  183 simple_expression: '(' simple_expression ')' .
+
+    $default  reduce using rule 183 (simple_expression)
+
+
+state 418
+
+  180 expression: '{' expression ',' . conditional_expression '}'
+
+    U_NAND      shift, and go to state 250
+    U_NOR       shift, and go to state 251
+    U_XNOR      shift, and go to state 252
+    U_XNOR_ALT  shift, and go to state 253
+    BIT_CONST   shift, and go to state 254
+    PATH        shift, and go to state 150
+    IDENTIFIER  shift, and go to state 151
+    NUMBER      shift, and go to state 256
+    '|'         shift, and go to state 257
+    '^'         shift, and go to state 258
+    '&'         shift, and go to state 259
+    '+'         shift, and go to state 260
+    '-'         shift, and go to state 261
+    '!'         shift, and go to state 262
+    '~'         shift, and go to state 263
+    '('         shift, and go to state 264
+
+    port                    go to state 266
+    scalar_port             go to state 157
+    bus_port                go to state 158
+    conditional_expression  go to state 479
+    simple_expression       go to state 269
+    binary_expression       go to state 270
+    scalar_constant         go to state 271
+    unary_op                go to state 272
+
+
+state 419
+
+  179 expression: '{' conditional_expression '}' .
+
+    $default  reduce using rule 179 (expression)
+
+
+state 420
+
+  190 binary_expression: simple_expression . '+' simple_expression
+  191                  | simple_expression . '-' simple_expression
+  192                  | simple_expression . '*' simple_expression
+  193                  | simple_expression . '/' simple_expression
+  194                  | simple_expression . '%' simple_expression
+  195                  | simple_expression . EQU simple_expression
+  196                  | simple_expression . INEQU simple_expression
+  197                  | simple_expression . CASE_EQU simple_expression
+  197                  | simple_expression CASE_EQU simple_expression .
+  198                  | simple_expression . CASE_INEQU simple_expression
+  199                  | simple_expression . L_AND simple_expression
+  200                  | simple_expression . L_OR simple_expression
+  201                  | simple_expression . '<' simple_expression
+  202                  | simple_expression . LESS_OR_EQU simple_expression
+  203                  | simple_expression . '>' simple_expression
+  204                  | simple_expression . GREATER_OR_EQU simple_expression
+  205                  | simple_expression . '&' simple_expression
+  206                  | simple_expression . '^' simple_expression
+  207                  | simple_expression . '|' simple_expression
+  208                  | simple_expression . RIGHT_SHIFT simple_expression
+  209                  | simple_expression . LEFT_SHIFT simple_expression
+
+    LESS_OR_EQU     shift, and go to state 344
+    GREATER_OR_EQU  shift, and go to state 345
+    RIGHT_SHIFT     shift, and go to state 346
+    LEFT_SHIFT      shift, and go to state 347
+    '<'             shift, and go to state 351
+    '>'             shift, and go to state 352
+    '+'             shift, and go to state 353
+    '-'             shift, and go to state 354
+    '*'             shift, and go to state 355
+    '/'             shift, and go to state 356
+    '%'             shift, and go to state 357
+
+    $default  reduce using rule 197 (binary_expression)
+
+
+state 421
+
+  190 binary_expression: simple_expression . '+' simple_expression
+  191                  | simple_expression . '-' simple_expression
+  192                  | simple_expression . '*' simple_expression
+  193                  | simple_expression . '/' simple_expression
+  194                  | simple_expression . '%' simple_expression
+  195                  | simple_expression . EQU simple_expression
+  196                  | simple_expression . INEQU simple_expression
+  197                  | simple_expression . CASE_EQU simple_expression
+  198                  | simple_expression . CASE_INEQU simple_expression
+  198                  | simple_expression CASE_INEQU simple_expression .
+  199                  | simple_expression . L_AND simple_expression
+  200                  | simple_expression . L_OR simple_expression
+  201                  | simple_expression . '<' simple_expression
+  202                  | simple_expression . LESS_OR_EQU simple_expression
+  203                  | simple_expression . '>' simple_expression
+  204                  | simple_expression . GREATER_OR_EQU simple_expression
+  205                  | simple_expression . '&' simple_expression
+  206                  | simple_expression . '^' simple_expression
+  207                  | simple_expression . '|' simple_expression
+  208                  | simple_expression . RIGHT_SHIFT simple_expression
+  209                  | simple_expression . LEFT_SHIFT simple_expression
+
+    LESS_OR_EQU     shift, and go to state 344
+    GREATER_OR_EQU  shift, and go to state 345
+    RIGHT_SHIFT     shift, and go to state 346
+    LEFT_SHIFT      shift, and go to state 347
+    '<'             shift, and go to state 351
+    '>'             shift, and go to state 352
+    '+'             shift, and go to state 353
+    '-'             shift, and go to state 354
+    '*'             shift, and go to state 355
+    '/'             shift, and go to state 356
+    '%'             shift, and go to state 357
+
+    $default  reduce using rule 198 (binary_expression)
+
+
+state 422
+
+  190 binary_expression: simple_expression . '+' simple_expression
+  191                  | simple_expression . '-' simple_expression
+  192                  | simple_expression . '*' simple_expression
+  193                  | simple_expression . '/' simple_expression
+  194                  | simple_expression . '%' simple_expression
+  195                  | simple_expression . EQU simple_expression
+  195                  | simple_expression EQU simple_expression .
+  196                  | simple_expression . INEQU simple_expression
+  197                  | simple_expression . CASE_EQU simple_expression
+  198                  | simple_expression . CASE_INEQU simple_expression
+  199                  | simple_expression . L_AND simple_expression
+  200                  | simple_expression . L_OR simple_expression
+  201                  | simple_expression . '<' simple_expression
+  202                  | simple_expression . LESS_OR_EQU simple_expression
+  203                  | simple_expression . '>' simple_expression
+  204                  | simple_expression . GREATER_OR_EQU simple_expression
+  205                  | simple_expression . '&' simple_expression
+  206                  | simple_expression . '^' simple_expression
+  207                  | simple_expression . '|' simple_expression
+  208                  | simple_expression . RIGHT_SHIFT simple_expression
+  209                  | simple_expression . LEFT_SHIFT simple_expression
+
+    LESS_OR_EQU     shift, and go to state 344
+    GREATER_OR_EQU  shift, and go to state 345
+    RIGHT_SHIFT     shift, and go to state 346
+    LEFT_SHIFT      shift, and go to state 347
+    '<'             shift, and go to state 351
+    '>'             shift, and go to state 352
+    '+'             shift, and go to state 353
+    '-'             shift, and go to state 354
+    '*'             shift, and go to state 355
+    '/'             shift, and go to state 356
+    '%'             shift, and go to state 357
+
+    $default  reduce using rule 195 (binary_expression)
+
+
+state 423
+
+  190 binary_expression: simple_expression . '+' simple_expression
+  191                  | simple_expression . '-' simple_expression
+  192                  | simple_expression . '*' simple_expression
+  193                  | simple_expression . '/' simple_expression
+  194                  | simple_expression . '%' simple_expression
+  195                  | simple_expression . EQU simple_expression
+  196                  | simple_expression . INEQU simple_expression
+  196                  | simple_expression INEQU simple_expression .
+  197                  | simple_expression . CASE_EQU simple_expression
+  198                  | simple_expression . CASE_INEQU simple_expression
+  199                  | simple_expression . L_AND simple_expression
+  200                  | simple_expression . L_OR simple_expression
+  201                  | simple_expression . '<' simple_expression
+  202                  | simple_expression . LESS_OR_EQU simple_expression
+  203                  | simple_expression . '>' simple_expression
+  204                  | simple_expression . GREATER_OR_EQU simple_expression
+  205                  | simple_expression . '&' simple_expression
+  206                  | simple_expression . '^' simple_expression
+  207                  | simple_expression . '|' simple_expression
+  208                  | simple_expression . RIGHT_SHIFT simple_expression
+  209                  | simple_expression . LEFT_SHIFT simple_expression
+
+    LESS_OR_EQU     shift, and go to state 344
+    GREATER_OR_EQU  shift, and go to state 345
+    RIGHT_SHIFT     shift, and go to state 346
+    LEFT_SHIFT      shift, and go to state 347
+    '<'             shift, and go to state 351
+    '>'             shift, and go to state 352
+    '+'             shift, and go to state 353
+    '-'             shift, and go to state 354
+    '*'             shift, and go to state 355
+    '/'             shift, and go to state 356
+    '%'             shift, and go to state 357
+
+    $default  reduce using rule 196 (binary_expression)
+
+
+state 424
+
+  190 binary_expression: simple_expression . '+' simple_expression
+  191                  | simple_expression . '-' simple_expression
+  192                  | simple_expression . '*' simple_expression
+  193                  | simple_expression . '/' simple_expression
+  194                  | simple_expression . '%' simple_expression
+  195                  | simple_expression . EQU simple_expression
+  196                  | simple_expression . INEQU simple_expression
+  197                  | simple_expression . CASE_EQU simple_expression
+  198                  | simple_expression . CASE_INEQU simple_expression
+  199                  | simple_expression . L_AND simple_expression
+  199                  | simple_expression L_AND simple_expression .
+  200                  | simple_expression . L_OR simple_expression
+  201                  | simple_expression . '<' simple_expression
+  202                  | simple_expression . LESS_OR_EQU simple_expression
+  203                  | simple_expression . '>' simple_expression
+  204                  | simple_expression . GREATER_OR_EQU simple_expression
+  205                  | simple_expression . '&' simple_expression
+  206                  | simple_expression . '^' simple_expression
+  207                  | simple_expression . '|' simple_expression
+  208                  | simple_expression . RIGHT_SHIFT simple_expression
+  209                  | simple_expression . LEFT_SHIFT simple_expression
+
+    CASE_EQU        shift, and go to state 338
+    CASE_INEQU      shift, and go to state 339
+    EQU             shift, and go to state 340
+    INEQU           shift, and go to state 341
+    LESS_OR_EQU     shift, and go to state 344
+    GREATER_OR_EQU  shift, and go to state 345
+    RIGHT_SHIFT     shift, and go to state 346
+    LEFT_SHIFT      shift, and go to state 347
+    '|'             shift, and go to state 348
+    '^'             shift, and go to state 349
+    '&'             shift, and go to state 350
+    '<'             shift, and go to state 351
+    '>'             shift, and go to state 352
+    '+'             shift, and go to state 353
+    '-'             shift, and go to state 354
+    '*'             shift, and go to state 355
+    '/'             shift, and go to state 356
+    '%'             shift, and go to state 357
+
+    $default  reduce using rule 199 (binary_expression)
+
+
+state 425
+
+  190 binary_expression: simple_expression . '+' simple_expression
+  191                  | simple_expression . '-' simple_expression
+  192                  | simple_expression . '*' simple_expression
+  193                  | simple_expression . '/' simple_expression
+  194                  | simple_expression . '%' simple_expression
+  195                  | simple_expression . EQU simple_expression
+  196                  | simple_expression . INEQU simple_expression
+  197                  | simple_expression . CASE_EQU simple_expression
+  198                  | simple_expression . CASE_INEQU simple_expression
+  199                  | simple_expression . L_AND simple_expression
+  200                  | simple_expression . L_OR simple_expression
+  200                  | simple_expression L_OR simple_expression .
+  201                  | simple_expression . '<' simple_expression
+  202                  | simple_expression . LESS_OR_EQU simple_expression
+  203                  | simple_expression . '>' simple_expression
+  204                  | simple_expression . GREATER_OR_EQU simple_expression
+  205                  | simple_expression . '&' simple_expression
+  206                  | simple_expression . '^' simple_expression
+  207                  | simple_expression . '|' simple_expression
+  208                  | simple_expression . RIGHT_SHIFT simple_expression
+  209                  | simple_expression . LEFT_SHIFT simple_expression
+
+    CASE_EQU        shift, and go to state 338
+    CASE_INEQU      shift, and go to state 339
+    EQU             shift, and go to state 340
+    INEQU           shift, and go to state 341
+    L_AND           shift, and go to state 342
+    LESS_OR_EQU     shift, and go to state 344
+    GREATER_OR_EQU  shift, and go to state 345
+    RIGHT_SHIFT     shift, and go to state 346
+    LEFT_SHIFT      shift, and go to state 347
+    '|'             shift, and go to state 348
+    '^'             shift, and go to state 349
+    '&'             shift, and go to state 350
+    '<'             shift, and go to state 351
+    '>'             shift, and go to state 352
+    '+'             shift, and go to state 353
+    '-'             shift, and go to state 354
+    '*'             shift, and go to state 355
+    '/'             shift, and go to state 356
+    '%'             shift, and go to state 357
+
+    $default  reduce using rule 200 (binary_expression)
+
+
+state 426
+
+  190 binary_expression: simple_expression . '+' simple_expression
+  191                  | simple_expression . '-' simple_expression
+  192                  | simple_expression . '*' simple_expression
+  193                  | simple_expression . '/' simple_expression
+  194                  | simple_expression . '%' simple_expression
+  195                  | simple_expression . EQU simple_expression
+  196                  | simple_expression . INEQU simple_expression
+  197                  | simple_expression . CASE_EQU simple_expression
+  198                  | simple_expression . CASE_INEQU simple_expression
+  199                  | simple_expression . L_AND simple_expression
+  200                  | simple_expression . L_OR simple_expression
+  201                  | simple_expression . '<' simple_expression
+  202                  | simple_expression . LESS_OR_EQU simple_expression
+  202                  | simple_expression LESS_OR_EQU simple_expression .
+  203                  | simple_expression . '>' simple_expression
+  204                  | simple_expression . GREATER_OR_EQU simple_expression
+  205                  | simple_expression . '&' simple_expression
+  206                  | simple_expression . '^' simple_expression
+  207                  | simple_expression . '|' simple_expression
+  208                  | simple_expression . RIGHT_SHIFT simple_expression
+  209                  | simple_expression . LEFT_SHIFT simple_expression
+
+    RIGHT_SHIFT  shift, and go to state 346
+    LEFT_SHIFT   shift, and go to state 347
+    '+'          shift, and go to state 353
+    '-'          shift, and go to state 354
+    '*'          shift, and go to state 355
+    '/'          shift, and go to state 356
+    '%'          shift, and go to state 357
+
+    $default  reduce using rule 202 (binary_expression)
+
+
+state 427
+
+  190 binary_expression: simple_expression . '+' simple_expression
+  191                  | simple_expression . '-' simple_expression
+  192                  | simple_expression . '*' simple_expression
+  193                  | simple_expression . '/' simple_expression
+  194                  | simple_expression . '%' simple_expression
+  195                  | simple_expression . EQU simple_expression
+  196                  | simple_expression . INEQU simple_expression
+  197                  | simple_expression . CASE_EQU simple_expression
+  198                  | simple_expression . CASE_INEQU simple_expression
+  199                  | simple_expression . L_AND simple_expression
+  200                  | simple_expression . L_OR simple_expression
+  201                  | simple_expression . '<' simple_expression
+  202                  | simple_expression . LESS_OR_EQU simple_expression
+  203                  | simple_expression . '>' simple_expression
+  204                  | simple_expression . GREATER_OR_EQU simple_expression
+  204                  | simple_expression GREATER_OR_EQU simple_expression .
+  205                  | simple_expression . '&' simple_expression
+  206                  | simple_expression . '^' simple_expression
+  207                  | simple_expression . '|' simple_expression
+  208                  | simple_expression . RIGHT_SHIFT simple_expression
+  209                  | simple_expression . LEFT_SHIFT simple_expression
+
+    RIGHT_SHIFT  shift, and go to state 346
+    LEFT_SHIFT   shift, and go to state 347
+    '+'          shift, and go to state 353
+    '-'          shift, and go to state 354
+    '*'          shift, and go to state 355
+    '/'          shift, and go to state 356
+    '%'          shift, and go to state 357
+
+    $default  reduce using rule 204 (binary_expression)
+
+
+state 428
+
+  190 binary_expression: simple_expression . '+' simple_expression
+  191                  | simple_expression . '-' simple_expression
+  192                  | simple_expression . '*' simple_expression
+  193                  | simple_expression . '/' simple_expression
+  194                  | simple_expression . '%' simple_expression
+  195                  | simple_expression . EQU simple_expression
+  196                  | simple_expression . INEQU simple_expression
+  197                  | simple_expression . CASE_EQU simple_expression
+  198                  | simple_expression . CASE_INEQU simple_expression
+  199                  | simple_expression . L_AND simple_expression
+  200                  | simple_expression . L_OR simple_expression
+  201                  | simple_expression . '<' simple_expression
+  202                  | simple_expression . LESS_OR_EQU simple_expression
+  203                  | simple_expression . '>' simple_expression
+  204                  | simple_expression . GREATER_OR_EQU simple_expression
+  205                  | simple_expression . '&' simple_expression
+  206                  | simple_expression . '^' simple_expression
+  207                  | simple_expression . '|' simple_expression
+  208                  | simple_expression . RIGHT_SHIFT simple_expression
+  208                  | simple_expression RIGHT_SHIFT simple_expression .
+  209                  | simple_expression . LEFT_SHIFT simple_expression
+
+    '+'  shift, and go to state 353
+    '-'  shift, and go to state 354
+    '*'  shift, and go to state 355
+    '/'  shift, and go to state 356
+    '%'  shift, and go to state 357
+
+    $default  reduce using rule 208 (binary_expression)
+
+
+state 429
+
+  190 binary_expression: simple_expression . '+' simple_expression
+  191                  | simple_expression . '-' simple_expression
+  192                  | simple_expression . '*' simple_expression
+  193                  | simple_expression . '/' simple_expression
+  194                  | simple_expression . '%' simple_expression
+  195                  | simple_expression . EQU simple_expression
+  196                  | simple_expression . INEQU simple_expression
+  197                  | simple_expression . CASE_EQU simple_expression
+  198                  | simple_expression . CASE_INEQU simple_expression
+  199                  | simple_expression . L_AND simple_expression
+  200                  | simple_expression . L_OR simple_expression
+  201                  | simple_expression . '<' simple_expression
+  202                  | simple_expression . LESS_OR_EQU simple_expression
+  203                  | simple_expression . '>' simple_expression
+  204                  | simple_expression . GREATER_OR_EQU simple_expression
+  205                  | simple_expression . '&' simple_expression
+  206                  | simple_expression . '^' simple_expression
+  207                  | simple_expression . '|' simple_expression
+  208                  | simple_expression . RIGHT_SHIFT simple_expression
+  209                  | simple_expression . LEFT_SHIFT simple_expression
+  209                  | simple_expression LEFT_SHIFT simple_expression .
+
+    '+'  shift, and go to state 353
+    '-'  shift, and go to state 354
+    '*'  shift, and go to state 355
+    '/'  shift, and go to state 356
+    '%'  shift, and go to state 357
+
+    $default  reduce using rule 209 (binary_expression)
+
+
+state 430
+
+  190 binary_expression: simple_expression . '+' simple_expression
+  191                  | simple_expression . '-' simple_expression
+  192                  | simple_expression . '*' simple_expression
+  193                  | simple_expression . '/' simple_expression
+  194                  | simple_expression . '%' simple_expression
+  195                  | simple_expression . EQU simple_expression
+  196                  | simple_expression . INEQU simple_expression
+  197                  | simple_expression . CASE_EQU simple_expression
+  198                  | simple_expression . CASE_INEQU simple_expression
+  199                  | simple_expression . L_AND simple_expression
+  200                  | simple_expression . L_OR simple_expression
+  201                  | simple_expression . '<' simple_expression
+  202                  | simple_expression . LESS_OR_EQU simple_expression
+  203                  | simple_expression . '>' simple_expression
+  204                  | simple_expression . GREATER_OR_EQU simple_expression
+  205                  | simple_expression . '&' simple_expression
+  206                  | simple_expression . '^' simple_expression
+  207                  | simple_expression . '|' simple_expression
+  207                  | simple_expression '|' simple_expression .
+  208                  | simple_expression . RIGHT_SHIFT simple_expression
+  209                  | simple_expression . LEFT_SHIFT simple_expression
+
+    CASE_EQU        shift, and go to state 338
+    CASE_INEQU      shift, and go to state 339
+    EQU             shift, and go to state 340
+    INEQU           shift, and go to state 341
+    LESS_OR_EQU     shift, and go to state 344
+    GREATER_OR_EQU  shift, and go to state 345
+    RIGHT_SHIFT     shift, and go to state 346
+    LEFT_SHIFT      shift, and go to state 347
+    '^'             shift, and go to state 349
+    '&'             shift, and go to state 350
+    '<'             shift, and go to state 351
+    '>'             shift, and go to state 352
+    '+'             shift, and go to state 353
+    '-'             shift, and go to state 354
+    '*'             shift, and go to state 355
+    '/'             shift, and go to state 356
+    '%'             shift, and go to state 357
+
+    $default  reduce using rule 207 (binary_expression)
+
+
+state 431
+
+  190 binary_expression: simple_expression . '+' simple_expression
+  191                  | simple_expression . '-' simple_expression
+  192                  | simple_expression . '*' simple_expression
+  193                  | simple_expression . '/' simple_expression
+  194                  | simple_expression . '%' simple_expression
+  195                  | simple_expression . EQU simple_expression
+  196                  | simple_expression . INEQU simple_expression
+  197                  | simple_expression . CASE_EQU simple_expression
+  198                  | simple_expression . CASE_INEQU simple_expression
+  199                  | simple_expression . L_AND simple_expression
+  200                  | simple_expression . L_OR simple_expression
+  201                  | simple_expression . '<' simple_expression
+  202                  | simple_expression . LESS_OR_EQU simple_expression
+  203                  | simple_expression . '>' simple_expression
+  204                  | simple_expression . GREATER_OR_EQU simple_expression
+  205                  | simple_expression . '&' simple_expression
+  206                  | simple_expression . '^' simple_expression
+  206                  | simple_expression '^' simple_expression .
+  207                  | simple_expression . '|' simple_expression
+  208                  | simple_expression . RIGHT_SHIFT simple_expression
+  209                  | simple_expression . LEFT_SHIFT simple_expression
+
+    CASE_EQU        shift, and go to state 338
+    CASE_INEQU      shift, and go to state 339
+    EQU             shift, and go to state 340
+    INEQU           shift, and go to state 341
+    LESS_OR_EQU     shift, and go to state 344
+    GREATER_OR_EQU  shift, and go to state 345
+    RIGHT_SHIFT     shift, and go to state 346
+    LEFT_SHIFT      shift, and go to state 347
+    '&'             shift, and go to state 350
+    '<'             shift, and go to state 351
+    '>'             shift, and go to state 352
+    '+'             shift, and go to state 353
+    '-'             shift, and go to state 354
+    '*'             shift, and go to state 355
+    '/'             shift, and go to state 356
+    '%'             shift, and go to state 357
+
+    $default  reduce using rule 206 (binary_expression)
+
+
+state 432
+
+  190 binary_expression: simple_expression . '+' simple_expression
+  191                  | simple_expression . '-' simple_expression
+  192                  | simple_expression . '*' simple_expression
+  193                  | simple_expression . '/' simple_expression
+  194                  | simple_expression . '%' simple_expression
+  195                  | simple_expression . EQU simple_expression
+  196                  | simple_expression . INEQU simple_expression
+  197                  | simple_expression . CASE_EQU simple_expression
+  198                  | simple_expression . CASE_INEQU simple_expression
+  199                  | simple_expression . L_AND simple_expression
+  200                  | simple_expression . L_OR simple_expression
+  201                  | simple_expression . '<' simple_expression
+  202                  | simple_expression . LESS_OR_EQU simple_expression
+  203                  | simple_expression . '>' simple_expression
+  204                  | simple_expression . GREATER_OR_EQU simple_expression
+  205                  | simple_expression . '&' simple_expression
+  205                  | simple_expression '&' simple_expression .
+  206                  | simple_expression . '^' simple_expression
+  207                  | simple_expression . '|' simple_expression
+  208                  | simple_expression . RIGHT_SHIFT simple_expression
+  209                  | simple_expression . LEFT_SHIFT simple_expression
+
+    CASE_EQU        shift, and go to state 338
+    CASE_INEQU      shift, and go to state 339
+    EQU             shift, and go to state 340
+    INEQU           shift, and go to state 341
+    LESS_OR_EQU     shift, and go to state 344
+    GREATER_OR_EQU  shift, and go to state 345
+    RIGHT_SHIFT     shift, and go to state 346
+    LEFT_SHIFT      shift, and go to state 347
+    '<'             shift, and go to state 351
+    '>'             shift, and go to state 352
+    '+'             shift, and go to state 353
+    '-'             shift, and go to state 354
+    '*'             shift, and go to state 355
+    '/'             shift, and go to state 356
+    '%'             shift, and go to state 357
+
+    $default  reduce using rule 205 (binary_expression)
+
+
+state 433
+
+  190 binary_expression: simple_expression . '+' simple_expression
+  191                  | simple_expression . '-' simple_expression
+  192                  | simple_expression . '*' simple_expression
+  193                  | simple_expression . '/' simple_expression
+  194                  | simple_expression . '%' simple_expression
+  195                  | simple_expression . EQU simple_expression
+  196                  | simple_expression . INEQU simple_expression
+  197                  | simple_expression . CASE_EQU simple_expression
+  198                  | simple_expression . CASE_INEQU simple_expression
+  199                  | simple_expression . L_AND simple_expression
+  200                  | simple_expression . L_OR simple_expression
+  201                  | simple_expression . '<' simple_expression
+  201                  | simple_expression '<' simple_expression .
+  202                  | simple_expression . LESS_OR_EQU simple_expression
+  203                  | simple_expression . '>' simple_expression
+  204                  | simple_expression . GREATER_OR_EQU simple_expression
+  205                  | simple_expression . '&' simple_expression
+  206                  | simple_expression . '^' simple_expression
+  207                  | simple_expression . '|' simple_expression
+  208                  | simple_expression . RIGHT_SHIFT simple_expression
+  209                  | simple_expression . LEFT_SHIFT simple_expression
+
+    RIGHT_SHIFT  shift, and go to state 346
+    LEFT_SHIFT   shift, and go to state 347
+    '+'          shift, and go to state 353
+    '-'          shift, and go to state 354
+    '*'          shift, and go to state 355
+    '/'          shift, and go to state 356
+    '%'          shift, and go to state 357
+
+    $default  reduce using rule 201 (binary_expression)
+
+
+state 434
+
+  190 binary_expression: simple_expression . '+' simple_expression
+  191                  | simple_expression . '-' simple_expression
+  192                  | simple_expression . '*' simple_expression
+  193                  | simple_expression . '/' simple_expression
+  194                  | simple_expression . '%' simple_expression
+  195                  | simple_expression . EQU simple_expression
+  196                  | simple_expression . INEQU simple_expression
+  197                  | simple_expression . CASE_EQU simple_expression
+  198                  | simple_expression . CASE_INEQU simple_expression
+  199                  | simple_expression . L_AND simple_expression
+  200                  | simple_expression . L_OR simple_expression
+  201                  | simple_expression . '<' simple_expression
+  202                  | simple_expression . LESS_OR_EQU simple_expression
+  203                  | simple_expression . '>' simple_expression
+  203                  | simple_expression '>' simple_expression .
+  204                  | simple_expression . GREATER_OR_EQU simple_expression
+  205                  | simple_expression . '&' simple_expression
+  206                  | simple_expression . '^' simple_expression
+  207                  | simple_expression . '|' simple_expression
+  208                  | simple_expression . RIGHT_SHIFT simple_expression
+  209                  | simple_expression . LEFT_SHIFT simple_expression
+
+    RIGHT_SHIFT  shift, and go to state 346
+    LEFT_SHIFT   shift, and go to state 347
+    '+'          shift, and go to state 353
+    '-'          shift, and go to state 354
+    '*'          shift, and go to state 355
+    '/'          shift, and go to state 356
+    '%'          shift, and go to state 357
+
+    $default  reduce using rule 203 (binary_expression)
+
+
+state 435
+
+  190 binary_expression: simple_expression . '+' simple_expression
+  190                  | simple_expression '+' simple_expression .
+  191                  | simple_expression . '-' simple_expression
+  192                  | simple_expression . '*' simple_expression
+  193                  | simple_expression . '/' simple_expression
+  194                  | simple_expression . '%' simple_expression
+  195                  | simple_expression . EQU simple_expression
+  196                  | simple_expression . INEQU simple_expression
+  197                  | simple_expression . CASE_EQU simple_expression
+  198                  | simple_expression . CASE_INEQU simple_expression
+  199                  | simple_expression . L_AND simple_expression
+  200                  | simple_expression . L_OR simple_expression
+  201                  | simple_expression . '<' simple_expression
+  202                  | simple_expression . LESS_OR_EQU simple_expression
+  203                  | simple_expression . '>' simple_expression
+  204                  | simple_expression . GREATER_OR_EQU simple_expression
+  205                  | simple_expression . '&' simple_expression
+  206                  | simple_expression . '^' simple_expression
+  207                  | simple_expression . '|' simple_expression
+  208                  | simple_expression . RIGHT_SHIFT simple_expression
+  209                  | simple_expression . LEFT_SHIFT simple_expression
+
+    '*'  shift, and go to state 355
+    '/'  shift, and go to state 356
+    '%'  shift, and go to state 357
+
+    $default  reduce using rule 190 (binary_expression)
+
+
+state 436
+
+  190 binary_expression: simple_expression . '+' simple_expression
+  191                  | simple_expression . '-' simple_expression
+  191                  | simple_expression '-' simple_expression .
+  192                  | simple_expression . '*' simple_expression
+  193                  | simple_expression . '/' simple_expression
+  194                  | simple_expression . '%' simple_expression
+  195                  | simple_expression . EQU simple_expression
+  196                  | simple_expression . INEQU simple_expression
+  197                  | simple_expression . CASE_EQU simple_expression
+  198                  | simple_expression . CASE_INEQU simple_expression
+  199                  | simple_expression . L_AND simple_expression
+  200                  | simple_expression . L_OR simple_expression
+  201                  | simple_expression . '<' simple_expression
+  202                  | simple_expression . LESS_OR_EQU simple_expression
+  203                  | simple_expression . '>' simple_expression
+  204                  | simple_expression . GREATER_OR_EQU simple_expression
+  205                  | simple_expression . '&' simple_expression
+  206                  | simple_expression . '^' simple_expression
+  207                  | simple_expression . '|' simple_expression
+  208                  | simple_expression . RIGHT_SHIFT simple_expression
+  209                  | simple_expression . LEFT_SHIFT simple_expression
+
+    '*'  shift, and go to state 355
+    '/'  shift, and go to state 356
+    '%'  shift, and go to state 357
+
+    $default  reduce using rule 191 (binary_expression)
+
+
+state 437
+
+  190 binary_expression: simple_expression . '+' simple_expression
+  191                  | simple_expression . '-' simple_expression
+  192                  | simple_expression . '*' simple_expression
+  192                  | simple_expression '*' simple_expression .
+  193                  | simple_expression . '/' simple_expression
+  194                  | simple_expression . '%' simple_expression
+  195                  | simple_expression . EQU simple_expression
+  196                  | simple_expression . INEQU simple_expression
+  197                  | simple_expression . CASE_EQU simple_expression
+  198                  | simple_expression . CASE_INEQU simple_expression
+  199                  | simple_expression . L_AND simple_expression
+  200                  | simple_expression . L_OR simple_expression
+  201                  | simple_expression . '<' simple_expression
+  202                  | simple_expression . LESS_OR_EQU simple_expression
+  203                  | simple_expression . '>' simple_expression
+  204                  | simple_expression . GREATER_OR_EQU simple_expression
+  205                  | simple_expression . '&' simple_expression
+  206                  | simple_expression . '^' simple_expression
+  207                  | simple_expression . '|' simple_expression
+  208                  | simple_expression . RIGHT_SHIFT simple_expression
+  209                  | simple_expression . LEFT_SHIFT simple_expression
+
+    $default  reduce using rule 192 (binary_expression)
+
+
+state 438
+
+  190 binary_expression: simple_expression . '+' simple_expression
+  191                  | simple_expression . '-' simple_expression
+  192                  | simple_expression . '*' simple_expression
+  193                  | simple_expression . '/' simple_expression
+  193                  | simple_expression '/' simple_expression .
+  194                  | simple_expression . '%' simple_expression
+  195                  | simple_expression . EQU simple_expression
+  196                  | simple_expression . INEQU simple_expression
+  197                  | simple_expression . CASE_EQU simple_expression
+  198                  | simple_expression . CASE_INEQU simple_expression
+  199                  | simple_expression . L_AND simple_expression
+  200                  | simple_expression . L_OR simple_expression
+  201                  | simple_expression . '<' simple_expression
+  202                  | simple_expression . LESS_OR_EQU simple_expression
+  203                  | simple_expression . '>' simple_expression
+  204                  | simple_expression . GREATER_OR_EQU simple_expression
+  205                  | simple_expression . '&' simple_expression
+  206                  | simple_expression . '^' simple_expression
+  207                  | simple_expression . '|' simple_expression
+  208                  | simple_expression . RIGHT_SHIFT simple_expression
+  209                  | simple_expression . LEFT_SHIFT simple_expression
+
+    $default  reduce using rule 193 (binary_expression)
+
+
+state 439
+
+  190 binary_expression: simple_expression . '+' simple_expression
+  191                  | simple_expression . '-' simple_expression
+  192                  | simple_expression . '*' simple_expression
+  193                  | simple_expression . '/' simple_expression
+  194                  | simple_expression . '%' simple_expression
+  194                  | simple_expression '%' simple_expression .
+  195                  | simple_expression . EQU simple_expression
+  196                  | simple_expression . INEQU simple_expression
+  197                  | simple_expression . CASE_EQU simple_expression
+  198                  | simple_expression . CASE_INEQU simple_expression
+  199                  | simple_expression . L_AND simple_expression
+  200                  | simple_expression . L_OR simple_expression
+  201                  | simple_expression . '<' simple_expression
+  202                  | simple_expression . LESS_OR_EQU simple_expression
+  203                  | simple_expression . '>' simple_expression
+  204                  | simple_expression . GREATER_OR_EQU simple_expression
+  205                  | simple_expression . '&' simple_expression
+  206                  | simple_expression . '^' simple_expression
+  207                  | simple_expression . '|' simple_expression
+  208                  | simple_expression . RIGHT_SHIFT simple_expression
+  209                  | simple_expression . LEFT_SHIFT simple_expression
+
+    $default  reduce using rule 194 (binary_expression)
+
+
+state 440
+
+  182 conditional_expression: simple_expression '?' expression . ':' conditional_expression
+
+    ':'  shift, and go to state 480
+
+
+state 441
+
+  184 simple_expression: unary_op '(' simple_expression . ')'
+  190 binary_expression: simple_expression . '+' simple_expression
+  191                  | simple_expression . '-' simple_expression
+  192                  | simple_expression . '*' simple_expression
+  193                  | simple_expression . '/' simple_expression
+  194                  | simple_expression . '%' simple_expression
+  195                  | simple_expression . EQU simple_expression
+  196                  | simple_expression . INEQU simple_expression
+  197                  | simple_expression . CASE_EQU simple_expression
+  198                  | simple_expression . CASE_INEQU simple_expression
+  199                  | simple_expression . L_AND simple_expression
+  200                  | simple_expression . L_OR simple_expression
+  201                  | simple_expression . '<' simple_expression
+  202                  | simple_expression . LESS_OR_EQU simple_expression
+  203                  | simple_expression . '>' simple_expression
+  204                  | simple_expression . GREATER_OR_EQU simple_expression
+  205                  | simple_expression . '&' simple_expression
+  206                  | simple_expression . '^' simple_expression
+  207                  | simple_expression . '|' simple_expression
+  208                  | simple_expression . RIGHT_SHIFT simple_expression
+  209                  | simple_expression . LEFT_SHIFT simple_expression
+
+    CASE_EQU        shift, and go to state 338
+    CASE_INEQU      shift, and go to state 339
+    EQU             shift, and go to state 340
+    INEQU           shift, and go to state 341
+    L_AND           shift, and go to state 342
+    L_OR            shift, and go to state 343
+    LESS_OR_EQU     shift, and go to state 344
+    GREATER_OR_EQU  shift, and go to state 345
+    RIGHT_SHIFT     shift, and go to state 346
+    LEFT_SHIFT      shift, and go to state 347
+    '|'             shift, and go to state 348
+    '^'             shift, and go to state 349
+    '&'             shift, and go to state 350
+    '<'             shift, and go to state 351
+    '>'             shift, and go to state 352
+    '+'             shift, and go to state 353
+    '-'             shift, and go to state 354
+    '*'             shift, and go to state 355
+    '/'             shift, and go to state 356
+    '%'             shift, and go to state 357
+    ')'             shift, and go to state 481
+
+
+state 442
+
+   71 del_def: '(' PORT port_instance delval_list ')' .
+
+    $default  reduce using rule 71 (del_def)
+
+
+state 443
+
+   72 del_def: '(' INTERCONNECT port_instance port_instance delval_list . ')'
+
+    ')'  shift, and go to state 482
+
+
+state 444
+
+  171 delval: '(' value value . ')'
+  172       | '(' value value . value ')'
+
+    '('  shift, and go to state 152
+    ')'  shift, and go to state 483
+
+    value  go to state 484
+
+
+state 445
+
+   74 del_def: '(' DEVICE port_instance delval_list ')' .
+
+    $default  reduce using rule 74 (del_def)
+
+
+state 446
+
+  175 delval_list: delval delval delval .
+  176            | delval delval delval . delval delval delval
+  177            | delval delval delval . delval delval delval delval delval delval delval delval delval
+
+    '('  shift, and go to state 275
+
+    $default  reduce using rule 175 (delval_list)
+
+    value   go to state 277
+    delval  go to state 485
+
+
+state 447
+
+  149 scalar_port: PATH '[' NUMBER . ']'
+
+    ']'  shift, and go to state 329
+
+
+state 448
+
+  148 scalar_port: IDENTIFIER '[' NUMBER . ']'
+
+    ']'  shift, and go to state 331
+
+
+state 449
+
+   98 port_tchk: '(' COND QSTRING timing_check_condition port_spec . ')'
+
+    ')'  shift, and go to state 486
+
+
+state 450
+
+   97 port_tchk: '(' COND timing_check_condition port_spec ')' .
+
+    $default  reduce using rule 97 (port_tchk)
+
+
+state 451
+
+  212 timing_check_condition: scalar_node equ_op scalar_constant .
+
+    $default  reduce using rule 212 (timing_check_condition)
+
+
+state 452
+
+   99 scond: '(' . SCOND timing_check_condition ')'
+  100      | '(' . SCOND QSTRING timing_check_condition ')'
+  101 ccond: '(' . CCOND timing_check_condition ')'
+  102      | '(' . CCOND QSTRING timing_check_condition ')'
+
+    SCOND  shift, and go to state 487
+    CCOND  shift, and go to state 488
+
+
+state 453
+
+   82 tchk_def: '(' SETUPHOLD port_tchk port_tchk value value ')' .
+
+    $default  reduce using rule 82 (tchk_def)
+
+
+state 454
+
+   83 tchk_def: '(' SETUPHOLD port_tchk port_tchk value value scond . ')'
+   85         | '(' SETUPHOLD port_tchk port_tchk value value scond . ccond ')'
+
+    '('  shift, and go to state 489
+    ')'  shift, and go to state 490
+
+    ccond  go to state 491
+
+
+state 455
+
+   84 tchk_def: '(' SETUPHOLD port_tchk port_tchk value value ccond . ')'
+
+    ')'  shift, and go to state 492
+
+
+state 456
+
+   88 tchk_def: '(' RECREM port_tchk port_tchk value value ')' .
+
+    $default  reduce using rule 88 (tchk_def)
+
+
+state 457
+
+   89 tchk_def: '(' RECREM port_tchk port_tchk value value scond . ')'
+   91         | '(' RECREM port_tchk port_tchk value value scond . ccond ')'
+
+    '('  shift, and go to state 489
+    ')'  shift, and go to state 493
+
+    ccond  go to state 494
+
+
+state 458
+
+   90 tchk_def: '(' RECREM port_tchk port_tchk value value ccond . ')'
+
+    ')'  shift, and go to state 495
+
+
+state 459
+
+   95 tchk_def: '(' NOCHANGE port_tchk port_tchk value value ')' .
+
+    $default  reduce using rule 95 (tchk_def)
+
+
+state 460
+
+  111 cns_def: '(' PATHCONSTRAINT name port_instance port_instances value value . ')'
+
+    ')'  shift, and go to state 496
+
+
+state 461
+
+  110 cns_def: '(' PATHCONSTRAINT port_instance port_instances value value ')' .
+
+    $default  reduce using rule 110 (cns_def)
+
+
+state 462
+
+  107 cell_instances: cell_instance .
+
+    $default  reduce using rule 107 (cell_instances)
+
+
+state 463
+
+  105 exception: '(' EXCEPTION cell_instances . ')'
+  106 cell_instances: cell_instances . cell_instance
+
+    '('  shift, and go to state 83
+    ')'  shift, and go to state 497
+
+    cell_instance  go to state 498
+
+
+state 464
+
+  116 cns_def: '(' SUM constraint_path constraint_path constraint_paths value ')' .
+
+    $default  reduce using rule 116 (cns_def)
+
+
+state 465
+
+  117 cns_def: '(' SUM constraint_path constraint_path constraint_paths value value . ')'
+
+    ')'  shift, and go to state 499
+
+
+state 466
+
+  115 cns_def: '(' SUM constraint_path constraint_path value value ')' .
+
+    $default  reduce using rule 115 (cns_def)
+
+
+state 467
+
+  119 cns_def: '(' DIFF constraint_path constraint_path value value ')' .
+
+    $default  reduce using rule 119 (cns_def)
+
+
+state 468
+
+  126 tenv_def: '(' ARRIVAL port_edge port_instance value value value . value ')'
+
+    '('  shift, and go to state 152
+
+    value  go to state 500
+
+
+state 469
+
+  125 tenv_def: '(' ARRIVAL port_instance value value value value . ')'
+
+    ')'  shift, and go to state 501
+
+
+state 470
+
+  128 tenv_def: '(' DEPARTURE port_edge port_instance value value value . value ')'
+
+    '('  shift, and go to state 152
+
+    value  go to state 502
+
+
+state 471
+
+  127 tenv_def: '(' DEPARTURE port_instance value value value value . ')'
+
+    ')'  shift, and go to state 503
+
+
+state 472
+
+  129 tenv_def: '(' SLACK port_instance value value value value . ')'
+  130         | '(' SLACK port_instance value value value value . NUMBER ')'
+
+    NUMBER  shift, and go to state 504
+    ')'     shift, and go to state 505
+
+
+state 473
+
+  158 pos_pair: '(' POSEDGE NUMBER . number_q ')' '(' NEGEDGE NUMBER number_q ')'
+
+    NUMBER  shift, and go to state 506
+
+    $default  reduce using rule 133 (number_q)
+
+    number_q  go to state 507
+
+
+state 474
+
+  159 neg_pair: '(' NEGEDGE NUMBER . number_q ')' '(' POSEDGE NUMBER number_q ')'
+
+    NUMBER  shift, and go to state 506
+
+    $default  reduce using rule 133 (number_q)
+
+    number_q  go to state 508
+
+
+state 475
+
+  151 bus_port: PATH '[' NUMBER ':' NUMBER ']' .
+
+    $default  reduce using rule 151 (bus_port)
+
+
+state 476
+
+  150 bus_port: IDENTIFIER '[' NUMBER ':' NUMBER ']' .
+
+    $default  reduce using rule 150 (bus_port)
+
+
+state 477
+
+   78 del_def_iopath: '(' IOPATH port_spec port_instance '(' RETAIN . delval_list ')' ')'
+
+    '('  shift, and go to state 275
+
+    value        go to state 277
+    delval       go to state 278
+    delval_list  go to state 509
+
+
+state 478
+
+   77 del_def_iopath: '(' IOPATH port_spec port_instance delval_list ')' .
+
+    $default  reduce using rule 77 (del_def_iopath)
+
+
+state 479
+
+  180 expression: '{' expression ',' conditional_expression . '}'
+
+    '}'  shift, and go to state 510
+
+
+state 480
+
+  182 conditional_expression: simple_expression '?' expression ':' . conditional_expression
+
+    U_NAND      shift, and go to state 250
+    U_NOR       shift, and go to state 251
+    U_XNOR      shift, and go to state 252
+    U_XNOR_ALT  shift, and go to state 253
+    BIT_CONST   shift, and go to state 254
+    PATH        shift, and go to state 150
+    IDENTIFIER  shift, and go to state 151
+    NUMBER      shift, and go to state 256
+    '|'         shift, and go to state 257
+    '^'         shift, and go to state 258
+    '&'         shift, and go to state 259
+    '+'         shift, and go to state 260
+    '-'         shift, and go to state 261
+    '!'         shift, and go to state 262
+    '~'         shift, and go to state 263
+    '('         shift, and go to state 264
+
+    port                    go to state 266
+    scalar_port             go to state 157
+    bus_port                go to state 158
+    conditional_expression  go to state 511
+    simple_expression       go to state 269
+    binary_expression       go to state 270
+    scalar_constant         go to state 271
+    unary_op                go to state 272
+
+
+state 481
+
+  184 simple_expression: unary_op '(' simple_expression ')' .
+
+    $default  reduce using rule 184 (simple_expression)
+
+
+state 482
+
+   72 del_def: '(' INTERCONNECT port_instance port_instance delval_list ')' .
+
+    $default  reduce using rule 72 (del_def)
+
+
+state 483
+
+  171 delval: '(' value value ')' .
+
+    $default  reduce using rule 171 (delval)
+
+
+state 484
+
+  172 delval: '(' value value value . ')'
+
+    ')'  shift, and go to state 512
+
+
+state 485
+
+  176 delval_list: delval delval delval delval . delval delval
+  177            | delval delval delval delval . delval delval delval delval delval delval delval delval
+
+    '('  shift, and go to state 275
+
+    value   go to state 277
+    delval  go to state 513
+
+
+state 486
+
+   98 port_tchk: '(' COND QSTRING timing_check_condition port_spec ')' .
+
+    $default  reduce using rule 98 (port_tchk)
+
+
+state 487
+
+   99 scond: '(' SCOND . timing_check_condition ')'
+  100      | '(' SCOND . QSTRING timing_check_condition ')'
+
+    PATH        shift, and go to state 283
+    IDENTIFIER  shift, and go to state 284
+    QSTRING     shift, and go to state 514
+    '!'         shift, and go to state 286
+    '~'         shift, and go to state 287
+
+    scalar_port             go to state 288
+    timing_check_condition  go to state 515
+    scalar_node             go to state 290
+    inv_op                  go to state 291
+
+
+state 488
+
+  101 ccond: '(' CCOND . timing_check_condition ')'
+  102      | '(' CCOND . QSTRING timing_check_condition ')'
+
+    PATH        shift, and go to state 283
+    IDENTIFIER  shift, and go to state 284
+    QSTRING     shift, and go to state 516
+    '!'         shift, and go to state 286
+    '~'         shift, and go to state 287
+
+    scalar_port             go to state 288
+    timing_check_condition  go to state 517
+    scalar_node             go to state 290
+    inv_op                  go to state 291
+
+
+state 489
+
+  101 ccond: '(' . CCOND timing_check_condition ')'
+  102      | '(' . CCOND QSTRING timing_check_condition ')'
+
+    CCOND  shift, and go to state 488
+
+
+state 490
+
+   83 tchk_def: '(' SETUPHOLD port_tchk port_tchk value value scond ')' .
+
+    $default  reduce using rule 83 (tchk_def)
+
+
+state 491
+
+   85 tchk_def: '(' SETUPHOLD port_tchk port_tchk value value scond ccond . ')'
+
+    ')'  shift, and go to state 518
+
+
+state 492
+
+   84 tchk_def: '(' SETUPHOLD port_tchk port_tchk value value ccond ')' .
+
+    $default  reduce using rule 84 (tchk_def)
+
+
+state 493
+
+   89 tchk_def: '(' RECREM port_tchk port_tchk value value scond ')' .
+
+    $default  reduce using rule 89 (tchk_def)
+
+
+state 494
+
+   91 tchk_def: '(' RECREM port_tchk port_tchk value value scond ccond . ')'
+
+    ')'  shift, and go to state 519
+
+
+state 495
+
+   90 tchk_def: '(' RECREM port_tchk port_tchk value value ccond ')' .
+
+    $default  reduce using rule 90 (tchk_def)
+
+
+state 496
+
+  111 cns_def: '(' PATHCONSTRAINT name port_instance port_instances value value ')' .
+
+    $default  reduce using rule 111 (cns_def)
+
+
+state 497
+
+  105 exception: '(' EXCEPTION cell_instances ')' .
+
+    $default  reduce using rule 105 (exception)
+
+
+state 498
+
+  106 cell_instances: cell_instances cell_instance .
+
+    $default  reduce using rule 106 (cell_instances)
+
+
+state 499
+
+  117 cns_def: '(' SUM constraint_path constraint_path constraint_paths value value ')' .
+
+    $default  reduce using rule 117 (cns_def)
+
+
+state 500
+
+  126 tenv_def: '(' ARRIVAL port_edge port_instance value value value value . ')'
+
+    ')'  shift, and go to state 520
+
+
+state 501
+
+  125 tenv_def: '(' ARRIVAL port_instance value value value value ')' .
+
+    $default  reduce using rule 125 (tenv_def)
+
+
+state 502
+
+  128 tenv_def: '(' DEPARTURE port_edge port_instance value value value value . ')'
+
+    ')'  shift, and go to state 521
+
+
+state 503
+
+  127 tenv_def: '(' DEPARTURE port_instance value value value value ')' .
+
+    $default  reduce using rule 127 (tenv_def)
+
+
+state 504
+
+  130 tenv_def: '(' SLACK port_instance value value value value NUMBER . ')'
+
+    ')'  shift, and go to state 522
+
+
+state 505
+
+  129 tenv_def: '(' SLACK port_instance value value value value ')' .
+
+    $default  reduce using rule 129 (tenv_def)
+
+
+state 506
+
+  132 number_q: NUMBER .
+
+    $default  reduce using rule 132 (number_q)
+
+
+state 507
+
+  158 pos_pair: '(' POSEDGE NUMBER number_q . ')' '(' NEGEDGE NUMBER number_q ')'
+
+    ')'  shift, and go to state 523
+
+
+state 508
+
+  159 neg_pair: '(' NEGEDGE NUMBER number_q . ')' '(' POSEDGE NUMBER number_q ')'
+
+    ')'  shift, and go to state 524
+
+
+state 509
+
+   78 del_def_iopath: '(' IOPATH port_spec port_instance '(' RETAIN delval_list . ')' ')'
+
+    ')'  shift, and go to state 525
+
+
+state 510
+
+  180 expression: '{' expression ',' conditional_expression '}' .
+
+    $default  reduce using rule 180 (expression)
+
+
+state 511
+
+  182 conditional_expression: simple_expression '?' expression ':' conditional_expression .
+
+    $default  reduce using rule 182 (conditional_expression)
+
+
+state 512
+
+  172 delval: '(' value value value ')' .
+
+    $default  reduce using rule 172 (delval)
+
+
+state 513
+
+  176 delval_list: delval delval delval delval delval . delval
+  177            | delval delval delval delval delval . delval delval delval delval delval delval delval
+
+    '('  shift, and go to state 275
+
+    value   go to state 277
+    delval  go to state 526
+
+
+state 514
+
+  100 scond: '(' SCOND QSTRING . timing_check_condition ')'
+
+    PATH        shift, and go to state 283
+    IDENTIFIER  shift, and go to state 284
+    '!'         shift, and go to state 286
+    '~'         shift, and go to state 287
+
+    scalar_port             go to state 288
+    timing_check_condition  go to state 527
+    scalar_node             go to state 290
+    inv_op                  go to state 291
+
+
+state 515
+
+   99 scond: '(' SCOND timing_check_condition . ')'
+
+    ')'  shift, and go to state 528
+
+
+state 516
+
+  102 ccond: '(' CCOND QSTRING . timing_check_condition ')'
+
+    PATH        shift, and go to state 283
+    IDENTIFIER  shift, and go to state 284
+    '!'         shift, and go to state 286
+    '~'         shift, and go to state 287
+
+    scalar_port             go to state 288
+    timing_check_condition  go to state 529
+    scalar_node             go to state 290
+    inv_op                  go to state 291
+
+
+state 517
+
+  101 ccond: '(' CCOND timing_check_condition . ')'
+
+    ')'  shift, and go to state 530
+
+
+state 518
+
+   85 tchk_def: '(' SETUPHOLD port_tchk port_tchk value value scond ccond ')' .
+
+    $default  reduce using rule 85 (tchk_def)
+
+
+state 519
+
+   91 tchk_def: '(' RECREM port_tchk port_tchk value value scond ccond ')' .
+
+    $default  reduce using rule 91 (tchk_def)
+
+
+state 520
+
+  126 tenv_def: '(' ARRIVAL port_edge port_instance value value value value ')' .
+
+    $default  reduce using rule 126 (tenv_def)
+
+
+state 521
+
+  128 tenv_def: '(' DEPARTURE port_edge port_instance value value value value ')' .
+
+    $default  reduce using rule 128 (tenv_def)
+
+
+state 522
+
+  130 tenv_def: '(' SLACK port_instance value value value value NUMBER ')' .
+
+    $default  reduce using rule 130 (tenv_def)
+
+
+state 523
+
+  158 pos_pair: '(' POSEDGE NUMBER number_q ')' . '(' NEGEDGE NUMBER number_q ')'
+
+    '('  shift, and go to state 531
+
+
+state 524
+
+  159 neg_pair: '(' NEGEDGE NUMBER number_q ')' . '(' POSEDGE NUMBER number_q ')'
+
+    '('  shift, and go to state 532
+
+
+state 525
+
+   78 del_def_iopath: '(' IOPATH port_spec port_instance '(' RETAIN delval_list ')' . ')'
+
+    ')'  shift, and go to state 533
+
+
+state 526
+
+  176 delval_list: delval delval delval delval delval delval .
+  177            | delval delval delval delval delval delval . delval delval delval delval delval delval
+
+    '('  shift, and go to state 275
+
+    $default  reduce using rule 176 (delval_list)
+
+    value   go to state 277
+    delval  go to state 534
+
+
+state 527
+
+  100 scond: '(' SCOND QSTRING timing_check_condition . ')'
+
+    ')'  shift, and go to state 535
+
+
+state 528
+
+   99 scond: '(' SCOND timing_check_condition ')' .
+
+    $default  reduce using rule 99 (scond)
+
+
+state 529
+
+  102 ccond: '(' CCOND QSTRING timing_check_condition . ')'
+
+    ')'  shift, and go to state 536
+
+
+state 530
+
+  101 ccond: '(' CCOND timing_check_condition ')' .
+
+    $default  reduce using rule 101 (ccond)
+
+
+state 531
+
+  158 pos_pair: '(' POSEDGE NUMBER number_q ')' '(' . NEGEDGE NUMBER number_q ')'
+
+    NEGEDGE  shift, and go to state 537
+
+
+state 532
+
+  159 neg_pair: '(' NEGEDGE NUMBER number_q ')' '(' . POSEDGE NUMBER number_q ')'
+
+    POSEDGE  shift, and go to state 538
+
+
+state 533
+
+   78 del_def_iopath: '(' IOPATH port_spec port_instance '(' RETAIN delval_list ')' ')' .
+
+    $default  reduce using rule 78 (del_def_iopath)
+
+
+state 534
+
+  177 delval_list: delval delval delval delval delval delval delval . delval delval delval delval delval
+
+    '('  shift, and go to state 275
+
+    value   go to state 277
+    delval  go to state 539
+
+
+state 535
+
+  100 scond: '(' SCOND QSTRING timing_check_condition ')' .
+
+    $default  reduce using rule 100 (scond)
+
+
+state 536
+
+  102 ccond: '(' CCOND QSTRING timing_check_condition ')' .
+
+    $default  reduce using rule 102 (ccond)
+
+
+state 537
+
+  158 pos_pair: '(' POSEDGE NUMBER number_q ')' '(' NEGEDGE . NUMBER number_q ')'
+
+    NUMBER  shift, and go to state 540
+
+
+state 538
+
+  159 neg_pair: '(' NEGEDGE NUMBER number_q ')' '(' POSEDGE . NUMBER number_q ')'
+
+    NUMBER  shift, and go to state 541
+
+
+state 539
+
+  177 delval_list: delval delval delval delval delval delval delval delval . delval delval delval delval
+
+    '('  shift, and go to state 275
+
+    value   go to state 277
+    delval  go to state 542
+
+
+state 540
+
+  158 pos_pair: '(' POSEDGE NUMBER number_q ')' '(' NEGEDGE NUMBER . number_q ')'
+
+    NUMBER  shift, and go to state 506
+
+    $default  reduce using rule 133 (number_q)
+
+    number_q  go to state 543
+
+
+state 541
+
+  159 neg_pair: '(' NEGEDGE NUMBER number_q ')' '(' POSEDGE NUMBER . number_q ')'
+
+    NUMBER  shift, and go to state 506
+
+    $default  reduce using rule 133 (number_q)
+
+    number_q  go to state 544
+
+
+state 542
+
+  177 delval_list: delval delval delval delval delval delval delval delval delval . delval delval delval
+
+    '('  shift, and go to state 275
+
+    value   go to state 277
+    delval  go to state 545
+
+
+state 543
+
+  158 pos_pair: '(' POSEDGE NUMBER number_q ')' '(' NEGEDGE NUMBER number_q . ')'
+
+    ')'  shift, and go to state 546
+
+
+state 544
+
+  159 neg_pair: '(' NEGEDGE NUMBER number_q ')' '(' POSEDGE NUMBER number_q . ')'
+
+    ')'  shift, and go to state 547
+
+
+state 545
+
+  177 delval_list: delval delval delval delval delval delval delval delval delval delval . delval delval
+
+    '('  shift, and go to state 275
+
+    value   go to state 277
+    delval  go to state 548
+
+
+state 546
+
+  158 pos_pair: '(' POSEDGE NUMBER number_q ')' '(' NEGEDGE NUMBER number_q ')' .
+
+    $default  reduce using rule 158 (pos_pair)
+
+
+state 547
+
+  159 neg_pair: '(' NEGEDGE NUMBER number_q ')' '(' POSEDGE NUMBER number_q ')' .
+
+    $default  reduce using rule 159 (neg_pair)
+
+
+state 548
+
+  177 delval_list: delval delval delval delval delval delval delval delval delval delval delval . delval
+
+    '('  shift, and go to state 275
+
+    value   go to state 277
+    delval  go to state 549
+
+
+state 549
+
+  177 delval_list: delval delval delval delval delval delval delval delval delval delval delval delval .
+
+    $default  reduce using rule 177 (delval_list)

@@ -12,7 +12,8 @@ using namespace IntfNs;
 using namespace CoreNs;
 
 // map the circuit to our data structure
-bool Circuit::build(Netlist *const nl, const int &nframe, const tfConnectType &type)
+bool Circuit::build(Netlist *const nl, const int &nframe,
+										const tfConnectType &type)
 {
 	nframe_ = nframe;
 	Cell *top = nl->getTop();

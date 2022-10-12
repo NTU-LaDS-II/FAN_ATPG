@@ -1,0 +1,7 @@
+bin/opt/mdt_test : lib/opt/mdt_test.o $(LIBOBJS) $(REQLIBS)
+	@if [ ! -d $(BINDIR)/$(MODE) ]; then \
+		mkdir -p $(BINDIR)/$(MODE); \
+	fi
+	@echo "    LD    $(notdir $@)"
+	@$(CXX) $(CFLAGS) $(PKGFLAGS) $(INCLOC) $< $(LIBOBJS) $(LIBLOC) $(LNKLIBS) -o $@
+

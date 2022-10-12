@@ -1,0 +1,812 @@
+Grammar
+
+    0 $accept: start $end
+
+    1 start: initialize models
+
+    2 initialize: /* empty */
+
+    3 models: models model
+    4       | model
+
+    5 model: MODEL_SOURCE '=' NAME
+    6      | MODEL add_model '(' model_port ')' '(' model_bodies ')'
+
+    7 add_model: NAME
+
+    8 model_port: list
+
+    9 model_bodies: model_bodies model_body
+   10             | model_body
+
+   11 model_body: body_net '(' attributes ')'
+   12           | body_net '(' ')'
+
+   13 body_net: body_type '(' list ')'
+
+   14 body_type: INPUT
+   15          | OUTPUT
+   16          | INOUT
+   17          | INTERN
+
+   18 attributes: attributes attribute
+   19           | attribute
+
+   20 attribute: primitive
+   21          | instance
+
+   22 primitive: PRIMITIVE '=' NAME NAME '(' list ')' ';'
+   23          | PRIMITIVE '=' NAME '(' list ')' ';'
+
+   24 instance: INSTANCE '=' NAME NAME '(' list ')' ';'
+   25         | INSTANCE '=' NAME '(' list ')' ';'
+   26         | INSTANCE '=' NAME NAME '(' mapping_list ')' ';'
+   27         | INSTANCE '=' NAME '(' mapping_list ')' ';'
+
+   28 list: list ',' NAME
+   29     | list ','
+   30     | NAME
+   31     | /* empty */
+
+   32 mapping_list: mapping_list ',' '.' NAME '(' NAME ')'
+   33             | '.' NAME '(' NAME ')'
+
+
+Terminals, with rules where they appear
+
+$end (0) 0
+'(' (40) 6 11 12 13 22 23 24 25 26 27 32 33
+')' (41) 6 11 12 13 22 23 24 25 26 27 32 33
+',' (44) 28 29 32
+'.' (46) 32 33
+';' (59) 22 23 24 25 26 27
+'=' (61) 5 22 23 24 25 26 27
+error (256)
+MODEL (258) 6
+MODEL_SOURCE (259) 5
+INPUT (260) 14
+OUTPUT (261) 15
+INOUT (262) 16
+INTERN (263) 17
+PRIMITIVE (264) 22 23
+INSTANCE (265) 24 25 26 27
+NAME (266) 5 7 22 23 24 25 26 27 28 30 32 33
+
+
+Nonterminals, with rules where they appear
+
+$accept (18)
+    on left: 0
+start (19)
+    on left: 1, on right: 0
+initialize (20)
+    on left: 2, on right: 1
+models (21)
+    on left: 3 4, on right: 1 3
+model (22)
+    on left: 5 6, on right: 3 4
+add_model (23)
+    on left: 7, on right: 6
+model_port (24)
+    on left: 8, on right: 6
+model_bodies (25)
+    on left: 9 10, on right: 6 9
+model_body (26)
+    on left: 11 12, on right: 9 10
+body_net (27)
+    on left: 13, on right: 11 12
+body_type (28)
+    on left: 14 15 16 17, on right: 13
+attributes (29)
+    on left: 18 19, on right: 11 18
+attribute (30)
+    on left: 20 21, on right: 18 19
+primitive (31)
+    on left: 22 23, on right: 20
+instance (32)
+    on left: 24 25 26 27, on right: 21
+list (33)
+    on left: 28 29 30 31, on right: 8 13 22 23 24 25 28 29
+mapping_list (34)
+    on left: 32 33, on right: 26 27 32
+
+
+state 0
+
+    0 $accept: . start $end
+
+    $default  reduce using rule 2 (initialize)
+
+    start       go to state 1
+    initialize  go to state 2
+
+
+state 1
+
+    0 $accept: start . $end
+
+    $end  shift, and go to state 3
+
+
+state 2
+
+    1 start: initialize . models
+
+    MODEL         shift, and go to state 4
+    MODEL_SOURCE  shift, and go to state 5
+
+    models  go to state 6
+    model   go to state 7
+
+
+state 3
+
+    0 $accept: start $end .
+
+    $default  accept
+
+
+state 4
+
+    6 model: MODEL . add_model '(' model_port ')' '(' model_bodies ')'
+
+    NAME  shift, and go to state 8
+
+    add_model  go to state 9
+
+
+state 5
+
+    5 model: MODEL_SOURCE . '=' NAME
+
+    '='  shift, and go to state 10
+
+
+state 6
+
+    1 start: initialize models .
+    3 models: models . model
+
+    MODEL         shift, and go to state 4
+    MODEL_SOURCE  shift, and go to state 5
+
+    $default  reduce using rule 1 (start)
+
+    model  go to state 11
+
+
+state 7
+
+    4 models: model .
+
+    $default  reduce using rule 4 (models)
+
+
+state 8
+
+    7 add_model: NAME .
+
+    $default  reduce using rule 7 (add_model)
+
+
+state 9
+
+    6 model: MODEL add_model . '(' model_port ')' '(' model_bodies ')'
+
+    '('  shift, and go to state 12
+
+
+state 10
+
+    5 model: MODEL_SOURCE '=' . NAME
+
+    NAME  shift, and go to state 13
+
+
+state 11
+
+    3 models: models model .
+
+    $default  reduce using rule 3 (models)
+
+
+state 12
+
+    6 model: MODEL add_model '(' . model_port ')' '(' model_bodies ')'
+
+    NAME  shift, and go to state 14
+
+    $default  reduce using rule 31 (list)
+
+    model_port  go to state 15
+    list        go to state 16
+
+
+state 13
+
+    5 model: MODEL_SOURCE '=' NAME .
+
+    $default  reduce using rule 5 (model)
+
+
+state 14
+
+   30 list: NAME .
+
+    $default  reduce using rule 30 (list)
+
+
+state 15
+
+    6 model: MODEL add_model '(' model_port . ')' '(' model_bodies ')'
+
+    ')'  shift, and go to state 17
+
+
+state 16
+
+    8 model_port: list .
+   28 list: list . ',' NAME
+   29     | list . ','
+
+    ','  shift, and go to state 18
+
+    $default  reduce using rule 8 (model_port)
+
+
+state 17
+
+    6 model: MODEL add_model '(' model_port ')' . '(' model_bodies ')'
+
+    '('  shift, and go to state 19
+
+
+state 18
+
+   28 list: list ',' . NAME
+   29     | list ',' .
+
+    NAME  shift, and go to state 20
+
+    $default  reduce using rule 29 (list)
+
+
+state 19
+
+    6 model: MODEL add_model '(' model_port ')' '(' . model_bodies ')'
+
+    INPUT   shift, and go to state 21
+    OUTPUT  shift, and go to state 22
+    INOUT   shift, and go to state 23
+    INTERN  shift, and go to state 24
+
+    model_bodies  go to state 25
+    model_body    go to state 26
+    body_net      go to state 27
+    body_type     go to state 28
+
+
+state 20
+
+   28 list: list ',' NAME .
+
+    $default  reduce using rule 28 (list)
+
+
+state 21
+
+   14 body_type: INPUT .
+
+    $default  reduce using rule 14 (body_type)
+
+
+state 22
+
+   15 body_type: OUTPUT .
+
+    $default  reduce using rule 15 (body_type)
+
+
+state 23
+
+   16 body_type: INOUT .
+
+    $default  reduce using rule 16 (body_type)
+
+
+state 24
+
+   17 body_type: INTERN .
+
+    $default  reduce using rule 17 (body_type)
+
+
+state 25
+
+    6 model: MODEL add_model '(' model_port ')' '(' model_bodies . ')'
+    9 model_bodies: model_bodies . model_body
+
+    INPUT   shift, and go to state 21
+    OUTPUT  shift, and go to state 22
+    INOUT   shift, and go to state 23
+    INTERN  shift, and go to state 24
+    ')'     shift, and go to state 29
+
+    model_body  go to state 30
+    body_net    go to state 27
+    body_type   go to state 28
+
+
+state 26
+
+   10 model_bodies: model_body .
+
+    $default  reduce using rule 10 (model_bodies)
+
+
+state 27
+
+   11 model_body: body_net . '(' attributes ')'
+   12           | body_net . '(' ')'
+
+    '('  shift, and go to state 31
+
+
+state 28
+
+   13 body_net: body_type . '(' list ')'
+
+    '('  shift, and go to state 32
+
+
+state 29
+
+    6 model: MODEL add_model '(' model_port ')' '(' model_bodies ')' .
+
+    $default  reduce using rule 6 (model)
+
+
+state 30
+
+    9 model_bodies: model_bodies model_body .
+
+    $default  reduce using rule 9 (model_bodies)
+
+
+state 31
+
+   11 model_body: body_net '(' . attributes ')'
+   12           | body_net '(' . ')'
+
+    PRIMITIVE  shift, and go to state 33
+    INSTANCE   shift, and go to state 34
+    ')'        shift, and go to state 35
+
+    attributes  go to state 36
+    attribute   go to state 37
+    primitive   go to state 38
+    instance    go to state 39
+
+
+state 32
+
+   13 body_net: body_type '(' . list ')'
+
+    NAME  shift, and go to state 14
+
+    $default  reduce using rule 31 (list)
+
+    list  go to state 40
+
+
+state 33
+
+   22 primitive: PRIMITIVE . '=' NAME NAME '(' list ')' ';'
+   23          | PRIMITIVE . '=' NAME '(' list ')' ';'
+
+    '='  shift, and go to state 41
+
+
+state 34
+
+   24 instance: INSTANCE . '=' NAME NAME '(' list ')' ';'
+   25         | INSTANCE . '=' NAME '(' list ')' ';'
+   26         | INSTANCE . '=' NAME NAME '(' mapping_list ')' ';'
+   27         | INSTANCE . '=' NAME '(' mapping_list ')' ';'
+
+    '='  shift, and go to state 42
+
+
+state 35
+
+   12 model_body: body_net '(' ')' .
+
+    $default  reduce using rule 12 (model_body)
+
+
+state 36
+
+   11 model_body: body_net '(' attributes . ')'
+   18 attributes: attributes . attribute
+
+    PRIMITIVE  shift, and go to state 33
+    INSTANCE   shift, and go to state 34
+    ')'        shift, and go to state 43
+
+    attribute  go to state 44
+    primitive  go to state 38
+    instance   go to state 39
+
+
+state 37
+
+   19 attributes: attribute .
+
+    $default  reduce using rule 19 (attributes)
+
+
+state 38
+
+   20 attribute: primitive .
+
+    $default  reduce using rule 20 (attribute)
+
+
+state 39
+
+   21 attribute: instance .
+
+    $default  reduce using rule 21 (attribute)
+
+
+state 40
+
+   13 body_net: body_type '(' list . ')'
+   28 list: list . ',' NAME
+   29     | list . ','
+
+    ')'  shift, and go to state 45
+    ','  shift, and go to state 18
+
+
+state 41
+
+   22 primitive: PRIMITIVE '=' . NAME NAME '(' list ')' ';'
+   23          | PRIMITIVE '=' . NAME '(' list ')' ';'
+
+    NAME  shift, and go to state 46
+
+
+state 42
+
+   24 instance: INSTANCE '=' . NAME NAME '(' list ')' ';'
+   25         | INSTANCE '=' . NAME '(' list ')' ';'
+   26         | INSTANCE '=' . NAME NAME '(' mapping_list ')' ';'
+   27         | INSTANCE '=' . NAME '(' mapping_list ')' ';'
+
+    NAME  shift, and go to state 47
+
+
+state 43
+
+   11 model_body: body_net '(' attributes ')' .
+
+    $default  reduce using rule 11 (model_body)
+
+
+state 44
+
+   18 attributes: attributes attribute .
+
+    $default  reduce using rule 18 (attributes)
+
+
+state 45
+
+   13 body_net: body_type '(' list ')' .
+
+    $default  reduce using rule 13 (body_net)
+
+
+state 46
+
+   22 primitive: PRIMITIVE '=' NAME . NAME '(' list ')' ';'
+   23          | PRIMITIVE '=' NAME . '(' list ')' ';'
+
+    NAME  shift, and go to state 48
+    '('   shift, and go to state 49
+
+
+state 47
+
+   24 instance: INSTANCE '=' NAME . NAME '(' list ')' ';'
+   25         | INSTANCE '=' NAME . '(' list ')' ';'
+   26         | INSTANCE '=' NAME . NAME '(' mapping_list ')' ';'
+   27         | INSTANCE '=' NAME . '(' mapping_list ')' ';'
+
+    NAME  shift, and go to state 50
+    '('   shift, and go to state 51
+
+
+state 48
+
+   22 primitive: PRIMITIVE '=' NAME NAME . '(' list ')' ';'
+
+    '('  shift, and go to state 52
+
+
+state 49
+
+   23 primitive: PRIMITIVE '=' NAME '(' . list ')' ';'
+
+    NAME  shift, and go to state 14
+
+    $default  reduce using rule 31 (list)
+
+    list  go to state 53
+
+
+state 50
+
+   24 instance: INSTANCE '=' NAME NAME . '(' list ')' ';'
+   26         | INSTANCE '=' NAME NAME . '(' mapping_list ')' ';'
+
+    '('  shift, and go to state 54
+
+
+state 51
+
+   25 instance: INSTANCE '=' NAME '(' . list ')' ';'
+   27         | INSTANCE '=' NAME '(' . mapping_list ')' ';'
+
+    NAME  shift, and go to state 14
+    '.'   shift, and go to state 55
+
+    $default  reduce using rule 31 (list)
+
+    list          go to state 56
+    mapping_list  go to state 57
+
+
+state 52
+
+   22 primitive: PRIMITIVE '=' NAME NAME '(' . list ')' ';'
+
+    NAME  shift, and go to state 14
+
+    $default  reduce using rule 31 (list)
+
+    list  go to state 58
+
+
+state 53
+
+   23 primitive: PRIMITIVE '=' NAME '(' list . ')' ';'
+   28 list: list . ',' NAME
+   29     | list . ','
+
+    ')'  shift, and go to state 59
+    ','  shift, and go to state 18
+
+
+state 54
+
+   24 instance: INSTANCE '=' NAME NAME '(' . list ')' ';'
+   26         | INSTANCE '=' NAME NAME '(' . mapping_list ')' ';'
+
+    NAME  shift, and go to state 14
+    '.'   shift, and go to state 55
+
+    $default  reduce using rule 31 (list)
+
+    list          go to state 60
+    mapping_list  go to state 61
+
+
+state 55
+
+   33 mapping_list: '.' . NAME '(' NAME ')'
+
+    NAME  shift, and go to state 62
+
+
+state 56
+
+   25 instance: INSTANCE '=' NAME '(' list . ')' ';'
+   28 list: list . ',' NAME
+   29     | list . ','
+
+    ')'  shift, and go to state 63
+    ','  shift, and go to state 18
+
+
+state 57
+
+   27 instance: INSTANCE '=' NAME '(' mapping_list . ')' ';'
+   32 mapping_list: mapping_list . ',' '.' NAME '(' NAME ')'
+
+    ')'  shift, and go to state 64
+    ','  shift, and go to state 65
+
+
+state 58
+
+   22 primitive: PRIMITIVE '=' NAME NAME '(' list . ')' ';'
+   28 list: list . ',' NAME
+   29     | list . ','
+
+    ')'  shift, and go to state 66
+    ','  shift, and go to state 18
+
+
+state 59
+
+   23 primitive: PRIMITIVE '=' NAME '(' list ')' . ';'
+
+    ';'  shift, and go to state 67
+
+
+state 60
+
+   24 instance: INSTANCE '=' NAME NAME '(' list . ')' ';'
+   28 list: list . ',' NAME
+   29     | list . ','
+
+    ')'  shift, and go to state 68
+    ','  shift, and go to state 18
+
+
+state 61
+
+   26 instance: INSTANCE '=' NAME NAME '(' mapping_list . ')' ';'
+   32 mapping_list: mapping_list . ',' '.' NAME '(' NAME ')'
+
+    ')'  shift, and go to state 69
+    ','  shift, and go to state 65
+
+
+state 62
+
+   33 mapping_list: '.' NAME . '(' NAME ')'
+
+    '('  shift, and go to state 70
+
+
+state 63
+
+   25 instance: INSTANCE '=' NAME '(' list ')' . ';'
+
+    ';'  shift, and go to state 71
+
+
+state 64
+
+   27 instance: INSTANCE '=' NAME '(' mapping_list ')' . ';'
+
+    ';'  shift, and go to state 72
+
+
+state 65
+
+   32 mapping_list: mapping_list ',' . '.' NAME '(' NAME ')'
+
+    '.'  shift, and go to state 73
+
+
+state 66
+
+   22 primitive: PRIMITIVE '=' NAME NAME '(' list ')' . ';'
+
+    ';'  shift, and go to state 74
+
+
+state 67
+
+   23 primitive: PRIMITIVE '=' NAME '(' list ')' ';' .
+
+    $default  reduce using rule 23 (primitive)
+
+
+state 68
+
+   24 instance: INSTANCE '=' NAME NAME '(' list ')' . ';'
+
+    ';'  shift, and go to state 75
+
+
+state 69
+
+   26 instance: INSTANCE '=' NAME NAME '(' mapping_list ')' . ';'
+
+    ';'  shift, and go to state 76
+
+
+state 70
+
+   33 mapping_list: '.' NAME '(' . NAME ')'
+
+    NAME  shift, and go to state 77
+
+
+state 71
+
+   25 instance: INSTANCE '=' NAME '(' list ')' ';' .
+
+    $default  reduce using rule 25 (instance)
+
+
+state 72
+
+   27 instance: INSTANCE '=' NAME '(' mapping_list ')' ';' .
+
+    $default  reduce using rule 27 (instance)
+
+
+state 73
+
+   32 mapping_list: mapping_list ',' '.' . NAME '(' NAME ')'
+
+    NAME  shift, and go to state 78
+
+
+state 74
+
+   22 primitive: PRIMITIVE '=' NAME NAME '(' list ')' ';' .
+
+    $default  reduce using rule 22 (primitive)
+
+
+state 75
+
+   24 instance: INSTANCE '=' NAME NAME '(' list ')' ';' .
+
+    $default  reduce using rule 24 (instance)
+
+
+state 76
+
+   26 instance: INSTANCE '=' NAME NAME '(' mapping_list ')' ';' .
+
+    $default  reduce using rule 26 (instance)
+
+
+state 77
+
+   33 mapping_list: '.' NAME '(' NAME . ')'
+
+    ')'  shift, and go to state 79
+
+
+state 78
+
+   32 mapping_list: mapping_list ',' '.' NAME . '(' NAME ')'
+
+    '('  shift, and go to state 80
+
+
+state 79
+
+   33 mapping_list: '.' NAME '(' NAME ')' .
+
+    $default  reduce using rule 33 (mapping_list)
+
+
+state 80
+
+   32 mapping_list: mapping_list ',' '.' NAME '(' . NAME ')'
+
+    NAME  shift, and go to state 81
+
+
+state 81
+
+   32 mapping_list: mapping_list ',' '.' NAME '(' NAME . ')'
+
+    ')'  shift, and go to state 82
+
+
+state 82
+
+   32 mapping_list: mapping_list ',' '.' NAME '(' NAME ')' .
+
+    $default  reduce using rule 32 (mapping_list)
