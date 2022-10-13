@@ -36,17 +36,17 @@ TmUsage::~TmUsage() {}
 
 bool TmUsage::totalStart()
 {
-	return checkUsage(tStart_);
+	return checkUsage( tStart_ );
 }
 
 bool TmUsage::periodStart()
 {
-	return checkUsage(pStart_);
+	return checkUsage( pStart_ );
 }
 
-bool TmUsage::getTotalUsage(TmStat &st) const
+bool TmUsage::getTotalUsage( TmStat &st ) const
 {
-	if (!checkUsage(st))
+	if ( !checkUsage( st ) )
 		return false;
 	st.uTime -= tStart_.uTime;
 	st.sTime -= tStart_.sTime;
@@ -56,9 +56,9 @@ bool TmUsage::getTotalUsage(TmStat &st) const
 	return true;
 }
 
-bool TmUsage::getPeriodUsage(TmStat &st) const
+bool TmUsage::getPeriodUsage( TmStat &st ) const
 {
-	if (!checkUsage(st))
+	if ( !checkUsage( st ) )
 		return false;
 	st.uTime -= pStart_.uTime;
 	st.sTime -= pStart_.sTime;
@@ -76,43 +76,43 @@ bool TmUsage::getPeriodUsage(TmStat &st) const
 //              "/proc/self/status" to get memory usage ]
 // **************************************************************************
 // {{{ bool checkUsage(TmStat &) const
-bool TmUsage::checkUsage(TmStat &st) const
+bool TmUsage::checkUsage( TmStat &st ) const
 {
 	// check user time and system time
 	rusage tUsg;
 	timeval tReal;
-	getrusage(RUSAGE_SELF, &tUsg);
-	gettimeofday(&tReal, NULL);
+	getrusage( RUSAGE_SELF, &tUsg );
+	gettimeofday( &tReal, NULL );
 	st.uTime = tUsg.ru_utime.tv_sec * 1000000 + tUsg.ru_utime.tv_usec;
 	st.sTime = tUsg.ru_stime.tv_sec * 1000000 + tUsg.ru_stime.tv_usec;
 	st.rTime = tReal.tv_sec * 1000000 + tReal.tv_usec;
 
 	// check current memory and peak memory
-	FILE *fmem = fopen("/proc/self/status", "r");
-	if (!fmem)
+	FILE *fmem = fopen( "/proc/self/status", "r" );
+	if ( !fmem )
 	{
-		fprintf(stderr,
-						"**ERROR TmUsage::checkUsage(): cannot get memory usage\n");
+		fprintf( stderr,
+						 "**ERROR TmUsage::checkUsage(): cannot get memory usage\n" );
 		st.vmSize = 0;
 		st.vmPeak = 0;
 		return false;
 	}
-	char membuf[128];
-	while (fgets(membuf, 128, fmem))
+	char membuf[ 128 ];
+	while ( fgets( membuf, 128, fmem ) )
 	{
 		char *ch;
-		if ((ch = strstr(membuf, "VmPeak:")))
+		if ( ( ch = strstr( membuf, "VmPeak:" ) ) )
 		{
-			st.vmPeak = atol(ch + 7);
+			st.vmPeak = atol( ch + 7 );
 			continue;
 		}
-		if ((ch = strstr(membuf, "VmSize:")))
+		if ( ( ch = strstr( membuf, "VmSize:" ) ) )
 		{
-			st.vmSize = atol(ch + 7);
+			st.vmSize = atol( ch + 7 );
 			break;
 		}
 	}
-	fclose(fmem);
+	fclose( fmem );
 	return true;
 }
 //}}}

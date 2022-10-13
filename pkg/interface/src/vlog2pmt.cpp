@@ -15,12 +15,12 @@
 using namespace std;
 using namespace IntfNs;
 
-void printCell(Cell *c, ofstream &fout);
-void printPmt(Pmt *pmt, Cell *c, ofstream &fout);
-void printInst(Cell *inst, Cell *c, ofstream &fout);
+void printCell( Cell *c, ofstream &fout );
+void printPmt( Pmt *pmt, Cell *c, ofstream &fout );
+void printInst( Cell *inst, Cell *c, ofstream &fout );
 // void printMux(Pmt *pmt, Cell *c, ofstream &fout);
-string getPmtNetName(Port *p, Pmt *pmt, Cell *c);
-void printDff(Cell *c, ofstream &fout);
+string getPmtNetName( Port *p, Pmt *pmt, Cell *c );
+void printDff( Cell *c, ofstream &fout );
 
 const char hier = '/';
 // const string muxS0 = "S0";
@@ -28,13 +28,13 @@ const char hier = '/';
 // const string muxB = "B";
 // const string muxY = "Y";
 
-int main(int argc, char **argv)
+int main( int argc, char **argv )
 {
-	if (argc < 3)
+	if ( argc < 3 )
 	{
 		cerr << "**ERROR main(): need netlist, MDT lib";
 		cerr << endl;
-		exit(0);
+		exit( 0 );
 	}
 
 	// open output file
@@ -49,45 +49,45 @@ int main(int argc, char **argv)
 
 	// read technology library
 	Techlib lib;
-	MdtFile *libBlder = new MdtLibBuilder(&lib);
+	MdtFile *libBlder = new MdtLibBuilder( &lib );
 
 	cout << "> Reading technology library..." << endl;
-	if (!libBlder->read(argv[2], true))
+	if ( !libBlder->read( argv[ 2 ], true ) )
 	{
 		cerr << "**ERROR main(): MDT lib builder error" << endl;
 		delete libBlder;
-		exit(0);
+		exit( 0 );
 	}
 	cout << "> Checking technology library..." << endl;
-	if (!lib.check(true))
+	if ( !lib.check( true ) )
 	{
 		cerr << "**ERROR main(): MDT lib error" << endl;
 		delete libBlder;
-		exit(0);
+		exit( 0 );
 	}
 
 	// read netlist
 	Netlist nl;
-	nl.setTechlib(&lib);
-	VlogFile *nlBlder = new VlogNlBuilder(&nl);
+	nl.setTechlib( &lib );
+	VlogFile *nlBlder = new VlogNlBuilder( &nl );
 
 	cout << "> Reading netlist..." << endl;
-	if (!nlBlder->read(argv[1], true))
+	if ( !nlBlder->read( argv[ 1 ], true ) )
 	{
 		cerr << "**ERROR main(): verilog builder error" << endl;
 		delete nlBlder;
-		exit(0);
+		exit( 0 );
 	}
 
 	cout << "> Removing floating nets..." << endl;
 	nl.removeFloatingNets();
 
 	cout << "> Checking netlist..." << endl;
-	if (!nl.check(true))
+	if ( !nl.check( true ) )
 	{
 		cerr << "**ERROR main(): netlist error" << endl;
 		delete nlBlder;
-		exit(0);
+		exit( 0 );
 	}
 
 	/*
@@ -177,25 +177,25 @@ int main(int argc, char **argv)
 }
 
 //{{{ void printCell()
-void printCell(Cell *c, ofstream &fout)
+void printCell( Cell *c, ofstream &fout )
 {
 	Cell *libc = c->libc_;
-	for (size_t i = 0; i < libc->getNCell(); ++i)
+	for ( size_t i = 0; i < libc->getNCell(); ++i )
 	{
-		Cell *in = libc->getCell(i);
-		if (in->isPmt_)
-			printPmt((Pmt *)in, c, fout);
+		Cell *in = libc->getCell( i );
+		if ( in->isPmt_ )
+			printPmt( (Pmt *)in, c, fout );
 		else
-			printInst(in, c, fout);
+			printInst( in, c, fout );
 	}
 }
 //}}}
 //{{{ void printPmt()
-void printPmt(Pmt *pmt, Cell *c, ofstream &fout)
+void printPmt( Pmt *pmt, Cell *c, ofstream &fout )
 {
 	int inSize = (int)pmt->getNPort() - 1;
-	char buf[8];
-	switch (pmt->type_)
+	char buf[ 8 ];
+	switch ( pmt->type_ )
 	{
 		case Pmt::BUF:
 			fout << "BUFX1";
@@ -206,32 +206,32 @@ void printPmt(Pmt *pmt, Cell *c, ofstream &fout)
 			break;
 		case Pmt::AND:
 			fout << "AND";
-			sprintf(buf, "%d", inSize);
+			sprintf( buf, "%d", inSize );
 			fout << buf << "X1";
 			break;
 		case Pmt::NAND:
 			fout << "NAND";
-			sprintf(buf, "%d", inSize);
+			sprintf( buf, "%d", inSize );
 			fout << buf << "X1";
 			break;
 		case Pmt::OR:
 			fout << "OR";
-			sprintf(buf, "%d", inSize);
+			sprintf( buf, "%d", inSize );
 			fout << buf << "X1";
 			break;
 		case Pmt::NOR:
 			fout << "NOR";
-			sprintf(buf, "%d", inSize);
+			sprintf( buf, "%d", inSize );
 			fout << buf << "X1";
 			break;
 		case Pmt::XOR:
 			fout << "XOR";
-			sprintf(buf, "%d", inSize);
+			sprintf( buf, "%d", inSize );
 			fout << buf << "X1";
 			break;
 		case Pmt::XNOR:
 			fout << "XNOR";
-			sprintf(buf, "%d", inSize);
+			sprintf( buf, "%d", inSize );
 			fout << buf << "X1";
 			break;
 		default:
@@ -240,57 +240,57 @@ void printPmt(Pmt *pmt, Cell *c, ofstream &fout)
 	}
 	fout << " " << c->name_ << hier << pmt->name_ << " (";
 
-	for (size_t j = 0; j < pmt->getNPort(); ++j)
+	for ( size_t j = 0; j < pmt->getNPort(); ++j )
 	{
-		fout << "." << pmt->getPort(j)->name_ << "(";
-		fout << getPmtNetName(pmt->getPort(j), pmt, c) << ")";
-		if (j + 1 != pmt->getNPort())
+		fout << "." << pmt->getPort( j )->name_ << "(";
+		fout << getPmtNetName( pmt->getPort( j ), pmt, c ) << ")";
+		if ( j + 1 != pmt->getNPort() )
 			fout << ", ";
 	}
 	fout << ");" << endl;
 } //}}}
 //{{{ void printInst()
-void printInst(Cell *inst, Cell *c, ofstream &fout)
+void printInst( Cell *inst, Cell *c, ofstream &fout )
 {
 }
 //}}}
 //{{{ string getPmtNetName()
-string getPmtNetName(Port *p, Pmt *pmt, Cell *c)
+string getPmtNetName( Port *p, Pmt *pmt, Cell *c )
 {
 	Cell *libc = c->libc_;
 	Net *n = p->exNet_;
-	if (!n)
+	if ( !n )
 		return "";
 	bool intern = true;
 	string netName = "";
-	for (size_t k = 0; k < n->getNPort(); ++k)
+	for ( size_t k = 0; k < n->getNPort(); ++k )
 	{
-		Port *p = n->getPort(k);
-		if (p->top_ == libc)
+		Port *p = n->getPort( k );
+		if ( p->top_ == libc )
 		{
-			if (c->getPort(p->name_)->exNet_)
-				netName = c->getPort(p->name_)->exNet_->name_;
+			if ( c->getPort( p->name_ )->exNet_ )
+				netName = c->getPort( p->name_ )->exNet_->name_;
 			intern = false;
 			break;
 		}
 	}
-	if (intern)
-		netName = string(c->name_) + hier + string(n->name_);
+	if ( intern )
+		netName = string( c->name_ ) + hier + string( n->name_ );
 	return netName;
 } //}}}
 //{{{ void printDff()
-void printDff(Cell *c, ofstream &fout)
+void printDff( Cell *c, ofstream &fout )
 {
 	fout << c->libc_->name_ << " " << c->name_ << " (";
 	bool hasPort = false;
-	for (size_t i = 0; i < c->getNPort(); ++i)
+	for ( size_t i = 0; i < c->getNPort(); ++i )
 	{
-		Net *n = c->getPort(i)->exNet_;
-		if (!n)
+		Net *n = c->getPort( i )->exNet_;
+		if ( !n )
 			continue;
-		if (hasPort)
+		if ( hasPort )
 			fout << ", " << flush;
-		fout << "." << c->getPort(i)->name_ << "(";
+		fout << "." << c->getPort( i )->name_ << "(";
 		fout << n->name_ << ")";
 		hasPort = true;
 	}
