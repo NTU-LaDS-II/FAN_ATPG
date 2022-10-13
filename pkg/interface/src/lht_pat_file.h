@@ -19,12 +19,12 @@ namespace IntfNs
 		LhtPatFile();
 		virtual ~LhtPatFile();
 
-		virtual bool read( const char *const fname, const bool &verbose = false );
-		virtual void setPatternType( const PatType &type );
-		virtual void addPattern( const char *const pi1, const char *const pi2,
-														 const char *const ppi, const char *const si,
-														 const char *const po1, const char *const po2,
-														 const char *const ppo );
+		virtual bool read(const char *const fname, const bool &verbose = false);
+		virtual void setPatternType(const PatType &type);
+		virtual void addPattern(const char *const pi1, const char *const pi2,
+														const char *const ppi, const char *const si,
+														const char *const po1, const char *const po2,
+														const char *const ppo);
 
 	protected:
 		bool success_;

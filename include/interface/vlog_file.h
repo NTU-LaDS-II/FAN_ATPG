@@ -26,15 +26,15 @@ namespace IntfNs
 
 	struct VlogNames
 	{
-		char name[ NAME_LEN ];
+		char name[NAME_LEN];
 		VlogNames *next;
 		VlogNames *head;
 	};
 
 	struct VlogPortToNet
 	{
-		char port[ NAME_LEN ];
-		char net[ NAME_LEN ];
+		char port[NAME_LEN];
+		char net[NAME_LEN];
 		VlogPortToNet *next;
 		VlogPortToNet *head;
 	};
@@ -45,26 +45,26 @@ namespace IntfNs
 		VlogFile();
 		virtual ~VlogFile();
 
-		virtual bool read( const char *const fname, const bool &verbose = false );
+		virtual bool read(const char *const fname, const bool &verbose = false);
 
-		virtual void addModule( const char *const name );
-		virtual void addPorts( VlogNames *const ports );
-		virtual void setInputNets( VlogNames *const nets );
-		virtual void setOutputNets( VlogNames *const nets );
-		virtual void setInoutNets( VlogNames *const nets );
-		virtual void setWireNets( VlogNames *const nets );
-		virtual void setRegNets( VlogNames *const nets );
-		virtual void setSupplyLNets( VlogNames *const nets );
-		virtual void setSupplyHNets( VlogNames *const nets );
-		virtual void addCell( const char *const type, const char *const name,
-													VlogNames *const ports );
-		virtual void addCell( const char *const type, const char *const name,
-													VlogPortToNet *const portToNet );
-		virtual void addCell( const char *const type,
-													VlogNames *const strengths,
-													const char *const name,
-													VlogNames *const ports );
-		virtual void addAssign( const char *const n1, const char *const n2 );
+		virtual void addModule(const char *const name);
+		virtual void addPorts(VlogNames *const ports);
+		virtual void setInputNets(VlogNames *const nets);
+		virtual void setOutputNets(VlogNames *const nets);
+		virtual void setInoutNets(VlogNames *const nets);
+		virtual void setWireNets(VlogNames *const nets);
+		virtual void setRegNets(VlogNames *const nets);
+		virtual void setSupplyLNets(VlogNames *const nets);
+		virtual void setSupplyHNets(VlogNames *const nets);
+		virtual void addCell(const char *const type, const char *const name,
+												 VlogNames *const ports);
+		virtual void addCell(const char *const type, const char *const name,
+												 VlogPortToNet *const portToNet);
+		virtual void addCell(const char *const type,
+												 VlogNames *const strengths,
+												 const char *const name,
+												 VlogNames *const ports);
+		virtual void addAssign(const char *const n1, const char *const n2);
 
 	protected:
 		bool success_;

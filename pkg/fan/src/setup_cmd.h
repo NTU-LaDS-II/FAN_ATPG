@@ -19,10 +19,10 @@ namespace FanNs
 	class ReadLibCmd : public CommonNs::Cmd
 	{
 	public:
-		ReadLibCmd( const std::string &name, FanMgr *fanMgr );
+		ReadLibCmd(const std::string &name, FanMgr *fanMgr);
 		~ReadLibCmd();
 
-		bool exec( const std::vector<std::string> &argv );
+		bool exec(const std::vector<std::string> &argv);
 
 	private:
 		FanMgr *fanMgr_;
@@ -31,10 +31,10 @@ namespace FanNs
 	class ReadNlCmd : public CommonNs::Cmd
 	{
 	public:
-		ReadNlCmd( const std::string &name, FanMgr *fanMgr );
+		ReadNlCmd(const std::string &name, FanMgr *fanMgr);
 		~ReadNlCmd();
 
-		bool exec( const std::vector<std::string> &argv );
+		bool exec(const std::vector<std::string> &argv);
 
 	private:
 		FanMgr *fanMgr_;
@@ -43,10 +43,10 @@ namespace FanNs
 	class SetFaultTypeCmd : public CommonNs::Cmd
 	{
 	public:
-		SetFaultTypeCmd( const std::string &name, FanMgr *fanMgr );
+		SetFaultTypeCmd(const std::string &name, FanMgr *fanMgr);
 		~SetFaultTypeCmd();
 
-		bool exec( const std::vector<std::string> &argv );
+		bool exec(const std::vector<std::string> &argv);
 
 	private:
 		FanMgr *fanMgr_;
@@ -55,10 +55,10 @@ namespace FanNs
 	class ReportNetlistCmd : public CommonNs::Cmd
 	{
 	public:
-		ReportNetlistCmd( const std::string &name, FanMgr *fanMgr );
+		ReportNetlistCmd(const std::string &name, FanMgr *fanMgr);
 		~ReportNetlistCmd();
 
-		bool exec( const std::vector<std::string> &argv );
+		bool exec(const std::vector<std::string> &argv);
 
 	private:
 		FanMgr *fanMgr_;
@@ -67,23 +67,23 @@ namespace FanNs
 	class ReportCellCmd : public CommonNs::Cmd
 	{
 	public:
-		ReportCellCmd( const std::string &name, FanMgr *fanMgr );
+		ReportCellCmd(const std::string &name, FanMgr *fanMgr);
 		~ReportCellCmd();
 
-		bool exec( const std::vector<std::string> &argv );
+		bool exec(const std::vector<std::string> &argv);
 
 	private:
 		FanMgr *fanMgr_;
-		void reportCell( const size_t &i ) const;
+		void reportCell(const size_t &i) const;
 	};
 
 	class ReportLibCmd : public CommonNs::Cmd
 	{
 	public:
-		ReportLibCmd( const std::string &name, FanMgr *fanMgr );
+		ReportLibCmd(const std::string &name, FanMgr *fanMgr);
 		~ReportLibCmd();
 
-		bool exec( const std::vector<std::string> &argv );
+		bool exec(const std::vector<std::string> &argv);
 
 	private:
 		FanMgr *fanMgr_;
@@ -92,10 +92,10 @@ namespace FanNs
 	class BuildCircuitCmd : public CommonNs::Cmd
 	{
 	public:
-		BuildCircuitCmd( const std::string &name, FanMgr *fanMgr );
+		BuildCircuitCmd(const std::string &name, FanMgr *fanMgr);
 		~BuildCircuitCmd();
 
-		bool exec( const std::vector<std::string> &argv );
+		bool exec(const std::vector<std::string> &argv);
 
 	private:
 		FanMgr *fanMgr_;
@@ -105,10 +105,10 @@ namespace FanNs
 	class SetPatternTypeCmd : public CommonNs::Cmd
 	{
 	public:
-		SetPatternTypeCmd( const std::string &name, FanMgr *fanMgr );
+		SetPatternTypeCmd(const std::string &name, FanMgr *fanMgr);
 		~SetPatternTypeCmd();
 
-		bool exec( const std::vector<std::string> &argv );
+		bool exec(const std::vector<std::string> &argv);
 
 	private:
 		FanMgr *fanMgr_;
@@ -117,10 +117,10 @@ namespace FanNs
 	class SetStaticCompressionCmd : public CommonNs::Cmd
 	{
 	public:
-		SetStaticCompressionCmd( const std::string &name, FanMgr *fanMgr );
+		SetStaticCompressionCmd(const std::string &name, FanMgr *fanMgr);
 		~SetStaticCompressionCmd();
 
-		bool exec( const std::vector<std::string> &argv );
+		bool exec(const std::vector<std::string> &argv);
 
 	private:
 		FanMgr *fanMgr_;
@@ -129,10 +129,10 @@ namespace FanNs
 	class SetDynamicCompressionCmd : public CommonNs::Cmd
 	{
 	public:
-		SetDynamicCompressionCmd( const std::string &name, FanMgr *fanMgr );
+		SetDynamicCompressionCmd(const std::string &name, FanMgr *fanMgr);
 		~SetDynamicCompressionCmd();
 
-		bool exec( const std::vector<std::string> &argv );
+		bool exec(const std::vector<std::string> &argv);
 
 	private:
 		FanMgr *fanMgr_;
@@ -141,10 +141,10 @@ namespace FanNs
 	class SetXFillCmd : public CommonNs::Cmd
 	{
 	public:
-		SetXFillCmd( const std::string &name, FanMgr *fanMgr );
+		SetXFillCmd(const std::string &name, FanMgr *fanMgr);
 		~SetXFillCmd();
 
-		bool exec( const std::vector<std::string> &argv );
+		bool exec(const std::vector<std::string> &argv);
 
 	private:
 		FanMgr *fanMgr_;

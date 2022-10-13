@@ -30,9 +30,9 @@ namespace CommonNs
 			OPT_INF
 		};
 
-		Arg( const Type &type,
-				 const std::string &des,
-				 const std::string &meta );
+		Arg(const Type &type,
+				const std::string &des,
+				const std::string &meta);
 		~Arg();
 
 		Type type_;
@@ -49,12 +49,12 @@ namespace CommonNs
 			STR_OPT
 		};
 
-		Opt( const Type &type,
-				 const std::string &des,
-				 const std::string &meta );
+		Opt(const Type &type,
+				const std::string &des,
+				const std::string &meta);
 		~Opt();
 
-		void addFlag( const std::string &f );
+		void addFlag(const std::string &f);
 
 		Type type_;
 		std::string des_;
@@ -77,38 +77,38 @@ namespace CommonNs
 		~OptMgr();
 
 		std::string getName() const;
-		void setName( const std::string &name );
-		void setKeepFirstArg( const bool &keep );
-		void setShortDes( const std::string &shortDes );
-		void setDes( const std::string &des );
+		void setName(const std::string &name);
+		void setKeepFirstArg(const bool &keep);
+		void setShortDes(const std::string &shortDes);
+		void setDes(const std::string &des);
 		Error getError() const;
 
 		size_t getNParsedArg() const;
-		std::string getParsedArg( const size_t &i ) const;
+		std::string getParsedArg(const size_t &i) const;
 		size_t getNFlag() const;
-		std::string getFlag( const size_t &i ) const;
-		bool isFlagSet( const std::string &f ) const;
-		std::string getFlagVar( const std::string &f ) const;
+		std::string getFlag(const size_t &i) const;
+		bool isFlagSet(const std::string &f) const;
+		std::string getFlagVar(const std::string &f) const;
 
-		bool regArg( Arg *const arg );
-		bool regOpt( Opt *const opt );
-		bool parse( int argc, char **argv );
-		bool parse( std::vector<std::string> args );
+		bool regArg(Arg *const arg);
+		bool regOpt(Opt *const opt);
+		bool parse(int argc, char **argv);
+		bool parse(std::vector<std::string> args);
 
-		void usage( std::ostream &out = std::cout );
+		void usage(std::ostream &out = std::cout);
 
 	private:
-		std::vector<std::string> splitString( const std::string &input,
-																					const size_t &lineWidth,
-																					const bool &fitLine = true,
-																					const std::string &sep = "- " );
-		std::string fitLine( const std::string &input,
-												 const size_t &lineWidth );
-		bool setOpt( Opt *const opt,
-								 const bool &isLong,
-								 const bool &isConnected,
-								 size_t &i,
-								 std::vector<std::string> &args );
+		std::vector<std::string> splitString(const std::string &input,
+																				 const size_t &lineWidth,
+																				 const bool &fitLine = true,
+																				 const std::string &sep = "- ");
+		std::string fitLine(const std::string &input,
+												const size_t &lineWidth);
+		bool setOpt(Opt *const opt,
+								const bool &isLong,
+								const bool &isConnected,
+								size_t &i,
+								std::vector<std::string> &args);
 
 		static const size_t wsCol_ = 78;
 		static const size_t tabSize_ = 8;
@@ -129,9 +129,9 @@ namespace CommonNs
 
 	// inline methods
 	//{{{ struct Arg
-	inline Arg::Arg( const Type &type,
-									 const std::string &des,
-									 const std::string &meta )
+	inline Arg::Arg(const Type &type,
+									const std::string &des,
+									const std::string &meta)
 	{
 		type_ = type;
 		des_ = des;
@@ -141,9 +141,9 @@ namespace CommonNs
 	inline Arg::~Arg() {}
 	//}}}
 	//{{{ struct Opt
-	inline Opt::Opt( const Type &type,
-									 const std::string &des,
-									 const std::string &meta )
+	inline Opt::Opt(const Type &type,
+									const std::string &des,
+									const std::string &meta)
 	{
 		type_ = type;
 		des_ = des;
@@ -152,9 +152,9 @@ namespace CommonNs
 
 	inline Opt::~Opt() {}
 
-	inline void Opt::addFlag( const std::string &f )
+	inline void Opt::addFlag(const std::string &f)
 	{
-		flags_.insert( f.substr( 0, f.find_first_of( ' ' ) ) );
+		flags_.insert(f.substr(0, f.find_first_of(' ')));
 	}
 	//}}}
 
@@ -175,22 +175,22 @@ namespace CommonNs
 		return name_;
 	}
 
-	inline void OptMgr::setName( const std::string &name )
+	inline void OptMgr::setName(const std::string &name)
 	{
 		name_ = name;
 	}
 
-	inline void OptMgr::setKeepFirstArg( const bool &keep )
+	inline void OptMgr::setKeepFirstArg(const bool &keep)
 	{
 		keepFirstArg_ = keep;
 	}
 
-	inline void OptMgr::setShortDes( const std::string &shortDes )
+	inline void OptMgr::setShortDes(const std::string &shortDes)
 	{
 		shortDes_ = shortDes;
 	}
 
-	inline void OptMgr::setDes( const std::string &des )
+	inline void OptMgr::setDes(const std::string &des)
 	{
 		des_ = des;
 	}
@@ -205,9 +205,9 @@ namespace CommonNs
 		return parsedArgs_.size();
 	}
 
-	inline std::string OptMgr::getParsedArg( const size_t &i ) const
+	inline std::string OptMgr::getParsedArg(const size_t &i) const
 	{
-		return parsedArgs_[ i ];
+		return parsedArgs_[i];
 	}
 
 	inline size_t OptMgr::getNFlag() const
@@ -215,32 +215,32 @@ namespace CommonNs
 		return flags_.size();
 	}
 
-	inline std::string OptMgr::getFlag( const size_t &i ) const
+	inline std::string OptMgr::getFlag(const size_t &i) const
 	{
-		return flags_[ i ];
+		return flags_[i];
 	}
 
-	inline bool OptMgr::isFlagSet( const std::string &f ) const
+	inline bool OptMgr::isFlagSet(const std::string &f) const
 	{
-		std::map<std::string, Opt *>::const_iterator fIt = flagToOpt_.find( f );
-		if ( fIt == flagToOpt_.end() )
+		std::map<std::string, Opt *>::const_iterator fIt = flagToOpt_.find(f);
+		if (fIt == flagToOpt_.end())
 			return false;
 		std::map<Opt *, bool>::const_iterator optIt;
-		optIt = optToSet_.find( fIt->second );
-		if ( optIt == optToSet_.end() )
+		optIt = optToSet_.find(fIt->second);
+		if (optIt == optToSet_.end())
 			return false;
 		else
 			return optIt->second;
 	}
 
-	inline std::string OptMgr::getFlagVar( const std::string &f ) const
+	inline std::string OptMgr::getFlagVar(const std::string &f) const
 	{
-		std::map<std::string, Opt *>::const_iterator fIt = flagToOpt_.find( f );
-		if ( fIt == flagToOpt_.end() )
+		std::map<std::string, Opt *>::const_iterator fIt = flagToOpt_.find(f);
+		if (fIt == flagToOpt_.end())
 			return "";
 		std::map<Opt *, std::string>::const_iterator optIt;
-		optIt = optToVar_.find( fIt->second );
-		if ( optIt == optToVar_.end() )
+		optIt = optToVar_.find(fIt->second);
+		if (optIt == optToVar_.end())
 			return "";
 		else
 			return optIt->second;

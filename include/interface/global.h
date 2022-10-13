@@ -17,27 +17,27 @@ namespace IntfNs
 
 	struct NameKey
 	{
-		NameKey( const NameKey &key );
-		NameKey( const char *const val );
-		bool operator<( const NameKey &key ) const;
-		char val_[ NAME_LEN ];
+		NameKey(const NameKey &key);
+		NameKey(const char *const val);
+		bool operator<(const NameKey &key) const;
+		char val_[NAME_LEN];
 	};
 
-	inline NameKey::NameKey( const NameKey &key )
+	inline NameKey::NameKey(const NameKey &key)
 	{
-		std::memmove( val_, key.val_, NAME_LEN );
+		std::memmove(val_, key.val_, NAME_LEN);
 	}
 
-	inline NameKey::NameKey( const char *const val )
+	inline NameKey::NameKey(const char *const val)
 	{
-		std::memset( val_, '\0', NAME_LEN );
-		if ( val )
-			strncpy( val_, val, NAME_LEN - 1 );
+		std::memset(val_, '\0', NAME_LEN);
+		if (val)
+			strncpy(val_, val, NAME_LEN - 1);
 	}
 
-	inline bool NameKey::operator<( const NameKey &key ) const
+	inline bool NameKey::operator<(const NameKey &key) const
 	{
-		return strcmp( val_, key.val_ ) < 0;
+		return strcmp(val_, key.val_) < 0;
 	}
 
 };

@@ -141,7 +141,7 @@ namespace CoreNs
 
 	inline Value Gate::isInverse() const
 	{
-		switch ( type_ )
+		switch (type_)
 		{
 			case INV:
 			case NAND2:
@@ -170,7 +170,7 @@ namespace CoreNs
 
 	inline Value Gate::getOutputCtrlValue() const
 	{
-		switch ( type_ )
+		switch (type_)
 		{
 			case OR2:
 			case OR3:

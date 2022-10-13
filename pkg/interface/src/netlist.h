@@ -21,20 +21,20 @@ namespace IntfNs
 		~Netlist();
 
 		// info
-		bool check( const bool &verbose = false ) const;
-		bool setTechlib( Techlib *const lib );
+		bool check(const bool &verbose = false) const;
+		bool setTechlib(Techlib *const lib);
 		Techlib *getTechlib() const;
 
 		// top module
 		Cell *getTop() const;
-		bool setTop( const size_t &i );
-		bool setTop( const char *const name );
+		bool setTop(const size_t &i);
+		bool setTop(const char *const name);
 
 		// modules
-		bool addModule( Cell *m );
+		bool addModule(Cell *m);
 		size_t getNModule() const;
-		Cell *getModule( const char *const name ) const;
-		Cell *getModule( const size_t &i ) const;
+		Cell *getModule(const char *const name) const;
+		Cell *getModule(const size_t &i) const;
 
 		// operations
 		bool removeFloatingNets();
@@ -60,7 +60,7 @@ namespace IntfNs
 	{
 	}
 
-	inline bool Netlist::setTechlib( Techlib *const lib )
+	inline bool Netlist::setTechlib(Techlib *const lib)
 	{
 		lib_ = lib;
 		return true;
@@ -76,10 +76,10 @@ namespace IntfNs
 		return top_;
 	}
 
-	inline bool Netlist::setTop( const char *const name )
+	inline bool Netlist::setTop(const char *const name)
 	{
-		CellMap::const_iterator it = nameToModule_.find( name );
-		if ( it != nameToModule_.end() )
+		CellMap::const_iterator it = nameToModule_.find(name);
+		if (it != nameToModule_.end())
 		{
 			top_ = it->second;
 			lvl_ = -1;
@@ -87,23 +87,23 @@ namespace IntfNs
 		return it != nameToModule_.end();
 	}
 
-	inline bool Netlist::setTop( const size_t &i )
+	inline bool Netlist::setTop(const size_t &i)
 	{
-		if ( i < modules_.size() )
+		if (i < modules_.size())
 		{
-			top_ = modules_[ i ];
+			top_ = modules_[i];
 			lvl_ = -1;
 		}
 		return i < modules_.size();
 	}
 
-	inline bool Netlist::addModule( Cell *m )
+	inline bool Netlist::addModule(Cell *m)
 	{
-		CellMap::iterator it = nameToModule_.find( m->name_ );
-		if ( it != nameToModule_.end() )
+		CellMap::iterator it = nameToModule_.find(m->name_);
+		if (it != nameToModule_.end())
 			return false;
-		modules_.push_back( m );
-		nameToModule_[ m->name_ ] = m;
+		modules_.push_back(m);
+		nameToModule_[m->name_] = m;
 		return true;
 	}
 
@@ -112,15 +112,15 @@ namespace IntfNs
 		return modules_.size();
 	}
 
-	inline Cell *Netlist::getModule( const char *const name ) const
+	inline Cell *Netlist::getModule(const char *const name) const
 	{
-		CellMap::const_iterator it = nameToModule_.find( name );
+		CellMap::const_iterator it = nameToModule_.find(name);
 		return it == nameToModule_.end() ? NULL : it->second;
 	}
 
-	inline Cell *Netlist::getModule( const size_t &i ) const
+	inline Cell *Netlist::getModule(const size_t &i) const
 	{
-		return i < modules_.size() ? modules_[ i ] : NULL;
+		return i < modules_.size() ? modules_[i] : NULL;
 	}
 
 };

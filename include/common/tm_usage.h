@@ -30,9 +30,9 @@ namespace CommonNs
 
 		bool totalStart();
 		bool periodStart();
-		bool getTotalUsage( TmStat &st ) const;
-		bool getPeriodUsage( TmStat &st ) const;
-		bool checkUsage( TmStat &st ) const;
+		bool getTotalUsage(TmStat &st) const;
+		bool getPeriodUsage(TmStat &st) const;
+		bool checkUsage(TmStat &st) const;
 
 	private:
 		TmStat tStart_;

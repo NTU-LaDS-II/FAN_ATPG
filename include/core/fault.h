@@ -60,7 +60,7 @@ namespace CoreNs
 		};
 
 		Fault();
-		Fault( int gate, Type type, int line, int aggr = -1 );
+		Fault(int gate, Type type, int line, int aggr = -1);
 		~Fault();
 
 		int aggr_;		// ID of the aggressor gate
@@ -85,7 +85,7 @@ namespace CoreNs
 		FaultListExtract();
 		~FaultListExtract();
 
-		void extract( Circuit *cir );
+		void extract(Circuit *cir);
 
 		int *gateToFault_;
 		FaultVec faults_;
@@ -103,7 +103,7 @@ namespace CoreNs
 		state_ = UD;
 	}
 	// for bridging fault only
-	inline Fault::Fault( int gate, Type type, int line, int aggr )
+	inline Fault::Fault(int gate, Type type, int line, int aggr)
 	{
 		aggr_ = aggr;
 		gate_ = gate;

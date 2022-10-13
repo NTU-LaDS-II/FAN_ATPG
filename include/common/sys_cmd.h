@@ -16,55 +16,55 @@ namespace CommonNs
 	class SysBashCmd : public Cmd
 	{
 	public:
-		SysBashCmd( const std::string &name );
+		SysBashCmd(const std::string &name);
 		~SysBashCmd();
 
-		bool exec( const std::vector<std::string> &argv );
+		bool exec(const std::vector<std::string> &argv);
 	};
 
 	class SysListCmd : public Cmd
 	{
 	public:
-		SysListCmd( const std::string &name );
+		SysListCmd(const std::string &name);
 		~SysListCmd();
 
-		bool exec( const std::vector<std::string> &argv );
+		bool exec(const std::vector<std::string> &argv);
 	};
 
 	class SysCatCmd : public Cmd
 	{
 	public:
-		SysCatCmd( const std::string &name );
+		SysCatCmd(const std::string &name);
 		~SysCatCmd();
 
-		bool exec( const std::vector<std::string> &argv );
+		bool exec(const std::vector<std::string> &argv);
 	};
 
 	class SysCdCmd : public Cmd
 	{
 	public:
-		SysCdCmd( const std::string &name );
+		SysCdCmd(const std::string &name);
 		~SysCdCmd();
 
-		bool exec( const std::vector<std::string> &argv );
+		bool exec(const std::vector<std::string> &argv);
 	};
 
 	class SysPwdCmd : public Cmd
 	{
 	public:
-		SysPwdCmd( const std::string &name );
+		SysPwdCmd(const std::string &name);
 		~SysPwdCmd();
 
-		bool exec( const std::vector<std::string> &argv );
+		bool exec(const std::vector<std::string> &argv);
 	};
 
 	class SysSetCmd : public Cmd
 	{
 	public:
-		SysSetCmd( const std::string &name, CmdMgr *mgr );
+		SysSetCmd(const std::string &name, CmdMgr *mgr);
 		~SysSetCmd();
 
-		bool exec( const std::vector<std::string> &argv );
+		bool exec(const std::vector<std::string> &argv);
 
 	private:
 		CmdMgr *cmdMgr_;
@@ -73,10 +73,10 @@ namespace CommonNs
 	class SysExitCmd : public Cmd
 	{
 	public:
-		SysExitCmd( const std::string &name, CmdMgr *mgr );
+		SysExitCmd(const std::string &name, CmdMgr *mgr);
 		~SysExitCmd();
 
-		bool exec( const std::vector<std::string> &argv );
+		bool exec(const std::vector<std::string> &argv);
 
 	private:
 		CmdMgr *cmdMgr_;
@@ -85,10 +85,10 @@ namespace CommonNs
 	class SysSourceCmd : public Cmd
 	{
 	public:
-		SysSourceCmd( const std::string &name, CmdMgr *mgr );
+		SysSourceCmd(const std::string &name, CmdMgr *mgr);
 		~SysSourceCmd();
 
-		bool exec( const std::vector<std::string> &argv );
+		bool exec(const std::vector<std::string> &argv);
 
 	private:
 		CmdMgr *cmdMgr_;
@@ -97,10 +97,10 @@ namespace CommonNs
 	class SysHelpCmd : public Cmd
 	{
 	public:
-		SysHelpCmd( const std::string &name, CmdMgr *mgr );
+		SysHelpCmd(const std::string &name, CmdMgr *mgr);
 		~SysHelpCmd();
 
-		bool exec( const std::vector<std::string> &argv );
+		bool exec(const std::vector<std::string> &argv);
 
 	private:
 		CmdMgr *cmdMgr_;

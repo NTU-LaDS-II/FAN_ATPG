@@ -32,8 +32,8 @@ namespace CoreNs
 		};
 
 		// build circuit from netlist
-		bool build( IntfNs::Netlist *const nl, const int &nframe = 1,
-								const tfConnectType &type = CAPTURE );
+		bool build(IntfNs::Netlist *const nl, const int &nframe = 1,
+							 const tfConnectType &type = CAPTURE);
 
 		// info for one time frame
 		IntfNs::Netlist *nl_; // corresponding netlist
@@ -70,15 +70,15 @@ namespace CoreNs
 		void calNgate();
 		void calNnet();
 		void createGate();
-		void createPi( int &nfo );
-		void createPpi( int &nfo );
-		void createComb( int &nfi, int &nfo );
-		void createPmt( const int &id, const IntfNs::Cell *const c,
-										const IntfNs::Pmt *const pmt, int &nfi, int &nfo );
-		void detGateType( const int &id, const IntfNs::Cell *const c,
-											const IntfNs::Pmt *const pmt );
-		void createPo( int &nfi );
-		void createPpo( int &nfi );
+		void createPi(int &nfo);
+		void createPpi(int &nfo);
+		void createComb(int &nfi, int &nfo);
+		void createPmt(const int &id, const IntfNs::Cell *const c,
+									 const IntfNs::Pmt *const pmt, int &nfi, int &nfo);
+		void detGateType(const int &id, const IntfNs::Cell *const c,
+										 const IntfNs::Pmt *const pmt);
+		void createPo(int &nfi);
+		void createPpo(int &nfi);
 		void connectFrame();
 		void assignFiMinLvl();
 	};

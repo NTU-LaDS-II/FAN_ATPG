@@ -34,22 +34,22 @@ namespace CoreNs
 
 	// determine word size
 	const size_t BYTE_SIZE = 8;
-	const size_t WORD_SIZE = sizeof( ParaValue ) * BYTE_SIZE;
+	const size_t WORD_SIZE = sizeof(ParaValue) * BYTE_SIZE;
 
-	inline void setBitValue( ParaValue &pv, const size_t &i, const Value &v )
+	inline void setBitValue(ParaValue &pv, const size_t &i, const Value &v)
 	{
-		pv = v == L ? pv & ~( (ParaValue)0x01 << i ) : pv | ( (ParaValue)0x01 << i );
+		pv = v == L ? pv & ~((ParaValue)0x01 << i) : pv | ((ParaValue)0x01 << i);
 	}
 
-	inline Value getBitValue( const ParaValue &pv, const size_t &i )
+	inline Value getBitValue(const ParaValue &pv, const size_t &i)
 	{
-		return ( pv & ( (ParaValue)0x01 << i ) ) == PARA_L ? L : H;
+		return (pv & ((ParaValue)0x01 << i)) == PARA_L ? L : H;
 	}
 
-	void printValue( const Value &v, std::ostream &out = std::cout );
-	void printValue( const ParaValue &v, std::ostream &out = std::cout );
-	void printValue( const ParaValue &l, const ParaValue &h,
-									 std::ostream &out = std::cout );
+	void printValue(const Value &v, std::ostream &out = std::cout);
+	void printValue(const ParaValue &v, std::ostream &out = std::cout);
+	void printValue(const ParaValue &l, const ParaValue &h,
+									std::ostream &out = std::cout);
 
 };
 

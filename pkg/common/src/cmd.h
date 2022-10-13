@@ -29,9 +29,9 @@ namespace CommonNs
 	class Cmd
 	{
 	public:
-		Cmd( const std::string &name );
+		Cmd(const std::string &name);
 		virtual ~Cmd();
-		virtual bool exec( const std::vector<std::string> &argv ) = 0;
+		virtual bool exec(const std::vector<std::string> &argv) = 0;
 		std::string getName() const;
 		OptMgr optMgr_;
 	}; //}}}
@@ -68,48 +68,48 @@ namespace CommonNs
 		CmdMgr();
 		~CmdMgr();
 
-		void regCmd( const std::string &cat, Cmd *const cmd );
-		Cmd *getCmd( const std::string &name ) const;
+		void regCmd(const std::string &cat, Cmd *const cmd);
+		Cmd *getCmd(const std::string &name) const;
 		Result read();
-		Result exec( const std::string &cmdStr );
-		void setComment( const char &ch );
-		void setPrompt( const std::string &str );
-		void setColor( const Color &color );
-		void setExit( const bool &exit );
-		bool addVar( const std::string &var, const std::string &str );
+		Result exec(const std::string &cmdStr);
+		void setComment(const char &ch);
+		void setPrompt(const std::string &str);
+		void setColor(const Color &color);
+		void setExit(const bool &exit);
+		bool addVar(const std::string &var, const std::string &str);
 		VarMap getVars() const;
 		Error getError() const;
 		std::string getErrorStr() const;
 
-		void usage( std::ostream &out = std::cout );
+		void usage(std::ostream &out = std::cout);
 
 	private:
 		// setting variables
-		std::string expandVar( const std::string &var ) const;
-		std::string expandHome( const std::string &path ) const;
-		bool isLegalVar( const std::string &var ) const;
-		bool isLegalVarChar( const char &ch ) const;
+		std::string expandVar(const std::string &var) const;
+		std::string expandHome(const std::string &path) const;
+		bool isLegalVar(const std::string &var) const;
+		bool isLegalVarChar(const char &ch) const;
 
 		// reading from standard input
 		void setStdin() const;
 		void resetStdin() const;
 
 		// redirect standard output
-		bool setStdoutRedir( const std::string &fname,
-												 const std::string &mode,
-												 int &stdoutFd,
-												 fpos_t &stdoutPos ) const;
-		void resetStdout( const int &stdoutFd,
-											const fpos_t &stdoutPos ) const;
+		bool setStdoutRedir(const std::string &fname,
+												const std::string &mode,
+												int &stdoutFd,
+												fpos_t &stdoutPos) const;
+		void resetStdout(const int &stdoutFd,
+										 const fpos_t &stdoutPos) const;
 
 		// user interface printing
 		void refresh();
 		void autoCmplt();
 		int getTermCol() const;
-		std::vector<std::string> getDirCts( const std::string &dirStr ) const;
-		std::vector<std::string> parse( const std::string &cmdStr ) const;
-		size_t cmnPrefix( const std::string &s1,
-											const std::string &s2 ) const;
+		std::vector<std::string> getDirCts(const std::string &dirStr) const;
+		std::vector<std::string> parse(const std::string &cmdStr) const;
+		size_t cmnPrefix(const std::string &s1,
+										 const std::string &s2) const;
 
 		std::string prompt_;	 // command line prompt
 		char comment_;				 // comment character
@@ -130,9 +130,9 @@ namespace CommonNs
 
 	// inline methods
 	//{{{ class Cmd
-	inline Cmd::Cmd( const std::string &name )
+	inline Cmd::Cmd(const std::string &name)
 	{
-		optMgr_.setName( name );
+		optMgr_.setName(name);
 	}
 
 	inline Cmd::~Cmd() {}
@@ -154,64 +154,64 @@ namespace CommonNs
 
 	inline CmdMgr::~CmdMgr() {}
 
-	inline void CmdMgr::setComment( const char &ch )
+	inline void CmdMgr::setComment(const char &ch)
 	{
 		comment_ = ch;
 	}
 
-	inline void CmdMgr::setPrompt( const std::string &s )
+	inline void CmdMgr::setPrompt(const std::string &s)
 	{
 		prompt_ = s;
 	}
 
-	inline void CmdMgr::setColor( const Color &color )
+	inline void CmdMgr::setColor(const Color &color)
 	{
 		color_ = color;
 	}
 
-	inline void CmdMgr::setExit( const bool &exit )
+	inline void CmdMgr::setExit(const bool &exit)
 	{
 		exit_ = exit;
 	}
 
-	inline bool CmdMgr::addVar( const std::string &var, const std::string &str )
+	inline bool CmdMgr::addVar(const std::string &var, const std::string &str)
 	{
-		if ( !isLegalVar( var ) )
+		if (!isLegalVar(var))
 		{
 			errorStr_ = var;
 			error_ = E_INVALID_VAR;
 			return false;
 		}
-		varMap_[ var ] = expandVar( str );
+		varMap_[var] = expandVar(str);
 		return true;
 	}
 
-	inline bool CmdMgr::isLegalVar( const std::string &var ) const
+	inline bool CmdMgr::isLegalVar(const std::string &var) const
 	{
-		for ( size_t i = 0; i < var.size(); ++i )
+		for (size_t i = 0; i < var.size(); ++i)
 		{
-			if ( var[ i ] >= ASCII_0 && var[ i ] <= ASCII_9 )
+			if (var[i] >= ASCII_0 && var[i] <= ASCII_9)
 				continue;
-			if ( var[ i ] >= ASCII_A && var[ i ] <= ASCII_Z )
+			if (var[i] >= ASCII_A && var[i] <= ASCII_Z)
 				continue;
-			if ( var[ i ] >= ASCII_a && var[ i ] <= ASCII_z )
+			if (var[i] >= ASCII_a && var[i] <= ASCII_z)
 				continue;
-			if ( var[ i ] == ASCII_UNDER )
+			if (var[i] == ASCII_UNDER)
 				continue;
 			return false;
 		}
 		return true;
 	}
 
-	inline bool CmdMgr::isLegalVarChar( const char &ch ) const
+	inline bool CmdMgr::isLegalVarChar(const char &ch) const
 	{
-		if ( ch >= ASCII_0 && ch <= ASCII_9 )
+		if (ch >= ASCII_0 && ch <= ASCII_9)
 			return true;
-		if ( ch >= ASCII_A && ch <= ASCII_Z )
+		if (ch >= ASCII_A && ch <= ASCII_Z)
 			return true;
-		if ( ch >= ASCII_a && ch <= ASCII_z )
+		if (ch >= ASCII_a && ch <= ASCII_z)
 			return true;
-		if ( ch == ASCII_UNDER )
+		if (ch == ASCII_UNDER)
 			return true;
 		return false;
 	}

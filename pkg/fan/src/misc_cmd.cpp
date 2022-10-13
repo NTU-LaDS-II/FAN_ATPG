@@ -14,24 +14,24 @@ using namespace CommonNs;
 using namespace FanNs;
 
 //{{{ ReportPatFormatCmd::ReportPatFormatCmd()
-ReportPatFormatCmd::ReportPatFormatCmd( const std::string &name ) : Cmd( name )
+ReportPatFormatCmd::ReportPatFormatCmd(const std::string &name) : Cmd(name)
 {
-	optMgr_.setName( name );
-	optMgr_.setShortDes( "report pattern format" );
-	optMgr_.setDes( "report pattern format" );
-	Opt *opt = new Opt( Opt::BOOL, "print usage", "" );
-	opt->addFlag( "h" );
-	opt->addFlag( "help" );
-	optMgr_.regOpt( opt );
+	optMgr_.setName(name);
+	optMgr_.setShortDes("report pattern format");
+	optMgr_.setDes("report pattern format");
+	Opt *opt = new Opt(Opt::BOOL, "print usage", "");
+	opt->addFlag("h");
+	opt->addFlag("help");
+	optMgr_.regOpt(opt);
 }
 ReportPatFormatCmd::~ReportPatFormatCmd() {}
 //}}}
 //{{{ bool ReportPatFormatCmd::exec()
-bool ReportPatFormatCmd::exec( const vector<string> &argv )
+bool ReportPatFormatCmd::exec(const vector<string> &argv)
 {
-	optMgr_.parse( argv );
+	optMgr_.parse(argv);
 
-	if ( optMgr_.isFlagSet( "h" ) )
+	if (optMgr_.isFlagSet("h"))
 	{
 		optMgr_.usage();
 		return true;
@@ -46,24 +46,24 @@ bool ReportPatFormatCmd::exec( const vector<string> &argv )
 } //}}}
 
 //{{{ ReportMemUsgCmd::ReportMemUsgCmd()
-ReportMemUsgCmd::ReportMemUsgCmd( const std::string &name ) : Cmd( name )
+ReportMemUsgCmd::ReportMemUsgCmd(const std::string &name) : Cmd(name)
 {
-	optMgr_.setName( name );
-	optMgr_.setShortDes( "report resource usage" );
-	optMgr_.setDes( "report resource usage" );
-	Opt *opt = new Opt( Opt::BOOL, "print usage", "" );
-	opt->addFlag( "h" );
-	opt->addFlag( "help" );
-	optMgr_.regOpt( opt );
+	optMgr_.setName(name);
+	optMgr_.setShortDes("report resource usage");
+	optMgr_.setDes("report resource usage");
+	Opt *opt = new Opt(Opt::BOOL, "print usage", "");
+	opt->addFlag("h");
+	opt->addFlag("help");
+	optMgr_.regOpt(opt);
 }
 ReportMemUsgCmd::~ReportMemUsgCmd() {}
 //}}}
 //{{{ bool ReportMemUsgCmd::exec()
-bool ReportMemUsgCmd::exec( const vector<string> &argv )
+bool ReportMemUsgCmd::exec(const vector<string> &argv)
 {
-	optMgr_.parse( argv );
+	optMgr_.parse(argv);
 
-	if ( optMgr_.isFlagSet( "h" ) )
+	if (optMgr_.isFlagSet("h"))
 	{
 		optMgr_.usage();
 		return true;
@@ -71,7 +71,7 @@ bool ReportMemUsgCmd::exec( const vector<string> &argv )
 
 	TmStat stat;
 	TmUsage tmusg;
-	tmusg.getPeriodUsage( stat );
+	tmusg.getPeriodUsage(stat);
 	cout << "#  Memory         ";
 	cout << "current " << (double)stat.vmSize / 1024.0 << " MB        ";
 	cout << "peak " << (double)stat.vmPeak / 1024.0 << " MB" << endl;

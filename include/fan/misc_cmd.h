@@ -17,19 +17,19 @@ namespace FanNs
 	class ReportPatFormatCmd : public CommonNs::Cmd
 	{
 	public:
-		ReportPatFormatCmd( const std::string &name );
+		ReportPatFormatCmd(const std::string &name);
 		~ReportPatFormatCmd();
 
-		bool exec( const std::vector<std::string> &argv );
+		bool exec(const std::vector<std::string> &argv);
 	};
 
 	class ReportMemUsgCmd : public CommonNs::Cmd
 	{
 	public:
-		ReportMemUsgCmd( const std::string &name );
+		ReportMemUsgCmd(const std::string &name);
 		~ReportMemUsgCmd();
 
-		bool exec( const std::vector<std::string> &argv );
+		bool exec(const std::vector<std::string> &argv);
 	};
 
 };
