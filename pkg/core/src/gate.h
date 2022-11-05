@@ -121,6 +121,7 @@ namespace CoreNs
 		hasCons_ = false;
 		cons_ = PARA_L;
 
+		// scoap commit trial
 		cc0_ = 0;
 		cc1_ = 0;
 		co_ = 0;
