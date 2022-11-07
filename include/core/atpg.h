@@ -190,6 +190,9 @@ namespace CoreNs
 		Value cXNOR2(Value i1, Value i2);
 		Value cXNOR3(Value i1, Value i2, Value i3);
 
+		// added by Wei-Shen Wang
+		void calSCOAP();
+
 		/* Added by Shi-Tang Liu */
 		std::string getValStr(Value val);
 		void clearOneGateFaultEffect(Gate &g);

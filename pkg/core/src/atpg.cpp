@@ -219,6 +219,8 @@ void Atpg::setupCircuitParameter()
 		modify_[i] = false;
 	}
 
+	calSCOAP();
+
 	// set depthFromPo_
 	calDepthFromPo();
 
@@ -2235,6 +2237,7 @@ void Atpg::initialObjectives()
 //            ]
 // Date       [ CPJ Ver. 1.0 started 2013/08/10 ]
 // **************************************************************************
+// TODO add cc0_ and cc1_
 Gate *Atpg::findEasiestInput(Gate *pGate, Value Val)
 {
 
@@ -2290,6 +2293,7 @@ Gate *Atpg::findEasiestInput(Gate *pGate, Value Val)
 //            ]
 // Date       [ Ver. 1.0 started 2013/08/13 ]
 // **************************************************************************
+// TODO add co_
 Gate *Atpg::findCloseToOutput(vector<int> &list, int &index)
 {
 	Gate *pCloseGate;
