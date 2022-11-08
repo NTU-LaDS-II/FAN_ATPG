@@ -36,6 +36,7 @@ void Atpg::calSCOAP()
 	// xor3 xnor3 : {000, 001, 010, 011, 100, 101, 110, 111}
 	int xorcc[8] = {0};
 	Gate xorgin[2];
+
 	// calculate cc0 and cc1 starting from PI and PPI
 	for (int i = 0; i < cir_->tgate_; ++i)
 	{
@@ -60,10 +61,10 @@ void Atpg::calSCOAP()
 			case Gate::AND2:
 			case Gate::AND3:
 			case Gate::AND4:
-				for (int i = 0; i < g.nfi_; i++)
+				for (int j = 0; j < g.nfi_; j++)
 				{
-					Gate &gin = cir_->gates_[g.fis_[i]];
-					if (i == 0 || (gin.cc0_ < g.cc0_))
+					Gate &gin = cir_->gates_[g.fis_[j]];
+					if (j == 0 || (gin.cc0_ < g.cc0_))
 					{
 						g.cc0_ = gin.cc0_;
 					}
@@ -76,10 +77,10 @@ void Atpg::calSCOAP()
 			case Gate::NAND2:
 			case Gate::NAND3:
 			case Gate::NAND4:
-				for (int i = 0; i < g.nfi_; i++)
+				for (int j = 0; j < g.nfi_; j++)
 				{
-					Gate &gin = cir_->gates_[g.fis_[i]];
-					if (i == 0 || (gin.cc0_ < g.cc1_))
+					Gate &gin = cir_->gates_[g.fis_[j]];
+					if (j == 0 || (gin.cc0_ < g.cc1_))
 					{
 						g.cc1_ = gin.cc0_;
 					}
@@ -92,10 +93,10 @@ void Atpg::calSCOAP()
 			case Gate::OR2:
 			case Gate::OR3:
 			case Gate::OR4:
-				for (int i = 0; i < g.nfi_; i++)
+				for (int j = 0; j < g.nfi_; j++)
 				{
-					Gate &gin = cir_->gates_[g.fis_[i]];
-					if (i == 0 || (gin.cc1_ < g.cc1_))
+					Gate &gin = cir_->gates_[g.fis_[j]];
+					if (j == 0 || (gin.cc1_ < g.cc1_))
 					{
 						g.cc1_ = gin.cc1_;
 					}
@@ -107,10 +108,10 @@ void Atpg::calSCOAP()
 			case Gate::NOR2:
 			case Gate::NOR3:
 			case Gate::NOR4:
-				for (int i = 0; i < g.nfi_; i++)
+				for (int j = 0; j < g.nfi_; j++)
 				{
-					Gate &gin = cir_->gates_[g.fis_[i]];
-					if (i == 0 || (gin.cc1_ < g.cc0_))
+					Gate &gin = cir_->gates_[g.fis_[j]];
+					if (j == 0 || (gin.cc1_ < g.cc0_))
 					{
 						g.cc0_ = gin.cc1_;
 					}
@@ -144,11 +145,11 @@ void Atpg::calSCOAP()
 				xorcc[6] = xorgin[0].cc1_ + xorgin[1].cc1_ + xorgin[2].cc0_;
 				xorcc[7] = xorgin[0].cc1_ + xorgin[1].cc1_ + xorgin[2].cc1_;
 				g.cc0_ = std::min(xorcc[0], xorcc[7]);
-				for (int i = 1; i < 7; i++)
+				for (int j = 1; j < 7; j++)
 				{
-					if (i == 1 || xorcc[i] < g.cc1_)
+					if (j == 1 || xorcc[j] < g.cc1_)
 					{
-						g.cc1_ = xorcc[i];
+						g.cc1_ = xorcc[j];
 					}
 				}
 				g.cc0_++;
@@ -178,21 +179,102 @@ void Atpg::calSCOAP()
 				xorcc[5] = xorgin[0].cc1_ + xorgin[1].cc0_ + xorgin[2].cc1_;
 				xorcc[6] = xorgin[0].cc1_ + xorgin[1].cc1_ + xorgin[2].cc0_;
 				xorcc[7] = xorgin[0].cc1_ + xorgin[1].cc1_ + xorgin[2].cc1_;
-				for (int i = 1; i < 7; i++)
+				for (int j = 1; j < 7; j++)
 				{
-					if (i == 1 || xorcc[i] < g.cc1_)
+					if (j == 1 || xorcc[j] < g.cc1_)
 					{
-						g.cc0_ = xorcc[i];
+						g.cc0_ = xorcc[j];
 					}
 				}
 				g.cc1_ = std::min(xorcc[0], xorcc[7]);
-        g.cc0_++;
-        g.cc1_++;
+				g.cc0_++;
+				g.cc1_++;
 				break;
 			default:
 				DEBUG("default", "should not happen");
 				break;
 		}
 	}
+
+	// calculate co_ starting from PO and PP
+	for (int i = 0; i < cir_->tgate_; ++i)
+	{
+		Gate &g = cir_->gates_[i];
+		Gate &gout = cir_->gates_[0]; // for fanout free
+		switch (g.type_)
+		{
+			case Gate::PO:
+			case Gate::PPO:
+				g.co_ = 0;
+				break;
+			case Gate::PPI:
+			case Gate::PI:
+			case Gate::BUF:
+				for (int j = 0; j < g.nfo_; j++)
+				{
+					if (j == 0 || cir_->gates_[g.fos_[j]].co_ < g.co_)
+					{
+						g.co_ = cir_->gates_[g.fos_[j]].co_;
+					}
+				}
+				break;
+			case Gate::INV:
+				g.co_ = gout.co_ + 1;
+				break;
+			case Gate::AND2:
+			case Gate::AND3:
+			case Gate::AND4:
+			case Gate::NAND2:
+			case Gate::NAND3:
+			case Gate::NAND4:
+				g.co_ = gout.co_ + 1;
+				for (int j = 0; j < gout.nfi_; j++)
+				{
+					Gate &gin = cir_->gates_[g.fis_[j]];
+					if (g.fis_[j] != i)
+					{
+						g.co_ += g.cc1_;
+					}
+				}
+				break;
+			case Gate::OR2:
+			case Gate::OR3:
+			case Gate::OR4:
+			case Gate::NOR2:
+			case Gate::NOR3:
+			case Gate::NOR4:
+				g.co_ = gout.co_ + 1;
+				for (int j = 0; j < gout.nfi_; j++)
+				{
+					Gate &gin = cir_->gates_[g.fis_[j]];
+					if (g.fis_[j] != i)
+					{
+						g.co_ += g.cc0_;
+					}
+				}
+				break;
+			case Gate::XOR2:
+			case Gate::XNOR2:
+			case Gate::XOR3:
+			case Gate::XNOR3:
+				int minccin;
+				g.co_ = gout.co_ + 1;
+				for (int j = 0; j < gout.nfo_; j++)
+				{
+					Gate &gin = cir_->gates_[g.fis_[j]];
+					if (g.fis_[j] != i)
+					{
+						int temp = std::min(gin.cc0_, gin.cc1_);
+						minccin = std::min(temp, minccin);
+					}
+				}
+				g.co_ += minccin;
+				break;
+			default:
+				DEBUG("default", "should not happen");
+				break;
+		}
+	}
+
 	return;
 }

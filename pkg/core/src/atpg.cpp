@@ -2306,7 +2306,8 @@ Gate *Atpg::findCloseToOutput(vector<int> &list, int &index)
 	index = list.size() - 1;
 	for (i = list.size() - 2; i >= 0; i--)
 	{
-		if (cir_->gates_[list[i]].depthFromPo_ < pCloseGate->depthFromPo_)
+		// if (cir_->gates_[list[i]].depthFromPo_ < pCloseGate->depthFromPo_)
+		if (cir_->gates_[list[i]].co_ < pCloseGate->co_)
 		{
 			index = i;
 			pCloseGate = &cir_->gates_[list[i]];
