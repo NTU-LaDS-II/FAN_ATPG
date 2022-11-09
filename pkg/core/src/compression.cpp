@@ -436,7 +436,7 @@ void Atpg::StuckAtFaultATPGWithDTC(FaultList &faultListToGen, PatternProcessor *
 			sim_->pfFaultSim(pcoll->pats_.back(), faultListToGen);
 			assignPatternPoValue(pcoll->pats_.back());
 
-			for (auto it = faultListTemp.begin(); it != faultListTemp.end(); ++it)
+			for (FaultListIter it = faultListTemp.begin(); it != faultListTemp.end(); ++it)
 			{
 				// skip detected faults
 				if ((*it)->state_ == Fault::DT)
@@ -468,6 +468,14 @@ void Atpg::StuckAtFaultATPGWithDTC(FaultList &faultListToGen, PatternProcessor *
 					// TO-DO homework 05
 					// implement DTC here
 					// end of TO-DO
+					resetPreValue();
+					clearAllFaultEffectBySimulation();
+					storeCurrentGateValue();
+					result = patternGeneration((**it), true);
+					if (result == TEST_FOUND)
+					{
+						assignPatternPiValue(pcoll->pats_.back());
+					}
 				}
 				else
 				{
