@@ -26,33 +26,87 @@ void FaultListExtract::extract(Circuit *cir)
 	if (type_ == SAF)
 	{
 		gateToFault_ = new int[cir->ngate_];
+		bool useFC = true;
+		bool FC_type = false; // false for EFC, true for DFC
 		for (int i = 0; i < cir->ngate_; ++i)
 		{
 			gateToFault_[i] = faults_.size();
-			// extract fault of gate outputs
-			// but do not extract faults between two time frames
-			if (cir->gates_[i].nfo_ > 0 && i < cir->ngate_ - cir->nppi_)
+			if (!useFC)
 			{
-				if (cir->gates_[i].type_ != Gate::PPI)
+				// Without Fault Collapsing
+				// extract fault of gate outputs
+				// but do not extract faults between two time frames
+				if (cir->gates_[i].nfo_ > 0 && i < cir->ngate_ - cir->nppi_)
 				{
-					faults_.push_back(new Fault(i, Fault::SA0, 0));
-					faults_.push_back(new Fault(i, Fault::SA1, 0));
+					if (cir->gates_[i].type_ != Gate::PPI)
+					{
+						faults_.push_back(new Fault(i, Fault::SA0, 0));
+						faults_.push_back(new Fault(i, Fault::SA1, 0));
+					}
+					else
+					{
+						temp = new Fault(i, Fault::SA0, 0); // Q
+						// temp->state_ = Fault::DT;
+						faults_.push_back(temp);
+						temp = new Fault(i, Fault::SA1, 0); // Q
+						// temp->state_ = Fault::DT;
+						faults_.push_back(temp);
+					}
+				}
+				// extract faults of gate inputs
+				for (int j = 0; j < cir->gates_[i].nfi_; ++j)
+				{
+					faults_.push_back(new Fault(i, Fault::SA0, j + 1));
+					faults_.push_back(new Fault(i, Fault::SA1, j + 1));
+				}
+			}
+			else
+			{
+				if (!FC_type)
+				{
+					// Simple Equivalent Fault Collapsing
+					// Output faults
+					// fanout stem, including PI,PPI with fanout stem
+					if (cir->gates_[i].nfo_ > 1)
+					{
+						faults_.push_back(new Fault(i, Fault::SA0, 0));
+						faults_.push_back(new Fault(i, Fault::SA1, 0));
+					}
+					// Input faults
+					// AND, NAND gates
+					if (cir->gates_[i].type_ == Gate::AND2 || cir->gates_[i].type_ == Gate::AND3 || cir->gates_[i].type_ == Gate::AND4 || cir->gates_[i].type_ == Gate::NAND2 || cir->gates_[i].type_ == Gate::NAND3 || cir->gates_[i].type_ == Gate::NAND4)
+					{
+						for (int j = 0; j < cir->gates_[i].nfi_; ++j)
+						{
+							faults_.push_back(new Fault(i, Fault::SA1, j + 1));
+						}
+					}
+					// OR, NOR gates
+					else if (cir->gates_[i].type_ == Gate::OR2 || cir->gates_[i].type_ == Gate::OR3 || cir->gates_[i].type_ == Gate::OR4 || cir->gates_[i].type_ == Gate::NOR2 || cir->gates_[i].type_ == Gate::NOR3 || cir->gates_[i].type_ == Gate::NOR4)
+					{
+						for (int j = 0; j < cir->gates_[i].nfi_; ++j)
+						{
+							faults_.push_back(new Fault(i, Fault::SA0, j + 1));
+						}
+					}
+					else if (cir->gates_[i].type_ == Gate::INV || cir->gates_[i].type_ == Gate::BUF)
+					{
+						// We don't need to add fault at these two types
+					}
+					// other gates, including PO,PPO
+					else
+					{
+						for (int j = 0; j < cir->gates_[i].nfi_; ++j)
+						{
+							faults_.push_back(new Fault(i, Fault::SA0, j + 1));
+							faults_.push_back(new Fault(i, Fault::SA1, j + 1));
+						}
+					}
 				}
 				else
 				{
-					temp = new Fault(i, Fault::SA0, 0); // Q
-					// temp->state_ = Fault::DT;
-					faults_.push_back(temp);
-					temp = new Fault(i, Fault::SA1, 0); // Q
-					// temp->state_ = Fault::DT;
-					faults_.push_back(temp);
+					// Dominance Fault Collapsing (optional)
 				}
-			}
-			// extract faults of gate inputs
-			for (int j = 0; j < cir->gates_[i].nfi_; ++j)
-			{
-				faults_.push_back(new Fault(i, Fault::SA0, j + 1));
-				faults_.push_back(new Fault(i, Fault::SA1, j + 1));
 			}
 			if (cir->gates_[i].type_ == Gate::PPI)
 			{
@@ -119,12 +173,10 @@ void FaultListExtract::extract(Circuit *cir)
 				faults_.push_back(temp);
 			}
 		}
-		//
 	} // end of stuck-at fault
-		// for transition fault
-		//
 	else
 	{
+		// for transition fault
 		gateToFault_ = new int[cir->ngate_];
 		for (int i = 0; i < cir->ngate_; ++i)
 		{
@@ -218,7 +270,5 @@ void FaultListExtract::extract(Circuit *cir)
 				faults_.push_back(temp);
 			}
 		}
-		//
-
 	} // end of transition fault
 }
