@@ -1,0 +1,19 @@
+     Uncollapsed Stuck Fault Summary Report
+ -----------------------------------------------
+ fault class                     code   #faults
+ ------------------------------  ----  ---------
+ Detected                         DT      27630
+ Possibly detected                PT          0
+ Undetectable                     UD         42
+ ATPG untestable                  AU          0
+ Not detected                     ND        580
+ -----------------------------------------------
+ total faults                             28252
+ test coverage                            97.94%
+ -----------------------------------------------
+            Pattern Summary Report
+ -----------------------------------------------
+ #internal patterns                           0
+ #external patterns (./pat/s15850_tmax.stil)    128
+     #basic_scan patterns                   128
+ -----------------------------------------------
