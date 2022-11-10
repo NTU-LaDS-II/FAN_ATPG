@@ -1,0 +1,13 @@
+read_lib techlib/tsmc18.mdt
+read_netlist netlist/c6288.v
+report_netlist
+build_circuit --frame 1
+report_circuit
+read_pattern pat/FAN_c6288.pat
+report_pattern
+set_fault_type saf
+add_fault -a
+run_fault_sim
+report_statistics > rpt/gold_rpt/c6288_fsim.rpt
+report_memory_usage
+exit

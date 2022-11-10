@@ -1,0 +1,28 @@
+#                 Statistics Report
+#  Circuit name                                c1355
+#  Fault model                                   SAF
+#  Pattern type                                BASIC
+#  -------------------------------------------------
+#  Fault classes                             #faults
+#  ----------------------------  -------------------
+#    FU (full)                                  3398
+#    --------------------------  -------------------
+#    UD (undetected)                              20
+#    PT (possibly testable)                        0
+#    AU (atpg untestable)                          0
+#    RE (redundant)                                0
+#    AB (atpg abort)                               0
+#    TI (tied)                                     0
+#    --------------------------  -------------------
+#    DT (detected)                              3378
+#  -------------------------------------------------
+#  Coverage                               percentage
+#    --------------------------  -------------------
+#    test coverage                            99.41%
+#    fault coverage                           99.41%
+#    atpg effectiveness                       99.41%
+#  -------------------------------------------------
+#  #Patterns                                      87
+#  -------------------------------------------------
+#  ATPG runtime                           0.007867 s
+#  -------------------------------------------------

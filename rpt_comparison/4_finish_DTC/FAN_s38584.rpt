@@ -1,0 +1,28 @@
+#                 Statistics Report
+#  Circuit name                               s38584
+#  Fault model                                   SAF
+#  Pattern type                                BASIC
+#  -------------------------------------------------
+#  Fault classes                             #faults
+#  ----------------------------  -------------------
+#    FU (full)                                 49115
+#    --------------------------  -------------------
+#    UD (undetected)                            2866
+#    PT (possibly testable)                        0
+#    AU (atpg untestable)                       1572
+#    RE (redundant)                                0
+#    AB (atpg abort)                               0
+#    TI (tied)                                     0
+#    --------------------------  -------------------
+#    DT (detected)                             44677
+#  -------------------------------------------------
+#  Coverage                               percentage
+#    --------------------------  -------------------
+#    test coverage                            93.97%
+#    fault coverage                           90.96%
+#    atpg effectiveness                       94.16%
+#  -------------------------------------------------
+#  #Patterns                                     271
+#  -------------------------------------------------
+#  ATPG runtime                              53.64 s
+#  -------------------------------------------------
