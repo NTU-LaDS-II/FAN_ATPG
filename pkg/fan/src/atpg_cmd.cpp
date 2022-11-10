@@ -893,7 +893,7 @@ bool ReportStatsCmd::exec(const vector<string> &argv)
 	if (fanMgr_->pcoll)
 		npat = fanMgr_->pcoll->pats_.size();
 
-	size_t fu = fanMgr_->fListExtract->current_.size();
+	size_t fu = 0;
 	size_t ud = 0;
 	size_t dt = 0;
 	size_t pt = 0;
@@ -905,30 +905,32 @@ bool ReportStatsCmd::exec(const vector<string> &argv)
 	FaultListIter it = fanMgr_->fListExtract->current_.begin();
 	for (; it != fanMgr_->fListExtract->current_.end(); ++it)
 	{
+		int eq = (*it)->eq_;
+		fu += eq;
 		switch ((*it)->state_)
 		{
 			case Fault::UD:
 				// cout << (*it)->gate_ << ' ' << (*it)->line_ << ' ' << (*it)->type_ << ' ' << (((*it)->line_==0)?(0):(fanMgr_->cir->gates_[(*it)->gate_].fis_[(*it)->line_-1])) << endl;
-				ud++;
+				ud += eq;
 				break;
 			case Fault::DT:
-				dt++;
+				dt += eq;
 				break;
 			case Fault::PT:
-				pt++;
+				pt += eq;
 				break;
 			case Fault::AU:
 				// cout << (*it)->gate_ << ' ' << (*it)->line_ << ' ' << (*it)->type_ << ' ' << (((*it)->line_==0)?(0):(fanMgr_->cir->gates_[(*it)->gate_].fis_[(*it)->line_-1])) << endl;
-				au++;
+				au += eq;
 				break;
 			case Fault::TI:
-				ti++;
+				ti += eq;
 				break;
 			case Fault::RE:
-				re++;
+				re += eq;
 				break;
 			case Fault::AB:
-				ab++;
+				ab += eq;
 				break;
 		}
 	}

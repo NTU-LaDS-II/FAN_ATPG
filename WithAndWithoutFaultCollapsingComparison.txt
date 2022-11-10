@@ -1,0 +1,61 @@
+Without Fault Collapsing
+
+#                 Statistics Report
+#  Circuit name                               s38584
+#  Fault model                                   SAF
+#  Pattern type                                BASIC
+#  -------------------------------------------------
+#  Fault classes                             #faults
+#  ----------------------------  -------------------
+#    FU (full)                                 81772
+#    --------------------------  -------------------
+#    UD (undetected)                            2943
+#    PT (possibly testable)                        0
+#    AU (atpg untestable)                       2974
+#    RE (redundant)                                0
+#    AB (atpg abort)                               0
+#    TI (tied)                                     0
+#    --------------------------  -------------------
+#    DT (detected)                             75855
+#  -------------------------------------------------
+#  Coverage                               percentage
+#    --------------------------  -------------------
+#    test coverage                            96.27%
+#    fault coverage                           92.76%
+#    atpg effectiveness                        96.4%
+#  -------------------------------------------------
+#  #Patterns                                    1179
+#  -------------------------------------------------
+#  ATPG runtime                              32.59 s
+#  -------------------------------------------------
+
+With Fault Collapsing
+
+#                 Statistics Report
+#  Circuit name                               s38584
+#  Fault model                                   SAF
+#  Pattern type                                BASIC
+#  -------------------------------------------------
+#  Fault classes                             #faults
+#  ----------------------------  -------------------
+#    FU (full)                                 81772
+#    --------------------------  -------------------
+#    UD (undetected)                            2984
+#    PT (possibly testable)                        0
+#    AU (atpg untestable)                       2974
+#    RE (redundant)                                0
+#    AB (atpg abort)                               0
+#    TI (tied)                                     0
+#    --------------------------  -------------------
+#    DT (detected)                             75814
+#  -------------------------------------------------
+#  Coverage                               percentage
+#    --------------------------  -------------------
+#    test coverage                            96.21%
+#    fault coverage                           92.71%
+#    atpg effectiveness                       96.35%
+#  -------------------------------------------------
+#  #Patterns                                    1163
+#  -------------------------------------------------
+#  ATPG runtime                              16.81 s
+#  -------------------------------------------------

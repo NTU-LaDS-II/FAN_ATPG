@@ -60,7 +60,7 @@ namespace CoreNs
 		};
 
 		Fault();
-		Fault(int gate, Type type, int line, int aggr = -1);
+		Fault(int gate, Type type, int line, int eq = 1, int aggr = -1);
 		~Fault();
 
 		int aggr_;		// ID of the aggressor gate
@@ -70,6 +70,7 @@ namespace CoreNs
 									//              on the corresponding gate input line
 		int det_;			// number of detection
 		State state_; // fault state
+		int eq_;			// the number of equivalent faults, used to calculate uncollapsed fault coverage
 	};
 
 	class FaultListExtract
@@ -101,9 +102,10 @@ namespace CoreNs
 		line_ = -1;
 		det_ = 0;
 		state_ = UD;
+		eq_ = 1;
 	}
 	// for bridging fault only
-	inline Fault::Fault(int gate, Type type, int line, int aggr)
+	inline Fault::Fault(int gate, Type type, int line, int eq, int aggr)
 	{
 		aggr_ = aggr;
 		gate_ = gate;
@@ -111,6 +113,7 @@ namespace CoreNs
 		line_ = line;
 		det_ = 0;
 		state_ = UD;
+		eq_ = eq;
 	}
 
 	inline Fault::~Fault() {}
