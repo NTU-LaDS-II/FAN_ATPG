@@ -1,0 +1,28 @@
+#                 Statistics Report
+#  Circuit name                                c5315
+#  Fault model                                   SAF
+#  Pattern type                                BASIC
+#  -------------------------------------------------
+#  Fault classes                             #faults
+#  ----------------------------  -------------------
+#    FU (full)                                 10676
+#    --------------------------  -------------------
+#    UD (undetected)                              62
+#    PT (possibly testable)                        0
+#    AU (atpg untestable)                          0
+#    RE (redundant)                                0
+#    AB (atpg abort)                               0
+#    TI (tied)                                     0
+#    --------------------------  -------------------
+#    DT (detected)                             10614
+#  -------------------------------------------------
+#  Coverage                               percentage
+#    --------------------------  -------------------
+#    test coverage                            99.42%
+#    fault coverage                           99.42%
+#    atpg effectiveness                       99.42%
+#  -------------------------------------------------
+#  #Patterns                                      80
+#  -------------------------------------------------
+#  ATPG runtime                            0.02331 s
+#  -------------------------------------------------
