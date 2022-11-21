@@ -26,9 +26,8 @@ void FaultListExtract::extract(Circuit *cir)
 	if (type_ == SAF)
 	{
 		gateToFault_ = new int[cir->ngate_];
-		bool useFC = true;
-		bool FC_type = false;				// false for EFC, true for DFC
-		vector<int> SA0_eq, SA1_eq; // used to count the number of equivalent faults
+		// used to count the number of equivalent faults
+		vector<int> SA0_eq, SA1_eq;
 		for (int i = 0; i < cir->ngate_; ++i)
 		{
 			gateToFault_[i] = faults_.size();
@@ -66,94 +65,87 @@ void FaultListExtract::extract(Circuit *cir)
 			}
 			else
 			{
-				if (!FC_type)
+				// Simple Equivalent Fault Collapsing
+				SA0_eq.push_back(1);
+				SA1_eq.push_back(1);
+				// Input faults
+				// AND, NAND gates
+				if (cir->gates_[i].type_ == Gate::AND2 || cir->gates_[i].type_ == Gate::AND3 || cir->gates_[i].type_ == Gate::AND4)
 				{
-					// Simple Equivalent Fault Collapsing
-					SA0_eq.push_back(1);
-					SA1_eq.push_back(1);
-					// Input faults
-					// AND, NAND gates
-					if (cir->gates_[i].type_ == Gate::AND2 || cir->gates_[i].type_ == Gate::AND3 || cir->gates_[i].type_ == Gate::AND4)
+					for (int j = 0; j < cir->gates_[i].nfi_; ++j)
 					{
-						for (int j = 0; j < cir->gates_[i].nfi_; ++j)
-						{
-							int temp0 = SA0_eq[cir->gates_[i].fis_[j]];
-							int temp1 = SA1_eq[cir->gates_[i].fis_[j]];
-							faults_.push_back(new Fault(i, Fault::SA1, j + 1, temp1));
-							SA0_eq[i] += temp0;
-						}
-					}
-					else if (cir->gates_[i].type_ == Gate::NAND2 || cir->gates_[i].type_ == Gate::NAND3 || cir->gates_[i].type_ == Gate::NAND4)
-					{
-						for (int j = 0; j < cir->gates_[i].nfi_; ++j)
-						{
-							int temp0 = SA0_eq[cir->gates_[i].fis_[j]];
-							int temp1 = SA1_eq[cir->gates_[i].fis_[j]];
-							faults_.push_back(new Fault(i, Fault::SA1, j + 1, temp1));
-							SA1_eq[i] += temp0;
-						}
-					}
-					// OR, NOR gates
-					else if (cir->gates_[i].type_ == Gate::OR2 || cir->gates_[i].type_ == Gate::OR3 || cir->gates_[i].type_ == Gate::OR4)
-					{
-						for (int j = 0; j < cir->gates_[i].nfi_; ++j)
-						{
-							int temp0 = SA0_eq[cir->gates_[i].fis_[j]];
-							int temp1 = SA1_eq[cir->gates_[i].fis_[j]];
-							faults_.push_back(new Fault(i, Fault::SA0, j + 1, temp0));
-							SA1_eq[i] += temp1;
-						}
-					}
-					else if (cir->gates_[i].type_ == Gate::NOR2 || cir->gates_[i].type_ == Gate::NOR3 || cir->gates_[i].type_ == Gate::NOR4)
-					{
-						for (int j = 0; j < cir->gates_[i].nfi_; ++j)
-						{
-							int temp0 = SA0_eq[cir->gates_[i].fis_[j]];
-							int temp1 = SA1_eq[cir->gates_[i].fis_[j]];
-							faults_.push_back(new Fault(i, Fault::SA0, j + 1, temp0));
-							SA0_eq[i] += temp1;
-						}
-					}
-					else if (cir->gates_[i].type_ == Gate::INV || cir->gates_[i].type_ == Gate::BUF)
-					{
-						// We don't need to add fault at these two types
-						int temp0 = SA0_eq[cir->gates_[i].fis_[0]];
-						int temp1 = SA1_eq[cir->gates_[i].fis_[0]];
-						if (cir->gates_[i].type_ == Gate::INV)
-						{
-							SA0_eq[i] = temp1 + 1;
-							SA1_eq[i] = temp0 + 1;
-						}
-						else
-						{
-							SA0_eq[i] = temp0 + 1;
-							SA1_eq[i] = temp1 + 1;
-						}
-					}
-					// other gates, including PO,PPO
-					else
-					{
-						for (int j = 0; j < cir->gates_[i].nfi_; ++j)
-						{
-							int temp0 = SA0_eq[cir->gates_[i].fis_[j]];
-							int temp1 = SA1_eq[cir->gates_[i].fis_[j]];
-							faults_.push_back(new Fault(i, Fault::SA0, j + 1, temp0));
-							faults_.push_back(new Fault(i, Fault::SA1, j + 1, temp1));
-						}
-					}
-					// Output faults
-					// fanout stem, including PI,PPI with fanout stem
-					if (cir->gates_[i].nfo_ > 1)
-					{
-						faults_.push_back(new Fault(i, Fault::SA0, 0, SA0_eq[i]));
-						faults_.push_back(new Fault(i, Fault::SA1, 0, SA1_eq[i]));
-						SA0_eq[i] = 1;
-						SA1_eq[i] = 1;
+						int temp0 = SA0_eq[cir->gates_[i].fis_[j]];
+						int temp1 = SA1_eq[cir->gates_[i].fis_[j]];
+						faults_.push_back(new Fault(i, Fault::SA1, j + 1, temp1));
+						SA0_eq[i] += temp0;
 					}
 				}
+				else if (cir->gates_[i].type_ == Gate::NAND2 || cir->gates_[i].type_ == Gate::NAND3 || cir->gates_[i].type_ == Gate::NAND4)
+				{
+					for (int j = 0; j < cir->gates_[i].nfi_; ++j)
+					{
+						int temp0 = SA0_eq[cir->gates_[i].fis_[j]];
+						int temp1 = SA1_eq[cir->gates_[i].fis_[j]];
+						faults_.push_back(new Fault(i, Fault::SA1, j + 1, temp1));
+						SA1_eq[i] += temp0;
+					}
+				}
+				// OR, NOR gates
+				else if (cir->gates_[i].type_ == Gate::OR2 || cir->gates_[i].type_ == Gate::OR3 || cir->gates_[i].type_ == Gate::OR4)
+				{
+					for (int j = 0; j < cir->gates_[i].nfi_; ++j)
+					{
+						int temp0 = SA0_eq[cir->gates_[i].fis_[j]];
+						int temp1 = SA1_eq[cir->gates_[i].fis_[j]];
+						faults_.push_back(new Fault(i, Fault::SA0, j + 1, temp0));
+						SA1_eq[i] += temp1;
+					}
+				}
+				else if (cir->gates_[i].type_ == Gate::NOR2 || cir->gates_[i].type_ == Gate::NOR3 || cir->gates_[i].type_ == Gate::NOR4)
+				{
+					for (int j = 0; j < cir->gates_[i].nfi_; ++j)
+					{
+						int temp0 = SA0_eq[cir->gates_[i].fis_[j]];
+						int temp1 = SA1_eq[cir->gates_[i].fis_[j]];
+						faults_.push_back(new Fault(i, Fault::SA0, j + 1, temp0));
+						SA0_eq[i] += temp1;
+					}
+				}
+				else if (cir->gates_[i].type_ == Gate::INV || cir->gates_[i].type_ == Gate::BUF)
+				{
+					// We don't need to add fault at these two types
+					int temp0 = SA0_eq[cir->gates_[i].fis_[0]];
+					int temp1 = SA1_eq[cir->gates_[i].fis_[0]];
+					if (cir->gates_[i].type_ == Gate::INV)
+					{
+						SA0_eq[i] = temp1 + 1;
+						SA1_eq[i] = temp0 + 1;
+					}
+					else
+					{
+						SA0_eq[i] = temp0 + 1;
+						SA1_eq[i] = temp1 + 1;
+					}
+				}
+				// other gates, including PO,PPO
 				else
 				{
-					// Dominance Fault Collapsing (optional)
+					for (int j = 0; j < cir->gates_[i].nfi_; ++j)
+					{
+						int temp0 = SA0_eq[cir->gates_[i].fis_[j]];
+						int temp1 = SA1_eq[cir->gates_[i].fis_[j]];
+						faults_.push_back(new Fault(i, Fault::SA0, j + 1, temp0));
+						faults_.push_back(new Fault(i, Fault::SA1, j + 1, temp1));
+					}
+				}
+				// Output faults
+				// fanout stem, including PI,PPI with fanout stem
+				if (cir->gates_[i].nfo_ > 1)
+				{
+					faults_.push_back(new Fault(i, Fault::SA0, 0, SA0_eq[i]));
+					faults_.push_back(new Fault(i, Fault::SA1, 0, SA1_eq[i]));
+					SA0_eq[i] = 1;
+					SA1_eq[i] = 1;
 				}
 			}
 			if (cir->gates_[i].type_ == Gate::PPI)

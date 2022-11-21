@@ -92,6 +92,7 @@ namespace CoreNs
 		FaultVec faults_;
 		FaultList current_;
 		Type type_;
+		bool useFC;
 	};
 
 	inline Fault::Fault()
@@ -122,6 +123,7 @@ namespace CoreNs
 	{
 		gateToFault_ = NULL;
 		type_ = SAF;
+		useFC = true;
 	}
 
 	inline FaultListExtract::~FaultListExtract() {}
