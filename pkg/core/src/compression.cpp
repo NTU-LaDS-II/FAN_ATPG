@@ -442,7 +442,6 @@ void Atpg::StuckAtFaultATPGWithDTC(FaultList &faultListToGen, PatternProcessor *
 				if ((*it)->state_ == Fault::DT)
 					continue;
 
-				// skip faults that cannot be activated
 				Gate *pGateForAtivation = getWireForActivation((**it));
 				if (((pGateForAtivation->v_ == L) && ((*it)->type_ == Fault::SA0)) ||
 						((pGateForAtivation->v_ == H) && ((*it)->type_ == Fault::SA1)))
@@ -465,16 +464,21 @@ void Atpg::StuckAtFaultATPGWithDTC(FaultList &faultListToGen, PatternProcessor *
 
 				if (isExistXPath(pGateForAtivation) == true)
 				{
-					// TO-DO homework 05
-					// implement DTC here
-					// end of TO-DO
-					resetPreValue();
-					clearAllFaultEffectBySimulation();
-					storeCurrentGateValue();
-					result = patternGeneration((**it), true);
-					if (result == TEST_FOUND)
+					// TO-DO homework 05 implement DTC here end of TO-DO
+					GENERATION_STATUS resultDTC = patternGeneration((**it), true);
+					if (resultDTC == TEST_FOUND)
 					{
+						clearAllFaultEffectBySimulation();
+						storeCurrentGateValue();
 						assignPatternPiValue(pcoll->pats_.back());
+					}
+					else
+					{
+						for (int i = 0; i < cir_->tgate_; ++i)
+						{
+							Gate &g = cir_->gates_[i];
+							g.v_ = g.preV_;
+						}
 					}
 				}
 				else

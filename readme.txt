@@ -1,3 +1,3 @@
 Fault Collapsing: YES
 Scoap heuristic: NO
-DTC: YES by wang
+DTC: YES by DTC
