@@ -7,20 +7,24 @@
 
 #ifndef _CORE_ATPG_H_
 #define _CORE_ATPG_H_
+// header file order modified by wang
 #include <cstdlib>
 #include <string>
-#include "simulator.h"
-#include "decision_tree.h"
+#include <vector> // added by wang
+#include <stack>	// added by wang
 #include <algorithm>
-#include <cassert>
+// #include <cassert> removed by wang
+#include "decision_tree.h"
+#include "simulator.h"
 
 namespace CoreNs
 {
 
-	const unsigned MAX_LIST_SIZE = 1000;
-	const unsigned MAX_BACKTRACK = 500;
-	const unsigned INFINITE = 0x7fffffff;
+	const int MAX_LIST_SIZE = 1000; // unsigned => int by wang
+	const int MAX_BACKTRACK = 500; // unsigned => int by wang
+	const int INFINITE = 0x7fffffff; // unsigned => int by wang
 	const int UNIQUE_PATH_SENSITIZE_FAIL = -2;
+	const int NO_UNIQUE_PATH = -1; // added by wang
 
 	class Atpg
 	{

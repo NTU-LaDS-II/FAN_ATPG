@@ -1245,7 +1245,7 @@ Fault Atpg::setFreeFaultyGate(Gate &gate)
 int Atpg::uniquePathSensitize(Gate &gate)
 {
 	int i, j;
-	int BackImpLevel = -1;
+	int BackImpLevel = NO_UNIQUE_PATH;
 	Gate *pFaultyGate = &cir_->gates_[currentFault_.gate_];
 
 	if (pFaultyGate->id_ != gate.id_)
@@ -2242,9 +2242,10 @@ void Atpg::initialObjectives()
 // **************************************************************************
 Gate *Atpg::findEasiestInput(Gate *pGate, Value Val)
 {
-
-	Gate *pRetGate = NULL;							// declaration of the return gate pointer
-	unsigned easyControlVal = INFINITE; // easiest input gate's scope(non-select yet)
+	// declaration of the return gate pointer
+	Gate *pRetGate = NULL;
+	// easiest input gate's scope(non-select yet)
+	int easyControlVal = INFINITE; // unsigned -> int by wang
 	int i;
 
 	// if the fanIn amount is 1, just return the only fanIn

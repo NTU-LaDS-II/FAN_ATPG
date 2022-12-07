@@ -1,3 +1,4 @@
+mkdir include/common include/core include/fan include/interface
 for header in pkg/common/src/*.h ;
 do
 cp ${header} include/common/;
