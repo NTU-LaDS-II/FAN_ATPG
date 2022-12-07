@@ -20,8 +20,8 @@
 namespace CoreNs
 {
 
-	const int MAX_LIST_SIZE = 1000; // unsigned => int by wang
-	const int MAX_BACKTRACK = 500; // unsigned => int by wang
+	const int MAX_LIST_SIZE = 1000;	 // unsigned => int by wang
+	const int MAX_BACKTRACK = 500;	 // unsigned => int by wang
 	const int INFINITE = 0x7fffffff; // unsigned => int by wang
 	const int UNIQUE_PATH_SENSITIZE_FAIL = -2;
 	const int NO_UNIQUE_PATH = -1; // added by wang
@@ -29,16 +29,16 @@ namespace CoreNs
 	class Atpg
 	{
 	public:
-		Atpg(Circuit *cir, Simulator *sim);
+		Atpg(Circuit *pCircuit, Simulator *pSimulator); // cir => pCircuit, sim => pSmiulator by wang
 		~Atpg();
 
-		enum GENERATION_STATUS
+		enum SINGLE_PATTERN_GENERATION_STATUS // GENERATION_STATUS => SINGLE_PATTERN_GENERATION_STATUS by wang
 		{
-			TEST_FOUND = 0,
-			UNTESTABLE,
+			PATTERN_FOUND = 0, // TEST_FOUND => PATTERN_FOUND by wang
+			FAULT_UNTESTABLE,	 // UNTESTABLE => FAULT_UNTESTABLE by wang
 			ABORT
 		};
-		enum LINE_TYPE
+		enum GATE_LINE_TYPE // LINE_TYPE => GATE_LINE_TYPE by wang
 		{
 			FREE_LINE = 0,
 			HEAD_LINE,
@@ -46,11 +46,11 @@ namespace CoreNs
 		};
 		enum XPATH_STATE
 		{
-			NO_X_EXIST = 0,
+			NO_XPATH_EXIST = 0, // NO_X_EXIST => NO_XPATH_EXIST by wang
 			UNKNOWN,
-			X_EXIST
+			XPATH_EXIST // X_EXIST => NO_XPATH_EXIST by wang
 		};
-		enum IMP_STATUS
+		enum IMPLICATION_STATUS // IMP_STATUS => IMPLICATION_STSTUS by wang
 		{
 			FORWARD = 0,
 			BACKWARD,
@@ -60,34 +60,28 @@ namespace CoreNs
 		{
 			INITIAL = 0,
 			CHECK_AND_SELECT,
-			CURROBJ_DETERMINE,
-			FANOBJ_DETERMINE
+			CURRENT_OBJ_DETERMINE, // CURROBJ_DETERMINE => CURRENT_OBJ_DETERMINE by wang
+			FAN_OBJ_DETERMINE			 // FANOBJ_DETERMINE => FAN_OBJ_DETERMINE by wang
 		};
 		enum BACKTRACE_RESULT
 		{
 			NO_CONTRADICTORY = 0,
 			CONTRADICTORY
 		};
-		enum FIND_OBJECTIVE_STATUS
-		{
-			CHECK_UNJUSTIFIED = 0,
-			BACKTRACE_CURR,
-			BACKTRACE_FANOUT,
-			CHECK_HEADOBJ
-		};
-		enum MAIN_STATUS
-		{
-			IMPLY_AND_CHECK = 0,
-			DECISION,
-			BACKTRACK,
-			JUSTIFY_FREE
-		};
+		// enum FIND_OBJECTIVE_STATUS { CHECK_UNJUSTIFIED = 0, BACKTRACE_CURR, BACKTRACE_FANOUT, CHECK_HEADOBJ }; removed by wang
+		// enum MAIN_STATUS{ IMPLY_AND_CHECK = 0, DECISION, BACKTRACK, JUSTIFY_FREE }; removed by wang
 
-		void generation(PatternProcessor *pcoll, FaultListExtract *fListExtract); // BAD NAME, B.8
-		void TransitionDelayFaultATPG(FaultList &faultListToGen, PatternProcessor *pcoll, int &untest);
-		void StuckAtFaultATPG(FaultList &faultListToGen, PatternProcessor *pcoll, int &untest);
-		void XFill(PatternProcessor *pcoll);
-		GENERATION_STATUS patternGeneration(Fault fault, bool isDTC);
+		// class Atpg main method
+		// void generation(PatternProcessor *pcoll, FaultListExtract *fListExtract); =>
+		// void generatePatternSet(PatternProcessor *pPatternProcessor, FaultListExtract *pFaultListExtracted); by wang
+		void generatePatternSet(PatternProcessor *pPatternProcessor, FaultListExtract *pFaultListExtracted);
+
+		void TransitionDelayFaultATPG(FaultList &faultListToGen, PatternProcessor *pPatternProcessor, int &untest);
+		void StuckAtFaultATPG(FaultList &faultListToGen, PatternProcessor *pPatternProcessor, int &untest);
+		void XFill(PatternProcessor *pPatternProcessor);
+		// GENERATION_STATUS patternGeneration(Fault fault, bool isDTC);
+		// => SINGLE_PATTERN_GENERATION_STATUS generateSinglePatternOnTargetFault(Fault targetFault, bool isDTC) by wang
+		SINGLE_PATTERN_GENERATION_STATUS generateSinglePatternOnTargetFault(Fault targetFault, bool isDTC);
 
 		void setupCircuitParameter();
 		void identifyLineParameter();
@@ -97,20 +91,20 @@ namespace CoreNs
 		void assignPatternPoValue(Pattern *pat); // write PO values to pattern
 
 	protected:
-		Circuit *cir_;
-		Simulator *sim_;
+		Circuit *pCircuit_;			// cir_ => pCircuit_ by wang
+		Simulator *pSimulator_; // sim_ => simulator by wang
 
-		Fault headLineFault_;
-		Fault currentFault_;
-		unsigned backtrackLimit_;
+		Fault currentTargetHeadLineFault_; // Fault headLineFault_ => Fault currentTargetHeadLineFault_ by wang
+		Fault currentTargetFault_;				 // Fault currentFault_; => Fault currentTargetFault_ by wang
+		int backtrackLimit_;							 // unsigned => int by wang
 
 		bool *modify_; // indicate whether the gate has been backtraced or implied, true means the gate has been modified.
 		unsigned *n0_;
 		unsigned *n1_;
-		int *headLines_;			// array of headlines
-		int nHeadLine_;				// number of headlines
-		int *faultReach_;			// TRUE means this fanout is in fanout cone of target fault;
-		LINE_TYPE *lineType_; // array of line types for all gates: FREE HEAD or BOUND
+		int *headLines_;					 // array of headlines
+		int nHeadLine_;						 // number of headlines
+		int *faultReach_;					 // TRUE means this fanout is in fanout cone of target fault;
+		GATE_LINE_TYPE *lineType_; // array of line types for all gates: FREE HEAD or BOUND
 		XPATH_STATE *xPathStatus_;
 		std::vector<int> *uniquePath_; // list of gates on the unique path associated with a D-forontier.  when there is only one gate in D-frontier, xPathTracing will update this information.
 
@@ -134,7 +128,7 @@ namespace CoreNs
 		bool checkFaultPropToPO(bool &faultPropToPO);
 		bool checkUnjustifiedBoundLines();
 		void assignValueToFinalObject();
-		Gate *initialize(Fault &fault, int &BackImpLevel, IMP_STATUS &implyStatus, bool isDTC);
+		Gate *initialize(Fault &targetFault, int &BackImpLevel, IMPLICATION_STATUS &implyStatus, bool isDTC);
 		void initialList(bool initFlag);
 		void initialNetlist(Gate &gFaultyLine, bool isDTC);
 		Fault setFreeFaultyGate(Gate &gate);
@@ -153,10 +147,10 @@ namespace CoreNs
 		Gate *findCloseToOutput(std::vector<int> &list, int &index);
 		BACKTRACE_RESULT multipleBacktrace(BACKTRACE_STATUS atpgStatus, int &finalObjectiveId); // WRONG should be multiBacktrace or multipleBacktrace
 		bool xPathTracing(Gate *pGate);																													// WRONG should be XPathTracing or UnknownPathTracing
-		bool Implication(IMP_STATUS atpgStatus, int StartLevel);
-		IMP_STATUS faultyGateEvaluation(Gate *pGate);
-		IMP_STATUS evaluation(Gate *pGate);
-		IMP_STATUS backwardImplication(Gate *pGate);
+		bool Implication(IMPLICATION_STATUS atpgStatus, int StartLevel);
+		IMPLICATION_STATUS faultyGateEvaluation(Gate *pGate);
+		IMPLICATION_STATUS evaluation(Gate *pGate);
+		IMPLICATION_STATUS backwardImplication(Gate *pGate);
 
 		Value evaluationGood(Gate &g);
 		Value evaluationFaulty(Gate &g);
@@ -211,28 +205,28 @@ namespace CoreNs
 		void resetIsInEventList();
 		void setValueAndRunImp(Gate &g, Value val);
 		void checkLevelInfo();
-		void StuckAtFaultATPGWithDTC(FaultList &faultListToGen, PatternProcessor *pcoll, int &untest);
+		void StuckAtFaultATPGWithDTC(FaultList &faultListToGen, PatternProcessor *pPatternProcessor, int &untest);
 		Gate *getWireForActivation(Fault &fault);
-		void reverseFaultSimulation(PatternProcessor *pcoll, FaultList &originalFaultList);
+		void reverseFaultSimulation(PatternProcessor *pPatternProcessor, FaultList &originalFaultList);
 	};
 
-	inline Atpg::Atpg(Circuit *cir, Simulator *sim)
+	inline Atpg::Atpg(Circuit *pCircuit, Simulator *pSimulator)
 	{
-		cir_ = cir;
-		sim_ = sim;
+		pCircuit_ = pCircuit;
+		pSimulator_ = pSimulator;
 
-		n0_ = new unsigned[cir->tgate_];
-		n1_ = new unsigned[cir->tgate_];
-		lineType_ = new LINE_TYPE[cir->tgate_];
-		xPathStatus_ = new XPATH_STATE[cir->tgate_];
-		faultReach_ = new int[cir->tgate_];
-		uniquePath_ = new std::vector<int>[cir->tgate_];
-		modify_ = new bool[cir->tgate_];
-		eventList_ = new std::stack<int>[cir->tlvl_];
+		n0_ = new unsigned[pCircuit->tgate_];
+		n1_ = new unsigned[pCircuit->tgate_];
+		lineType_ = new GATE_LINE_TYPE[pCircuit->tgate_];
+		xPathStatus_ = new XPATH_STATE[pCircuit->tgate_];
+		faultReach_ = new int[pCircuit->tgate_];
+		uniquePath_ = new std::vector<int>[pCircuit->tgate_];
+		modify_ = new bool[pCircuit->tgate_];
+		eventList_ = new std::stack<int>[pCircuit->tlvl_];
 		headLines_ = NULL;
 		firstTimeFrameHeadLine_ = NULL;
 
-		backtrackList_.reserve(cir->tgate_);
+		backtrackList_.reserve(pCircuit->tgate_);
 		backtrackLimit_ = MAX_BACKTRACK;
 
 		dFrontier_.reserve(MAX_LIST_SIZE);
@@ -242,7 +236,7 @@ namespace CoreNs
 		finalObject_.reserve(MAX_LIST_SIZE);
 		unjustified_.reserve(MAX_LIST_SIZE);
 		currentObject_.reserve(MAX_LIST_SIZE);
-		isInEventList_.resize(cir->tgate_);
+		isInEventList_.resize(pCircuit->tgate_);
 		std::fill(isInEventList_.begin(), isInEventList_.end(), false);
 	}
 	inline Atpg::~Atpg()
@@ -266,7 +260,7 @@ namespace CoreNs
 	//
 	inline void Atpg::pushEvent(int gid)
 	{
-		Gate &g = cir_->gates_[gid];
+		Gate &g = pCircuit_->gates_[gid];
 		if (!modify_[gid])
 		{
 			eventList_[g.lvl_].push(gid);
@@ -287,16 +281,16 @@ namespace CoreNs
 	}
 	inline void Atpg::pushOutputEvents(int gid)
 	{
-		Gate &g = cir_->gates_[gid];
+		Gate &g = pCircuit_->gates_[gid];
 		for (int i = 0; i < g.nfo_; i++)
 			pushEvent(g.fos_[i]);
 	}
 	inline void Atpg::pushOutputEvents(int gid, int &gateCount)
 	{
-		Gate &g = cir_->gates_[gid];
+		Gate &g = pCircuit_->gates_[gid];
 		for (int i = 0; i < g.nfo_; i++)
 		{
-			Gate &gOut = cir_->gates_[g.fos_[i]];
+			Gate &gOut = pCircuit_->gates_[g.fos_[i]];
 			if (!modify_[g.fos_[i]])
 			{
 				eventList_[gOut.lvl_].push(g.fos_[i]);
@@ -307,7 +301,7 @@ namespace CoreNs
 	}
 	inline void Atpg::pushInputEvents(int gid, int index)
 	{
-		Gate &g = cir_->gates_[gid];
+		Gate &g = pCircuit_->gates_[gid];
 		pushEvent(g.fis_[index]);
 		pushOutputEvents(g.fis_[index]);
 	}
@@ -319,7 +313,7 @@ namespace CoreNs
 	inline void Atpg::clearAllEvent()
 	{
 		int gid;
-		for (int i = 0; i < cir_->tlvl_; i++)
+		for (int i = 0; i < pCircuit_->tlvl_; i++)
 			while (!eventList_[i].empty())
 			{
 				gid = popEvent(i);
@@ -442,7 +436,7 @@ namespace CoreNs
 			return g.v_;
 		Value v[4];
 		for (int i = 0; i < g.nfi_; i++)
-			v[i] = cir_->gates_[g.fis_[i]].v_;
+			v[i] = pCircuit_->gates_[g.fis_[i]].v_;
 
 		switch (g.type_)
 		{
@@ -517,224 +511,224 @@ namespace CoreNs
 			case Gate::PO:
 			case Gate::PPO:
 			case Gate::BUF:
-				val = cir_->gates_[g.fis_[0]].v_;
-				if (val == L && (currentFault_.type_ == Fault::SA1 || currentFault_.type_ == Fault::STF))
+				val = pCircuit_->gates_[g.fis_[0]].v_;
+				if (val == L && (currentTargetFault_.type_ == Fault::SA1 || currentTargetFault_.type_ == Fault::STF))
 					val = B; // logic D' (0/1)
-				if (val == H && (currentFault_.type_ == Fault::SA0 || currentFault_.type_ == Fault::STR))
+				if (val == H && (currentTargetFault_.type_ == Fault::SA0 || currentTargetFault_.type_ == Fault::STR))
 					val = D; // logic D  (1/0)
 				return val;
 			case Gate::INV:
-				val = cir_->gates_[g.fis_[0]].v_;
-				if (currentFault_.line_ == 0)
+				val = pCircuit_->gates_[g.fis_[0]].v_;
+				if (currentTargetFault_.line_ == 0)
 				{
 					val = cINV(val);
-					if (val == L && (currentFault_.type_ == Fault::SA1 || currentFault_.type_ == Fault::STF))
+					if (val == L && (currentTargetFault_.type_ == Fault::SA1 || currentTargetFault_.type_ == Fault::STF))
 						val = B;
-					if (val == H && (currentFault_.type_ == Fault::SA0 || currentFault_.type_ == Fault::STR))
+					if (val == H && (currentTargetFault_.type_ == Fault::SA0 || currentTargetFault_.type_ == Fault::STR))
 						val = D;
 					return val;
 				}
 				else
 				{
-					if (val == L && (currentFault_.type_ == Fault::SA1 || currentFault_.type_ == Fault::STF))
+					if (val == L && (currentTargetFault_.type_ == Fault::SA1 || currentTargetFault_.type_ == Fault::STF))
 						val = B;
-					if (val == H && (currentFault_.type_ == Fault::SA0 || currentFault_.type_ == Fault::STR))
+					if (val == H && (currentTargetFault_.type_ == Fault::SA0 || currentTargetFault_.type_ == Fault::STR))
 						val = D;
 					return cINV(val);
 				}
 			case Gate::AND2:
 			case Gate::AND3:
 			case Gate::AND4:
-				FaultyLine = currentFault_.line_;
-				if (currentFault_.line_ == 0)
+				FaultyLine = currentTargetFault_.line_;
+				if (currentTargetFault_.line_ == 0)
 				{
-					val = cir_->gates_[g.fis_[0]].v_;
+					val = pCircuit_->gates_[g.fis_[0]].v_;
 					for (i = 1; i < g.nfi_; i++)
-						val = cAND2(val, cir_->gates_[g.fis_[i]].v_);
-					if (val == L && (currentFault_.type_ == Fault::SA1 || currentFault_.type_ == Fault::STF))
+						val = cAND2(val, pCircuit_->gates_[g.fis_[i]].v_);
+					if (val == L && (currentTargetFault_.type_ == Fault::SA1 || currentTargetFault_.type_ == Fault::STF))
 						val = B;
-					if (val == H && (currentFault_.type_ == Fault::SA0 || currentFault_.type_ == Fault::STR))
+					if (val == H && (currentTargetFault_.type_ == Fault::SA0 || currentTargetFault_.type_ == Fault::STR))
 						val = D;
 				}
 				else
 				{
-					val = cir_->gates_[g.fis_[FaultyLine - 1]].v_;
-					if (val == L && (currentFault_.type_ == Fault::SA1 || currentFault_.type_ == Fault::STF))
+					val = pCircuit_->gates_[g.fis_[FaultyLine - 1]].v_;
+					if (val == L && (currentTargetFault_.type_ == Fault::SA1 || currentTargetFault_.type_ == Fault::STF))
 						val = B;
-					if (val == H && (currentFault_.type_ == Fault::SA0 || currentFault_.type_ == Fault::STR))
+					if (val == H && (currentTargetFault_.type_ == Fault::SA0 || currentTargetFault_.type_ == Fault::STR))
 						val = D;
 					for (i = 0; i < g.nfi_; i++)
 						if (i != FaultyLine - 1)
-							val = cAND2(val, cir_->gates_[g.fis_[i]].v_);
+							val = cAND2(val, pCircuit_->gates_[g.fis_[i]].v_);
 				}
 				return val;
 			case Gate::NAND2:
 			case Gate::NAND3:
 			case Gate::NAND4:
-				FaultyLine = currentFault_.line_;
-				if (currentFault_.line_ == 0)
+				FaultyLine = currentTargetFault_.line_;
+				if (currentTargetFault_.line_ == 0)
 				{
-					val = cir_->gates_[g.fis_[0]].v_;
+					val = pCircuit_->gates_[g.fis_[0]].v_;
 					for (i = 1; i < g.nfi_; i++)
-						val = cAND2(val, cir_->gates_[g.fis_[i]].v_);
+						val = cAND2(val, pCircuit_->gates_[g.fis_[i]].v_);
 
 					val = cINV(val);
 
-					if (val == L && (currentFault_.type_ == Fault::SA1 || currentFault_.type_ == Fault::STF))
+					if (val == L && (currentTargetFault_.type_ == Fault::SA1 || currentTargetFault_.type_ == Fault::STF))
 						val = B;
-					if (val == H && (currentFault_.type_ == Fault::SA0 || currentFault_.type_ == Fault::STR))
+					if (val == H && (currentTargetFault_.type_ == Fault::SA0 || currentTargetFault_.type_ == Fault::STR))
 						val = D;
 				}
 				else
 				{
-					val = cir_->gates_[g.fis_[FaultyLine - 1]].v_;
-					if (val == L && (currentFault_.type_ == Fault::SA1 || currentFault_.type_ == Fault::STF))
+					val = pCircuit_->gates_[g.fis_[FaultyLine - 1]].v_;
+					if (val == L && (currentTargetFault_.type_ == Fault::SA1 || currentTargetFault_.type_ == Fault::STF))
 						val = B;
-					if (val == H && (currentFault_.type_ == Fault::SA0 || currentFault_.type_ == Fault::STR))
+					if (val == H && (currentTargetFault_.type_ == Fault::SA0 || currentTargetFault_.type_ == Fault::STR))
 						val = D;
 					for (i = 0; i < g.nfi_; i++)
 						if (i != FaultyLine - 1)
-							val = cAND2(val, cir_->gates_[g.fis_[i]].v_);
+							val = cAND2(val, pCircuit_->gates_[g.fis_[i]].v_);
 					val = cINV(val);
 				}
 				return val;
 			case Gate::OR2:
 			case Gate::OR3:
 			case Gate::OR4:
-				FaultyLine = currentFault_.line_;
-				if (currentFault_.line_ == 0)
+				FaultyLine = currentTargetFault_.line_;
+				if (currentTargetFault_.line_ == 0)
 				{
-					val = cir_->gates_[g.fis_[0]].v_;
+					val = pCircuit_->gates_[g.fis_[0]].v_;
 					for (i = 1; i < g.nfi_; i++)
-						val = cOR2(val, cir_->gates_[g.fis_[i]].v_);
-					if (val == L && (currentFault_.type_ == Fault::SA1 || currentFault_.type_ == Fault::STF))
+						val = cOR2(val, pCircuit_->gates_[g.fis_[i]].v_);
+					if (val == L && (currentTargetFault_.type_ == Fault::SA1 || currentTargetFault_.type_ == Fault::STF))
 						val = B;
-					if (val == H && (currentFault_.type_ == Fault::SA0 || currentFault_.type_ == Fault::STR))
+					if (val == H && (currentTargetFault_.type_ == Fault::SA0 || currentTargetFault_.type_ == Fault::STR))
 						val = D;
 				}
 				else
 				{
-					val = cir_->gates_[g.fis_[FaultyLine - 1]].v_;
-					if (val == L && (currentFault_.type_ == Fault::SA1 || currentFault_.type_ == Fault::STF))
+					val = pCircuit_->gates_[g.fis_[FaultyLine - 1]].v_;
+					if (val == L && (currentTargetFault_.type_ == Fault::SA1 || currentTargetFault_.type_ == Fault::STF))
 						val = B;
-					if (val == H && (currentFault_.type_ == Fault::SA0 || currentFault_.type_ == Fault::STR))
+					if (val == H && (currentTargetFault_.type_ == Fault::SA0 || currentTargetFault_.type_ == Fault::STR))
 						val = D;
 					for (i = 0; i < g.nfi_; i++)
 						if (i != FaultyLine - 1)
-							val = cOR2(val, cir_->gates_[g.fis_[i]].v_);
+							val = cOR2(val, pCircuit_->gates_[g.fis_[i]].v_);
 				}
 				return val;
 			case Gate::NOR2:
 			case Gate::NOR3:
 			case Gate::NOR4:
-				FaultyLine = currentFault_.line_;
-				if (currentFault_.line_ == 0)
+				FaultyLine = currentTargetFault_.line_;
+				if (currentTargetFault_.line_ == 0)
 				{
-					val = cir_->gates_[g.fis_[0]].v_;
+					val = pCircuit_->gates_[g.fis_[0]].v_;
 					for (i = 1; i < g.nfi_; i++)
-						val = cOR2(val, cir_->gates_[g.fis_[i]].v_);
+						val = cOR2(val, pCircuit_->gates_[g.fis_[i]].v_);
 
 					val = cINV(val);
 
-					if (val == L && (currentFault_.type_ == Fault::SA1 || currentFault_.type_ == Fault::STF))
+					if (val == L && (currentTargetFault_.type_ == Fault::SA1 || currentTargetFault_.type_ == Fault::STF))
 						val = B;
-					if (val == H && (currentFault_.type_ == Fault::SA0 || currentFault_.type_ == Fault::STR))
+					if (val == H && (currentTargetFault_.type_ == Fault::SA0 || currentTargetFault_.type_ == Fault::STR))
 						val = D;
 				}
 				else
 				{
-					val = cir_->gates_[g.fis_[FaultyLine - 1]].v_;
-					if (val == L && (currentFault_.type_ == Fault::SA1 || currentFault_.type_ == Fault::STF))
+					val = pCircuit_->gates_[g.fis_[FaultyLine - 1]].v_;
+					if (val == L && (currentTargetFault_.type_ == Fault::SA1 || currentTargetFault_.type_ == Fault::STF))
 						val = B;
-					if (val == H && (currentFault_.type_ == Fault::SA0 || currentFault_.type_ == Fault::STR))
+					if (val == H && (currentTargetFault_.type_ == Fault::SA0 || currentTargetFault_.type_ == Fault::STR))
 						val = D;
 					for (i = 0; i < g.nfi_; i++)
 						if (i != FaultyLine - 1)
-							val = cOR2(val, cir_->gates_[g.fis_[i]].v_);
+							val = cOR2(val, pCircuit_->gates_[g.fis_[i]].v_);
 					val = cINV(val);
 				}
 				return val;
 			case Gate::XOR2:
 			case Gate::XOR3:
-				FaultyLine = currentFault_.line_;
-				if (currentFault_.line_ == 0)
+				FaultyLine = currentTargetFault_.line_;
+				if (currentTargetFault_.line_ == 0)
 				{
 
 					if (g.type_ == Gate::XOR2)
-						val = cXOR2(cir_->gates_[g.fis_[0]].v_, cir_->gates_[g.fis_[1]].v_);
+						val = cXOR2(pCircuit_->gates_[g.fis_[0]].v_, pCircuit_->gates_[g.fis_[1]].v_);
 					else
-						val = cXOR3(cir_->gates_[g.fis_[0]].v_, cir_->gates_[g.fis_[1]].v_, cir_->gates_[g.fis_[2]].v_);
+						val = cXOR3(pCircuit_->gates_[g.fis_[0]].v_, pCircuit_->gates_[g.fis_[1]].v_, pCircuit_->gates_[g.fis_[2]].v_);
 
-					if (val == L && (currentFault_.type_ == Fault::SA1 || currentFault_.type_ == Fault::STF))
+					if (val == L && (currentTargetFault_.type_ == Fault::SA1 || currentTargetFault_.type_ == Fault::STF))
 						val = B;
-					if (val == H && (currentFault_.type_ == Fault::SA0 || currentFault_.type_ == Fault::STR))
+					if (val == H && (currentTargetFault_.type_ == Fault::SA0 || currentTargetFault_.type_ == Fault::STR))
 						val = D;
 				}
 				else
 				{
-					val = cir_->gates_[g.fis_[FaultyLine - 1]].v_;
-					if (val == L && (currentFault_.type_ == Fault::SA1 || currentFault_.type_ == Fault::STF))
+					val = pCircuit_->gates_[g.fis_[FaultyLine - 1]].v_;
+					if (val == L && (currentTargetFault_.type_ == Fault::SA1 || currentTargetFault_.type_ == Fault::STF))
 						val = B;
-					if (val == H && (currentFault_.type_ == Fault::SA0 || currentFault_.type_ == Fault::STR))
+					if (val == H && (currentTargetFault_.type_ == Fault::SA0 || currentTargetFault_.type_ == Fault::STR))
 						val = D;
 
 					if (g.type_ == Gate::XOR2)
 					{
 						if (FaultyLine - 1 == 0)
-							val = cXOR2(cir_->gates_[g.fis_[1]].v_, val);
+							val = cXOR2(pCircuit_->gates_[g.fis_[1]].v_, val);
 						else
-							val = cXOR2(cir_->gates_[g.fis_[0]].v_, val);
+							val = cXOR2(pCircuit_->gates_[g.fis_[0]].v_, val);
 					}
 					else
 					{ // XOR3
 						if (FaultyLine - 1 == 0)
-							val = cXOR3(cir_->gates_[g.fis_[1]].v_, cir_->gates_[g.fis_[2]].v_, val);
+							val = cXOR3(pCircuit_->gates_[g.fis_[1]].v_, pCircuit_->gates_[g.fis_[2]].v_, val);
 						else if (FaultyLine - 1 == 1)
-							val = cXOR3(cir_->gates_[g.fis_[0]].v_, cir_->gates_[g.fis_[2]].v_, val);
+							val = cXOR3(pCircuit_->gates_[g.fis_[0]].v_, pCircuit_->gates_[g.fis_[2]].v_, val);
 						else
-							val = cXOR3(cir_->gates_[g.fis_[1]].v_, cir_->gates_[g.fis_[0]].v_, val);
+							val = cXOR3(pCircuit_->gates_[g.fis_[1]].v_, pCircuit_->gates_[g.fis_[0]].v_, val);
 					}
 				}
 				return val;
 			case Gate::XNOR2:
 			case Gate::XNOR3:
-				FaultyLine = currentFault_.line_;
-				if (currentFault_.line_ == 0)
+				FaultyLine = currentTargetFault_.line_;
+				if (currentTargetFault_.line_ == 0)
 				{
 
 					if (g.type_ == Gate::XNOR2)
-						val = cXNOR2(cir_->gates_[g.fis_[0]].v_, cir_->gates_[g.fis_[1]].v_);
+						val = cXNOR2(pCircuit_->gates_[g.fis_[0]].v_, pCircuit_->gates_[g.fis_[1]].v_);
 					else
-						val = cXNOR3(cir_->gates_[g.fis_[0]].v_, cir_->gates_[g.fis_[1]].v_, cir_->gates_[g.fis_[2]].v_);
+						val = cXNOR3(pCircuit_->gates_[g.fis_[0]].v_, pCircuit_->gates_[g.fis_[1]].v_, pCircuit_->gates_[g.fis_[2]].v_);
 
-					if (val == L && (currentFault_.type_ == Fault::SA1 || currentFault_.type_ == Fault::STF))
+					if (val == L && (currentTargetFault_.type_ == Fault::SA1 || currentTargetFault_.type_ == Fault::STF))
 						val = B;
-					if (val == H && (currentFault_.type_ == Fault::SA0 || currentFault_.type_ == Fault::STR))
+					if (val == H && (currentTargetFault_.type_ == Fault::SA0 || currentTargetFault_.type_ == Fault::STR))
 						val = D;
 				}
 				else
 				{
-					val = cir_->gates_[g.fis_[FaultyLine - 1]].v_;
-					if (val == L && (currentFault_.type_ == Fault::SA1 || currentFault_.type_ == Fault::STF))
+					val = pCircuit_->gates_[g.fis_[FaultyLine - 1]].v_;
+					if (val == L && (currentTargetFault_.type_ == Fault::SA1 || currentTargetFault_.type_ == Fault::STF))
 						val = B;
-					if (val == H && (currentFault_.type_ == Fault::SA0 || currentFault_.type_ == Fault::STR))
+					if (val == H && (currentTargetFault_.type_ == Fault::SA0 || currentTargetFault_.type_ == Fault::STR))
 						val = D;
 
 					if (g.type_ == Gate::XNOR2)
 					{
 						if (FaultyLine - 1 == 0)
-							val = cXNOR2(cir_->gates_[g.fis_[1]].v_, val);
+							val = cXNOR2(pCircuit_->gates_[g.fis_[1]].v_, val);
 						else
-							val = cXNOR2(cir_->gates_[g.fis_[0]].v_, val);
+							val = cXNOR2(pCircuit_->gates_[g.fis_[0]].v_, val);
 					}
 					else
 					{ // XOR3
 						if (FaultyLine - 1 == 0)
-							val = cXNOR3(cir_->gates_[g.fis_[1]].v_, cir_->gates_[g.fis_[2]].v_, val);
+							val = cXNOR3(pCircuit_->gates_[g.fis_[1]].v_, pCircuit_->gates_[g.fis_[2]].v_, val);
 						else if (FaultyLine - 1 == 1)
-							val = cXNOR3(cir_->gates_[g.fis_[0]].v_, cir_->gates_[g.fis_[2]].v_, val);
+							val = cXNOR3(pCircuit_->gates_[g.fis_[0]].v_, pCircuit_->gates_[g.fis_[2]].v_, val);
 						else
-							val = cXNOR3(cir_->gates_[g.fis_[1]].v_, cir_->gates_[g.fis_[0]].v_, val);
+							val = cXNOR3(pCircuit_->gates_[g.fis_[1]].v_, pCircuit_->gates_[g.fis_[0]].v_, val);
 					}
 				}
 				return val;
@@ -756,15 +750,15 @@ namespace CoreNs
 	// **************************************************************************
 	inline void Atpg::assignPatternPiValue(Pattern *pat)
 	{
-		for (int i = 0; i < cir_->npi_; i++)
-			pat->pi1_[i] = cir_->gates_[i].v_;
-		if (pat->pi2_ != NULL && cir_->nframe_ > 1)
-			for (int i = 0; i < cir_->npi_; i++)
-				pat->pi2_[i] = cir_->gates_[i + cir_->ngate_].v_;
-		for (int i = 0; i < cir_->nppi_; i++)
-			pat->ppi_[i] = cir_->gates_[cir_->npi_ + i].v_;
-		if (pat->si_ != NULL && cir_->nframe_ > 1)
-			pat->si_[0] = cir_->connType_ == Circuit::SHIFT ? cir_->gates_[cir_->ngate_ + cir_->npi_].v_ : X;
+		for (int i = 0; i < pCircuit_->npi_; i++)
+			pat->pi1_[i] = pCircuit_->gates_[i].v_;
+		if (pat->pi2_ != NULL && pCircuit_->nframe_ > 1)
+			for (int i = 0; i < pCircuit_->npi_; i++)
+				pat->pi2_[i] = pCircuit_->gates_[i + pCircuit_->ngate_].v_;
+		for (int i = 0; i < pCircuit_->nppi_; i++)
+			pat->ppi_[i] = pCircuit_->gates_[pCircuit_->npi_ + i].v_;
+		if (pat->si_ != NULL && pCircuit_->nframe_ > 1)
+			pat->si_[0] = pCircuit_->connType_ == Circuit::SHIFT ? pCircuit_->gates_[pCircuit_->ngate_ + pCircuit_->npi_].v_ : X;
 	}
 
 	// **************************************************************************
@@ -779,36 +773,36 @@ namespace CoreNs
 	// **************************************************************************
 	inline void Atpg::assignPatternPoValue(Pattern *pat)
 	{
-		sim_->goodSim();
-		int offset = cir_->ngate_ - cir_->npo_ - cir_->nppi_;
-		for (int i = 0; i < cir_->npo_; i++)
+		pSimulator_->goodSim();
+		int offset = pCircuit_->ngate_ - pCircuit_->npo_ - pCircuit_->nppi_;
+		for (int i = 0; i < pCircuit_->npo_; i++)
 		{
-			if (cir_->gates_[offset + i].gl_ == PARA_H)
+			if (pCircuit_->gates_[offset + i].gl_ == PARA_H)
 				pat->po1_[i] = L;
-			else if (cir_->gates_[offset + i].gh_ == PARA_H)
+			else if (pCircuit_->gates_[offset + i].gh_ == PARA_H)
 				pat->po1_[i] = H;
 			else
 				pat->po1_[i] = X;
 		}
-		if (pat->po2_ != NULL && cir_->nframe_ > 1)
-			for (int i = 0; i < cir_->npo_; i++)
+		if (pat->po2_ != NULL && pCircuit_->nframe_ > 1)
+			for (int i = 0; i < pCircuit_->npo_; i++)
 			{
-				if (cir_->gates_[offset + i + cir_->ngate_].gl_ == PARA_H)
+				if (pCircuit_->gates_[offset + i + pCircuit_->ngate_].gl_ == PARA_H)
 					pat->po2_[i] = L;
-				else if (cir_->gates_[offset + i + cir_->ngate_].gh_ == PARA_H)
+				else if (pCircuit_->gates_[offset + i + pCircuit_->ngate_].gh_ == PARA_H)
 					pat->po2_[i] = H;
 				else
 					pat->po2_[i] = X;
 			}
 
-		offset = cir_->ngate_ - cir_->nppi_;
-		if (cir_->nframe_ > 1)
-			offset += cir_->ngate_;
-		for (int i = 0; i < cir_->nppi_; i++)
+		offset = pCircuit_->ngate_ - pCircuit_->nppi_;
+		if (pCircuit_->nframe_ > 1)
+			offset += pCircuit_->ngate_;
+		for (int i = 0; i < pCircuit_->nppi_; i++)
 		{
-			if (cir_->gates_[offset + i].gl_ == PARA_H)
+			if (pCircuit_->gates_[offset + i].gl_ == PARA_H)
 				pat->ppo_[i] = L;
-			else if (cir_->gates_[offset + i].gh_ == PARA_H)
+			else if (pCircuit_->gates_[offset + i].gh_ == PARA_H)
 				pat->ppo_[i] = H;
 			else
 				pat->ppo_[i] = X;
@@ -829,14 +823,14 @@ namespace CoreNs
 	inline void Atpg::randomFill(Pattern *pat)
 	{
 		srand(0);
-		for (int i = 0; i < cir_->npi_; i++)
+		for (int i = 0; i < pCircuit_->npi_; i++)
 			if (pat->pi1_[i] == X)
 				pat->pi1_[i] = rand() % 2;
-		for (int i = 0; i < cir_->nppi_; i++)
+		for (int i = 0; i < pCircuit_->nppi_; i++)
 			if (pat->ppi_[i] == X)
 				pat->ppi_[i] = rand() % 2;
 		if (pat->pi2_ != NULL)
-			for (int i = 0; i < cir_->npi_; i++)
+			for (int i = 0; i < pCircuit_->npi_; i++)
 				if (pat->pi2_[i] == X)
 					pat->pi2_[i] = rand() % 2;
 		if (pat->si_ != NULL)

@@ -11,9 +11,9 @@ void Atpg::calSCOAP()
 {
 	// cc0, cc1 and co default is 0
 	// check if is changed before
-	for (int i = 0; i < cir_->tgate_; ++i)
+	for (int i = 0; i < pCircuit_->tgate_; ++i)
 	{
-		Gate &g = cir_->gates_[i];
+		Gate &g = pCircuit_->gates_[i];
 		if (g.cc0_ != 0)
 		{
 			std::cout << "cc0_ is not -1\n";
@@ -38,9 +38,9 @@ void Atpg::calSCOAP()
 	Gate xorgin[2];
 
 	// calculate cc0 and cc1 starting from PI and PPI
-	for (int i = 0; i < cir_->tgate_; ++i)
+	for (int i = 0; i < pCircuit_->tgate_; ++i)
 	{
-		Gate &g = cir_->gates_[i];
+		Gate &g = pCircuit_->gates_[i];
 		switch (g.type_)
 		{
 			case Gate::PPI:
@@ -51,19 +51,19 @@ void Atpg::calSCOAP()
 			case Gate::PO:
 			case Gate::PPO:
 			case Gate::BUF:
-				g.cc0_ = cir_->gates_[g.fis_[0]].cc0_;
-				g.cc1_ = cir_->gates_[g.fis_[0]].cc1_;
+				g.cc0_ = pCircuit_->gates_[g.fis_[0]].cc0_;
+				g.cc1_ = pCircuit_->gates_[g.fis_[0]].cc1_;
 				break;
 			case Gate::INV:
-				g.cc0_ = cir_->gates_[g.fis_[0]].cc1_ + 1;
-				g.cc1_ = cir_->gates_[g.fis_[0]].cc0_ + 1;
+				g.cc0_ = pCircuit_->gates_[g.fis_[0]].cc1_ + 1;
+				g.cc1_ = pCircuit_->gates_[g.fis_[0]].cc0_ + 1;
 				break;
 			case Gate::AND2:
 			case Gate::AND3:
 			case Gate::AND4:
 				for (int j = 0; j < g.nfi_; j++)
 				{
-					Gate &gin = cir_->gates_[g.fis_[j]];
+					Gate &gin = pCircuit_->gates_[g.fis_[j]];
 					if (j == 0 || (gin.cc0_ < g.cc0_))
 					{
 						g.cc0_ = gin.cc0_;
@@ -79,7 +79,7 @@ void Atpg::calSCOAP()
 			case Gate::NAND4:
 				for (int j = 0; j < g.nfi_; j++)
 				{
-					Gate &gin = cir_->gates_[g.fis_[j]];
+					Gate &gin = pCircuit_->gates_[g.fis_[j]];
 					if (j == 0 || (gin.cc0_ < g.cc1_))
 					{
 						g.cc1_ = gin.cc0_;
@@ -95,7 +95,7 @@ void Atpg::calSCOAP()
 			case Gate::OR4:
 				for (int j = 0; j < g.nfi_; j++)
 				{
-					Gate &gin = cir_->gates_[g.fis_[j]];
+					Gate &gin = pCircuit_->gates_[g.fis_[j]];
 					if (j == 0 || (gin.cc1_ < g.cc1_))
 					{
 						g.cc1_ = gin.cc1_;
@@ -110,7 +110,7 @@ void Atpg::calSCOAP()
 			case Gate::NOR4:
 				for (int j = 0; j < g.nfi_; j++)
 				{
-					Gate &gin = cir_->gates_[g.fis_[j]];
+					Gate &gin = pCircuit_->gates_[g.fis_[j]];
 					if (j == 0 || (gin.cc1_ < g.cc0_))
 					{
 						g.cc0_ = gin.cc1_;
@@ -121,8 +121,8 @@ void Atpg::calSCOAP()
 				g.cc1_++;
 				break;
 			case Gate::XOR2:
-				xorgin[0] = cir_->gates_[g.fis_[0]];
-				xorgin[1] = cir_->gates_[g.fis_[1]];
+				xorgin[0] = pCircuit_->gates_[g.fis_[0]];
+				xorgin[1] = pCircuit_->gates_[g.fis_[1]];
 				xorcc[0] = xorgin[0].cc0_ + xorgin[1].cc0_;
 				xorcc[1] = xorgin[0].cc0_ + xorgin[1].cc1_;
 				xorcc[2] = xorgin[0].cc1_ + xorgin[1].cc0_;
@@ -133,9 +133,9 @@ void Atpg::calSCOAP()
 				g.cc1_++;
 				break;
 			case Gate::XOR3:
-				xorgin[0] = cir_->gates_[g.fis_[0]];
-				xorgin[1] = cir_->gates_[g.fis_[1]];
-				xorgin[2] = cir_->gates_[g.fis_[2]];
+				xorgin[0] = pCircuit_->gates_[g.fis_[0]];
+				xorgin[1] = pCircuit_->gates_[g.fis_[1]];
+				xorgin[2] = pCircuit_->gates_[g.fis_[2]];
 				xorcc[0] = xorgin[0].cc0_ + xorgin[1].cc0_ + xorgin[2].cc0_;
 				xorcc[1] = xorgin[0].cc0_ + xorgin[1].cc0_ + xorgin[2].cc1_;
 				xorcc[2] = xorgin[0].cc0_ + xorgin[1].cc1_ + xorgin[2].cc0_;
@@ -156,8 +156,8 @@ void Atpg::calSCOAP()
 				g.cc1_++;
 				break;
 			case Gate::XNOR2:
-				xorgin[0] = cir_->gates_[g.fis_[0]];
-				xorgin[1] = cir_->gates_[g.fis_[1]];
+				xorgin[0] = pCircuit_->gates_[g.fis_[0]];
+				xorgin[1] = pCircuit_->gates_[g.fis_[1]];
 				xorcc[0] = xorgin[0].cc0_ + xorgin[1].cc0_;
 				xorcc[1] = xorgin[0].cc0_ + xorgin[1].cc1_;
 				xorcc[2] = xorgin[0].cc1_ + xorgin[1].cc0_;
@@ -168,9 +168,9 @@ void Atpg::calSCOAP()
 				g.cc1_++;
 				break;
 			case Gate::XNOR3:
-				xorgin[0] = cir_->gates_[g.fis_[0]];
-				xorgin[1] = cir_->gates_[g.fis_[1]];
-				xorgin[2] = cir_->gates_[g.fis_[2]];
+				xorgin[0] = pCircuit_->gates_[g.fis_[0]];
+				xorgin[1] = pCircuit_->gates_[g.fis_[1]];
+				xorgin[2] = pCircuit_->gates_[g.fis_[2]];
 				xorcc[0] = xorgin[0].cc0_ + xorgin[1].cc0_ + xorgin[2].cc0_;
 				xorcc[1] = xorgin[0].cc0_ + xorgin[1].cc0_ + xorgin[2].cc1_;
 				xorcc[2] = xorgin[0].cc0_ + xorgin[1].cc1_ + xorgin[2].cc0_;
@@ -197,10 +197,10 @@ void Atpg::calSCOAP()
 	}
 
 	// calculate co_ starting from PO and PP
-	for (int i = 0; i < cir_->tgate_; ++i)
+	for (int i = 0; i < pCircuit_->tgate_; ++i)
 	{
-		Gate &g = cir_->gates_[i];
-		Gate &gout = cir_->gates_[0]; // for fanout free
+		Gate &g = pCircuit_->gates_[i];
+		Gate &gout = pCircuit_->gates_[0]; // for fanout free
 		switch (g.type_)
 		{
 			case Gate::PO:
@@ -212,9 +212,9 @@ void Atpg::calSCOAP()
 			case Gate::BUF:
 				for (int j = 0; j < g.nfo_; j++)
 				{
-					if (j == 0 || cir_->gates_[g.fos_[j]].co_ < g.co_)
+					if (j == 0 || pCircuit_->gates_[g.fos_[j]].co_ < g.co_)
 					{
-						g.co_ = cir_->gates_[g.fos_[j]].co_;
+						g.co_ = pCircuit_->gates_[g.fos_[j]].co_;
 					}
 				}
 				break;
@@ -230,7 +230,7 @@ void Atpg::calSCOAP()
 				g.co_ = gout.co_ + 1;
 				for (int j = 0; j < gout.nfi_; j++)
 				{
-					Gate &gin = cir_->gates_[g.fis_[j]];
+					Gate &gin = pCircuit_->gates_[g.fis_[j]];
 					if (g.fis_[j] != i)
 					{
 						g.co_ += g.cc1_;
@@ -246,7 +246,7 @@ void Atpg::calSCOAP()
 				g.co_ = gout.co_ + 1;
 				for (int j = 0; j < gout.nfi_; j++)
 				{
-					Gate &gin = cir_->gates_[g.fis_[j]];
+					Gate &gin = pCircuit_->gates_[g.fis_[j]];
 					if (g.fis_[j] != i)
 					{
 						g.co_ += g.cc0_;
@@ -261,7 +261,7 @@ void Atpg::calSCOAP()
 				g.co_ = gout.co_ + 1;
 				for (int j = 0; j < gout.nfo_; j++)
 				{
-					Gate &gin = cir_->gates_[g.fis_[j]];
+					Gate &gin = pCircuit_->gates_[g.fis_[j]];
 					if (g.fis_[j] != i)
 					{
 						int temp = std::min(gin.cc0_, gin.cc1_);

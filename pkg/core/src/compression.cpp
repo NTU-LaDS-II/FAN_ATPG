@@ -75,17 +75,17 @@ void Atpg::clearAllFaultEffectBySimulation()
 {
 
 	// Remove fault effects in input gates
-	int numOfInputGate = cir_->npi_ + cir_->nppi_;
+	int numOfInputGate = pCircuit_->npi_ + pCircuit_->nppi_;
 	for (int i = 0; i < numOfInputGate; ++i)
 	{
-		Gate &g = cir_->gates_[i];
+		Gate &g = pCircuit_->gates_[i];
 		clearOneGateFaultEffect(g);
 	}
 
-	// Simulate the whole circuit ( gates were sorted by lvl_ in "cir_->gates_" )
-	for (int i = 0; i < cir_->tgate_; ++i)
+	// Simulate the whole circuit ( gates were sorted by lvl_ in "pCircuit_->gates_" )
+	for (int i = 0; i < pCircuit_->tgate_; ++i)
 	{
-		Gate &g = cir_->gates_[i];
+		Gate &g = pCircuit_->gates_[i];
 		g.v_ = evaluationGood(g);
 	}
 }
@@ -104,11 +104,11 @@ void Atpg::testClearFaultEffect(FaultList &faultListToTest)
 {
 	for (auto it = faultListToTest.begin(); it != faultListToTest.end(); ++it)
 	{
-		GENERATION_STATUS result = patternGeneration((**it), false);
+		SINGLE_PATTERN_GENERATION_STATUS result = generateSinglePatternOnTargetFault((**it), false);
 		clearAllFaultEffectBySimulation();
-		for (int i = 0; i < cir_->tgate_; ++i)
+		for (int i = 0; i < pCircuit_->tgate_; ++i)
 		{
-			Gate &g = cir_->gates_[i];
+			Gate &g = pCircuit_->gates_[i];
 			if ((g.v_ == D) || (g.v_ == B))
 			{
 				std::cerr << "testClearFaultEffect found bug" << std::endl;
@@ -132,9 +132,9 @@ void Atpg::testClearFaultEffect(FaultList &faultListToTest)
 int Atpg::storeCurrentGateValue()
 {
 	int numAssignedValueChanged = 0;
-	for (int i = 0; i < cir_->tgate_; ++i)
+	for (int i = 0; i < pCircuit_->tgate_; ++i)
 	{
-		Gate &g = cir_->gates_[i];
+		Gate &g = pCircuit_->gates_[i];
 		if ((g.preV_ != X) && (g.preV_ != g.v_))
 		{
 			numAssignedValueChanged++;
@@ -156,7 +156,7 @@ int Atpg::storeCurrentGateValue()
 //                Calculate the depthFromPo_ of each gate.
 //              notes:
 //                If there is no path from a gate to PO/PPO, then I will
-//                set its depthFromPo_ as cir_->tlvl_ + 100
+//                set its depthFromPo_ as pCircuit_->tlvl_ + 100
 //              in:    void
 //              out:   void
 //            ]
@@ -164,10 +164,10 @@ int Atpg::storeCurrentGateValue()
 // **************************************************************************
 void Atpg::calDepthFromPo()
 {
-	int tlvlAddPlus100 = cir_->tlvl_ + 100;
-	for (int i = 0; i < cir_->tgate_; ++i)
+	int tlvlAddPlus100 = pCircuit_->tlvl_ + 100;
+	for (int i = 0; i < pCircuit_->tgate_; ++i)
 	{
-		Gate &g = cir_->gates_[i];
+		Gate &g = pCircuit_->gates_[i];
 		/*
 		 * Because the default is -1, I want to check if it was changed or not.
 		 * */
@@ -179,9 +179,9 @@ void Atpg::calDepthFromPo()
 	}
 
 	// Update depthFromPo_ form PO/PPO to PI/PPI
-	for (int i = cir_->tgate_ - 1; i >= 0; --i)
+	for (int i = pCircuit_->tgate_ - 1; i >= 0; --i)
 	{
-		Gate &g = cir_->gates_[i];
+		Gate &g = pCircuit_->gates_[i];
 		if ((g.type_ == Gate::PO) || (g.type_ == Gate::PPO))
 		{
 			g.depthFromPo_ = 0;
@@ -189,18 +189,18 @@ void Atpg::calDepthFromPo()
 		else if (g.nfo_ > 0)
 		{
 			// This output gate does not exist a path to PO/PPO
-			if (cir_->gates_[g.fos_[0]].depthFromPo_ == tlvlAddPlus100)
+			if (pCircuit_->gates_[g.fos_[0]].depthFromPo_ == tlvlAddPlus100)
 			{
 				g.depthFromPo_ = tlvlAddPlus100;
 			}
 			else
 			{
-				g.depthFromPo_ = cir_->gates_[g.fos_[0]].depthFromPo_ + 1;
+				g.depthFromPo_ = pCircuit_->gates_[g.fos_[0]].depthFromPo_ + 1;
 			}
 
 			for (int j = 1; j < g.nfo_; j++)
 			{
-				Gate &go = cir_->gates_[g.fos_[j]];
+				Gate &go = pCircuit_->gates_[g.fos_[j]];
 				if (go.depthFromPo_ < g.depthFromPo_)
 				{
 					g.depthFromPo_ = go.depthFromPo_ + 1;
@@ -214,8 +214,8 @@ void Atpg::calDepthFromPo()
 		}
 	}
 
-	// for ( int i = 0 ; i < cir_->tgate_ ; ++i ) {
-	//   Gate &g = cir_->gates_[i];
+	// for ( int i = 0 ; i < pCircuit_->tgate_ ; ++i ) {
+	//   Gate &g = pCircuit_->gates_[i];
 	//   std::cout << "g.depthFromPo_ is " << g.depthFromPo_ << std::endl;
 	// }
 	// std::cin.get();
@@ -233,9 +233,9 @@ void Atpg::calDepthFromPo()
 // **************************************************************************
 void Atpg::resetPreValue()
 {
-	for (int i = 0; i < cir_->tgate_; ++i)
+	for (int i = 0; i < pCircuit_->tgate_; ++i)
 	{
-		Gate &g = cir_->gates_[i];
+		Gate &g = pCircuit_->gates_[i];
 		g.preV_ = X;
 	}
 }
@@ -244,7 +244,7 @@ void Atpg::resetPreValue()
 // Function   [ Atpg::isExistXPath ]
 // Commentor  [ CAL ]
 // Synopsis   [ usage:
-//                Used before patternGeneration
+//                Used before generateSinglePatternOnTargetFault
 //                Return true if there is X-path.
 //                Otherwise, return false.
 //              in:    Gate pointer
@@ -258,7 +258,7 @@ bool Atpg::isExistXPath(Gate *pGate)
 	/* TO-DO
 	 * This part can be implemented by event-driven method
 	 * */
-	for (int i = pGate->id_; i < cir_->tgate_; ++i)
+	for (int i = pGate->id_; i < pCircuit_->tgate_; ++i)
 	{
 		xPathStatus_[i] = UNKNOWN;
 	}
@@ -280,7 +280,7 @@ void Atpg::clearEventList_(bool isDebug)
 {
 
 	// pop and unmark
-	for (int i = 0; i < cir_->tlvl_; ++i)
+	for (int i = 0; i < pCircuit_->tlvl_; ++i)
 	{
 		while (!eventList_[i].empty())
 		{
@@ -297,7 +297,7 @@ void Atpg::clearEventList_(bool isDebug)
 	 * */
 	if (isDebug == true)
 	{
-		for (int i = 0; i < cir_->tgate_; ++i)
+		for (int i = 0; i < pCircuit_->tgate_; ++i)
 		{
 			if (isInEventList_[i] == true)
 			{
@@ -341,7 +341,7 @@ void Atpg::setValueAndRunImp(Gate &g, Value val)
 	g.v_ = val;
 	for (int i = 0; i < g.nfo_; ++i)
 	{
-		Gate &og = cir_->gates_[g.fos_[i]];
+		Gate &og = pCircuit_->gates_[g.fos_[i]];
 		if (isInEventList_[og.id_] == false)
 		{
 			eventList_[og.lvl_].push(og.id_);
@@ -350,7 +350,7 @@ void Atpg::setValueAndRunImp(Gate &g, Value val)
 	}
 
 	// event-driven simulation
-	for (int i = g.lvl_; i < cir_->tlvl_; ++i)
+	for (int i = g.lvl_; i < pCircuit_->tlvl_; ++i)
 	{
 		while (!eventList_[i].empty())
 		{
@@ -358,14 +358,14 @@ void Atpg::setValueAndRunImp(Gate &g, Value val)
 			eventList_[i].pop();
 			isInEventList_[gid] = false;
 			// current gate
-			Gate &cg = cir_->gates_[gid];
+			Gate &cg = pCircuit_->gates_[gid];
 			Value newValue = evaluationGood(cg);
 			if (cg.v_ != newValue)
 			{
 				cg.v_ = newValue;
 				for (int j = 0; j < cg.nfo_; ++j)
 				{
-					Gate &og = cir_->gates_[cg.fos_[j]];
+					Gate &og = pCircuit_->gates_[cg.fos_[j]];
 					if (isInEventList_[og.id_] == false)
 					{
 						eventList_[og.lvl_].push(og.id_);
@@ -381,7 +381,7 @@ void Atpg::setValueAndRunImp(Gate &g, Value val)
 // Function   [ Atpg::checkLevelInfo ]
 // Commentor  [ CAL ]
 // Synopsis   [ usage:
-//                To check if the lvl_ of all the gates does not exceed cir_->tlvl_
+//                To check if the lvl_ of all the gates does not exceed pCircuit_->tlvl_
 //              in:    void
 //              out:   void
 //            ]
@@ -389,12 +389,12 @@ void Atpg::setValueAndRunImp(Gate &g, Value val)
 // **************************************************************************
 void Atpg::checkLevelInfo()
 {
-	for (int i = 0; i < cir_->tgate_; ++i)
+	for (int i = 0; i < pCircuit_->tgate_; ++i)
 	{
-		Gate &g = cir_->gates_[i];
-		if (g.lvl_ >= cir_->tlvl_)
+		Gate &g = pCircuit_->gates_[i];
+		if (g.lvl_ >= pCircuit_->tlvl_)
 		{
-			std::cout << "checkLevelInfo found that at least one g.lvl_ is greater than cir_->tlvl_" << std::endl;
+			std::cout << "checkLevelInfo found that at least one g.lvl_ is greater than pCircuit_->tlvl_" << std::endl;
 			std::cin.get();
 		}
 	}
@@ -412,17 +412,17 @@ void Atpg::checkLevelInfo()
 void Atpg::StuckAtFaultATPGWithDTC(FaultList &faultListToGen, PatternProcessor *pcoll, int &untest)
 {
 	static int oriPatNum = 0;
-	GENERATION_STATUS result = patternGeneration(*faultListToGen.front(), false);
+	SINGLE_PATTERN_GENERATION_STATUS result = generateSinglePatternOnTargetFault(*faultListToGen.front(), false);
 
-	if (result == TEST_FOUND)
+	if (result == PATTERN_FOUND)
 	{
 		oriPatNum++;
 		std::cout << oriPatNum << "-th pattern" << std::endl;
 		Pattern *p = new Pattern;
-		p->pi1_ = new Value[cir_->npi_];
-		p->ppi_ = new Value[cir_->nppi_];
-		p->po1_ = new Value[cir_->npo_];
-		p->ppo_ = new Value[cir_->nppi_];
+		p->pi1_ = new Value[pCircuit_->npi_];
+		p->ppi_ = new Value[pCircuit_->nppi_];
+		p->po1_ = new Value[pCircuit_->npo_];
+		p->ppo_ = new Value[pCircuit_->nppi_];
 		pcoll->pats_.push_back(p);
 		resetPreValue();
 		clearAllFaultEffectBySimulation();
@@ -433,7 +433,7 @@ void Atpg::StuckAtFaultATPGWithDTC(FaultList &faultListToGen, PatternProcessor *
 		{
 
 			FaultList faultListTemp = faultListToGen;
-			sim_->pfFaultSim(pcoll->pats_.back(), faultListToGen);
+			pSimulator_->pfFaultSim(pcoll->pats_.back(), faultListToGen);
 			assignPatternPoValue(pcoll->pats_.back());
 
 			for (FaultListIter it = faultListTemp.begin(); it != faultListTemp.end(); ++it)
@@ -465,8 +465,8 @@ void Atpg::StuckAtFaultATPGWithDTC(FaultList &faultListToGen, PatternProcessor *
 				if (isExistXPath(pGateForAtivation) == true)
 				{
 					// TO-DO homework 05 implement DTC here end of TO-DO
-					GENERATION_STATUS resultDTC = patternGeneration((**it), true);
-					if (resultDTC == TEST_FOUND)
+					SINGLE_PATTERN_GENERATION_STATUS resultDTC = generateSinglePatternOnTargetFault((**it), true);
+					if (resultDTC == PATTERN_FOUND)
 					{
 						clearAllFaultEffectBySimulation();
 						storeCurrentGateValue();
@@ -474,9 +474,9 @@ void Atpg::StuckAtFaultATPGWithDTC(FaultList &faultListToGen, PatternProcessor *
 					}
 					else
 					{
-						for (int i = 0; i < cir_->tgate_; ++i)
+						for (int i = 0; i < pCircuit_->tgate_; ++i)
 						{
-							Gate &g = cir_->gates_[i];
+							Gate &g = pCircuit_->gates_[i];
 							g.v_ = g.preV_;
 						}
 					}
@@ -506,15 +506,15 @@ void Atpg::StuckAtFaultATPGWithDTC(FaultList &faultListToGen, PatternProcessor *
 		 * the gh_ and gl_ in each gate, and then it will run fault
 		 * simulation to drop fault.
 		 * */
-		sim_->pfFaultSim(pcoll->pats_.back(), faultListToGen);
+		pSimulator_->pfFaultSim(pcoll->pats_.back(), faultListToGen);
 		/*
-		 * After sim_->pfFaultSim(pcoll->pats_.back(),faultListToGen) , the pi/ppi
+		 * After pSimulator_->pfFaultSim(pcoll->pats_.back(),faultListToGen) , the pi/ppi
 		 * values have been passed to gh_ and gl_ of each gate.  Therefore, we can
 		 * directly use "assignPatternPoValue" to perform goodSim to get the PoValue.
 		 * */
 		assignPatternPoValue(pcoll->pats_.back());
 	}
-	else if (result == UNTESTABLE)
+	else if (result == FAULT_UNTESTABLE)
 	{
 		faultListToGen.front()->state_ = Fault::AU;
 		faultListToGen.pop_front();
@@ -542,10 +542,10 @@ Gate *Atpg::getWireForActivation(Fault &fault)
 {
 	bool isOutputFault = (fault.line_ == 0);
 	Gate *pGateForAtivation;
-	Gate *pFaultyGate = &cir_->gates_[fault.gate_];
+	Gate *pFaultyGate = &pCircuit_->gates_[fault.gate_];
 	if (!isOutputFault)
 	{
-		pGateForAtivation = &cir_->gates_[pFaultyGate->fis_[fault.line_ - 1]];
+		pGateForAtivation = &pCircuit_->gates_[pFaultyGate->fis_[fault.line_ - 1]];
 	}
 	else
 	{
@@ -584,7 +584,7 @@ void Atpg::reverseFaultSimulation(PatternProcessor *pcoll, FaultList &originalFa
 	size_t leftFaultCount = originalFaultList.size();
 	for (auto rit = tmp.rbegin(); rit != tmp.rend(); ++rit)
 	{
-		sim_->pfFaultSim((*rit), originalFaultList);
+		pSimulator_->pfFaultSim((*rit), originalFaultList);
 		if (leftFaultCount > originalFaultList.size())
 		{
 			leftFaultCount = originalFaultList.size();
