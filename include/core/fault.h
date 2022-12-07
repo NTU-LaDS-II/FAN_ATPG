@@ -60,7 +60,7 @@ namespace CoreNs
 		};
 
 		Fault();
-		Fault(int gate, Type type, int line, int eq = 1, int aggr = -1);
+		Fault(int gate, Type type, int line, int eq = 1, State state = UD, int aggr = -1);
 		~Fault();
 
 		int aggr_;		// ID of the aggressor gate
@@ -92,7 +92,6 @@ namespace CoreNs
 		FaultVec faults_;
 		FaultList current_;
 		Type type_;
-		bool useFC;
 	};
 
 	inline Fault::Fault()
@@ -105,15 +104,15 @@ namespace CoreNs
 		state_ = UD;
 		eq_ = 1;
 	}
-	// for bridging fault only
-	inline Fault::Fault(int gate, Type type, int line, int eq, int aggr)
+	
+	inline Fault::Fault(int gate, Type type, int line, int eq, State state, int aggr)
 	{
 		aggr_ = aggr;
 		gate_ = gate;
 		type_ = type;
 		line_ = line;
 		det_ = 0;
-		state_ = UD;
+		state_ = state;
 		eq_ = eq;
 	}
 
@@ -123,7 +122,6 @@ namespace CoreNs
 	{
 		gateToFault_ = NULL;
 		type_ = SAF;
-		useFC = true;
 	}
 
 	inline FaultListExtract::~FaultListExtract() {}

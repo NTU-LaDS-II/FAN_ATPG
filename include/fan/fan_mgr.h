@@ -15,37 +15,35 @@
 
 #include "core/atpg.h"
 
-namespace FanNs
-{
+namespace FanNs {
 
-	class FanMgr
-	{
-	public:
-		FanMgr()
-		{
-			lib = NULL;
-			nl = NULL;
-			fListExtract = NULL;
-			pcoll = NULL;
-			cir = NULL;
-			sim = NULL;
-			atpg = NULL;
-			atpgStat.rTime = 0;
-		}
-		~FanMgr() {}
+class FanMgr {
+public:
+    FanMgr() {
+        lib            = NULL;
+        nl             = NULL;
+        fListExtract          = NULL;
+        pcoll          = NULL;
+        cir            = NULL;
+        sim            = NULL;
+        atpg           = NULL;
+        atpgStat.rTime = 0;
+    }
+    ~FanMgr() {}
 
-		IntfNs::Techlib *lib;
-		IntfNs::Netlist *nl;
-		CoreNs::FaultListExtract *fListExtract;
-		;
-		CoreNs::PatternProcessor *pcoll;
-		CoreNs::Circuit *cir;
-		CoreNs::Simulator *sim;
-		CoreNs::Atpg *atpg;
-		CommonNs::TmUsage tmusg;
-		CommonNs::TmStat atpgStat;
-	};
+    IntfNs::Techlib     *lib;
+    IntfNs::Netlist     *nl;
+    CoreNs::FaultListExtract   *fListExtract;;
+    CoreNs::PatternProcessor *pcoll;
+    CoreNs::Circuit     *cir;
+    CoreNs::Simulator   *sim;
+    CoreNs::Atpg        *atpg;
+    CommonNs::TmUsage   tmusg;
+    CommonNs::TmStat    atpgStat;
+};
 
 };
 
 #endif
+
+

@@ -11,118 +11,106 @@
 #include "cell.h"
 #include "techlib.h"
 
-namespace IntfNs
-{
+namespace IntfNs {
 
-	class Netlist
-	{
-	public:
-		Netlist();
-		~Netlist();
+class Netlist {
+public:
 
-		// info
-		bool check(const bool &verbose = false) const;
-		bool setTechlib(Techlib *const lib);
-		Techlib *getTechlib() const;
+            Netlist();
+            ~Netlist();
 
-		// top module
-		Cell *getTop() const;
-		bool setTop(const size_t &i);
-		bool setTop(const char *const name);
+    // info
+    bool    check(const bool &verbose = false) const;
+    bool    setTechlib(Techlib * const lib);
+    Techlib *getTechlib() const;
 
-		// modules
-		bool addModule(Cell *m);
-		size_t getNModule() const;
-		Cell *getModule(const char *const name) const;
-		Cell *getModule(const size_t &i) const;
+    // top module
+    Cell    *getTop() const;
+    bool    setTop(const size_t &i);
+    bool    setTop(const char * const name);
 
-		// operations
-		bool removeFloatingNets();
-		bool levelize();
+    // modules
+    bool    addModule(Cell *m);
+    size_t  getNModule() const;
+    Cell    *getModule(const char * const name) const;
+    Cell    *getModule(const size_t &i) const;
 
-	private:
-		Cell *top_;
-		CellVec modules_;
-		CellMap nameToModule_;
-		Techlib *lib_;
-		int lvl_;
-	};
+    // operations
+    bool    removeFloatingNets();
+    bool    levelize();
 
-	// inline methods
-	inline Netlist::Netlist()
-	{
-		top_ = NULL;
-		lib_ = NULL;
-		lvl_ = -1;
-	}
+private:
+    Cell    *top_;
+    CellVec modules_;
+    CellMap nameToModule_;
+    Techlib *lib_;
+    int     lvl_;
+};
 
-	inline Netlist::~Netlist()
-	{
-	}
 
-	inline bool Netlist::setTechlib(Techlib *const lib)
-	{
-		lib_ = lib;
-		return true;
-	}
+// inline methods
+inline Netlist::Netlist() {
+    top_ = NULL;
+    lib_ = NULL;
+    lvl_ = -1;
+}
 
-	inline Techlib *Netlist::getTechlib() const
-	{
-		return lib_;
-	}
+inline Netlist::~Netlist() {
+}
 
-	inline Cell *Netlist::getTop() const
-	{
-		return top_;
-	}
+inline bool Netlist::setTechlib(Techlib * const lib) {
+    lib_ = lib;
+    return true;
+}
 
-	inline bool Netlist::setTop(const char *const name)
-	{
-		CellMap::const_iterator it = nameToModule_.find(name);
-		if (it != nameToModule_.end())
-		{
-			top_ = it->second;
-			lvl_ = -1;
-		}
-		return it != nameToModule_.end();
-	}
+inline Techlib *Netlist::getTechlib() const {
+    return lib_;
+}
 
-	inline bool Netlist::setTop(const size_t &i)
-	{
-		if (i < modules_.size())
-		{
-			top_ = modules_[i];
-			lvl_ = -1;
-		}
-		return i < modules_.size();
-	}
+inline Cell *Netlist::getTop() const {
+    return top_;
+}
 
-	inline bool Netlist::addModule(Cell *m)
-	{
-		CellMap::iterator it = nameToModule_.find(m->name_);
-		if (it != nameToModule_.end())
-			return false;
-		modules_.push_back(m);
-		nameToModule_[m->name_] = m;
-		return true;
-	}
+inline bool Netlist::setTop(const char * const name) {
+    CellMap::const_iterator it = nameToModule_.find(name);
+    if (it != nameToModule_.end()) {
+        top_ = it->second;
+        lvl_ = -1;
+    }
+    return it != nameToModule_.end();
+}
 
-	inline size_t Netlist::getNModule() const
-	{
-		return modules_.size();
-	}
+inline bool Netlist::setTop(const size_t &i) {
+    if (i < modules_.size()) {
+        top_ = modules_[i];
+        lvl_ = -1;
+    }
+    return i < modules_.size();
+}
 
-	inline Cell *Netlist::getModule(const char *const name) const
-	{
-		CellMap::const_iterator it = nameToModule_.find(name);
-		return it == nameToModule_.end() ? NULL : it->second;
-	}
+inline bool Netlist::addModule(Cell *m) {
+    CellMap::iterator it = nameToModule_.find(m->name_);
+    if (it != nameToModule_.end())
+        return false;
+    modules_.push_back(m);
+    nameToModule_[m->name_] = m;
+    return true;
+}
 
-	inline Cell *Netlist::getModule(const size_t &i) const
-	{
-		return i < modules_.size() ? modules_[i] : NULL;
-	}
+inline size_t Netlist::getNModule() const {
+    return modules_.size();
+}
+
+inline Cell *Netlist::getModule(const char * const name) const {
+    CellMap::const_iterator it = nameToModule_.find(name);
+    return it == nameToModule_.end() ? NULL : it->second;
+}
+
+inline Cell *Netlist::getModule(const size_t &i) const {
+    return i < modules_.size() ? modules_[i] : NULL;
+}
 
 };
 
 #endif
+

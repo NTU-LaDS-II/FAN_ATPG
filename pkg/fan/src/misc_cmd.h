@@ -10,28 +10,29 @@
 
 #include "common/cmd.h"
 
-namespace FanNs
-{
+namespace FanNs {
 
-	// MISC commands
-	class ReportPatFormatCmd : public CommonNs::Cmd
-	{
-	public:
-		ReportPatFormatCmd(const std::string &name);
-		~ReportPatFormatCmd();
+// MISC commands
+class ReportPatFormatCmd : public CommonNs::Cmd {
+public:
+         ReportPatFormatCmd(const std::string &name);
+         ~ReportPatFormatCmd();
 
-		bool exec(const std::vector<std::string> &argv);
-	};
+    bool exec(const std::vector<std::string> &argv);
 
-	class ReportMemUsgCmd : public CommonNs::Cmd
-	{
-	public:
-		ReportMemUsgCmd(const std::string &name);
-		~ReportMemUsgCmd();
+};
 
-		bool exec(const std::vector<std::string> &argv);
-	};
+class ReportMemUsgCmd : public CommonNs::Cmd {
+public:
+         ReportMemUsgCmd(const std::string &name);
+         ~ReportMemUsgCmd();
+
+    bool exec(const std::vector<std::string> &argv);
+
+};
 
 };
 
 #endif
+
+
