@@ -218,8 +218,8 @@ void Atpg::setupCircuitParameter()
 	// initialize numOfZero, numOfOne and modify_ of a gate
 	for (int i = 0; i < pCircuit_->tgate_; i++)
 	{
-		n0_[i] = 0; // BAD NAME; should be n0
-		n1_[i] = 0; // BAD NAME; should be n1
+		gateID_to_n0_Vec_[i] = 0; // BAD NAME; should be n0
+		gateID_to_n1_Vec_[i] = 0; // BAD NAME; should be n1
 		modify_[i] = false;
 	}
 
@@ -728,7 +728,7 @@ void Atpg::assignValueToFinalObject()
 		Gate *pGate = &pCircuit_->gates_[listPop(finalObject_)];
 
 		// judge the value by numOfZero and numOfOne
-		if (n0_[pGate->id_] > n1_[pGate->id_])
+		if (gateID_to_n0_Vec_[pGate->id_] > gateID_to_n1_Vec_[pGate->id_])
 			pGate->v_ = L;
 		else
 			pGate->v_ = H;
@@ -2170,7 +2170,7 @@ bool Atpg::Implication(IMPLICATION_STATUS atpgStatus, int StartLevel)
 // **************************************************************************
 // Function   [ Atpg::initialObjectives ]
 // Commentor  [ CKY ]
-// Synopsis   [ usage: initial all objects of LineNum(n0_  n1_)
+// Synopsis   [ usage: initial all objects of LineNum(gateID_to_n0_Vec_  gateID_to_n1_Vec_)
 //              in:    void
 //              out:   void
 //            ]
@@ -2188,11 +2188,11 @@ void Atpg::initialObjectives()
 
 		// if single value of the gate is Low or D', numOfZero=1, numOfOne=0
 		if (pGate->v_ == L || pGate->v_ == B)
-			setn0n1(pGate->id_, 1, 0);
+			setGaten0n1(pGate->id_, 1, 0);
 
 		// if single value of the gate is High or D, numOfZero=0, numOfOne=1
 		else if (pGate->v_ == H || pGate->v_ == D)
-			setn0n1(pGate->id_, 0, 1);
+			setGaten0n1(pGate->id_, 0, 1);
 
 		// if single value of the gate is X or Z or I
 		// set line number depend on gate type
@@ -2208,7 +2208,7 @@ void Atpg::initialObjectives()
 				case Gate::NOR4:
 				case Gate::XNOR2:
 				case Gate::XNOR3:
-					setn0n1(pGate->id_, 0, 1);
+					setGaten0n1(pGate->id_, 0, 1);
 					break;
 				case Gate::OR2:
 				case Gate::OR3:
@@ -2218,7 +2218,7 @@ void Atpg::initialObjectives()
 				case Gate::NAND4:
 				case Gate::XOR2:
 				case Gate::XOR3:
-					setn0n1(pGate->id_, 1, 0);
+					setGaten0n1(pGate->id_, 1, 0);
 					break;
 				default:
 					break;
@@ -2453,20 +2453,20 @@ Atpg::BACKTRACE_RESULT Atpg::multipleBacktrace(BACKTRACE_STATUS atpgStatus, int 
 
 								// first find this fanout point,  add to
 								// Fanout-Point Objectives set
-								if (n0_[pFaninGate->id_] == 0 && n1_[pFaninGate->id_] == 0)
+								if (gateID_to_n0_Vec_[pFaninGate->id_] == 0 && gateID_to_n1_Vec_[pFaninGate->id_] == 0)
 									fanoutObjective_.push_back(pFaninGate->id_);
 
-								// new value = old value(n0_(),
-								// n1_()) + this branch's value
+								// new value = old value(gateID_to_n0_Vec_(),
+								// gateID_to_n1_Vec_()) + this branch's value
 								// (nn0, nn1)
 								// rule6: fanout point's n0, n1 = sum of it's
 								// branch's no, n1
-								unsigned NewZero = n0_[pFaninGate->id_] + nn0;
-								unsigned NewOne = n1_[pFaninGate->id_] + nn1;
-
+								// int NewZero = gateID_to_n1_Vec_[pFaninGate->id_] + nn0; removed by wang
+								// int NewOne = gateID_to_n1_Vec_[pFaninGate->id_] + nn1; removed by wang
 								// ADD n0 AND n1 TO THE CORRESPONDING
 								// FANOUT-POINT OBJECTIVE BY THE RULE(6)
-								setn0n1(pFaninGate->id_, NewZero, NewOne);
+								// modified to safe
+								setGaten0n1(pFaninGate->id_, gateID_to_n0_Vec_[pFaninGate->id_] + nn0, gateID_to_n1_Vec_[pFaninGate->id_] + nn1);
 								backtraceResetList_.push_back(pFaninGate->id_);
 							}
 						}
@@ -2509,7 +2509,7 @@ Atpg::BACKTRACE_RESULT Atpg::multipleBacktrace(BACKTRACE_STATUS atpgStatus, int 
 								// add gate into Current Objective set
 								// BY THE RULES(1)-(5) DETERMINE NEXT OBJECTIVES
 								// AND ADD THEM TO THE SET OF CURRENT OBJECTIVES
-								setn0n1(pFaninGate->id_, nn0, nn1);
+								setGaten0n1(pFaninGate->id_, nn0, nn1);
 								backtraceResetList_.push_back(pFaninGate->id_);
 								currentObject_.push_back(pFaninGate->id_);
 							}
@@ -2545,7 +2545,7 @@ Atpg::BACKTRACE_RESULT Atpg::multipleBacktrace(BACKTRACE_STATUS atpgStatus, int 
 				}
 
 				// if one of numOfZero or numOfOne is equal to 0
-				if (!(n0_[pCurrentObj->id_] != 0 && n1_[pCurrentObj->id_] != 0))
+				if (!(gateID_to_n0_Vec_[pCurrentObj->id_] != 0 && gateID_to_n1_Vec_[pCurrentObj->id_] != 0))
 				{
 					atpgStatus = CURRENT_OBJ_DETERMINE;
 					break; // switch break
@@ -2603,7 +2603,7 @@ void Atpg::findFinalObjective(BACKTRACE_STATUS &flag, bool FaultPropPO,
 			// set the times of objective 0 and objective 1 of the gate to be zero
 			// AND LET ALL THE SETS OF OBJECTIVES BE EMPTY
 			for (unsigned i = 0; i < backtraceResetList_.size(); i++)
-				setn0n1(backtraceResetList_[i], 0, 0);
+				setGaten0n1(backtraceResetList_[i], 0, 0);
 			backtraceResetList_.clear();
 			initialList(false);
 
@@ -2755,8 +2755,8 @@ Value Atpg::assignBacktraceValue(unsigned &n0, unsigned &n1, Gate &g)
 		case Gate::AND2:
 		case Gate::AND3:
 		case Gate::AND4:
-			n0 = n0_[g.id_];
-			n1 = n1_[g.id_];
+			n0 = gateID_to_n0_Vec_[g.id_];
+			n1 = gateID_to_n1_Vec_[g.id_];
 			return L;
 
 			// when gate is OR type,n0 = numOfZero,n1 = numOfOne
@@ -2764,8 +2764,8 @@ Value Atpg::assignBacktraceValue(unsigned &n0, unsigned &n1, Gate &g)
 		case Gate::OR3:
 		case Gate::OR4:
 			// TO-DO homework 04
-			n0 = n0_[g.id_];
-			n1 = n1_[g.id_];
+			n0 = gateID_to_n0_Vec_[g.id_];
+			n1 = gateID_to_n1_Vec_[g.id_];
 			return H;
 			// end of TO-DO
 
@@ -2773,8 +2773,8 @@ Value Atpg::assignBacktraceValue(unsigned &n0, unsigned &n1, Gate &g)
 		case Gate::NAND2:
 		case Gate::NAND3:
 		case Gate::NAND4:
-			n0 = n1_[g.id_];
-			n1 = n0_[g.id_];
+			n0 = gateID_to_n1_Vec_[g.id_];
+			n1 = gateID_to_n0_Vec_[g.id_];
 			return L;
 
 			// when gate is NOR type,n0 = numOfOne,n1 = numOfZero
@@ -2782,15 +2782,15 @@ Value Atpg::assignBacktraceValue(unsigned &n0, unsigned &n1, Gate &g)
 		case Gate::NOR3:
 		case Gate::NOR4:
 			// TO-DO homework 04
-			n0 = n1_[g.id_];
-			n1 = n0_[g.id_];
+			n0 = gateID_to_n1_Vec_[g.id_];
+			n1 = gateID_to_n0_Vec_[g.id_];
 			return H;
 			// end of TO-DO
 
 			// when gate is inverter,n0 = numOfOne,n1 = numOfZero
 		case Gate::INV:
-			n0 = n1_[g.id_];
-			n1 = n0_[g.id_];
+			n0 = gateID_to_n1_Vec_[g.id_];
+			n1 = gateID_to_n0_Vec_[g.id_];
 			return X;
 
 			// when gate is XOR2 or XNOR2
@@ -2801,13 +2801,13 @@ Value Atpg::assignBacktraceValue(unsigned &n0, unsigned &n1, Gate &g)
 				val = pCircuit_->gates_[g.fis_[1]].v_;
 			if (val == H)
 			{
-				n0 = n1_[g.id_];
-				n1 = n0_[g.id_];
+				n0 = gateID_to_n1_Vec_[g.id_];
+				n1 = gateID_to_n0_Vec_[g.id_];
 			}
 			else
 			{
-				n0 = n0_[g.id_];
-				n1 = n1_[g.id_];
+				n0 = gateID_to_n0_Vec_[g.id_];
+				n1 = gateID_to_n1_Vec_[g.id_];
 			}
 
 			if (g.type_ == Gate::XNOR2)
@@ -2827,13 +2827,13 @@ Value Atpg::assignBacktraceValue(unsigned &n0, unsigned &n1, Gate &g)
 					v1++;
 			if (v1 == 2)
 			{
-				n0 = n1_[g.id_];
-				n1 = n0_[g.id_];
+				n0 = gateID_to_n1_Vec_[g.id_];
+				n1 = gateID_to_n0_Vec_[g.id_];
 			}
 			else
 			{
-				n0 = n0_[g.id_];
-				n1 = n1_[g.id_];
+				n0 = gateID_to_n0_Vec_[g.id_];
+				n1 = gateID_to_n1_Vec_[g.id_];
 			}
 
 			if (g.type_ == Gate::XNOR3)
@@ -2844,8 +2844,8 @@ Value Atpg::assignBacktraceValue(unsigned &n0, unsigned &n1, Gate &g)
 			}
 			return X;
 		default:
-			n0 = n0_[g.id_];
-			n1 = n1_[g.id_];
+			n0 = gateID_to_n0_Vec_[g.id_];
+			n1 = gateID_to_n1_Vec_[g.id_];
 			return X;
 	}
 }

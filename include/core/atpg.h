@@ -98,9 +98,9 @@ namespace CoreNs
 		Fault currentTargetFault_;				 // Fault currentFault_; => Fault currentTargetFault_ by wang
 		int backtrackLimit_;							 // unsigned => int by wang
 
-		bool *modify_; // indicate whether the gate has been backtraced or implied, true means the gate has been modified.
-		unsigned *n0_;
-		unsigned *n1_;
+		bool *modify_;						 // indicate whether the gate has been backtraced or implied, true means the gate has been modified.
+		std::vector<int> gateID_to_n0_Vec_;		 // unsigned *n0_ => std::vector<int> gateID_to_n0_Vec_ by wang
+		std::vector<int> gateID_to_n1_Vec_;		 // unsigned *n1_ => std::vector<int> gateID_to_n1_Vec_ by wang
 		int *headLines_;					 // array of headlines
 		int nHeadLine_;						 // number of headlines
 		int *faultReach_;					 // TRUE means this fanout is in fanout cone of target fault;
@@ -157,7 +157,9 @@ namespace CoreNs
 		Value assignBacktraceValue(unsigned &n0, unsigned &n1, Gate &g);
 
 		void randomFill(Pattern *pat);
-		void setn0n1(int gate, unsigned n0, unsigned n1);
+
+		// void setn0n1(int gate, int n0, int n1) => void setGaten0n1(int gateID, int n0, int n1) by wang
+		void setGaten0n1(const int &gateID, const int &n0, const int &n1);
 
 		//
 		void pushEvent(int gid); // push events to the event list of corresponding level
@@ -215,8 +217,8 @@ namespace CoreNs
 		pCircuit_ = pCircuit;
 		pSimulator_ = pSimulator;
 
-		n0_ = new unsigned[pCircuit->tgate_];
-		n1_ = new unsigned[pCircuit->tgate_];
+		gateID_to_n0_Vec_.resize(pCircuit->tgate_); // new => resize by wang
+		gateID_to_n1_Vec_.resize(pCircuit->tgate_); // new => resize by wang
 		lineType_ = new GATE_LINE_TYPE[pCircuit->tgate_];
 		xPathStatus_ = new XPATH_STATE[pCircuit->tgate_];
 		faultReach_ = new int[pCircuit->tgate_];
@@ -243,8 +245,8 @@ namespace CoreNs
 	{
 		delete[] eventList_;
 		delete[] headLines_;
-		delete[] n0_;
-		delete[] n1_;
+		// delete[] gateID_to_n0_Vec_; removed by wang
+		// delete[] gateID_to_n1_Vec_;
 		delete[] lineType_;
 		delete[] xPathStatus_;
 		delete[] faultReach_;
@@ -252,10 +254,10 @@ namespace CoreNs
 		delete[] modify_;
 	}
 
-	inline void Atpg::setn0n1(int gate, unsigned n0, unsigned n1)
+	inline void Atpg::setGaten0n1(const int &gateID, const int &n0, const int &n1)
 	{
-		n0_[gate] = n0;
-		n1_[gate] = n1;
+		gateID_to_n0_Vec_[gateID] = n0;
+		gateID_to_n1_Vec_[gateID] = n1;
 	}
 	//
 	inline void Atpg::pushEvent(int gid)
