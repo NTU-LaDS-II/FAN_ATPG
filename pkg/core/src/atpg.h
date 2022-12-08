@@ -98,17 +98,17 @@ namespace CoreNs
 		Fault currentTargetFault_;				 // Fault currentFault_; => Fault currentTargetFault_ by wang
 		int backtrackLimit_;							 // unsigned => int by wang
 
-		bool *modify_;						 // indicate whether the gate has been backtraced or implied, true means the gate has been modified.
-		std::vector<int> gateID_to_n0_Vec_;		 // unsigned *n0_ => std::vector<int> gateID_to_n0_Vec_ by wang
-		std::vector<int> gateID_to_n1_Vec_;		 // unsigned *n1_ => std::vector<int> gateID_to_n1_Vec_ by wang
-		int *headLines_;					 // array of headlines
-		int nHeadLine_;						 // number of headlines
-		int *faultReach_;					 // TRUE means this fanout is in fanout cone of target fault;
-		GATE_LINE_TYPE *lineType_; // array of line types for all gates: FREE HEAD or BOUND
+		std::vector<bool> gateValModified_;							// indicate whether the gate has been backtraced or implied, true means the gate has been modified.
+		std::vector<int> gateID_to_n0_Vec_; // unsigned *n0_ => std::vector<int> gateID_to_n0_Vec_ by wang
+		std::vector<int> gateID_to_n1_Vec_; // unsigned *n1_ => std::vector<int> gateID_to_n1_Vec_ by wang
+		int *headLines_;										// array of headlines
+		int nHeadLine_;											// number of headlines
+		int *faultReach_;										// TRUE means this fanout is in fanout cone of target fault;
+		GATE_LINE_TYPE *lineType_;					// array of line types for all gates: FREE HEAD or BOUND
 		XPATH_STATE *xPathStatus_;
 		std::vector<int> *uniquePath_; // list of gates on the unique path associated with a D-forontier.  when there is only one gate in D-frontier, xPathTracing will update this information.
 
-		std::stack<int> *eventList_;
+		std::vector<std::stack<int>> eventStack_Vec_; // std::stack<int> *eventStack_Vec_ => std::stack<int> *eventStack_Vec_
 		std::vector<int> backtrackList_;
 		std::vector<int> backtraceResetList_; // gates n0 and n1 have been changed. They need to be reset after backtrace.
 		std::vector<int> unjustified_;				// J-frontier list
@@ -162,11 +162,11 @@ namespace CoreNs
 		void setGaten0n1(const int &gateID, const int &n0, const int &n1);
 
 		//
-		void pushEvent(int gid); // push events to the event list of corresponding level
+		void pushEvent(const int &gateID); // push events to the event list of corresponding level
 		int popEvent(int depth);
-		void pushOutputEvents(int gid);									// WRONG NAME; T.14 ; should be called pushOutputEvents ;  push all the gate output events to event list of the corresponding level
-		void pushOutputEvents(int gid, int &gateCount); // record how many gates are pushed
-		void pushInputEvents(int gid, int index);
+		void pushOutputEvents(int gateID);								 // WRONG NAME; T.14 ; should be called pushOutputEvents ;  push all the gate output events to event list of the corresponding level
+		void pushOutputEvents(int gateID, int &gateCount); // record how many gates are pushed
+		void pushInputEvents(int gateID, int index);
 		int listPop(std::vector<int> &list);
 		void listDelete(std::vector<int> &list, int index);
 		void clearAllEvent();
@@ -213,18 +213,22 @@ namespace CoreNs
 	};
 
 	inline Atpg::Atpg(Circuit *pCircuit, Simulator *pSimulator)
+			: gateID_to_n0_Vec_(pCircuit->tgate_, 0),
+				gateID_to_n1_Vec_(pCircuit->tgate_, 0),
+				eventStack_Vec_(pCircuit->lvl_),
+				gateValModified_(pCircuit->tgate_, false)
 	{
 		pCircuit_ = pCircuit;
 		pSimulator_ = pSimulator;
 
-		gateID_to_n0_Vec_.resize(pCircuit->tgate_); // new => resize by wang
-		gateID_to_n1_Vec_.resize(pCircuit->tgate_); // new => resize by wang
+		// gateID_to_n0_Vec_.resize(pCircuit->tgate_); removed by wang
+		// gateID_to_n1_Vec_.resize(pCircuit->tgate_); removed by wang
 		lineType_ = new GATE_LINE_TYPE[pCircuit->tgate_];
 		xPathStatus_ = new XPATH_STATE[pCircuit->tgate_];
 		faultReach_ = new int[pCircuit->tgate_];
 		uniquePath_ = new std::vector<int>[pCircuit->tgate_];
-		modify_ = new bool[pCircuit->tgate_];
-		eventList_ = new std::stack<int>[pCircuit->tlvl_];
+		// gateValModified_ = new bool[pCircuit->tgate_];
+		// eventStack_Vec_ = new std::stack<int>[pCircuit->tlvl_]; removed by wang
 		headLines_ = NULL;
 		firstTimeFrameHeadLine_ = NULL;
 
@@ -243,15 +247,15 @@ namespace CoreNs
 	}
 	inline Atpg::~Atpg()
 	{
-		delete[] eventList_;
+		// delete[] eventStack_Vec_; removed by wang
 		delete[] headLines_;
 		// delete[] gateID_to_n0_Vec_; removed by wang
-		// delete[] gateID_to_n1_Vec_;
+		// delete[] gateID_to_n1_Vec_; removed by wang
 		delete[] lineType_;
 		delete[] xPathStatus_;
 		delete[] faultReach_;
 		delete[] uniquePath_;
-		delete[] modify_;
+		// delete[] gateValModified_;
 	}
 
 	inline void Atpg::setGaten0n1(const int &gateID, const int &n0, const int &n1)
@@ -259,21 +263,20 @@ namespace CoreNs
 		gateID_to_n0_Vec_[gateID] = n0;
 		gateID_to_n1_Vec_[gateID] = n1;
 	}
-	//
-	inline void Atpg::pushEvent(int gid)
+	inline void Atpg::pushEvent(const int &gateID)
 	{
-		Gate &g = pCircuit_->gates_[gid];
-		if (!modify_[gid])
+		Gate &gate = pCircuit_->gates_[gateID];
+		if (!gateValModified_[gateID])
 		{
-			eventList_[g.lvl_].push(gid);
-			modify_[gid] = true;
+			eventStack_Vec_[gate.lvl_].push(gateID);
+			gateValModified_[gateID] = true;
 		}
 	}
 	inline int Atpg::popEvent(int depth)
 	{
-		int gid = eventList_[depth].top();
-		eventList_[depth].pop();
-		return gid;
+		int gateID = eventStack_Vec_[depth].top();
+		eventStack_Vec_[depth].pop();
+		return gateID;
 	}
 	inline int Atpg::listPop(std::vector<int> &list)
 	{
@@ -281,29 +284,29 @@ namespace CoreNs
 		list.pop_back();
 		return num;
 	}
-	inline void Atpg::pushOutputEvents(int gid)
+	inline void Atpg::pushOutputEvents(int gateID)
 	{
-		Gate &g = pCircuit_->gates_[gid];
+		Gate &g = pCircuit_->gates_[gateID];
 		for (int i = 0; i < g.nfo_; i++)
 			pushEvent(g.fos_[i]);
 	}
-	inline void Atpg::pushOutputEvents(int gid, int &gateCount)
+	inline void Atpg::pushOutputEvents(int gateID, int &gateCount)
 	{
-		Gate &g = pCircuit_->gates_[gid];
+		Gate &g = pCircuit_->gates_[gateID];
 		for (int i = 0; i < g.nfo_; i++)
 		{
 			Gate &gOut = pCircuit_->gates_[g.fos_[i]];
-			if (!modify_[g.fos_[i]])
+			if (!gateValModified_[g.fos_[i]])
 			{
-				eventList_[gOut.lvl_].push(g.fos_[i]);
-				modify_[g.fos_[i]] = true;
+				eventStack_Vec_[gOut.lvl_].push(g.fos_[i]);
+				gateValModified_[g.fos_[i]] = true;
 				gateCount++;
 			}
 		}
 	}
-	inline void Atpg::pushInputEvents(int gid, int index)
+	inline void Atpg::pushInputEvents(int gateID, int index)
 	{
-		Gate &g = pCircuit_->gates_[gid];
+		Gate &g = pCircuit_->gates_[gateID];
 		pushEvent(g.fis_[index]);
 		pushOutputEvents(g.fis_[index]);
 	}
@@ -314,12 +317,12 @@ namespace CoreNs
 	}
 	inline void Atpg::clearAllEvent()
 	{
-		int gid;
+		int gateID;
 		for (int i = 0; i < pCircuit_->tlvl_; i++)
-			while (!eventList_[i].empty())
+			while (!eventStack_Vec_[i].empty())
 			{
-				gid = popEvent(i);
-				modify_[gid] = false;
+				gateID = popEvent(i);
+				gateValModified_[gateID] = false;
 			}
 	}
 	//}}}
