@@ -79,7 +79,8 @@ namespace CoreNs
 		void TransitionDelayFaultATPG(FaultList &faultListToGen, PatternProcessor *pPatternProcessor, int &untest);
 		void StuckAtFaultATPG(FaultList &faultListToGen, PatternProcessor *pPatternProcessor, int &untest);
 		void XFill(PatternProcessor *pPatternProcessor);
-		// SINGLE_PATTERN_GENERATION patternGeneration => generateSinglePatternOnTargetFault(Fault targetFault, bool isDTC) by wang
+		// GENERATION_STATUS patternGeneration(Fault fault, bool isDTC);
+		// => SINGLE_PATTERN_GENERATION_STATUS generateSinglePatternOnTargetFault(Fault targetFault, bool isDTC) by wang
 		SINGLE_PATTERN_GENERATION_STATUS generateSinglePatternOnTargetFault(Fault targetFault, bool isDTC);
 
 		void setupCircuitParameter();
