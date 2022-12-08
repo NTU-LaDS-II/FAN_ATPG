@@ -1,0 +1,28 @@
+#                 Statistics Report
+#  Circuit name                               s9234f
+#  Fault model                                   SAF
+#  Pattern type                                BASIC
+#  -------------------------------------------------
+#  Fault classes                             #faults
+#  ----------------------------  -------------------
+#    FU (full)                                 13066
+#    --------------------------  -------------------
+#    UD (undetected)                             446
+#    PT (possibly testable)                        0
+#    AU (atpg untestable)                        429
+#    RE (redundant)                                0
+#    AB (atpg abort)                              37
+#    TI (tied)                                     0
+#    --------------------------  -------------------
+#    DT (detected)                             12154
+#  -------------------------------------------------
+#  Coverage                               percentage
+#    --------------------------  -------------------
+#    test coverage                            96.18%
+#    fault coverage                           93.02%
+#    atpg effectiveness                        96.3%
+#  -------------------------------------------------
+#  #Patterns                                     203
+#  -------------------------------------------------
+#  ATPG runtime                           1.67e+09 s
+#  -------------------------------------------------

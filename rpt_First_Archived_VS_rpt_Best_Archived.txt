@@ -1,0 +1,138 @@
+diff --recursive --suppress-common-lines --side-by-side rpt_First_Archived/FAN_c432.rpt rpt_Best_Archived/FAN_c432.rpt
+#    AB (atpg abort)                               9		|       #    AB (atpg abort)                              21
+#    DT (detected)                               870		|       #    DT (detected)                               858
+#    test coverage                            98.98%		|       #    test coverage                            97.61%
+#    fault coverage                           98.86%		|       #    fault coverage                            97.5%
+#    atpg effectiveness                       98.98%		|       #    atpg effectiveness                       97.61%
+#  #Patterns                                      47		|       #  #Patterns                                      39
+diff --recursive --suppress-common-lines --side-by-side rpt_First_Archived/FAN_c5315.rpt rpt_Best_Archived/FAN_c5315.rpt
+#  #Patterns                                      99		|       #  #Patterns                                      91
+diff --recursive --suppress-common-lines --side-by-side rpt_First_Archived/FAN_c6288.rpt rpt_Best_Archived/FAN_c6288.rpt
+#    AB (atpg abort)                               8		|       #    AB (atpg abort)                               4
+#    DT (detected)                             12500		|       #    DT (detected)                             12504
+#    test coverage                            99.94%		|       #    test coverage                            99.97%
+#    fault coverage                            99.4%		|       #    fault coverage                           99.43%
+#    atpg effectiveness                       99.94%		|       #    atpg effectiveness                       99.97%
+#  #Patterns                                      29		|       #  #Patterns                                      28
+diff --recursive --suppress-common-lines --side-by-side rpt_First_Archived/FAN_s1196.rpt rpt_Best_Archived/FAN_s1196.rpt
+#  #Patterns                                     140		|       #  #Patterns                                     134
+diff --recursive --suppress-common-lines --side-by-side rpt_First_Archived/FAN_s1238.rpt rpt_Best_Archived/FAN_s1238.rpt
+#  #Patterns                                     150		|       #  #Patterns                                     146
+diff --recursive --suppress-common-lines --side-by-side rpt_First_Archived/FAN_s15850.rpt rpt_Best_Archived/FAN_s15850.rpt
+#    UD (undetected)                            1089		|       #    UD (undetected)                            1068
+#    DT (detected)                             23199		|       #    DT (detected)                             23220
+#    test coverage                            95.52%		|       #    test coverage                             95.6%
+#    fault coverage                           93.34%		|       #    fault coverage                           93.43%
+#    atpg effectiveness                       95.62%		|       #    atpg effectiveness                        95.7%
+#  #Patterns                                     171		|       #  #Patterns                                     133
+diff --recursive --suppress-common-lines --side-by-side rpt_First_Archived/FAN_s208.rpt rpt_Best_Archived/FAN_s208.rpt
+#  #Patterns                                      30		|       #  #Patterns                                      28
+diff --recursive --suppress-common-lines --side-by-side rpt_First_Archived/FAN_s35932.rpt rpt_Best_Archived/FAN_s35932.rpt
+#  #Patterns                                      89		|       #  #Patterns                                      21
+diff --recursive --suppress-common-lines --side-by-side rpt_First_Archived/FAN_s38417.rpt rpt_Best_Archived/FAN_s38417.rpt
+#    UD (undetected)                            3284		|       #    UD (undetected)                            3272
+#    DT (detected)                             64482		|       #    DT (detected)                             64494
+#    test coverage                            95.15%		|       #    test coverage                            95.17%
+#    fault coverage                           94.89%		|       #    fault coverage                           94.91%
+#    atpg effectiveness                       95.16%		|       #    atpg effectiveness                       95.18%
+#  #Patterns                                     123		|       #  #Patterns                                     105
+diff --recursive --suppress-common-lines --side-by-side rpt_First_Archived/FAN_s38584.rpt rpt_Best_Archived/FAN_s38584.rpt
+#    UD (undetected)                            2868		|       #    UD (undetected)                            2852
+#    DT (detected)                             75930		|       #    DT (detected)                             75946
+#    test coverage                            96.36%		|       #    test coverage                            96.38%
+#    fault coverage                           92.86%		|       #    fault coverage                           92.88%
+#    atpg effectiveness                       96.49%		|       #    atpg effectiveness                       96.51%
+#  #Patterns                                     268		|       #  #Patterns                                     131
+diff --recursive --suppress-common-lines --side-by-side rpt_First_Archived/FAN_s510.rpt rpt_Best_Archived/FAN_s510.rpt
+#  #Patterns                                      63		|       #  #Patterns                                      62
+diff --recursive --suppress-common-lines --side-by-side rpt_First_Archived/FAN_s5378.rpt rpt_Best_Archived/FAN_s5378.rpt
+#    UD (undetected)                             376		|       #    UD (undetected)                             358
+#    DT (detected)                              8813		|       #    DT (detected)                              8831
+#    test coverage                            95.91%		|       #    test coverage                             96.1%
+#    fault coverage                           95.05%		|       #    fault coverage                           95.24%
+#    atpg effectiveness                       95.94%		|       #    atpg effectiveness                       96.14%
+#  #Patterns                                     130		|       #  #Patterns                                     116
+diff --recursive --suppress-common-lines --side-by-side rpt_First_Archived/FAN_s9234.rpt rpt_Best_Archived/FAN_s9234.rpt
+#    UD (undetected)                             446		|       #    UD (undetected)                             422
+#    DT (detected)                             12154		|       #    DT (detected)                             12178
+#    test coverage                            96.18%		|       #    test coverage                            96.37%
+#    fault coverage                           93.02%		|       #    fault coverage                            93.2%
+#    atpg effectiveness                        96.3%		|       #    atpg effectiveness                       96.49%
+#  #Patterns                                     203		|       #  #Patterns                                     155
+diff --recursive --suppress-common-lines --side-by-side rpt_First_Archived/FAN_s953.rpt rpt_Best_Archived/FAN_s953.rpt
+#    UD (undetected)                              60		|       #    UD (undetected)                              58
+#    DT (detected)                              2082		|       #    DT (detected)                              2084
+#    test coverage                             97.2%		|       #    test coverage                            97.29%
+#    fault coverage                            97.2%		|       #    fault coverage                           97.29%
+#    atpg effectiveness                        97.2%		|       #    atpg effectiveness                       97.29%
+#  #Patterns                                      94		|       #  #Patterns                                      89
+diff --recursive --suppress-common-lines --side-by-side rpt_First_Archived/adummy rpt_Best_Archived/adummy
+rpt_First_Archived						|       rpt_Best_Archive
+diff --recursive --suppress-common-lines --side-by-side rpt_First_Archived/c432_fsim.rpt rpt_Best_Archived/c432_fsim.rpt
+#    UD (undetected)                              10		|       #    UD (undetected)                              22
+#    DT (detected)                               870		|       #    DT (detected)                               858
+#    test coverage                            98.86%		|       #    test coverage                             97.5%
+#    fault coverage                           98.86%		|       #    fault coverage                            97.5%
+#    atpg effectiveness                       98.86%		|       #    atpg effectiveness                        97.5%
+#  #Patterns                                      47		|       #  #Patterns                                      39
+diff --recursive --suppress-common-lines --side-by-side rpt_First_Archived/c5315_fsim.rpt rpt_Best_Archived/c5315_fsim.rpt
+#  #Patterns                                      99		|       #  #Patterns                                      91
+diff --recursive --suppress-common-lines --side-by-side rpt_First_Archived/c6288_fsim.rpt rpt_Best_Archived/c6288_fsim.rpt
+#    UD (undetected)                              76		|       #    UD (undetected)                              72
+#    DT (detected)                             12500		|       #    DT (detected)                             12504
+#    test coverage                             99.4%		|       #    test coverage                            99.43%
+#    fault coverage                            99.4%		|       #    fault coverage                           99.43%
+#    atpg effectiveness                        99.4%		|       #    atpg effectiveness                       99.43%
+#  #Patterns                                      29		|       #  #Patterns                                      28
+diff --recursive --suppress-common-lines --side-by-side rpt_First_Archived/s1196_fsim.rpt rpt_Best_Archived/s1196_fsim.rpt
+#  #Patterns                                     140		|       #  #Patterns                                     134
+diff --recursive --suppress-common-lines --side-by-side rpt_First_Archived/s1238_fsim.rpt rpt_Best_Archived/s1238_fsim.rpt
+#  #Patterns                                     150		|       #  #Patterns                                     146
+diff --recursive --suppress-common-lines --side-by-side rpt_First_Archived/s15850_fsim.rpt rpt_Best_Archived/s15850_fsim.rpt
+#    UD (undetected)                            1655		|       #    UD (undetected)                            1634
+#    DT (detected)                             23199		|       #    DT (detected)                             23220
+#    test coverage                            93.34%		|       #    test coverage                            93.43%
+#    fault coverage                           93.34%		|       #    fault coverage                           93.43%
+#    atpg effectiveness                       93.34%		|       #    atpg effectiveness                       93.43%
+#  #Patterns                                     171		|       #  #Patterns                                     133
+diff --recursive --suppress-common-lines --side-by-side rpt_First_Archived/s208_fsim.rpt rpt_Best_Archived/s208_fsim.rpt
+#  #Patterns                                      30		|       #  #Patterns                                      28
+diff --recursive --suppress-common-lines --side-by-side rpt_First_Archived/s35932_fsim.rpt rpt_Best_Archived/s35932_fsim.rpt
+#  #Patterns                                      89		|       #  #Patterns                                      21
+diff --recursive --suppress-common-lines --side-by-side rpt_First_Archived/s38417_fsim.rpt rpt_Best_Archived/s38417_fsim.rpt
+#    UD (undetected)                            3472		|       #    UD (undetected)                            3460
+#    DT (detected)                             64482		|       #    DT (detected)                             64494
+#    test coverage                            94.89%		|       #    test coverage                            94.91%
+#    fault coverage                           94.89%		|       #    fault coverage                           94.91%
+#    atpg effectiveness                       94.89%		|       #    atpg effectiveness                       94.91%
+#  #Patterns                                     123		|       #  #Patterns                                     105
+diff --recursive --suppress-common-lines --side-by-side rpt_First_Archived/s38584_fsim.rpt rpt_Best_Archived/s38584_fsim.rpt
+#    UD (undetected)                            5842		|       #    UD (undetected)                            5826
+#    DT (detected)                             75930		|       #    DT (detected)                             75946
+#    test coverage                            92.86%		|       #    test coverage                            92.88%
+#    fault coverage                           92.86%		|       #    fault coverage                           92.88%
+#    atpg effectiveness                       92.86%		|       #    atpg effectiveness                       92.88%
+#  #Patterns                                     268		|       #  #Patterns                                     131
+diff --recursive --suppress-common-lines --side-by-side rpt_First_Archived/s510_fsim.rpt rpt_Best_Archived/s510_fsim.rpt
+#  #Patterns                                      63		|       #  #Patterns                                      62
+diff --recursive --suppress-common-lines --side-by-side rpt_First_Archived/s5378_fsim.rpt rpt_Best_Archived/s5378_fsim.rpt
+#    UD (undetected)                             459		|       #    UD (undetected)                             441
+#    DT (detected)                              8813		|       #    DT (detected)                              8831
+#    test coverage                            95.05%		|       #    test coverage                            95.24%
+#    fault coverage                           95.05%		|       #    fault coverage                           95.24%
+#    atpg effectiveness                       95.05%		|       #    atpg effectiveness                       95.24%
+#  #Patterns                                     130		|       #  #Patterns                                     116
+diff --recursive --suppress-common-lines --side-by-side rpt_First_Archived/s9234_fsim.rpt rpt_Best_Archived/s9234_fsim.rpt
+#    UD (undetected)                             912		|       #    UD (undetected)                             888
+#    DT (detected)                             12154		|       #    DT (detected)                             12178
+#    test coverage                            93.02%		|       #    test coverage                             93.2%
+#    fault coverage                           93.02%		|       #    fault coverage                            93.2%
+#    atpg effectiveness                       93.02%		|       #    atpg effectiveness                        93.2%
+#  #Patterns                                     203		|       #  #Patterns                                     155
+diff --recursive --suppress-common-lines --side-by-side rpt_First_Archived/s953_fsim.rpt rpt_Best_Archived/s953_fsim.rpt
+#    UD (undetected)                              60		|       #    UD (undetected)                              58
+#    DT (detected)                              2082		|       #    DT (detected)                              2084
+#    test coverage                             97.2%		|       #    test coverage                            97.29%
+#    fault coverage                            97.2%		|       #    fault coverage                           97.29%
+#    atpg effectiveness                        97.2%		|       #    atpg effectiveness                       97.29%
+#  #Patterns                                      94		|       #  #Patterns                                      89
