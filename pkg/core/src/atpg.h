@@ -217,7 +217,7 @@ namespace CoreNs
 				gateID_to_n1_Vec_(pCircuit->tgate_, 0),
 				eventStack_Vec_(pCircuit->lvl_),
 				gateValModified_(pCircuit->tgate_, false),
-				gateLineType_(pCircuit_->tgate_)
+				gateLineType_(pCircuit->tgate_)
 	{
 		pCircuit_ = pCircuit;
 		pSimulator_ = pSimulator;
