@@ -98,13 +98,13 @@ namespace CoreNs
 		Fault currentTargetFault_;				 // Fault currentFault_; => Fault currentTargetFault_ by wang
 		int backtrackLimit_;							 // unsigned => int by wang
 
-		std::vector<bool> gateValModified_;							// indicate whether the gate has been backtraced or implied, true means the gate has been modified.
-		std::vector<int> gateID_to_n0_Vec_; // unsigned *n0_ => std::vector<int> gateID_to_n0_Vec_ by wang
-		std::vector<int> gateID_to_n1_Vec_; // unsigned *n1_ => std::vector<int> gateID_to_n1_Vec_ by wang
-		int *headLines_;										// array of headlines
-		int nHeadLine_;											// number of headlines
-		int *faultReach_;										// TRUE means this fanout is in fanout cone of target fault;
-		GATE_LINE_TYPE *lineType_;					// array of line types for all gates: FREE HEAD or BOUND
+		std::vector<bool> gateValModified_;				 // indicate whether the gate has been backtraced or implied, true means the gate has been modified.
+		std::vector<int> gateID_to_n0_Vec_;				 // unsigned *n0_ => std::vector<int> gateID_to_n0_Vec_ by wang
+		std::vector<int> gateID_to_n1_Vec_;				 // unsigned *n1_ => std::vector<int> gateID_to_n1_Vec_ by wang
+		int *headLines_;													 // array of headlines
+		int nHeadLine_;														 // number of headlines
+		int *faultReach_;													 // TRUE means this fanout is in fanout cone of target fault;
+		std::vector<GATE_LINE_TYPE> gateLineType_; // array of line types for all gates: FREE HEAD or BOUND
 		XPATH_STATE *xPathStatus_;
 		std::vector<int> *uniquePath_; // list of gates on the unique path associated with a D-forontier.  when there is only one gate in D-frontier, xPathTracing will update this information.
 
@@ -216,14 +216,15 @@ namespace CoreNs
 			: gateID_to_n0_Vec_(pCircuit->tgate_, 0),
 				gateID_to_n1_Vec_(pCircuit->tgate_, 0),
 				eventStack_Vec_(pCircuit->lvl_),
-				gateValModified_(pCircuit->tgate_, false)
+				gateValModified_(pCircuit->tgate_, false),
+				gateLineType_(pCircuit_->tgate_)
 	{
 		pCircuit_ = pCircuit;
 		pSimulator_ = pSimulator;
 
 		// gateID_to_n0_Vec_.resize(pCircuit->tgate_); removed by wang
 		// gateID_to_n1_Vec_.resize(pCircuit->tgate_); removed by wang
-		lineType_ = new GATE_LINE_TYPE[pCircuit->tgate_];
+		// gateLineType_ = new GATE_LINE_TYPE[pCircuit->tgate_];
 		xPathStatus_ = new XPATH_STATE[pCircuit->tgate_];
 		faultReach_ = new int[pCircuit->tgate_];
 		uniquePath_ = new std::vector<int>[pCircuit->tgate_];
@@ -251,7 +252,7 @@ namespace CoreNs
 		delete[] headLines_;
 		// delete[] gateID_to_n0_Vec_; removed by wang
 		// delete[] gateID_to_n1_Vec_; removed by wang
-		delete[] lineType_;
+		// delete[] gateLineType_;
 		delete[] xPathStatus_;
 		delete[] faultReach_;
 		delete[] uniquePath_;

@@ -258,31 +258,31 @@ void Atpg::identifyLineParameter()
 		Gate &g = pCircuit_->gates_[i];
 
 		// assign as FREE_LINE first
-		lineType_[g.id_] = FREE_LINE;
+		gateLineType_[g.id_] = FREE_LINE;
 
 		// check it is BOUND_LINE or not
 		if (g.type_ != Gate::PI && g.type_ != Gate::PPI)
 			for (int j = 0; j < g.nfi_; j++) // g.nfi_  number of fanin
 
 				// if one of fanin is not FREE_LINE, then set lineType as BOUND_LINE
-				if (lineType_[g.fis_[j]] != FREE_LINE)
+				if (gateLineType_[g.fis_[j]] != FREE_LINE)
 				{
-					lineType_[g.id_] = BOUND_LINE;
+					gateLineType_[g.id_] = BOUND_LINE;
 					break;
 				}
 		// check it is HEAD_LINE or not(rule 1)
-		if (lineType_[g.id_] == FREE_LINE && g.nfo_ != 1)
+		if (gateLineType_[g.id_] == FREE_LINE && g.nfo_ != 1)
 		{ // g.nfo_  number of fanout
-			lineType_[g.id_] = HEAD_LINE;
+			gateLineType_[g.id_] = HEAD_LINE;
 			nHeadLine_++; // number of head line + 1
 		}
 
 		// check it is HEAD_LINE or not(rule 2)
-		if (lineType_[g.id_] == BOUND_LINE)
+		if (gateLineType_[g.id_] == BOUND_LINE)
 			for (int j = 0; j < g.nfi_; j++) // g.nfi_  number of fanin
-				if (lineType_[g.fis_[j]] == FREE_LINE)
+				if (gateLineType_[g.fis_[j]] == FREE_LINE)
 				{
-					lineType_[g.fis_[j]] = HEAD_LINE;
+					gateLineType_[g.fis_[j]] = HEAD_LINE;
 					nHeadLine_++;
 				}
 	}
@@ -291,7 +291,7 @@ void Atpg::identifyLineParameter()
 	headLines_ = new int[nHeadLine_];
 	int inHead = 0;
 	for (int i = 0; i < pCircuit_->tgate_; i++)
-		if (lineType_[i] == HEAD_LINE)
+		if (gateLineType_[i] == HEAD_LINE)
 		{
 			headLines_[inHead++] = i;
 			if (inHead == nHeadLine_)
@@ -714,7 +714,7 @@ bool Atpg::checkUnjustifiedBoundLines()
 	for (int i = 0; i < (int)unjustified_.size(); i++)
 	{
 		Gate *pGate = &pCircuit_->gates_[unjustified_[i]];
-		if (pGate->v_ != X && !gateValModified_[pGate->id_] && lineType_[pGate->id_] == BOUND_LINE)
+		if (pGate->v_ != X && !gateValModified_[pGate->id_] && gateLineType_[pGate->id_] == BOUND_LINE)
 		{ // unjustified bound line
 			return true;
 		}
@@ -739,7 +739,7 @@ void Atpg::assignValueToFinalObject()
 		// record this gate and backtrace later
 		backtrackList_.push_back(pGate->id_);
 
-		if (lineType_[pGate->id_] == HEAD_LINE)
+		if (gateLineType_[pGate->id_] == HEAD_LINE)
 			gateValModified_[pGate->id_] = true;
 		else
 			pushEvent(pGate->id_);
@@ -759,7 +759,7 @@ Gate *Atpg::initialize(Fault &fault, int &BackImpLevel, IMPLICATION_STATUS &impl
 	initialNetlist(*gFaultyLine, isDTC);
 	int fGate_id = fault.gate_;
 	// currentTargetHeadLineFault_.gate_ = -1; //bug report
-	if (lineType_[gFaultyLine->id_] == FREE_LINE)
+	if (gateLineType_[gFaultyLine->id_] == FREE_LINE)
 	{
 		if ((fault.type_ == Fault::SA0 || fault.type_ == Fault::STR) && gFaultyLine->v_ != L)
 			gFaultyLine->v_ = D;
@@ -828,7 +828,7 @@ void Atpg::initialNetlist(Gate &gFaultyLine, bool isDTC)
 	{
 		Gate &g = pCircuit_->gates_[i];
 
-		if (lineType_[g.id_] == FREE_LINE)
+		if (gateLineType_[g.id_] == FREE_LINE)
 			gateValModified_[g.id_] = true;
 		else
 			gateValModified_[g.id_] = false;
@@ -996,7 +996,7 @@ int Atpg::setFaultyGate(Fault &fault)
 		// schedule all of fanout gate of the pFaultyGate
 		pushOutputEvents(pFaultyGate->id_);
 		// backtrace stops at HEAD LINE
-		if (lineType_[pFaultyGate->id_] == HEAD_LINE)
+		if (gateLineType_[pFaultyGate->id_] == HEAD_LINE)
 			gateValModified_[pFaultyGate->id_] = true;
 
 		else if (pFaultyGate->type_ == Gate::INV || pFaultyGate->type_ == Gate::BUF || pFaultyGate->type_ == Gate::PO || pFaultyGate->type_ == Gate::PPO)
@@ -1083,7 +1083,7 @@ int Atpg::firstTimeFrameSetUp(Fault &fault)
 	else
 		pFaultyLine = pFaultyGate;
 
-	if (lineType_[pFaultyLine->id_] == FREE_LINE)
+	if (gateLineType_[pFaultyLine->id_] == FREE_LINE)
 	{
 		if ((FaultyValue == H && pFaultyLine->v_ == L) || (FaultyValue == L && pFaultyLine->v_ == H))
 			return -1;
@@ -1101,9 +1101,9 @@ int Atpg::firstTimeFrameSetUp(Fault &fault)
 				break;
 			gNext->v_ = cXOR2(gNext->isInverse(), gTemp->v_);
 			gTemp = gNext;
-		} while (lineType_[gTemp->id_] == FREE_LINE);
+		} while (gateLineType_[gTemp->id_] == FREE_LINE);
 
-		if (lineType_[gTemp->id_] == HEAD_LINE)
+		if (gateLineType_[gTemp->id_] == HEAD_LINE)
 		{
 			gateValModified_[gTemp->id_] = true;
 			backtrackList_.push_back(gTemp->id_);
@@ -1120,7 +1120,7 @@ int Atpg::firstTimeFrameSetUp(Fault &fault)
 		backtrackList_.push_back(pFaultyLine->id_);
 		pushOutputEvents(pFaultyLine->id_);
 
-		if (lineType_[pFaultyLine->id_] == HEAD_LINE)
+		if (gateLineType_[pFaultyLine->id_] == HEAD_LINE)
 			gateValModified_[pFaultyLine->id_] = true;
 
 		else if (pFaultyLine->type_ == Gate::INV || pFaultyLine->type_ == Gate::BUF || pFaultyLine->type_ == Gate::PO || pFaultyLine->type_ == Gate::PPO)
@@ -1220,7 +1220,7 @@ Fault Atpg::setFreeFaultyGate(Gate &gate)
 		}
 		// if the pCurrentGate is FREE LINE, pCurrentGate output gate becomes a new pCurrentGate
 		// until pCurrentGate becomes HEAD LINE
-		if (lineType_[gateID] == FREE_LINE)
+		if (gateLineType_[gateID] == FREE_LINE)
 			sStack.push_back(pCurrentGate->fos_[0]);
 	}
 
@@ -1546,7 +1546,7 @@ void Atpg::restoreFault(Fault &fOriginalFault)
 	// if fanin gates' value == 0 or 1, add it into fanoutObjective_ list iteratively
 	// let pFaultPropGate's output gate (FREELINE only have one output gate) be new pFaultPropGate
 	// and perform the procedure of each loop till pFaultPropGate is HEADLINE
-	if (lineType_[pFaultPropGate->id_] == FREE_LINE)
+	if (gateLineType_[pFaultPropGate->id_] == FREE_LINE)
 	{
 		while (pFaultPropGate->nfo_ > 0)
 		{
@@ -1557,7 +1557,7 @@ void Atpg::restoreFault(Fault &fOriginalFault)
 				if (pFaninGate->v_ == L || pFaninGate->v_ == H)
 					fanoutObjective_.push_back(pFaninGate->id_);
 			}
-			if (lineType_[pFaultPropGate->id_] == HEAD_LINE)
+			if (gateLineType_[pFaultPropGate->id_] == HEAD_LINE)
 				break;
 		}
 	}
@@ -1732,7 +1732,7 @@ bool Atpg::backtrack(int &BackImpLevel)
 		backtrackList_.resize(BacktrackPoint + 1);
 		pDecisionGate->v_ = Val; // Reverse its value, do backtrack.
 
-		if (lineType_[pDecisionGate->id_] == HEAD_LINE)
+		if (gateLineType_[pDecisionGate->id_] == HEAD_LINE)
 			gateValModified_[pDecisionGate->id_] = false;
 		else
 			pushEvent(pDecisionGate->id_);
@@ -1785,7 +1785,7 @@ Atpg::IMPLICATION_STATUS Atpg::evaluation(Gate *pGate)
 {
 	gateValModified_[pGate->id_] = false;
 
-	if (lineType_[pGate->id_] == HEAD_LINE)
+	if (gateLineType_[pGate->id_] == HEAD_LINE)
 	{
 		// pGate is head line, set modify and return FORWARD
 		gateValModified_[pGate->id_] = true;
@@ -2384,7 +2384,7 @@ Atpg::BACKTRACE_RESULT Atpg::multipleBacktrace(BACKTRACE_STATUS atpgStatus, int 
 
 			case CURRENT_OBJ_DETERMINE:
 				// IS OBJECTIVE LINE A HEAD LINE?
-				if (lineType_[pCurrentObj->id_] == HEAD_LINE)
+				if (gateLineType_[pCurrentObj->id_] == HEAD_LINE)
 				{ // YES
 					// ADD THE CURRENT OBJECTIVE TO THE SET OF HEAD OBJECTIVES
 					headObject_.push_back(pCurrentObj->id_);

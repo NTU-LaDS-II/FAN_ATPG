@@ -104,7 +104,7 @@ namespace CoreNs
 		int *headLines_;										// array of headlines
 		int nHeadLine_;											// number of headlines
 		int *faultReach_;										// TRUE means this fanout is in fanout cone of target fault;
-		GATE_LINE_TYPE *lineType_;					// array of line types for all gates: FREE HEAD or BOUND
+		GATE_LINE_TYPE *gateLineType_;					// array of line types for all gates: FREE HEAD or BOUND
 		XPATH_STATE *xPathStatus_;
 		std::vector<int> *uniquePath_; // list of gates on the unique path associated with a D-forontier.  when there is only one gate in D-frontier, xPathTracing will update this information.
 
@@ -222,7 +222,7 @@ namespace CoreNs
 
 		// gateID_to_n0_Vec_.resize(pCircuit->tgate_); removed by wang
 		// gateID_to_n1_Vec_.resize(pCircuit->tgate_); removed by wang
-		lineType_ = new GATE_LINE_TYPE[pCircuit->tgate_];
+		gateLineType_ = new GATE_LINE_TYPE[pCircuit->tgate_];
 		xPathStatus_ = new XPATH_STATE[pCircuit->tgate_];
 		faultReach_ = new int[pCircuit->tgate_];
 		uniquePath_ = new std::vector<int>[pCircuit->tgate_];
@@ -250,7 +250,7 @@ namespace CoreNs
 		delete[] headLines_;
 		// delete[] gateID_to_n0_Vec_; removed by wang
 		// delete[] gateID_to_n1_Vec_; removed by wang
-		delete[] lineType_;
+		delete[] gateLineType_;
 		delete[] xPathStatus_;
 		delete[] faultReach_;
 		delete[] uniquePath_;
