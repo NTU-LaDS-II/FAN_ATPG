@@ -1,8 +1,8 @@
-Refactor - 15th modification
+Refactor - 16th modification
 
   name changes:
-    Atpg:: evaluationGood => evaluateGoodVal
-    Atpg:: evaluationFaulty => evaluateFaultyVal
   performance related changes:
+    atpg::evaluateFaultyVal
+      if else => switch case
   debug:
   note:

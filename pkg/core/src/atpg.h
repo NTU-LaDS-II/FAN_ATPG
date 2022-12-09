@@ -522,7 +522,7 @@ namespace CoreNs
 	{
 		Value val;
 		int i;
-		int &FaultyLine = currentTargetFault_.line_;
+		int &faultyLine = currentTargetFault_.line_;
 		switch (gate.type_)
 		{
 			case Gate::PI:
@@ -539,7 +539,7 @@ namespace CoreNs
 				return val;
 			case Gate::INV:
 				val = pCircuit_->gates_[gate.fis_[0]].v_;
-				if (currentTargetFault_.line_ == 0)
+				if (faultyLine == 0)
 				{
 					val = cINV(val);
 					if (val == L && (currentTargetFault_.type_ == Fault::SA1 || currentTargetFault_.type_ == Fault::STF))
@@ -559,7 +559,7 @@ namespace CoreNs
 			case Gate::AND2:
 			case Gate::AND3:
 			case Gate::AND4:
-				if (currentTargetFault_.line_ == 0)
+				if (faultyLine == 0)
 				{
 					val = pCircuit_->gates_[gate.fis_[0]].v_;
 					for (i = 1; i < gate.nfi_; ++i)
@@ -571,21 +571,22 @@ namespace CoreNs
 				}
 				else
 				{
-					val = pCircuit_->gates_[gate.fis_[FaultyLine - 1]].v_;
+					val = pCircuit_->gates_[gate.fis_[faultyLine - 1]].v_;
 					if (val == L && (currentTargetFault_.type_ == Fault::SA1 || currentTargetFault_.type_ == Fault::STF))
 						val = B;
 					if (val == H && (currentTargetFault_.type_ == Fault::SA0 || currentTargetFault_.type_ == Fault::STR))
 						val = D;
 					for (i = 0; i < gate.nfi_; ++i)
-						if (i != FaultyLine - 1)
+					{
+						if (i != faultyLine - 1)
 							val = cAND2(val, pCircuit_->gates_[gate.fis_[i]].v_);
+					}
 				}
 				return val;
 			case Gate::NAND2:
 			case Gate::NAND3:
 			case Gate::NAND4:
-				
-				if (currentTargetFault_.line_ == 0)
+				if (faultyLine == 0)
 				{
 					val = pCircuit_->gates_[gate.fis_[0]].v_;
 					for (i = 1; i < gate.nfi_; ++i)
@@ -600,13 +601,13 @@ namespace CoreNs
 				}
 				else
 				{
-					val = pCircuit_->gates_[gate.fis_[FaultyLine - 1]].v_;
+					val = pCircuit_->gates_[gate.fis_[faultyLine - 1]].v_;
 					if (val == L && (currentTargetFault_.type_ == Fault::SA1 || currentTargetFault_.type_ == Fault::STF))
 						val = B;
 					if (val == H && (currentTargetFault_.type_ == Fault::SA0 || currentTargetFault_.type_ == Fault::STR))
 						val = D;
 					for (i = 0; i < gate.nfi_; ++i)
-						if (i != FaultyLine - 1)
+						if (i != faultyLine - 1)
 							val = cAND2(val, pCircuit_->gates_[gate.fis_[i]].v_);
 					val = cINV(val);
 				}
@@ -614,8 +615,8 @@ namespace CoreNs
 			case Gate::OR2:
 			case Gate::OR3:
 			case Gate::OR4:
-				
-				if (currentTargetFault_.line_ == 0)
+
+				if (faultyLine == 0)
 				{
 					val = pCircuit_->gates_[gate.fis_[0]].v_;
 					for (i = 1; i < gate.nfi_; ++i)
@@ -627,21 +628,22 @@ namespace CoreNs
 				}
 				else
 				{
-					val = pCircuit_->gates_[gate.fis_[FaultyLine - 1]].v_;
+					val = pCircuit_->gates_[gate.fis_[faultyLine - 1]].v_;
 					if (val == L && (currentTargetFault_.type_ == Fault::SA1 || currentTargetFault_.type_ == Fault::STF))
 						val = B;
 					if (val == H && (currentTargetFault_.type_ == Fault::SA0 || currentTargetFault_.type_ == Fault::STR))
 						val = D;
 					for (i = 0; i < gate.nfi_; ++i)
-						if (i != FaultyLine - 1)
+					{
+						if (i != faultyLine - 1)
 							val = cOR2(val, pCircuit_->gates_[gate.fis_[i]].v_);
+					}
 				}
 				return val;
 			case Gate::NOR2:
 			case Gate::NOR3:
 			case Gate::NOR4:
-				
-				if (currentTargetFault_.line_ == 0)
+				if (faultyLine == 0)
 				{
 					val = pCircuit_->gates_[gate.fis_[0]].v_;
 					for (i = 1; i < gate.nfi_; ++i)
@@ -656,23 +658,23 @@ namespace CoreNs
 				}
 				else
 				{
-					val = pCircuit_->gates_[gate.fis_[FaultyLine - 1]].v_;
+					val = pCircuit_->gates_[gate.fis_[faultyLine - 1]].v_;
 					if (val == L && (currentTargetFault_.type_ == Fault::SA1 || currentTargetFault_.type_ == Fault::STF))
 						val = B;
 					if (val == H && (currentTargetFault_.type_ == Fault::SA0 || currentTargetFault_.type_ == Fault::STR))
 						val = D;
 					for (i = 0; i < gate.nfi_; ++i)
-						if (i != FaultyLine - 1)
+					{
+						if (i != faultyLine - 1)
 							val = cOR2(val, pCircuit_->gates_[gate.fis_[i]].v_);
+					}
 					val = cINV(val);
 				}
 				return val;
 			case Gate::XOR2:
 			case Gate::XOR3:
-				
-				if (currentTargetFault_.line_ == 0)
+				if (faultyLine == 0)
 				{
-
 					if (gate.type_ == Gate::XOR2)
 						val = cXOR2(pCircuit_->gates_[gate.fis_[0]].v_, pCircuit_->gates_[gate.fis_[1]].v_);
 					else
@@ -685,7 +687,7 @@ namespace CoreNs
 				}
 				else
 				{
-					val = pCircuit_->gates_[gate.fis_[FaultyLine - 1]].v_;
+					val = pCircuit_->gates_[gate.fis_[faultyLine - 1]].v_;
 					if (val == L && (currentTargetFault_.type_ == Fault::SA1 || currentTargetFault_.type_ == Fault::STF))
 						val = B;
 					if (val == H && (currentTargetFault_.type_ == Fault::SA0 || currentTargetFault_.type_ == Fault::STR))
@@ -693,26 +695,53 @@ namespace CoreNs
 
 					if (gate.type_ == Gate::XOR2)
 					{
-						if (FaultyLine - 1 == 0)
-							val = cXOR2(pCircuit_->gates_[gate.fis_[1]].v_, val);
-						else
-							val = cXOR2(pCircuit_->gates_[gate.fis_[0]].v_, val);
+						// if (faultyLine - 1 == 0)
+						// 	val = cXOR2(pCircuit_->gates_[gate.fis_[1]].v_, val);
+						// else
+						// 	val = cXOR2(pCircuit_->gates_[gate.fis_[0]].v_, val);
+						switch (faultyLine - 1)
+						{
+							case 0:
+								val = cXOR2(pCircuit_->gates_[gate.fis_[1]].v_, val);
+								break;
+							case 1:
+								val = cXOR2(pCircuit_->gates_[gate.fis_[0]].v_, val);
+								break;
+							default:
+								std::cerr << "switch case default, should not happen\n";
+								break;
+						}
 					}
 					else
 					{ // XOR3
-						if (FaultyLine - 1 == 0)
-							val = cXOR3(pCircuit_->gates_[gate.fis_[1]].v_, pCircuit_->gates_[gate.fis_[2]].v_, val);
-						else if (FaultyLine - 1 == 1)
-							val = cXOR3(pCircuit_->gates_[gate.fis_[0]].v_, pCircuit_->gates_[gate.fis_[2]].v_, val);
-						else
-							val = cXOR3(pCircuit_->gates_[gate.fis_[1]].v_, pCircuit_->gates_[gate.fis_[0]].v_, val);
+						// if (faultyLine - 1 == 0)
+						// 	val = cXOR3(pCircuit_->gates_[gate.fis_[1]].v_, pCircuit_->gates_[gate.fis_[2]].v_, val);
+						// else if (faultyLine - 1 == 1)
+						// 	val = cXOR3(pCircuit_->gates_[gate.fis_[0]].v_, pCircuit_->gates_[gate.fis_[2]].v_, val);
+						// else
+						// 	val = cXOR3(pCircuit_->gates_[gate.fis_[1]].v_, pCircuit_->gates_[gate.fis_[0]].v_, val);
+						switch (faultyLine - 1)
+						{
+							case 0:
+								val = cXOR3(pCircuit_->gates_[gate.fis_[1]].v_, pCircuit_->gates_[gate.fis_[2]].v_, val);
+								break;
+							case 1:
+								val = cXOR3(pCircuit_->gates_[gate.fis_[0]].v_, pCircuit_->gates_[gate.fis_[2]].v_, val);
+								break;
+							case 2:
+								val = cXOR3(pCircuit_->gates_[gate.fis_[1]].v_, pCircuit_->gates_[gate.fis_[0]].v_, val);
+								break;
+							default:
+								std::cerr << "switch case default, should not happen\n";
+								break;
+						}
 					}
 				}
 				return val;
 			case Gate::XNOR2:
 			case Gate::XNOR3:
-				
-				if (currentTargetFault_.line_ == 0)
+
+				if (faultyLine == 0)
 				{
 
 					if (gate.type_ == Gate::XNOR2)
@@ -727,7 +756,7 @@ namespace CoreNs
 				}
 				else
 				{
-					val = pCircuit_->gates_[gate.fis_[FaultyLine - 1]].v_;
+					val = pCircuit_->gates_[gate.fis_[faultyLine - 1]].v_;
 					if (val == L && (currentTargetFault_.type_ == Fault::SA1 || currentTargetFault_.type_ == Fault::STF))
 						val = B;
 					if (val == H && (currentTargetFault_.type_ == Fault::SA0 || currentTargetFault_.type_ == Fault::STR))
@@ -735,19 +764,47 @@ namespace CoreNs
 
 					if (gate.type_ == Gate::XNOR2)
 					{
-						if (FaultyLine - 1 == 0)
-							val = cXNOR2(pCircuit_->gates_[gate.fis_[1]].v_, val);
-						else
-							val = cXNOR2(pCircuit_->gates_[gate.fis_[0]].v_, val);
+						// if (faultyLine - 1 == 0)
+						// 	val = cXNOR2(pCircuit_->gates_[gate.fis_[1]].v_, val);
+						// else
+						// 	val = cXNOR2(pCircuit_->gates_[gate.fis_[0]].v_, val);
+						switch (faultyLine - 1)
+						{
+							case 0:
+								val = cXNOR2(pCircuit_->gates_[gate.fis_[1]].v_, val);
+								break;
+							case 1:
+								val = cXNOR2(pCircuit_->gates_[gate.fis_[0]].v_, val);
+								break;
+							default:
+								std::cerr << "switch case default, should not happen\n";
+								break;
+						}
 					}
 					else
 					{ // XOR3
-						if (FaultyLine - 1 == 0)
-							val = cXNOR3(pCircuit_->gates_[gate.fis_[1]].v_, pCircuit_->gates_[gate.fis_[2]].v_, val);
-						else if (FaultyLine - 1 == 1)
-							val = cXNOR3(pCircuit_->gates_[gate.fis_[0]].v_, pCircuit_->gates_[gate.fis_[2]].v_, val);
-						else
-							val = cXNOR3(pCircuit_->gates_[gate.fis_[1]].v_, pCircuit_->gates_[gate.fis_[0]].v_, val);
+						// change from if else to switch by wang
+						// if (faultyLine - 1 == 0)
+						// 	val = cXNOR3(pCircuit_->gates_[gate.fis_[1]].v_, pCircuit_->gates_[gate.fis_[2]].v_, val);
+						// else if (faultyLine - 1 == 1)
+						// 	val = cXNOR3(pCircuit_->gates_[gate.fis_[0]].v_, pCircuit_->gates_[gate.fis_[2]].v_, val);
+						// else
+						// 	val = cXNOR3(pCircuit_->gates_[gate.fis_[1]].v_, pCircuit_->gates_[gate.fis_[0]].v_, val);
+						switch (faultyLine - 1)
+						{
+							case 0:
+								val = cXNOR3(pCircuit_->gates_[gate.fis_[1]].v_, pCircuit_->gates_[gate.fis_[2]].v_, val);
+								break;
+							case 1:
+								val = cXNOR3(pCircuit_->gates_[gate.fis_[0]].v_, pCircuit_->gates_[gate.fis_[2]].v_, val);
+								break;
+							case 2:
+								val = cXNOR3(pCircuit_->gates_[gate.fis_[1]].v_, pCircuit_->gates_[gate.fis_[0]].v_, val);
+								break;
+							default:
+								std::cerr << "switch case default, should not happen\n";
+								break;
+						}
 					}
 				}
 				return val;
