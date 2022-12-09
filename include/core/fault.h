@@ -64,7 +64,7 @@ namespace CoreNs
 		Fault(int gateID, FAULT_TYPE faultType, int faultyLine, int equivalent = 1, FAULT_STATE faultState = UD);
 		~Fault();
 
-		// int aggr_;				     // ID of the aggressor gate ,removed by pan
+		// int aggr_;						// ID of the aggressor gate ,removed by pan
 		int gateID_;						 // ID of the faulty gate. gate_ => gateID_, modified by pan
 		FAULT_TYPE faultType_;	 // fault type. type_ => faultType_, modified by pan
 		int faultyLine_;				 // faulty line location: 0 means gate output fault. 1+ means gate input fault
