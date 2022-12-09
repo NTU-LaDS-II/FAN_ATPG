@@ -34,7 +34,7 @@ void FaultListExtract::extractFaultFromCircuit(Circuit *circuit)
 		// doesn't extract faults between two time frames
 		for (int i = 0; i < circuit->ngate_; ++i)
 		{
-			gateIndexToFaultIndex_[i] = uncollapsedFaults_.size();
+			gateIndexToFaultIndex_.push_back(uncollapsedFaults_.size());
 			// extract faults of gate outputs
 			if (circuit->gates_[i].nfo_ > 0 && i < circuit->ngate_ - circuit->nppi_)
 			{
@@ -222,7 +222,7 @@ void FaultListExtract::extractFaultFromCircuit(Circuit *circuit)
 		// extract uncollapsed faults
 		for (int i = 0; i < circuit->ngate_; ++i)
 		{
-			gateIndexToFaultIndex_[i] = uncollapsedFaults_.size();
+			gateIndexToFaultIndex_.push_back(uncollapsedFaults_.size());
 			// extract faults of gate outputs
 			// but do not extract faults between two time frames
 			if (circuit->gates_[i].nfo_ > 0 && i < circuit->ngate_ - circuit->nppi_)
