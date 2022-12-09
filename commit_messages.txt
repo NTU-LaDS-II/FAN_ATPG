@@ -1,7 +1,8 @@
-Refactor - 14th modification
+Refactor - 15th modification
 
   name changes:
-    all g in atph.h/cpp => gate
+    Atpg:: evaluationGood => evaluateGoodVal
+    Atpg:: evaluationFaulty => evaluateFaultyVal
   performance related changes:
   debug:
   note:

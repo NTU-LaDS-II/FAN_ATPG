@@ -86,7 +86,7 @@ void Atpg::clearAllFaultEffectBySimulation()
 	for (int i = 0; i < pCircuit_->tgate_; ++i)
 	{
 		Gate &gate = pCircuit_->gates_[i];
-		gate.v_ = evaluationGood(gate);
+		gate.v_ = evaluateGoodVal(gate);
 	}
 }
 
@@ -359,7 +359,7 @@ void Atpg::setValueAndRunImp(Gate &gate, Value val)
 			isInEventList_[gateID] = false;
 			// current gate
 			Gate &cg = pCircuit_->gates_[gateID];
-			Value newValue = evaluationGood(cg);
+			Value newValue = evaluateGoodVal(cg);
 			if (cg.v_ != newValue)
 			{
 				cg.v_ = newValue;

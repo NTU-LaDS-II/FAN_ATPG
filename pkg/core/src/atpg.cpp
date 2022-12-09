@@ -1229,8 +1229,8 @@ Fault Atpg::setFreeFaultyGate(Gate &gate)
 		}
 		if (pCurrentGate->v_ == X)
 		{
-			// set the value of pCurrentGate by evaluationGood
-			pCurrentGate->v_ = evaluationGood(*pCurrentGate);
+			// set the value of pCurrentGate by evaluateGoodVal
+			pCurrentGate->v_ = evaluateGoodVal(*pCurrentGate);
 			backtrackList_.push_back(pCurrentGate->id_);
 		}
 		// if the pCurrentGate is FREE LINE, pCurrentGate output gate becomes a new pCurrentGate
@@ -1817,8 +1817,8 @@ Atpg::IMPLICATION_STATUS Atpg::evaluation(Gate *pGate)
 	if (pGate->id_ == currentTargetFault_.gate_)
 		return faultyGateEvaluation(pGate);
 
-	// pGate is not the faulty gate, see evaluationGood(*pGate)
-	Value Val = evaluationGood(*pGate);
+	// pGate is not the faulty gate, see evaluateGoodVal(*pGate)
+	Value Val = evaluateGoodVal(*pGate);
 
 	if (Val == pGate->v_)
 	{
@@ -1872,7 +1872,7 @@ Atpg::IMPLICATION_STATUS Atpg::faultyGateEvaluation(Gate *pGate)
 {
 
 	// get the evaluated value of pGate.
-	Value Val = evaluationFaulty(*pGate);
+	Value Val = evaluateFaultyVal(*pGate);
 	int ImpPtr = 0;
 	int i;
 	if (Val == X)

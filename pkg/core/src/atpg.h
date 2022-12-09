@@ -153,8 +153,8 @@ namespace CoreNs
 		IMPLICATION_STATUS evaluation(Gate *pGate);
 		IMPLICATION_STATUS backwardImplication(Gate *pGate);
 
-		Value evaluationGood(Gate &gate);
-		Value evaluationFaulty(Gate &gate);
+		Value evaluateGoodVal(Gate &gate);
+		Value evaluateFaultyVal(Gate &gate);
 		Value assignBacktraceValue(unsigned &n0, unsigned &n1, Gate &gate);
 
 		void randomFill(Pattern *pat);
@@ -194,7 +194,7 @@ namespace CoreNs
 		Value cXNOR2(const Value &i1, const Value &i2);
 		Value cXNOR3(const Value &i1, const Value &i2, const Value &i3);
 
-		// added by Wei-Shen Wang
+		// heuristic not effective, added by Wei-Shen Wang
 		void calSCOAP();
 
 		/* Added by Shi-Tang Liu */
@@ -440,7 +440,7 @@ namespace CoreNs
 	//}}}
 
 	// **************************************************************************
-	// Function   [ Atpg::evaluationGood ]
+	// Function   [ Atpg::evaluateGoodVal ]
 	// Commentor  [ WYH ]
 	// Synopsis   [ usage: Given the gate without falut, and generate the output,
 	//                     and return.
@@ -449,8 +449,7 @@ namespace CoreNs
 	//            ]
 	// Date       [ WYH Ver. 1.0 started 2013/08/15]
 	// **************************************************************************
-	//{{{ Value Atpg::evaluationGood(Gate& gate)
-	inline Value Atpg::evaluationGood(Gate &gate)
+	inline Value Atpg::evaluateGoodVal(Gate &gate)
 	{
 		if (gate.type_ == Gate::PI || gate.type_ == Gate::PPI)
 			return gate.v_;
@@ -509,9 +508,9 @@ namespace CoreNs
 	}
 	//}}}
 
-	//{{{ Value Atpg::evaluationFaulty(Gate& gate)
+	//{{{ Value Atpg::evaluateFaultyVal(Gate& gate)
 	// **************************************************************************
-	// Function   [ Atpg::evaluationFaulty ]
+	// Function   [ Atpg::evaluateFaultyVal ]
 	// Commentor  [ CAL ]
 	// Synopsis   [ usage: deal with 2 frame PPI, check it's D or D' logic
 	//              in:    gate
@@ -519,10 +518,11 @@ namespace CoreNs
 	//            ]
 	// Date       [ Ver. 1.0 started 2013/08/13 ]
 	// **************************************************************************
-	inline Value Atpg::evaluationFaulty(Gate &gate)
+	inline Value Atpg::evaluateFaultyVal(Gate &gate)
 	{
 		Value val;
-		int i, FaultyLine;
+		int i;
+		int &FaultyLine = currentTargetFault_.line_;
 		switch (gate.type_)
 		{
 			case Gate::PI:
@@ -559,7 +559,6 @@ namespace CoreNs
 			case Gate::AND2:
 			case Gate::AND3:
 			case Gate::AND4:
-				FaultyLine = currentTargetFault_.line_;
 				if (currentTargetFault_.line_ == 0)
 				{
 					val = pCircuit_->gates_[gate.fis_[0]].v_;
@@ -585,7 +584,7 @@ namespace CoreNs
 			case Gate::NAND2:
 			case Gate::NAND3:
 			case Gate::NAND4:
-				FaultyLine = currentTargetFault_.line_;
+				
 				if (currentTargetFault_.line_ == 0)
 				{
 					val = pCircuit_->gates_[gate.fis_[0]].v_;
@@ -615,7 +614,7 @@ namespace CoreNs
 			case Gate::OR2:
 			case Gate::OR3:
 			case Gate::OR4:
-				FaultyLine = currentTargetFault_.line_;
+				
 				if (currentTargetFault_.line_ == 0)
 				{
 					val = pCircuit_->gates_[gate.fis_[0]].v_;
@@ -641,7 +640,7 @@ namespace CoreNs
 			case Gate::NOR2:
 			case Gate::NOR3:
 			case Gate::NOR4:
-				FaultyLine = currentTargetFault_.line_;
+				
 				if (currentTargetFault_.line_ == 0)
 				{
 					val = pCircuit_->gates_[gate.fis_[0]].v_;
@@ -670,7 +669,7 @@ namespace CoreNs
 				return val;
 			case Gate::XOR2:
 			case Gate::XOR3:
-				FaultyLine = currentTargetFault_.line_;
+				
 				if (currentTargetFault_.line_ == 0)
 				{
 
@@ -712,7 +711,7 @@ namespace CoreNs
 				return val;
 			case Gate::XNOR2:
 			case Gate::XNOR3:
-				FaultyLine = currentTargetFault_.line_;
+				
 				if (currentTargetFault_.line_ == 0)
 				{
 

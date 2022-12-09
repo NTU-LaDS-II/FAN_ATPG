@@ -153,8 +153,8 @@ namespace CoreNs
 		IMPLICATION_STATUS evaluation(Gate *pGate);
 		IMPLICATION_STATUS backwardImplication(Gate *pGate);
 
-		Value evaluationGood(Gate &gate);
-		Value evaluationFaulty(Gate &gate);
+		Value evaluateGoodVal(Gate &gate);
+		Value evaluateFaultyVal(Gate &gate);
 		Value assignBacktraceValue(unsigned &n0, unsigned &n1, Gate &gate);
 
 		void randomFill(Pattern *pat);
@@ -440,7 +440,7 @@ namespace CoreNs
 	//}}}
 
 	// **************************************************************************
-	// Function   [ Atpg::evaluationGood ]
+	// Function   [ Atpg::evaluateGoodVal ]
 	// Commentor  [ WYH ]
 	// Synopsis   [ usage: Given the gate without falut, and generate the output,
 	//                     and return.
@@ -449,8 +449,8 @@ namespace CoreNs
 	//            ]
 	// Date       [ WYH Ver. 1.0 started 2013/08/15]
 	// **************************************************************************
-	//{{{ Value Atpg::evaluationGood(Gate& gate)
-	inline Value Atpg::evaluationGood(Gate &gate)
+	//{{{ Value Atpg::evaluateGoodVal(Gate& gate)
+	inline Value Atpg::evaluateGoodVal(Gate &gate)
 	{
 		if (gate.type_ == Gate::PI || gate.type_ == Gate::PPI)
 			return gate.v_;
@@ -509,9 +509,9 @@ namespace CoreNs
 	}
 	//}}}
 
-	//{{{ Value Atpg::evaluationFaulty(Gate& gate)
+	//{{{ Value Atpg::evaluateFaultyVal(Gate& gate)
 	// **************************************************************************
-	// Function   [ Atpg::evaluationFaulty ]
+	// Function   [ Atpg::evaluateFaultyVal ]
 	// Commentor  [ CAL ]
 	// Synopsis   [ usage: deal with 2 frame PPI, check it's D or D' logic
 	//              in:    gate
@@ -519,7 +519,7 @@ namespace CoreNs
 	//            ]
 	// Date       [ Ver. 1.0 started 2013/08/13 ]
 	// **************************************************************************
-	inline Value Atpg::evaluationFaulty(Gate &gate)
+	inline Value Atpg::evaluateFaultyVal(Gate &gate)
 	{
 		Value val;
 		int i, FaultyLine;
