@@ -48,15 +48,15 @@ std::string Atpg::getValStr(Value val)
 //            ]
 // Date       [ started 2020/07/04    last modified 2020/07/04 ]
 // **************************************************************************
-void Atpg::clearOneGateFaultEffect(Gate &g)
+void Atpg::clearOneGateFaultEffect(Gate &gate)
 {
-	if (g.v_ == D)
+	if (gate.v_ == D)
 	{
-		g.v_ = H;
+		gate.v_ = H;
 	}
-	else if (g.v_ == B)
+	else if (gate.v_ == B)
 	{
-		g.v_ = L;
+		gate.v_ = L;
 	}
 }
 
@@ -78,15 +78,15 @@ void Atpg::clearAllFaultEffectBySimulation()
 	int numOfInputGate = pCircuit_->npi_ + pCircuit_->nppi_;
 	for (int i = 0; i < numOfInputGate; ++i)
 	{
-		Gate &g = pCircuit_->gates_[i];
-		clearOneGateFaultEffect(g);
+		Gate &gate = pCircuit_->gates_[i];
+		clearOneGateFaultEffect(gate);
 	}
 
 	// Simulate the whole circuit ( gates were sorted by lvl_ in "pCircuit_->gates_" )
 	for (int i = 0; i < pCircuit_->tgate_; ++i)
 	{
-		Gate &g = pCircuit_->gates_[i];
-		g.v_ = evaluationGood(g);
+		Gate &gate = pCircuit_->gates_[i];
+		gate.v_ = evaluationGood(gate);
 	}
 }
 
@@ -108,8 +108,8 @@ void Atpg::testClearFaultEffect(FaultList &faultListToTest)
 		clearAllFaultEffectBySimulation();
 		for (int i = 0; i < pCircuit_->tgate_; ++i)
 		{
-			Gate &g = pCircuit_->gates_[i];
-			if ((g.v_ == D) || (g.v_ == B))
+			Gate &gate = pCircuit_->gates_[i];
+			if ((gate.v_ == D) || (gate.v_ == B))
 			{
 				std::cerr << "testClearFaultEffect found bug" << std::endl;
 				std::cin.get();
@@ -122,7 +122,7 @@ void Atpg::testClearFaultEffect(FaultList &faultListToTest)
 // Function   [ Atpg::storeCurrentGateValue ]
 // Commentor  [ CAL ]
 // Synopsis   [ usage:
-//                Store g.v_ to g.preV_
+//                Store gate.v_ to gate.preV_
 //              in:   void
 //              out:  Count of values which change from H/L to the value which is not
 //                    the same as preV_.
@@ -134,12 +134,12 @@ int Atpg::storeCurrentGateValue()
 	int numAssignedValueChanged = 0;
 	for (int i = 0; i < pCircuit_->tgate_; ++i)
 	{
-		Gate &g = pCircuit_->gates_[i];
-		if ((g.preV_ != X) && (g.preV_ != g.v_))
+		Gate &gate = pCircuit_->gates_[i];
+		if ((gate.preV_ != X) && (gate.preV_ != gate.v_))
 		{
 			numAssignedValueChanged++;
 		}
-		g.preV_ = g.v_;
+		gate.preV_ = gate.v_;
 	}
 	if (numAssignedValueChanged != 0)
 	{
@@ -167,11 +167,11 @@ void Atpg::calDepthFromPo()
 	int tlvlAddPlus100 = pCircuit_->tlvl_ + 100;
 	for (int i = 0; i < pCircuit_->tgate_; ++i)
 	{
-		Gate &g = pCircuit_->gates_[i];
+		Gate &gate = pCircuit_->gates_[i];
 		/*
 		 * Because the default is -1, I want to check if it was changed or not.
 		 * */
-		if (g.depthFromPo_ != -1)
+		if (gate.depthFromPo_ != -1)
 		{
 			std::cout << "depthFromPo_ is not -1 " << std::endl;
 			std::cin.get();
@@ -181,42 +181,42 @@ void Atpg::calDepthFromPo()
 	// Update depthFromPo_ form PO/PPO to PI/PPI
 	for (int i = pCircuit_->tgate_ - 1; i >= 0; --i)
 	{
-		Gate &g = pCircuit_->gates_[i];
-		if ((g.type_ == Gate::PO) || (g.type_ == Gate::PPO))
+		Gate &gate = pCircuit_->gates_[i];
+		if ((gate.type_ == Gate::PO) || (gate.type_ == Gate::PPO))
 		{
-			g.depthFromPo_ = 0;
+			gate.depthFromPo_ = 0;
 		}
-		else if (g.nfo_ > 0)
+		else if (gate.nfo_ > 0)
 		{
 			// This output gate does not exist a path to PO/PPO
-			if (pCircuit_->gates_[g.fos_[0]].depthFromPo_ == tlvlAddPlus100)
+			if (pCircuit_->gates_[gate.fos_[0]].depthFromPo_ == tlvlAddPlus100)
 			{
-				g.depthFromPo_ = tlvlAddPlus100;
+				gate.depthFromPo_ = tlvlAddPlus100;
 			}
 			else
 			{
-				g.depthFromPo_ = pCircuit_->gates_[g.fos_[0]].depthFromPo_ + 1;
+				gate.depthFromPo_ = pCircuit_->gates_[gate.fos_[0]].depthFromPo_ + 1;
 			}
 
-			for (int j = 1; j < g.nfo_; j++)
+			for (int j = 1; j < gate.nfo_; j++)
 			{
-				Gate &go = pCircuit_->gates_[g.fos_[j]];
-				if (go.depthFromPo_ < g.depthFromPo_)
+				Gate &go = pCircuit_->gates_[gate.fos_[j]];
+				if (go.depthFromPo_ < gate.depthFromPo_)
 				{
-					g.depthFromPo_ = go.depthFromPo_ + 1;
+					gate.depthFromPo_ = go.depthFromPo_ + 1;
 				}
 			}
 		}
 		else
 		{
 			/* Assign a value greater than maximal lvl_ as our default */
-			g.depthFromPo_ = tlvlAddPlus100;
+			gate.depthFromPo_ = tlvlAddPlus100;
 		}
 	}
 
 	// for ( int i = 0 ; i < pCircuit_->tgate_ ; ++i ) {
-	//   Gate &g = pCircuit_->gates_[i];
-	//   std::cout << "g.depthFromPo_ is " << g.depthFromPo_ << std::endl;
+	//   Gate &gate = pCircuit_->gates_[i];
+	//   std::cout << "gate.depthFromPo_ is " << gate.depthFromPo_ << std::endl;
 	// }
 	// std::cin.get();
 }
@@ -235,8 +235,8 @@ void Atpg::resetPreValue()
 {
 	for (int i = 0; i < pCircuit_->tgate_; ++i)
 	{
-		Gate &g = pCircuit_->gates_[i];
-		g.preV_ = X;
+		Gate &gate = pCircuit_->gates_[i];
+		gate.preV_ = X;
 	}
 }
 
@@ -335,13 +335,13 @@ void Atpg::resetIsInEventList()
 //            ]
 // Date       [ started 2020/07/07    last modified 2020/07/07 ]
 // **************************************************************************
-void Atpg::setValueAndRunImp(Gate &g, Value val)
+void Atpg::setValueAndRunImp(Gate &gate, Value val)
 {
 	clearEventList_(true);
-	g.v_ = val;
-	for (int i = 0; i < g.nfo_; ++i)
+	gate.v_ = val;
+	for (int i = 0; i < gate.nfo_; ++i)
 	{
-		Gate &og = pCircuit_->gates_[g.fos_[i]];
+		Gate &og = pCircuit_->gates_[gate.fos_[i]];
 		if (isInEventList_[og.id_] == false)
 		{
 			circuitLevel_to_EventStack_[og.lvl_].push(og.id_);
@@ -350,7 +350,7 @@ void Atpg::setValueAndRunImp(Gate &g, Value val)
 	}
 
 	// event-driven simulation
-	for (int i = g.lvl_; i < pCircuit_->tlvl_; ++i)
+	for (int i = gate.lvl_; i < pCircuit_->tlvl_; ++i)
 	{
 		while (!circuitLevel_to_EventStack_[i].empty())
 		{
@@ -391,10 +391,10 @@ void Atpg::checkLevelInfo()
 {
 	for (int i = 0; i < pCircuit_->tgate_; ++i)
 	{
-		Gate &g = pCircuit_->gates_[i];
-		if (g.lvl_ >= pCircuit_->tlvl_)
+		Gate &gate = pCircuit_->gates_[i];
+		if (gate.lvl_ >= pCircuit_->tlvl_)
 		{
-			std::cout << "checkLevelInfo found that at least one g.lvl_ is greater than pCircuit_->tlvl_" << std::endl;
+			std::cout << "checkLevelInfo found that at least one gate.lvl_ is greater than pCircuit_->tlvl_" << std::endl;
 			std::cin.get();
 		}
 	}
@@ -476,8 +476,8 @@ void Atpg::StuckAtFaultATPGWithDTC(FaultList &faultListToGen, PatternProcessor *
 					{
 						for (int i = 0; i < pCircuit_->tgate_; ++i)
 						{
-							Gate &g = pCircuit_->gates_[i];
-							g.v_ = g.preV_;
+							Gate &gate = pCircuit_->gates_[i];
+							gate.v_ = gate.preV_;
 						}
 					}
 				}

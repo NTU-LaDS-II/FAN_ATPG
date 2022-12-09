@@ -255,34 +255,34 @@ void Atpg::identifyLineParameter()
 	{
 
 		// get ith gate from gate array in circuit_
-		Gate &g = pCircuit_->gates_[i];
+		Gate &gate = pCircuit_->gates_[i];
 
 		// assign as FREE_LINE first
-		gateID_to_lineType_[g.id_] = FREE_LINE;
+		gateID_to_lineType_[gate.id_] = FREE_LINE;
 
 		// check it is BOUND_LINE or not
-		if (g.type_ != Gate::PI && g.type_ != Gate::PPI)
-			for (int j = 0; j < g.nfi_; j++) // g.nfi_  number of fanin
+		if (gate.type_ != Gate::PI && gate.type_ != Gate::PPI)
+			for (int j = 0; j < gate.nfi_; j++) // gate.nfi_  number of fanin
 
 				// if one of fanin is not FREE_LINE, then set lineType as BOUND_LINE
-				if (gateID_to_lineType_[g.fis_[j]] != FREE_LINE)
+				if (gateID_to_lineType_[gate.fis_[j]] != FREE_LINE)
 				{
-					gateID_to_lineType_[g.id_] = BOUND_LINE;
+					gateID_to_lineType_[gate.id_] = BOUND_LINE;
 					break;
 				}
 		// check it is HEAD_LINE or not(rule 1)
-		if (gateID_to_lineType_[g.id_] == FREE_LINE && g.nfo_ != 1)
-		{ // g.nfo_  number of fanout
-			gateID_to_lineType_[g.id_] = HEAD_LINE;
+		if (gateID_to_lineType_[gate.id_] == FREE_LINE && gate.nfo_ != 1)
+		{ // gate.nfo_  number of fanout
+			gateID_to_lineType_[gate.id_] = HEAD_LINE;
 			nHeadLine_++; // number of head line + 1
 		}
 
 		// check it is HEAD_LINE or not(rule 2)
-		if (gateID_to_lineType_[g.id_] == BOUND_LINE)
-			for (int j = 0; j < g.nfi_; j++) // g.nfi_  number of fanin
-				if (gateID_to_lineType_[g.fis_[j]] == FREE_LINE)
+		if (gateID_to_lineType_[gate.id_] == BOUND_LINE)
+			for (int j = 0; j < gate.nfi_; j++) // gate.nfi_  number of fanin
+				if (gateID_to_lineType_[gate.fis_[j]] == FREE_LINE)
 				{
-					gateID_to_lineType_[g.fis_[j]] = HEAD_LINE;
+					gateID_to_lineType_[gate.fis_[j]] = HEAD_LINE;
 					nHeadLine_++;
 				}
 	}
@@ -314,13 +314,13 @@ void Atpg::identifyDominator()
 {
 	for (int i = pCircuit_->tgate_ - 1; i >= 0; i--)
 	{
-		Gate &g = pCircuit_->gates_[i];
-		if (g.nfo_ <= 1) // if gate has only 1 or 0 output skip this gate
+		Gate &gate = pCircuit_->gates_[i];
+		if (gate.nfo_ <= 1) // if gate has only 1 or 0 output skip this gate
 			continue;
 
 		int gateCount = pushGateFanoutsToEventStack(i);
 
-		for (int j = g.lvl_ + 1; j < pCircuit_->tlvl_; j++)
+		for (int j = gate.lvl_ + 1; j < pCircuit_->tlvl_; j++)
 			while (!circuitLevel_to_EventStack_[j].empty())
 			{ // if next level's output isn't empty
 				Gate &gDom = pCircuit_->gates_[circuitLevel_to_EventStack_[j].top()];
@@ -340,13 +340,13 @@ void Atpg::identifyDominator()
 						gateID_to_uniquePath_.reserve(pCircuit_->tlvl_);
 					}
 					// when all the fanout gate has been calculated
-					gateID_to_uniquePath_[g.id_].push_back(gDom.id_); // push the last calculate fanout gate into gateID_to_uniquePath_
+					gateID_to_uniquePath_[gate.id_].push_back(gDom.id_); // push the last calculate fanout gate into gateID_to_uniquePath_
 					break;
 				}
 				/*
 				 * If there is a gate without gates on its output, then we suppose that this
 				 * gate is PO/PPO.  Because there are other gates still inside the
-				 * event queue (gateCount larger than 1), it means that gate g does
+				 * event queue (gateCount larger than 1), it means that gate gate does
 				 * not have any dominator.  Hence, we will set gateCount to zero as a
 				 * signal to clear the gates left in circuitLevel_to_EventStack_.  While the circuitLevel_to_EventStack_ is
 				 * not empty but gateCount is zero, we will continue.
@@ -362,7 +362,7 @@ void Atpg::identifyDominator()
 						/*
 						 * Because the first gate in gateID_to_uniquePath_ is the closest Dominator, we just
 						 * push it to the circuitLevel_to_EventStack_. Then, we can skip the operation we have done
-						 * for gates with higher lvl_ than gate g.
+						 * for gates with higher lvl_ than gate gate.
 						 */
 						Gate &gTmp = pCircuit_->gates_[gateID_to_uniquePath_[gDom.id_][0]];
 						if (!gateID_to_valModified_[gTmp.id_])
@@ -393,7 +393,7 @@ void Atpg::identifyDominator()
 //                prevent to assign non-controlling value to them.
 //
 //                We find the dominator, then we push_back the input gate
-//                which is fault reachable from gate g.
+//                which is fault reachable from gate gate.
 //
 //                After identifyUniquePath, If a gate with dominator, then
 //                the gateID_to_uniquePath_ vector of this gate will contains the
@@ -412,19 +412,19 @@ void Atpg::identifyUniquePath()
 	std::vector<int> reachableByDominator(pCircuit_->tgate_);
 	for (int i = pCircuit_->tgate_ - 1; i >= 0; i--)
 	{
-		Gate &g = pCircuit_->gates_[i];
+		Gate &gate = pCircuit_->gates_[i];
 		int count;
 		/*
 		 * Because we will call identifyDominator before entering this function,
 		 * a gate with gateID_to_uniquePath_ will contain one Dominator.  Hence, we can
 		 * skip the gates while the sizes of their gateID_to_uniquePath_ is zero.
 		 * */
-		if (gateID_to_uniquePath_[g.id_].size() == 0)
+		if (gateID_to_uniquePath_[gate.id_].size() == 0)
 			continue;
-		reachableByDominator[g.id_] = i;
+		reachableByDominator[gate.id_] = i;
 		count = pushGateFanoutsToEventStack(i);
 
-		for (int j = g.lvl_ + 1; j < pCircuit_->tlvl_; j++)
+		for (int j = gate.lvl_ + 1; j < pCircuit_->tlvl_; j++)
 			while (!circuitLevel_to_EventStack_[j].empty())
 			{ // if fanout gate was not empty
 				Gate &gTmp = pCircuit_->gates_[circuitLevel_to_EventStack_[j].top()];
@@ -437,8 +437,8 @@ void Atpg::identifyUniquePath()
 					for (int k = 0; k < gTmp.nfi_; k++)
 					{
 						Gate &gReach = pCircuit_->gates_[gTmp.fis_[k]];
-						if (reachableByDominator[gReach.id_] == i)						// if it is UniquePath
-							gateID_to_uniquePath_[g.id_].push_back(gReach.id_); // save gate in gateID_to_uniquePath_ list
+						if (reachableByDominator[gReach.id_] == i)							 // if it is UniquePath
+							gateID_to_uniquePath_[gate.id_].push_back(gReach.id_); // save gate in gateID_to_uniquePath_ list
 					}
 					break;
 				}
@@ -831,23 +831,23 @@ void Atpg::initialNetlist(Gate &gFaultyLine, bool isDTC)
 {
 	for (int i = 0; i < pCircuit_->tgate_; i++)
 	{
-		Gate &g = pCircuit_->gates_[i];
+		Gate &gate = pCircuit_->gates_[i];
 
-		if (gateID_to_lineType_[g.id_] == FREE_LINE)
-			gateID_to_valModified_[g.id_] = 1;
+		if (gateID_to_lineType_[gate.id_] == FREE_LINE)
+			gateID_to_valModified_[gate.id_] = 1;
 		else
-			gateID_to_valModified_[g.id_] = 0;
+			gateID_to_valModified_[gate.id_] = 0;
 
-		gateID_to_reachableByTargetFault_[g.id_] = 0;
+		gateID_to_reachableByTargetFault_[gate.id_] = 0;
 		/*
 		 * I will assign value outside the generateSinglePatternOnTargetFault for DTC, so
 		 * I only need to initialize it for primary fault.
 		 * */
 		if (isDTC == false)
 		{
-			g.v_ = X;
+			gate.v_ = X;
 		}
-		gateID_to_xPathStatus_[g.id_] = UNKNOWN;
+		gateID_to_xPathStatus_[gate.id_] = UNKNOWN;
 	}
 
 	pushGateToEventStack(gFaultyLine.id_);
@@ -1204,8 +1204,8 @@ int Atpg::firstTimeFrameSetUp(Fault &fault)
 // **************************************************************************
 Fault Atpg::setFreeFaultyGate(Gate &gate)
 {
-	int i;
-	int gateID(0);
+	int i = 0;
+	int gateID = 0;
 	Gate *pCurrentGate = NULL;
 	std::vector<int> sStack;
 	sStack.push_back(gate.fos_[0]);
@@ -1289,7 +1289,7 @@ int Atpg::uniquePathSensitize(Gate &gate)
 	}
 
 	Gate *pCurrGate = &gate;
-	Gate *pNextGate;
+	Gate *pNextGate = NULL;
 
 	while (true)
 	{
@@ -2776,23 +2776,23 @@ bool Atpg::xPathTracing(Gate *pGate)
 // Function   [ Atpg::assignBacktraceValue ]
 // Commentor  [ CKY ]
 // Synopsis   [ usage: help to get n0 n1 and Value depend on Gate's controlling value
-//              in:    n0 (unsigned reference), n1 (unsigned reference), g (Gate reference)
+//              in:    n0 (unsigned reference), n1 (unsigned reference), gate (Gate reference)
 //              out:   Value, n0, n1
 //            ]
 // Date       [ CKY Ver. 1.0 commented and finished 2013/08/17 ]
 // **************************************************************************
-Value Atpg::assignBacktraceValue(unsigned &n0, unsigned &n1, Gate &g)
+Value Atpg::assignBacktraceValue(unsigned &n0, unsigned &n1, Gate &gate)
 {
 	int v1;
 	Value val;
-	switch (g.type_)
+	switch (gate.type_)
 	{
 		// when gate is AND type,n0 = numOfZero,n1 = numOfOne
 		case Gate::AND2:
 		case Gate::AND3:
 		case Gate::AND4:
-			n0 = gateID_to_n0_[g.id_];
-			n1 = gateID_to_n1_[g.id_];
+			n0 = gateID_to_n0_[gate.id_];
+			n1 = gateID_to_n1_[gate.id_];
 			return L;
 
 			// when gate is OR type,n0 = numOfZero,n1 = numOfOne
@@ -2800,8 +2800,8 @@ Value Atpg::assignBacktraceValue(unsigned &n0, unsigned &n1, Gate &g)
 		case Gate::OR3:
 		case Gate::OR4:
 			// TO-DO homework 04
-			n0 = gateID_to_n0_[g.id_];
-			n1 = gateID_to_n1_[g.id_];
+			n0 = gateID_to_n0_[gate.id_];
+			n1 = gateID_to_n1_[gate.id_];
 			return H;
 			// end of TO-DO
 
@@ -2809,8 +2809,8 @@ Value Atpg::assignBacktraceValue(unsigned &n0, unsigned &n1, Gate &g)
 		case Gate::NAND2:
 		case Gate::NAND3:
 		case Gate::NAND4:
-			n0 = gateID_to_n1_[g.id_];
-			n1 = gateID_to_n0_[g.id_];
+			n0 = gateID_to_n1_[gate.id_];
+			n1 = gateID_to_n0_[gate.id_];
 			return L;
 
 			// when gate is NOR type,n0 = numOfOne,n1 = numOfZero
@@ -2818,35 +2818,35 @@ Value Atpg::assignBacktraceValue(unsigned &n0, unsigned &n1, Gate &g)
 		case Gate::NOR3:
 		case Gate::NOR4:
 			// TO-DO homework 04
-			n0 = gateID_to_n1_[g.id_];
-			n1 = gateID_to_n0_[g.id_];
+			n0 = gateID_to_n1_[gate.id_];
+			n1 = gateID_to_n0_[gate.id_];
 			return H;
 			// end of TO-DO
 
 			// when gate is inverter,n0 = numOfOne,n1 = numOfZero
 		case Gate::INV:
-			n0 = gateID_to_n1_[g.id_];
-			n1 = gateID_to_n0_[g.id_];
+			n0 = gateID_to_n1_[gate.id_];
+			n1 = gateID_to_n0_[gate.id_];
 			return X;
 
 			// when gate is XOR2 or XNOR2
 		case Gate::XOR2:
 		case Gate::XNOR2:
-			val = pCircuit_->gates_[g.fis_[0]].v_;
+			val = pCircuit_->gates_[gate.fis_[0]].v_;
 			if (val == X)
-				val = pCircuit_->gates_[g.fis_[1]].v_;
+				val = pCircuit_->gates_[gate.fis_[1]].v_;
 			if (val == H)
 			{
-				n0 = gateID_to_n1_[g.id_];
-				n1 = gateID_to_n0_[g.id_];
+				n0 = gateID_to_n1_[gate.id_];
+				n1 = gateID_to_n0_[gate.id_];
 			}
 			else
 			{
-				n0 = gateID_to_n0_[g.id_];
-				n1 = gateID_to_n1_[g.id_];
+				n0 = gateID_to_n0_[gate.id_];
+				n1 = gateID_to_n1_[gate.id_];
 			}
 
-			if (g.type_ == Gate::XNOR2)
+			if (gate.type_ == Gate::XNOR2)
 			{
 				unsigned temp = n0;
 				n0 = n1;
@@ -2858,21 +2858,21 @@ Value Atpg::assignBacktraceValue(unsigned &n0, unsigned &n1, Gate &g)
 		case Gate::XOR3:
 		case Gate::XNOR3:
 			v1 = 0;
-			for (int i = 0; i < g.nfi_; i++)
-				if (pCircuit_->gates_[g.fis_[0]].v_ == H)
+			for (int i = 0; i < gate.nfi_; i++)
+				if (pCircuit_->gates_[gate.fis_[0]].v_ == H)
 					v1++;
 			if (v1 == 2)
 			{
-				n0 = gateID_to_n1_[g.id_];
-				n1 = gateID_to_n0_[g.id_];
+				n0 = gateID_to_n1_[gate.id_];
+				n1 = gateID_to_n0_[gate.id_];
 			}
 			else
 			{
-				n0 = gateID_to_n0_[g.id_];
-				n1 = gateID_to_n1_[g.id_];
+				n0 = gateID_to_n0_[gate.id_];
+				n1 = gateID_to_n1_[gate.id_];
 			}
 
-			if (g.type_ == Gate::XNOR3)
+			if (gate.type_ == Gate::XNOR3)
 			{
 				unsigned temp = n0;
 				n0 = n1;
@@ -2880,8 +2880,8 @@ Value Atpg::assignBacktraceValue(unsigned &n0, unsigned &n1, Gate &g)
 			}
 			return X;
 		default:
-			n0 = gateID_to_n0_[g.id_];
-			n1 = gateID_to_n1_[g.id_];
+			n0 = gateID_to_n0_[gate.id_];
+			n1 = gateID_to_n1_[gate.id_];
 			return X;
 	}
 }
