@@ -254,13 +254,13 @@ void Atpg::resetPreValue()
 // **************************************************************************
 bool Atpg::isExistXPath(Gate *pGate)
 {
-	/* Clear the xPathStatus_ from target gate to PO/PPO */
+	/* Clear the gateID_to_xPathStatus_ from target gate to PO/PPO */
 	/* TO-DO
 	 * This part can be implemented by event-driven method
 	 * */
 	for (int i = pGate->id_; i < pCircuit_->tgate_; ++i)
 	{
-		xPathStatus_[i] = UNKNOWN;
+		gateID_to_xPathStatus_[i] = UNKNOWN;
 	}
 
 	return xPathTracing(pGate);

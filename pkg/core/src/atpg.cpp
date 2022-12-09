@@ -304,7 +304,7 @@ void Atpg::identifyLineParameter()
 // Commentor  [ CAL ]
 // Synopsis   [ usage: identify Dominator of the output gate
 //                     for unique sensitization. After this function, each
-//                     gate have one or zero Dominator in its uniquePath_ vector
+//                     gate have one or zero Dominator in its gateID_to_uniquePath_ vector
 //              in:    gate list
 //              out:   void //TODO
 //            ]
@@ -335,8 +335,13 @@ void Atpg::identifyDominator()
 					continue;
 				gateCount--;
 				if (gateCount == 0)
-				{																					// when all the fanout gate has been calculated
-					uniquePath_[g.id_].push_back(gDom.id_); // push the last calculate fanout gate into uniquePath_
+				{
+					if (gateID_to_uniquePath_.capacity() < pCircuit_->tlvl_)
+					{
+						gateID_to_uniquePath_.reserve(pCircuit_->tlvl_);
+					}
+					// when all the fanout gate has been calculated
+					gateID_to_uniquePath_[g.id_].push_back(gDom.id_); // push the last calculate fanout gate into gateID_to_uniquePath_
 					break;
 				}
 				/*
@@ -351,16 +356,16 @@ void Atpg::identifyDominator()
 					gateCount = 0;
 				else if (gDom.nfo_ > 1)
 				{
-					if (uniquePath_[gDom.id_].size() == 0)
+					if (gateID_to_uniquePath_[gDom.id_].size() == 0)
 						gateCount = 0;
 					else
 					{
 						/*
-						 * Because the first gate in uniquePath_ is the closest Dominator, we just
+						 * Because the first gate in gateID_to_uniquePath_ is the closest Dominator, we just
 						 * push it to the circuitLevel_to_EventStack_. Then, we can skip the operation we have done
 						 * for gates with higher lvl_ than gate g.
 						 */
-						Gate &gTmp = pCircuit_->gates_[uniquePath_[gDom.id_][0]];
+						Gate &gTmp = pCircuit_->gates_[gateID_to_uniquePath_[gDom.id_][0]];
 						if (!gateID_to_valModified_[gTmp.id_])
 						{
 							circuitLevel_to_EventStack_[gTmp.lvl_].push(gTmp.id_);
@@ -383,7 +388,7 @@ void Atpg::identifyDominator()
 // **************************************************************************
 // Function   [ Atpg::identifyUniquePath ]
 // Commentor  [ CAL ]
-// Synopsis   [ usage: compute the uniquePath_
+// Synopsis   [ usage: compute the gateID_to_uniquePath_
 //                In unique path sensitizatoin phase, we will need to know
 //                if the inputs of a gate is fault reachable. Then, we can
 //                prevent to assign non-controlling value to them.
@@ -392,7 +397,7 @@ void Atpg::identifyDominator()
 //                which is fault reachable from gate g.
 //
 //                After identifyUniquePath, If a gate with dominator, then
-//                the uniquePath_ vector of this gate will contains the
+//                the gateID_to_uniquePath_ vector of this gate will contains the
 //                following gate id:
 //
 //                  [dominator_id   fault-reachable_input_gate_1_id   fault-reachable_input_gate_2_id  ......]
@@ -404,36 +409,38 @@ void Atpg::identifyDominator()
 // **************************************************************************
 void Atpg::identifyUniquePath()
 {
+	// replace the original faultReach_ to avoid ambiguity, added by wang
+	std::vector<int> reachableByDominator(pCircuit_->tgate_);
 	for (int i = pCircuit_->tgate_ - 1; i >= 0; i--)
 	{
 		Gate &g = pCircuit_->gates_[i];
 		int count;
 		/*
 		 * Because we will call identifyDominator before entering this function,
-		 * a gate with uniquePath_ will contain one Dominator.  Hence, we can
-		 * skip the gates while the sizes of their uniquePath_ is zero.
+		 * a gate with gateID_to_uniquePath_ will contain one Dominator.  Hence, we can
+		 * skip the gates while the sizes of their gateID_to_uniquePath_ is zero.
 		 * */
-		if (uniquePath_[g.id_].size() == 0)
+		if (gateID_to_uniquePath_[g.id_].size() == 0)
 			continue;
-		faultReach_[g.id_] = i;
+		reachableByDominator[g.id_] = i;
 		count = 0;
 		pushOutputEvents(i, count);
 
 		for (int j = g.lvl_ + 1; j < pCircuit_->tlvl_; j++)
 			while (!circuitLevel_to_EventStack_[j].empty())
-			{ // if fanout gate has not empty
+			{ // if fanout gate was not empty
 				Gate &gTmp = pCircuit_->gates_[circuitLevel_to_EventStack_[j].top()];
 				circuitLevel_to_EventStack_[j].pop();
 				gateID_to_valModified_[gTmp.id_] = 0;
-				faultReach_[gTmp.id_] = i;
+				reachableByDominator[gTmp.id_] = i;
 				count--;
 				if (count == 0)
 				{
 					for (int k = 0; k < gTmp.nfi_; k++)
 					{
 						Gate &gReach = pCircuit_->gates_[gTmp.fis_[k]];
-						if (faultReach_[gReach.id_] == i)						// if it is UniquePath
-							uniquePath_[g.id_].push_back(gReach.id_); // save gate in uniquePath_ list
+						if (reachableByDominator[gReach.id_] == i)						// if it is UniquePath
+							gateID_to_uniquePath_[g.id_].push_back(gReach.id_); // save gate in gateID_to_uniquePath_ list
 					}
 					break;
 				}
@@ -676,10 +683,9 @@ int Atpg::countNumGatesInDFrontier(Gate *pFaultyLine)
 	for (int i = pFaultyLine->id_; i < pCircuit_->tgate_; i++)
 	{
 		Gate *pGate = &pCircuit_->gates_[i];
-		if (xPathStatus_[pGate->id_] == XPATH_EXIST)
-			xPathStatus_[pGate->id_] = UNKNOWN;
+		if (gateID_to_xPathStatus_[pGate->id_] == XPATH_EXIST)
+			gateID_to_xPathStatus_[pGate->id_] = UNKNOWN;
 	}
-
 
 	// if D-frontier can't propagate to the PO, erase it
 	for (int k = dFrontier_.size() - 1; k >= 0; k--)
@@ -834,7 +840,7 @@ void Atpg::initialNetlist(Gate &gFaultyLine, bool isDTC)
 		else
 			gateID_to_valModified_[g.id_] = 0;
 
-		faultReach_[g.id_] = 0;
+		gateID_to_reachableByTargetFault_[g.id_] = 0;
 		/*
 		 * I will assign value outside the generateSinglePatternOnTargetFault for DTC, so
 		 * I only need to initialize it for primary fault.
@@ -843,7 +849,7 @@ void Atpg::initialNetlist(Gate &gFaultyLine, bool isDTC)
 		{
 			g.v_ = X;
 		}
-		xPathStatus_[g.id_] = UNKNOWN;
+		gateID_to_xPathStatus_[g.id_] = UNKNOWN;
 	}
 
 	pushEvent(gFaultyLine.id_);
@@ -855,7 +861,7 @@ void Atpg::initialNetlist(Gate &gFaultyLine, bool isDTC)
 			int gateID = popEvent(i);
 			Gate &rCurrentGate = pCircuit_->gates_[gateID];
 			gateID_to_valModified_[gateID] = 0;
-			faultReach_[gateID] = 1;
+			gateID_to_reachableByTargetFault_[gateID] = 1;
 
 			for (int j = 0; j < rCurrentGate.nfo_; j++)
 				pushEvent(rCurrentGate.fos_[j]);
@@ -1277,7 +1283,7 @@ int Atpg::uniquePathSensitize(Gate &gate)
 
 	while (true)
 	{
-		std::vector<int> &UniquePathList = uniquePath_[pCurrGate->id_];
+		std::vector<int> &UniquePathList = gateID_to_uniquePath_[pCurrGate->id_];
 
 		// If pCurrGate is PO or PPO, break.
 		if (pCurrGate->type_ == Gate::PO || pCurrGate->type_ == Gate::PPO)
@@ -1356,7 +1362,7 @@ int Atpg::uniquePathSensitize(Gate &gate)
 				}
 			}
 		}
-		pCurrGate = pNextGate; // move to last gate in uniquePath_
+		pCurrGate = pNextGate; // move to last gate in gateID_to_uniquePath_
 	}
 	return BackImpLevel;
 }
@@ -1752,7 +1758,7 @@ bool Atpg::backtrack(int &BackImpLevel)
 				listDelete(unjustified_, k);
 
 		for (i = pFaultyGate->id_; i < pCircuit_->tgate_; i++)
-			xPathStatus_[i] = UNKNOWN;
+			gateID_to_xPathStatus_[i] = UNKNOWN;
 		// Reset xPathStatus.
 
 		return true;
@@ -2540,7 +2546,7 @@ Atpg::BACKTRACE_RESULT Atpg::multipleBacktrace(BACKTRACE_STATUS atpgStatus, int 
 
 				// if fault reach of pCurrent is equal to 1 => reachable
 				// IS p REACHABLE FROM THE FAULT LINE?
-				if (faultReach_[pCurrentObj->id_] == 1)
+				if (gateID_to_reachableByTargetFault_[pCurrentObj->id_] == 1)
 				{ // YES
 					atpgStatus = CURRENT_OBJ_DETERMINE;
 					break; // switch break
@@ -2702,21 +2708,21 @@ bool Atpg::xPathTracing(Gate *pGate)
 {
 	int i;
 
-	if (pGate->v_ != X || xPathStatus_[pGate->id_] == NO_XPATH_EXIST)
+	if (pGate->v_ != X || gateID_to_xPathStatus_[pGate->id_] == NO_XPATH_EXIST)
 	{
-		xPathStatus_[pGate->id_] = NO_XPATH_EXIST;
+		gateID_to_xPathStatus_[pGate->id_] = NO_XPATH_EXIST;
 		return false;
 	}
 
-	if (xPathStatus_[pGate->id_] == XPATH_EXIST)
+	if (gateID_to_xPathStatus_[pGate->id_] == XPATH_EXIST)
 	{
-		// xPathStatus_[pGate->id_] = XPATH_EXIST;
+		// gateID_to_xPathStatus_[pGate->id_] = XPATH_EXIST;
 		return true;
 	}
 
 	if (pGate->type_ == Gate::PO || pGate->type_ == Gate::PPO)
 	{
-		xPathStatus_[pGate->id_] = XPATH_EXIST;
+		gateID_to_xPathStatus_[pGate->id_] = XPATH_EXIST;
 		return true;
 	}
 
@@ -2725,15 +2731,15 @@ bool Atpg::xPathTracing(Gate *pGate)
 		// TO-DO homework 03
 		xPathTracing(&(pCircuit_->gates_[pGate->fos_[i]]));
 		// Should use if( xPathTracing(&(pCircuit_->gates_[pGate->fos_[i]])) )
-		if (xPathStatus_[pGate->fos_[i]] == XPATH_EXIST)
+		if (gateID_to_xPathStatus_[pGate->fos_[i]] == XPATH_EXIST)
 		{
-			xPathStatus_[pGate->id_] = XPATH_EXIST;
+			gateID_to_xPathStatus_[pGate->id_] = XPATH_EXIST;
 			return true;
 		}
 		// end of TO-DO
 	}
 
-	xPathStatus_[pGate->id_] = NO_XPATH_EXIST;
+	gateID_to_xPathStatus_[pGate->id_] = NO_XPATH_EXIST;
 
 	return false;
 }

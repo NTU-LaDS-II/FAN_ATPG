@@ -98,15 +98,15 @@ namespace CoreNs
 		Fault currentTargetFault_;				 // Fault currentFault_; => Fault currentTargetFault_ by wang
 		int backtrackLimit_;							 // unsigned => int by wang
 
-		std::vector<int> gateID_to_valModified_;				 // indicate whether the gate has been backtraced or implied, true means the gate has been modified.
-		std::vector<int> gateID_to_n0_;									 // unsigned *n0_ => std::vector<int> gateID_to_n0_ by wang
-		std::vector<int> gateID_to_n1_;									 // unsigned *n1_ => std::vector<int> gateID_to_n1_ by wang
-		int *headLines_;																 // array of headlines
-		int nHeadLine_;																	 // number of headlines
-		int *faultReach_;																 // TRUE means this fanout is in fanout cone of target fault;
-		std::vector<GATE_LINE_TYPE> gateID_to_lineType_; // array of line types for all gates: FREE HEAD or BOUND
-		std::vector<XPATH_STATE> xPathStatus_;					 // changed by wang
-		std::vector<int> *uniquePath_;									 // list of gates on the unique path associated with a D-forontier.  when there is only one gate in D-frontier, xPathTracing will update this information.
+		std::vector<int> gateID_to_n0_;											 // unsigned *n0_ => std::vector<int> gateID_to_n0_ by wang
+		std::vector<int> gateID_to_n1_;											 // unsigned *n1_ => std::vector<int> gateID_to_n1_ by wang
+		std::vector<int> gateID_to_valModified_;						 // indicate whether the gate has been backtraced or implied, true means the gate has been modified.
+		int *headLines_;																		 // array of headlines
+		int nHeadLine_;																			 // number of headlines
+		std::vector<int> gateID_to_reachableByTargetFault_;	 // TRUE means this fanout is in fanout cone of target fault;
+		std::vector<GATE_LINE_TYPE> gateID_to_lineType_;		 // array of line types for all gates: FREE HEAD or BOUND
+		std::vector<XPATH_STATE> gateID_to_xPathStatus_;		 // changed by wang
+		std::vector<std::vector<int>> gateID_to_uniquePath_; // list of gates on the unique path associated with a D-forontier.  when there is only one gate in D-frontier, xPathTracing will update this information.
 
 		std::vector<std::stack<int>> circuitLevel_to_EventStack_; // std::stack<int> *circuitLevel_to_EventStack_ => std::stack<int> *circuitLevel_to_EventStack_
 		std::vector<int> backtrackList_;
@@ -215,10 +215,12 @@ namespace CoreNs
 	inline Atpg::Atpg(Circuit *pCircuit, Simulator *pSimulator)
 			: gateID_to_n0_(pCircuit->tgate_, 0),
 				gateID_to_n1_(pCircuit->tgate_, 0),
-				circuitLevel_to_EventStack_(pCircuit->lvl_),
 				gateID_to_valModified_(pCircuit->tgate_, 0),
+				gateID_to_reachableByTargetFault_(pCircuit->tgate_),
 				gateID_to_lineType_(pCircuit->tgate_),
-				xPathStatus_(pCircuit->tgate_)
+				gateID_to_xPathStatus_(pCircuit->tgate_),
+				gateID_to_uniquePath_(pCircuit->tgate_, std::vector<int>()),
+				circuitLevel_to_EventStack_(pCircuit->lvl_)
 	{
 		pCircuit_ = pCircuit;
 		pSimulator_ = pSimulator;
@@ -226,9 +228,9 @@ namespace CoreNs
 		// gateID_to_n0_.resize(pCircuit->tgate_); removed by wang
 		// gateID_to_n1_.resize(pCircuit->tgate_); removed by wang
 		// gateID_to_lineType_ = new GATE_LINE_TYPE[pCircuit->tgate_];
-		// xPathStatus_ = new XPATH_STATE[pCircuit->tgate_];
-		faultReach_ = new int[pCircuit->tgate_];
-		uniquePath_ = new std::vector<int>[pCircuit->tgate_];
+		// gateID_to_xPathStatus_ = new XPATH_STATE[pCircuit->tgate_];
+		// gateID_to_reachableByTargetFault_ = new int[pCircuit->tgate_];
+		// gateID_to_uniquePath_ = new std::vector<int>[pCircuit->tgate_];
 		// gateID_to_valModified_ = new bool[pCircuit->tgate_];
 		// circuitLevel_to_EventStack_ = new std::stack<int>[pCircuit->tlvl_]; removed by wang
 		headLines_ = NULL;
@@ -254,9 +256,9 @@ namespace CoreNs
 		// delete[] gateID_to_n0_; removed by wang
 		// delete[] gateID_to_n1_; removed by wang
 		// delete[] gateID_to_lineType_;
-		// delete[] xPathStatus_;
-		delete[] faultReach_;
-		delete[] uniquePath_;
+		// delete[] gateID_to_xPathStatus_;
+		// delete[] gateID_to_reachableByTargetFault_;
+		// delete[] gateID_to_uniquePath_;
 		// delete[] gateID_to_valModified_;
 	}
 
