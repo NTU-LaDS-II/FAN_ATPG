@@ -417,7 +417,7 @@ void Atpg::StuckAtFaultATPGWithDTC(FaultList &faultListToGen, PatternProcessor *
 	if (result == PATTERN_FOUND)
 	{
 		oriPatNum++;
-		std::cout << oriPatNum << "-th pattern" << std::endl;
+		// std::cout << oriPatNum << "-th pattern" << std::endl;
 		Pattern *p = new Pattern;
 		p->pi1_ = new Value[pCircuit_->npi_];
 		p->ppi_ = new Value[pCircuit_->nppi_];

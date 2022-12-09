@@ -30,7 +30,8 @@ namespace CoreNs
 	{
 	public:
 		Atpg(Circuit *pCircuit, Simulator *pSimulator); // cir => pCircuit, sim => pSmiulator by wang
-		~Atpg();
+		// ~Atpg(); now that there is no new ptr, useless destructor is redundant and might slow the program
+		// removed by wang
 
 		enum SINGLE_PATTERN_GENERATION_STATUS // GENERATION_STATUS => SINGLE_PATTERN_GENERATION_STATUS by wang
 		{
@@ -251,18 +252,18 @@ namespace CoreNs
 		isInEventList_.resize(pCircuit->tgate_);
 		std::fill(isInEventList_.begin(), isInEventList_.end(), false);
 	}
-	inline Atpg::~Atpg()
-	{
-		// delete[] circuitLevel_to_EventStack_; removed by wang
-		// delete[] headLIneGateIDs_;
-		// delete[] gateID_to_n0_; removed by wang
-		// delete[] gateID_to_n1_; removed by wang
-		// delete[] gateID_to_lineType_;
-		// delete[] gateID_to_xPathStatus_;
-		// delete[] gateID_to_reachableByTargetFault_;
-		// delete[] gateID_to_uniquePath_;
-		// delete[] gateID_to_valModified_;
-	}
+	// inline Atpg::~Atpg()
+	// {
+	// 	// delete[] circuitLevel_to_EventStack_; removed by wang
+	// 	// delete[] headLIneGateIDs_;
+	// 	// delete[] gateID_to_n0_; removed by wang
+	// 	// delete[] gateID_to_n1_; removed by wang
+	// 	// delete[] gateID_to_lineType_;
+	// 	// delete[] gateID_to_xPathStatus_;
+	// 	// delete[] gateID_to_reachableByTargetFault_;
+	// 	// delete[] gateID_to_uniquePath_;
+	// 	// delete[] gateID_to_valModified_;
+	// }
 
 	inline void Atpg::setGaten0n1(const int &gateID, const int &n0, const int &n1)
 	{

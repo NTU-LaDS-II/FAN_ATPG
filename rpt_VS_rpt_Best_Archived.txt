@@ -1,2 +1,0 @@
-diff --recursive --suppress-common-lines --side-by-side rpt/adummy rpt_Best_Archived/adummy
-rpt								|       rpt_Best_Archive
