@@ -270,7 +270,7 @@ bool Atpg::isExistXPath(Gate *pGate)
 // Function   [ Atpg::clearEventList_ ]
 // Commentor  [ CAL ]
 // Synopsis   [ usage:
-//                Clear eventStack_Vec_ and carefully reset gateValModified_ and isInEventList_
+//                Clear circuitLevel_to_EventStack_ and carefully reset gateID_to_valModified_ and isInEventList_
 //              in:    check isInEventList_ correctness
 //              out:   void
 //            ]
@@ -282,11 +282,11 @@ void Atpg::clearEventList_(bool isDebug)
 	// pop and unmark
 	for (int i = 0; i < pCircuit_->tlvl_; ++i)
 	{
-		while (!eventStack_Vec_[i].empty())
+		while (!circuitLevel_to_EventStack_[i].empty())
 		{
-			int gateID = eventStack_Vec_[i].top();
-			eventStack_Vec_[i].pop();
-			gateValModified_[gateID] = false;
+			int gateID = circuitLevel_to_EventStack_[i].top();
+			circuitLevel_to_EventStack_[i].pop();
+			gateID_to_valModified_[gateID] = 0;
 			isInEventList_[gateID] = false;
 		}
 	}
@@ -344,7 +344,7 @@ void Atpg::setValueAndRunImp(Gate &g, Value val)
 		Gate &og = pCircuit_->gates_[g.fos_[i]];
 		if (isInEventList_[og.id_] == false)
 		{
-			eventStack_Vec_[og.lvl_].push(og.id_);
+			circuitLevel_to_EventStack_[og.lvl_].push(og.id_);
 			isInEventList_[og.id_] = true;
 		}
 	}
@@ -352,10 +352,10 @@ void Atpg::setValueAndRunImp(Gate &g, Value val)
 	// event-driven simulation
 	for (int i = g.lvl_; i < pCircuit_->tlvl_; ++i)
 	{
-		while (!eventStack_Vec_[i].empty())
+		while (!circuitLevel_to_EventStack_[i].empty())
 		{
-			int gateID = eventStack_Vec_[i].top();
-			eventStack_Vec_[i].pop();
+			int gateID = circuitLevel_to_EventStack_[i].top();
+			circuitLevel_to_EventStack_[i].pop();
 			isInEventList_[gateID] = false;
 			// current gate
 			Gate &cg = pCircuit_->gates_[gateID];
@@ -368,7 +368,7 @@ void Atpg::setValueAndRunImp(Gate &g, Value val)
 					Gate &og = pCircuit_->gates_[cg.fos_[j]];
 					if (isInEventList_[og.id_] == false)
 					{
-						eventStack_Vec_[og.lvl_].push(og.id_);
+						circuitLevel_to_EventStack_[og.lvl_].push(og.id_);
 						isInEventList_[og.id_] = true;
 					}
 				}

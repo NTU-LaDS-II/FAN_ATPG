@@ -98,17 +98,17 @@ namespace CoreNs
 		Fault currentTargetFault_;				 // Fault currentFault_; => Fault currentTargetFault_ by wang
 		int backtrackLimit_;							 // unsigned => int by wang
 
-		std::vector<bool> gateValModified_;				 // indicate whether the gate has been backtraced or implied, true means the gate has been modified.
-		std::vector<int> gateID_to_n0_Vec_;				 // unsigned *n0_ => std::vector<int> gateID_to_n0_Vec_ by wang
-		std::vector<int> gateID_to_n1_Vec_;				 // unsigned *n1_ => std::vector<int> gateID_to_n1_Vec_ by wang
-		int *headLines_;													 // array of headlines
-		int nHeadLine_;														 // number of headlines
-		int *faultReach_;													 // TRUE means this fanout is in fanout cone of target fault;
-		std::vector<GATE_LINE_TYPE> gateLineType_; // array of line types for all gates: FREE HEAD or BOUND
-		XPATH_STATE *xPathStatus_;
-		std::vector<int> *uniquePath_; // list of gates on the unique path associated with a D-forontier.  when there is only one gate in D-frontier, xPathTracing will update this information.
+		std::vector<int> gateID_to_valModified_;				 // indicate whether the gate has been backtraced or implied, true means the gate has been modified.
+		std::vector<int> gateID_to_n0_;									 // unsigned *n0_ => std::vector<int> gateID_to_n0_ by wang
+		std::vector<int> gateID_to_n1_;									 // unsigned *n1_ => std::vector<int> gateID_to_n1_ by wang
+		int *headLines_;																 // array of headlines
+		int nHeadLine_;																	 // number of headlines
+		int *faultReach_;																 // TRUE means this fanout is in fanout cone of target fault;
+		std::vector<GATE_LINE_TYPE> gateID_to_lineType_; // array of line types for all gates: FREE HEAD or BOUND
+		std::vector<XPATH_STATE> xPathStatus_;					 // changed by wang
+		std::vector<int> *uniquePath_;									 // list of gates on the unique path associated with a D-forontier.  when there is only one gate in D-frontier, xPathTracing will update this information.
 
-		std::vector<std::stack<int>> eventStack_Vec_; // std::stack<int> *eventStack_Vec_ => std::stack<int> *eventStack_Vec_
+		std::vector<std::stack<int>> circuitLevel_to_EventStack_; // std::stack<int> *circuitLevel_to_EventStack_ => std::stack<int> *circuitLevel_to_EventStack_
 		std::vector<int> backtrackList_;
 		std::vector<int> backtraceResetList_; // gates n0 and n1 have been changed. They need to be reset after backtrace.
 		std::vector<int> unjustified_;				// J-frontier list
@@ -213,23 +213,24 @@ namespace CoreNs
 	};
 
 	inline Atpg::Atpg(Circuit *pCircuit, Simulator *pSimulator)
-			: gateID_to_n0_Vec_(pCircuit->tgate_, 0),
-				gateID_to_n1_Vec_(pCircuit->tgate_, 0),
-				eventStack_Vec_(pCircuit->lvl_),
-				gateValModified_(pCircuit->tgate_, false),
-				gateLineType_(pCircuit->tgate_)
+			: gateID_to_n0_(pCircuit->tgate_, 0),
+				gateID_to_n1_(pCircuit->tgate_, 0),
+				circuitLevel_to_EventStack_(pCircuit->lvl_),
+				gateID_to_valModified_(pCircuit->tgate_, 0),
+				gateID_to_lineType_(pCircuit->tgate_),
+				xPathStatus_(pCircuit->tgate_)
 	{
 		pCircuit_ = pCircuit;
 		pSimulator_ = pSimulator;
 
-		// gateID_to_n0_Vec_.resize(pCircuit->tgate_); removed by wang
-		// gateID_to_n1_Vec_.resize(pCircuit->tgate_); removed by wang
-		// gateLineType_ = new GATE_LINE_TYPE[pCircuit->tgate_];
-		xPathStatus_ = new XPATH_STATE[pCircuit->tgate_];
+		// gateID_to_n0_.resize(pCircuit->tgate_); removed by wang
+		// gateID_to_n1_.resize(pCircuit->tgate_); removed by wang
+		// gateID_to_lineType_ = new GATE_LINE_TYPE[pCircuit->tgate_];
+		// xPathStatus_ = new XPATH_STATE[pCircuit->tgate_];
 		faultReach_ = new int[pCircuit->tgate_];
 		uniquePath_ = new std::vector<int>[pCircuit->tgate_];
-		// gateValModified_ = new bool[pCircuit->tgate_];
-		// eventStack_Vec_ = new std::stack<int>[pCircuit->tlvl_]; removed by wang
+		// gateID_to_valModified_ = new bool[pCircuit->tgate_];
+		// circuitLevel_to_EventStack_ = new std::stack<int>[pCircuit->tlvl_]; removed by wang
 		headLines_ = NULL;
 		firstTimeFrameHeadLine_ = NULL;
 
@@ -248,35 +249,35 @@ namespace CoreNs
 	}
 	inline Atpg::~Atpg()
 	{
-		// delete[] eventStack_Vec_; removed by wang
+		// delete[] circuitLevel_to_EventStack_; removed by wang
 		delete[] headLines_;
-		// delete[] gateID_to_n0_Vec_; removed by wang
-		// delete[] gateID_to_n1_Vec_; removed by wang
-		// delete[] gateLineType_;
-		delete[] xPathStatus_;
+		// delete[] gateID_to_n0_; removed by wang
+		// delete[] gateID_to_n1_; removed by wang
+		// delete[] gateID_to_lineType_;
+		// delete[] xPathStatus_;
 		delete[] faultReach_;
 		delete[] uniquePath_;
-		// delete[] gateValModified_;
+		// delete[] gateID_to_valModified_;
 	}
 
 	inline void Atpg::setGaten0n1(const int &gateID, const int &n0, const int &n1)
 	{
-		gateID_to_n0_Vec_[gateID] = n0;
-		gateID_to_n1_Vec_[gateID] = n1;
+		gateID_to_n0_[gateID] = n0;
+		gateID_to_n1_[gateID] = n1;
 	}
 	inline void Atpg::pushEvent(const int &gateID)
 	{
 		Gate &gate = pCircuit_->gates_[gateID];
-		if (!gateValModified_[gateID])
+		if (!gateID_to_valModified_[gateID])
 		{
-			eventStack_Vec_[gate.lvl_].push(gateID);
-			gateValModified_[gateID] = true;
+			circuitLevel_to_EventStack_[gate.lvl_].push(gateID);
+			gateID_to_valModified_[gateID] = 1;
 		}
 	}
 	inline int Atpg::popEvent(int depth)
 	{
-		int gateID = eventStack_Vec_[depth].top();
-		eventStack_Vec_[depth].pop();
+		int gateID = circuitLevel_to_EventStack_[depth].top();
+		circuitLevel_to_EventStack_[depth].pop();
 		return gateID;
 	}
 	inline int Atpg::listPop(std::vector<int> &list)
@@ -297,10 +298,10 @@ namespace CoreNs
 		for (int i = 0; i < g.nfo_; i++)
 		{
 			Gate &gOut = pCircuit_->gates_[g.fos_[i]];
-			if (!gateValModified_[g.fos_[i]])
+			if (!gateID_to_valModified_[g.fos_[i]])
 			{
-				eventStack_Vec_[gOut.lvl_].push(g.fos_[i]);
-				gateValModified_[g.fos_[i]] = true;
+				circuitLevel_to_EventStack_[gOut.lvl_].push(g.fos_[i]);
+				gateID_to_valModified_[g.fos_[i]] = 1;
 				gateCount++;
 			}
 		}
@@ -320,10 +321,10 @@ namespace CoreNs
 	{
 		int gateID;
 		for (int i = 0; i < pCircuit_->tlvl_; i++)
-			while (!eventStack_Vec_[i].empty())
+			while (!circuitLevel_to_EventStack_[i].empty())
 			{
 				gateID = popEvent(i);
-				gateValModified_[gateID] = false;
+				gateID_to_valModified_[gateID] = 0;
 			}
 	}
 	//}}}
