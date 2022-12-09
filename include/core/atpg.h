@@ -96,12 +96,12 @@ namespace CoreNs
 
 		Fault currentTargetHeadLineFault_; // Fault headLineFault_ => Fault currentTargetHeadLineFault_ by wang
 		Fault currentTargetFault_;				 // Fault currentFault_; => Fault currentTargetFault_ by wang
-		int backtrackLimit_;							 // unsigned => int by wang
+		const int backtrackLimit_;				 // unsigned => int by wang
 
 		std::vector<int> gateID_to_n0_;											 // unsigned *n0_ => std::vector<int> gateID_to_n0_ by wang
 		std::vector<int> gateID_to_n1_;											 // unsigned *n1_ => std::vector<int> gateID_to_n1_ by wang
-		std::vector<int> gateID_to_valModified_;						 // indicate whether the gate has been backtraced or implied, true means the gate has been modified.
-		int *headLines_;																		 // array of headlines
+		std::vector<int> gateID_to_valModified_;						 // indicate whether the gate has been backtraced or implied, true means the gate has been modified, new => vec by wang
+		std::vector<int> headLIneGateIDs_;									 // array of headlines, new => vec by wang
 		int nHeadLine_;																			 // number of headlines
 		std::vector<int> gateID_to_reachableByTargetFault_;	 // TRUE means this fanout is in fanout cone of target fault;
 		std::vector<GATE_LINE_TYPE> gateID_to_lineType_;		 // array of line types for all gates: FREE HEAD or BOUND
@@ -123,7 +123,7 @@ namespace CoreNs
 		int firstTimeFrameSetUp(Fault &fault); // for multiple time frame
 		Gate *firstTimeFrameHeadLine_;
 
-		bool coninuationMeaningful(Gate *pLastDFrontier);
+		bool continuationMeaningful(Gate *pLastDFrontier);
 		int countNumGatesInDFrontier(Gate *pFaultyLine);
 		bool checkFaultPropToPO(bool &faultPropToPO);
 		bool checkUnjustifiedBoundLines();
@@ -162,33 +162,33 @@ namespace CoreNs
 		void setGaten0n1(const int &gateID, const int &n0, const int &n1);
 
 		//
-		void pushEvent(const int &gateID); // push events to the event list of corresponding level
-		int popEvent(int depth);
-		void pushOutputEvents(int gateID);								 // WRONG NAME; T.14 ; should be called pushOutputEvents ;  push all the gate output events to event list of the corresponding level
-		void pushOutputEvents(int gateID, int &gateCount); // record how many gates are pushed
-		void pushInputEvents(int gateID, int index);
-		int listPop(std::vector<int> &list);
+		void pushGateToEventStack(const int &gateID); // push events to the event list of corresponding level
+		int popEventStack(const int &level);
+		void pushGateFanoutsToEventStack(const int &gateID);								 // push all the gate output events to event list of the corresponding level
+		void pushGateFanoutsToEventStack(const int &gateID, int &gateCount); // record how many gates are pushed
+		void pushInputEvents(const int &gateID, int index);
+		int vecPop(std::vector<int> &vec);
 		void listDelete(std::vector<int> &list, int index);
 		void clearAllEvent();
 
 		// 5-Value logic evaluation functions
-		Value cINV(Value i1);
-		Value cAND2(Value i1, Value i2);
-		Value cAND3(Value i1, Value i2, Value i3);
-		Value cAND4(Value i1, Value i2, Value i3, Value i4);
-		Value cNAND2(Value i1, Value i2);
-		Value cNAND3(Value i1, Value i2, Value i3);
-		Value cNAND4(Value i1, Value i2, Value i3, Value i4);
-		Value cOR2(Value i1, Value i2);
-		Value cOR3(Value i1, Value i2, Value i3);
-		Value cOR4(Value i1, Value i2, Value i3, Value i4);
-		Value cNOR2(Value i1, Value i2);
-		Value cNOR3(Value i1, Value i2, Value i3);
-		Value cNOR4(Value i1, Value i2, Value i3, Value i4);
-		Value cXOR2(Value i1, Value i2);
-		Value cXOR3(Value i1, Value i2, Value i3);
-		Value cXNOR2(Value i1, Value i2);
-		Value cXNOR3(Value i1, Value i2, Value i3);
+		Value cINV(const Value &i1);
+		Value cAND2(const Value &i1, const Value &i2);
+		Value cAND3(const Value &i1, const Value &i2, const Value &i3);
+		Value cAND4(const Value &i1, const Value &i2, const Value &i3, const Value &i4);
+		Value cNAND2(const Value &i1, const Value &i2);
+		Value cNAND3(const Value &i1, const Value &i2, const Value &i3);
+		Value cNAND4(const Value &i1, const Value &i2, const Value &i3, const Value &i4);
+		Value cOR2(const Value &i1, const Value &i2);
+		Value cOR3(const Value &i1, const Value &i2, const Value &i3);
+		Value cOR4(const Value &i1, const Value &i2, const Value &i3, const Value &i4);
+		Value cNOR2(const Value &i1, const Value &i2);
+		Value cNOR3(const Value &i1, const Value &i2, const Value &i3);
+		Value cNOR4(const Value &i1, const Value &i2, const Value &i3, const Value &i4);
+		Value cXOR2(const Value &i1, const Value &i2);
+		Value cXOR3(const Value &i1, const Value &i2, const Value &i3);
+		Value cXNOR2(const Value &i1, const Value &i2);
+		Value cXNOR3(const Value &i1, const Value &i2, const Value &i3);
 
 		// added by Wei-Shen Wang
 		void calSCOAP();
@@ -220,7 +220,8 @@ namespace CoreNs
 				gateID_to_lineType_(pCircuit->tgate_),
 				gateID_to_xPathStatus_(pCircuit->tgate_),
 				gateID_to_uniquePath_(pCircuit->tgate_, std::vector<int>()),
-				circuitLevel_to_EventStack_(pCircuit->lvl_)
+				circuitLevel_to_EventStack_(pCircuit->lvl_),
+				backtrackLimit_(MAX_BACKTRACK)
 	{
 		pCircuit_ = pCircuit;
 		pSimulator_ = pSimulator;
@@ -233,11 +234,10 @@ namespace CoreNs
 		// gateID_to_uniquePath_ = new std::vector<int>[pCircuit->tgate_];
 		// gateID_to_valModified_ = new bool[pCircuit->tgate_];
 		// circuitLevel_to_EventStack_ = new std::stack<int>[pCircuit->tlvl_]; removed by wang
-		headLines_ = NULL;
+		// headLIneGateIDs_ = NULL;
 		firstTimeFrameHeadLine_ = NULL;
 
 		backtrackList_.reserve(pCircuit->tgate_);
-		backtrackLimit_ = MAX_BACKTRACK;
 
 		dFrontier_.reserve(MAX_LIST_SIZE);
 		fanoutObjective_.reserve(MAX_LIST_SIZE);
@@ -252,7 +252,7 @@ namespace CoreNs
 	inline Atpg::~Atpg()
 	{
 		// delete[] circuitLevel_to_EventStack_; removed by wang
-		delete[] headLines_;
+		// delete[] headLIneGateIDs_;
 		// delete[] gateID_to_n0_; removed by wang
 		// delete[] gateID_to_n1_; removed by wang
 		// delete[] gateID_to_lineType_;
@@ -267,7 +267,7 @@ namespace CoreNs
 		gateID_to_n0_[gateID] = n0;
 		gateID_to_n1_[gateID] = n1;
 	}
-	inline void Atpg::pushEvent(const int &gateID)
+	inline void Atpg::pushGateToEventStack(const int &gateID)
 	{
 		Gate &gate = pCircuit_->gates_[gateID];
 		if (!gateID_to_valModified_[gateID])
@@ -276,28 +276,30 @@ namespace CoreNs
 			gateID_to_valModified_[gateID] = 1;
 		}
 	}
-	inline int Atpg::popEvent(int depth)
+	inline int Atpg::popEventStack(const int &level)
 	{
-		int gateID = circuitLevel_to_EventStack_[depth].top();
-		circuitLevel_to_EventStack_[depth].pop();
+		int gateID = circuitLevel_to_EventStack_[level].top();
+		circuitLevel_to_EventStack_[level].pop();
 		return gateID;
 	}
-	inline int Atpg::listPop(std::vector<int> &list)
+	inline int Atpg::vecPop(std::vector<int> &vec) // listPop => vecPop by wang
 	{
-		int num = list.back();
-		list.pop_back();
-		return num;
+		int lastElement = vec.back();
+		vec.pop_back();
+		return lastElement;
 	}
-	inline void Atpg::pushOutputEvents(int gateID)
+	// inline void Atpg::pushGateFanoutsToEventStack(const int &gateID)
+	// {
+	// 	Gate &g = pCircuit_->gates_[gateID];
+	// 	for (int i = 0; i < g.nfo_; ++i)
+	// 	{
+	// 		pushGateToEventStack(g.fos_[i]);
+	// 	}
+	// }
+	inline void Atpg::pushGateFanoutsToEventStack(const int &gateID, int &gateCount)
 	{
 		Gate &g = pCircuit_->gates_[gateID];
-		for (int i = 0; i < g.nfo_; i++)
-			pushEvent(g.fos_[i]);
-	}
-	inline void Atpg::pushOutputEvents(int gateID, int &gateCount)
-	{
-		Gate &g = pCircuit_->gates_[gateID];
-		for (int i = 0; i < g.nfo_; i++)
+		for (int i = 0; i < g.nfo_; ++i)
 		{
 			Gate &gOut = pCircuit_->gates_[g.fos_[i]];
 			if (!gateID_to_valModified_[g.fos_[i]])
@@ -308,11 +310,11 @@ namespace CoreNs
 			}
 		}
 	}
-	inline void Atpg::pushInputEvents(int gateID, int index)
+	inline void Atpg::pushInputEvents(const int &gateID, int index)
 	{
 		Gate &g = pCircuit_->gates_[gateID];
-		pushEvent(g.fis_[index]);
-		pushOutputEvents(g.fis_[index]);
+		pushGateToEventStack(g.fis_[index]);
+		pushGateFanoutsToEventStack(g.fis_[index]);
 	}
 	inline void Atpg::listDelete(std::vector<int> &list, int index)
 	{
@@ -322,23 +324,23 @@ namespace CoreNs
 	inline void Atpg::clearAllEvent()
 	{
 		int gateID;
-		for (int i = 0; i < pCircuit_->tlvl_; i++)
+		for (int i = 0; i < pCircuit_->tlvl_; ++i)
 			while (!circuitLevel_to_EventStack_[i].empty())
 			{
-				gateID = popEvent(i);
+				gateID = popEventStack(i);
 				gateID_to_valModified_[gateID] = 0;
 			}
 	}
-	//}}}
-	//{{{ 5-value logic evaluation functions
-	inline Value Atpg::cINV(Value i1)
+
+	// 5-value logic evaluation functions
+	inline Value Atpg::cINV(const Value &i1)
 	{
 		const static Value map[5] = {H, L, X, B, D};
 		if (i1 >= Z)
 			return Z;
 		return map[i1];
 	}
-	inline Value Atpg::cAND2(Value i1, Value i2)
+	inline Value Atpg::cAND2(const Value &i1, const Value &i2)
 	{
 		const static Value map[5][5] = {
 				{L, L, L, L, L},
@@ -350,27 +352,27 @@ namespace CoreNs
 			return Z;
 		return map[i1][i2];
 	}
-	inline Value Atpg::cAND3(Value i1, Value i2, Value i3)
+	inline Value Atpg::cAND3(const Value &i1, const Value &i2, const Value &i3)
 	{
 		return cAND2(i1, cAND2(i2, i3));
 	}
-	inline Value Atpg::cAND4(Value i1, Value i2, Value i3, Value i4)
+	inline Value Atpg::cAND4(const Value &i1, const Value &i2, const Value &i3, const Value &i4)
 	{
 		return cAND2(cAND2(i1, i2), cAND2(i3, i4));
 	}
-	inline Value Atpg::cNAND2(Value i1, Value i2)
+	inline Value Atpg::cNAND2(const Value &i1, const Value &i2)
 	{
 		return cINV(cAND2(i1, i2));
 	}
-	inline Value Atpg::cNAND3(Value i1, Value i2, Value i3)
+	inline Value Atpg::cNAND3(const Value &i1, const Value &i2, const Value &i3)
 	{
 		return cINV(cAND3(i1, i2, i3));
 	}
-	inline Value Atpg::cNAND4(Value i1, Value i2, Value i3, Value i4)
+	inline Value Atpg::cNAND4(const Value &i1, const Value &i2, const Value &i3, const Value &i4)
 	{
 		return cINV(cAND4(i1, i2, i3, i4));
 	}
-	inline Value Atpg::cOR2(Value i1, Value i2)
+	inline Value Atpg::cOR2(const Value &i1, const Value &i2)
 	{
 		const static Value map[5][5] = {
 				{L, H, X, D, B},
@@ -382,27 +384,27 @@ namespace CoreNs
 			return Z;
 		return map[i1][i2];
 	}
-	inline Value Atpg::cOR3(Value i1, Value i2, Value i3)
+	inline Value Atpg::cOR3(const Value &i1, const Value &i2, const Value &i3)
 	{
 		return cOR2(i1, cOR2(i2, i3));
 	}
-	inline Value Atpg::cOR4(Value i1, Value i2, Value i3, Value i4)
+	inline Value Atpg::cOR4(const Value &i1, const Value &i2, const Value &i3, const Value &i4)
 	{
 		return cOR2(cOR2(i1, i2), cOR2(i3, i4));
 	}
-	inline Value Atpg::cNOR2(Value i1, Value i2)
+	inline Value Atpg::cNOR2(const Value &i1, const Value &i2)
 	{
 		return cINV(cOR2(i1, i2));
 	}
-	inline Value Atpg::cNOR3(Value i1, Value i2, Value i3)
+	inline Value Atpg::cNOR3(const Value &i1, const Value &i2, const Value &i3)
 	{
 		return cINV(cOR3(i1, i2, i3));
 	}
-	inline Value Atpg::cNOR4(Value i1, Value i2, Value i3, Value i4)
+	inline Value Atpg::cNOR4(const Value &i1, const Value &i2, const Value &i3, const Value &i4)
 	{
 		return cINV(cOR4(i1, i2, i3, i4));
 	}
-	inline Value Atpg::cXOR2(Value i1, Value i2)
+	inline Value Atpg::cXOR2(const Value &i1, const Value &i2)
 	{
 		const static Value map[5][5] = {
 				{L, H, X, D, B},
@@ -414,15 +416,15 @@ namespace CoreNs
 			return Z;
 		return map[i1][i2];
 	}
-	inline Value Atpg::cXOR3(Value i1, Value i2, Value i3)
+	inline Value Atpg::cXOR3(const Value &i1, const Value &i2, const Value &i3)
 	{
 		return cXOR2(i1, cXOR2(i2, i3));
 	}
-	inline Value Atpg::cXNOR2(Value i1, Value i2)
+	inline Value Atpg::cXNOR2(const Value &i1, const Value &i2)
 	{
 		return cINV(cXOR2(i1, i2));
 	}
-	inline Value Atpg::cXNOR3(Value i1, Value i2, Value i3)
+	inline Value Atpg::cXNOR3(const Value &i1, const Value &i2, const Value &i3)
 	{
 		return cINV(cXOR3(i1, i2, i3));
 	}
@@ -444,7 +446,7 @@ namespace CoreNs
 		if (g.type_ == Gate::PI || g.type_ == Gate::PPI)
 			return g.v_;
 		Value v[4];
-		for (int i = 0; i < g.nfi_; i++)
+		for (int i = 0; i < g.nfi_; ++i)
 			v[i] = pCircuit_->gates_[g.fis_[i]].v_;
 
 		switch (g.type_)
@@ -552,7 +554,7 @@ namespace CoreNs
 				if (currentTargetFault_.line_ == 0)
 				{
 					val = pCircuit_->gates_[g.fis_[0]].v_;
-					for (i = 1; i < g.nfi_; i++)
+					for (i = 1; i < g.nfi_; ++i)
 						val = cAND2(val, pCircuit_->gates_[g.fis_[i]].v_);
 					if (val == L && (currentTargetFault_.type_ == Fault::SA1 || currentTargetFault_.type_ == Fault::STF))
 						val = B;
@@ -566,7 +568,7 @@ namespace CoreNs
 						val = B;
 					if (val == H && (currentTargetFault_.type_ == Fault::SA0 || currentTargetFault_.type_ == Fault::STR))
 						val = D;
-					for (i = 0; i < g.nfi_; i++)
+					for (i = 0; i < g.nfi_; ++i)
 						if (i != FaultyLine - 1)
 							val = cAND2(val, pCircuit_->gates_[g.fis_[i]].v_);
 				}
@@ -578,7 +580,7 @@ namespace CoreNs
 				if (currentTargetFault_.line_ == 0)
 				{
 					val = pCircuit_->gates_[g.fis_[0]].v_;
-					for (i = 1; i < g.nfi_; i++)
+					for (i = 1; i < g.nfi_; ++i)
 						val = cAND2(val, pCircuit_->gates_[g.fis_[i]].v_);
 
 					val = cINV(val);
@@ -595,7 +597,7 @@ namespace CoreNs
 						val = B;
 					if (val == H && (currentTargetFault_.type_ == Fault::SA0 || currentTargetFault_.type_ == Fault::STR))
 						val = D;
-					for (i = 0; i < g.nfi_; i++)
+					for (i = 0; i < g.nfi_; ++i)
 						if (i != FaultyLine - 1)
 							val = cAND2(val, pCircuit_->gates_[g.fis_[i]].v_);
 					val = cINV(val);
@@ -608,7 +610,7 @@ namespace CoreNs
 				if (currentTargetFault_.line_ == 0)
 				{
 					val = pCircuit_->gates_[g.fis_[0]].v_;
-					for (i = 1; i < g.nfi_; i++)
+					for (i = 1; i < g.nfi_; ++i)
 						val = cOR2(val, pCircuit_->gates_[g.fis_[i]].v_);
 					if (val == L && (currentTargetFault_.type_ == Fault::SA1 || currentTargetFault_.type_ == Fault::STF))
 						val = B;
@@ -622,7 +624,7 @@ namespace CoreNs
 						val = B;
 					if (val == H && (currentTargetFault_.type_ == Fault::SA0 || currentTargetFault_.type_ == Fault::STR))
 						val = D;
-					for (i = 0; i < g.nfi_; i++)
+					for (i = 0; i < g.nfi_; ++i)
 						if (i != FaultyLine - 1)
 							val = cOR2(val, pCircuit_->gates_[g.fis_[i]].v_);
 				}
@@ -634,7 +636,7 @@ namespace CoreNs
 				if (currentTargetFault_.line_ == 0)
 				{
 					val = pCircuit_->gates_[g.fis_[0]].v_;
-					for (i = 1; i < g.nfi_; i++)
+					for (i = 1; i < g.nfi_; ++i)
 						val = cOR2(val, pCircuit_->gates_[g.fis_[i]].v_);
 
 					val = cINV(val);
@@ -651,7 +653,7 @@ namespace CoreNs
 						val = B;
 					if (val == H && (currentTargetFault_.type_ == Fault::SA0 || currentTargetFault_.type_ == Fault::STR))
 						val = D;
-					for (i = 0; i < g.nfi_; i++)
+					for (i = 0; i < g.nfi_; ++i)
 						if (i != FaultyLine - 1)
 							val = cOR2(val, pCircuit_->gates_[g.fis_[i]].v_);
 					val = cINV(val);
@@ -759,12 +761,12 @@ namespace CoreNs
 	// **************************************************************************
 	inline void Atpg::assignPatternPiValue(Pattern *pat)
 	{
-		for (int i = 0; i < pCircuit_->npi_; i++)
+		for (int i = 0; i < pCircuit_->npi_; ++i)
 			pat->pi1_[i] = pCircuit_->gates_[i].v_;
 		if (pat->pi2_ != NULL && pCircuit_->nframe_ > 1)
-			for (int i = 0; i < pCircuit_->npi_; i++)
+			for (int i = 0; i < pCircuit_->npi_; ++i)
 				pat->pi2_[i] = pCircuit_->gates_[i + pCircuit_->ngate_].v_;
-		for (int i = 0; i < pCircuit_->nppi_; i++)
+		for (int i = 0; i < pCircuit_->nppi_; ++i)
 			pat->ppi_[i] = pCircuit_->gates_[pCircuit_->npi_ + i].v_;
 		if (pat->si_ != NULL && pCircuit_->nframe_ > 1)
 			pat->si_[0] = pCircuit_->connType_ == Circuit::SHIFT ? pCircuit_->gates_[pCircuit_->ngate_ + pCircuit_->npi_].v_ : X;
@@ -784,7 +786,7 @@ namespace CoreNs
 	{
 		pSimulator_->goodSim();
 		int offset = pCircuit_->ngate_ - pCircuit_->npo_ - pCircuit_->nppi_;
-		for (int i = 0; i < pCircuit_->npo_; i++)
+		for (int i = 0; i < pCircuit_->npo_; ++i)
 		{
 			if (pCircuit_->gates_[offset + i].gl_ == PARA_H)
 				pat->po1_[i] = L;
@@ -794,7 +796,7 @@ namespace CoreNs
 				pat->po1_[i] = X;
 		}
 		if (pat->po2_ != NULL && pCircuit_->nframe_ > 1)
-			for (int i = 0; i < pCircuit_->npo_; i++)
+			for (int i = 0; i < pCircuit_->npo_; ++i)
 			{
 				if (pCircuit_->gates_[offset + i + pCircuit_->ngate_].gl_ == PARA_H)
 					pat->po2_[i] = L;
@@ -807,7 +809,7 @@ namespace CoreNs
 		offset = pCircuit_->ngate_ - pCircuit_->nppi_;
 		if (pCircuit_->nframe_ > 1)
 			offset += pCircuit_->ngate_;
-		for (int i = 0; i < pCircuit_->nppi_; i++)
+		for (int i = 0; i < pCircuit_->nppi_; ++i)
 		{
 			if (pCircuit_->gates_[offset + i].gl_ == PARA_H)
 				pat->ppo_[i] = L;
@@ -832,14 +834,14 @@ namespace CoreNs
 	inline void Atpg::randomFill(Pattern *pat)
 	{
 		srand(0);
-		for (int i = 0; i < pCircuit_->npi_; i++)
+		for (int i = 0; i < pCircuit_->npi_; ++i)
 			if (pat->pi1_[i] == X)
 				pat->pi1_[i] = rand() % 2;
-		for (int i = 0; i < pCircuit_->nppi_; i++)
+		for (int i = 0; i < pCircuit_->nppi_; ++i)
 			if (pat->ppi_[i] == X)
 				pat->ppi_[i] = rand() % 2;
 		if (pat->pi2_ != NULL)
-			for (int i = 0; i < pCircuit_->npi_; i++)
+			for (int i = 0; i < pCircuit_->npi_; ++i)
 				if (pat->pi2_[i] == X)
 					pat->pi2_[i] = rand() % 2;
 		if (pat->si_ != NULL)
