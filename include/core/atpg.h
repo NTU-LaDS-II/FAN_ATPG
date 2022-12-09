@@ -21,7 +21,7 @@ namespace CoreNs
 {
 
 	const int MAX_LIST_SIZE = 1000;	 // unsigned => int by wang
-	const int MAX_BACKTRACK = 500;	 // unsigned => int by wang
+	const int BACKTRACK_LIMIT = 500; // unsigned => int by wang
 	const int INFINITE = 0x7fffffff; // unsigned => int by wang
 	const int UNIQUE_PATH_SENSITIZE_FAIL = -2;
 	const int NO_UNIQUE_PATH = -1; // added by wang
@@ -30,7 +30,8 @@ namespace CoreNs
 	{
 	public:
 		Atpg(Circuit *pCircuit, Simulator *pSimulator); // cir => pCircuit, sim => pSmiulator by wang
-		~Atpg();
+		// ~Atpg(); now that there is no new ptr, useless destructor is redundant and might slow the program
+		// removed by wang
 
 		enum SINGLE_PATTERN_GENERATION_STATUS // GENERATION_STATUS => SINGLE_PATTERN_GENERATION_STATUS by wang
 		{
@@ -96,7 +97,7 @@ namespace CoreNs
 
 		Fault currentTargetHeadLineFault_; // Fault headLineFault_ => Fault currentTargetHeadLineFault_ by wang
 		Fault currentTargetFault_;				 // Fault currentFault_; => Fault currentTargetFault_ by wang
-		const int BACKTRACK_LIMIT;				 // unsigned => int by wang
+		// const int BACKTRACK_LIMIT;				 // unsigned => int by wang
 
 		std::vector<int> gateID_to_n0_;											 // unsigned *n0_ => std::vector<int> gateID_to_n0_ by wang
 		std::vector<int> gateID_to_n1_;											 // unsigned *n1_ => std::vector<int> gateID_to_n1_ by wang
@@ -171,7 +172,7 @@ namespace CoreNs
 		// bad readability and performance, removed by wang
 		// void pushInputEvents(const int &gateID, int index);
 		int vecPop(std::vector<int> &vec);
-		void listDelete(std::vector<int> &list, int index);
+		void vecDelete(std::vector<int> &list, int index);
 		void clearAllEvent();
 
 		// 5-Value logic evaluation functions
@@ -223,8 +224,7 @@ namespace CoreNs
 				gateID_to_lineType_(pCircuit->tgate_),
 				gateID_to_xPathStatus_(pCircuit->tgate_),
 				gateID_to_uniquePath_(pCircuit->tgate_, std::vector<int>()),
-				circuitLevel_to_EventStack_(pCircuit->lvl_),
-				BACKTRACK_LIMIT(MAX_BACKTRACK)
+				circuitLevel_to_EventStack_(pCircuit->lvl_)
 	{
 		pCircuit_ = pCircuit;
 		pSimulator_ = pSimulator;
@@ -252,18 +252,18 @@ namespace CoreNs
 		isInEventList_.resize(pCircuit->tgate_);
 		std::fill(isInEventList_.begin(), isInEventList_.end(), false);
 	}
-	inline Atpg::~Atpg()
-	{
-		// delete[] circuitLevel_to_EventStack_; removed by wang
-		// delete[] headLIneGateIDs_;
-		// delete[] gateID_to_n0_; removed by wang
-		// delete[] gateID_to_n1_; removed by wang
-		// delete[] gateID_to_lineType_;
-		// delete[] gateID_to_xPathStatus_;
-		// delete[] gateID_to_reachableByTargetFault_;
-		// delete[] gateID_to_uniquePath_;
-		// delete[] gateID_to_valModified_;
-	}
+	// inline Atpg::~Atpg()
+	// {
+	// 	// delete[] circuitLevel_to_EventStack_; removed by wang
+	// 	// delete[] headLIneGateIDs_;
+	// 	// delete[] gateID_to_n0_; removed by wang
+	// 	// delete[] gateID_to_n1_; removed by wang
+	// 	// delete[] gateID_to_lineType_;
+	// 	// delete[] gateID_to_xPathStatus_;
+	// 	// delete[] gateID_to_reachableByTargetFault_;
+	// 	// delete[] gateID_to_uniquePath_;
+	// 	// delete[] gateID_to_valModified_;
+	// }
 
 	inline void Atpg::setGaten0n1(const int &gateID, const int &n0, const int &n1)
 	{
@@ -321,7 +321,7 @@ namespace CoreNs
 	// 	pushGateToEventStack(g.fis_[index]);
 	// 	pushGateFanoutsToEventStack(g.fis_[index]);
 	// }
-	inline void Atpg::listDelete(std::vector<int> &list, int index)
+	inline void Atpg::vecDelete(std::vector<int> &list, int index)
 	{
 		list[index] = list.back();
 		list.pop_back();
@@ -329,12 +329,16 @@ namespace CoreNs
 	inline void Atpg::clearAllEvent()
 	{
 		int gateID;
-		for (int i = 0; i < pCircuit_->tlvl_; ++i)
-			while (!circuitLevel_to_EventStack_[i].empty())
+		// change old for loop to range-based for loop
+		for (std::stack<int> &eventStack : circuitLevel_to_EventStack_)
+		{
+			while (!eventStack.empty())
 			{
-				gateID = popEventStack(i);
+				gateID = eventStack.top();
+				eventStack.pop();
 				gateID_to_valModified_[gateID] = 0;
 			}
+		}
 	}
 
 	// 5-value logic evaluation functions

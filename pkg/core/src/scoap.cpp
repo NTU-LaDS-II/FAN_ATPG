@@ -11,20 +11,20 @@ void Atpg::calSCOAP()
 {
 	// cc0, cc1 and co default is 0
 	// check if is changed before
-	for (int i = 0; i < pCircuit_->tgate_; ++i)
+	for (int gateID = 0; gateID < pCircuit_->tgate_; ++gateID)
 	{
-		Gate &g = pCircuit_->gates_[i];
-		if (g.cc0_ != 0)
+		Gate &gate = pCircuit_->gates_[gateID];
+		if (gate.cc0_ != 0)
 		{
 			std::cout << "cc0_ is not -1\n";
 			std::cin.get();
 		}
-		if (g.cc1_ != 0)
+		if (gate.cc1_ != 0)
 		{
 			std::cout << "cc1_ is not -1\n";
 			std::cin.get();
 		}
-		if (g.co_ != 0)
+		if (gate.co_ != 0)
 		{
 			std::cout << "co_ is not -1\n";
 			std::cin.get();
@@ -35,160 +35,160 @@ void Atpg::calSCOAP()
 	// xor2 xnor2 : {00,01,10,11}
 	// xor3 xnor3 : {000, 001, 010, 011, 100, 101, 110, 111}
 	int xorcc[8] = {0};
-	Gate xorgin[3];
+	Gate gateInputs[3];
 
 	// calculate cc0 and cc1 starting from PI and PPI
-	for (int i = 0; i < pCircuit_->tgate_; ++i)
+	for (int gateID = 0; gateID < pCircuit_->tgate_; ++gateID)
 	{
-		Gate &g = pCircuit_->gates_[i];
-		switch (g.type_)
+		Gate &gate = pCircuit_->gates_[gateID];
+		switch (gate.type_)
 		{
 			case Gate::PPI:
 			case Gate::PI:
-				g.cc0_ = 1;
-				g.cc1_ = 1;
+				gate.cc0_ = 1;
+				gate.cc1_ = 1;
 				break;
 			case Gate::PO:
 			case Gate::PPO:
 			case Gate::BUF:
-				g.cc0_ = pCircuit_->gates_[g.fis_[0]].cc0_;
-				g.cc1_ = pCircuit_->gates_[g.fis_[0]].cc1_;
+				gate.cc0_ = pCircuit_->gates_[gate.fis_[0]].cc0_;
+				gate.cc1_ = pCircuit_->gates_[gate.fis_[0]].cc1_;
 				break;
 			case Gate::INV:
-				g.cc0_ = pCircuit_->gates_[g.fis_[0]].cc1_ + 1;
-				g.cc1_ = pCircuit_->gates_[g.fis_[0]].cc0_ + 1;
+				gate.cc0_ = pCircuit_->gates_[gate.fis_[0]].cc1_ + 1;
+				gate.cc1_ = pCircuit_->gates_[gate.fis_[0]].cc0_ + 1;
 				break;
 			case Gate::AND2:
 			case Gate::AND3:
 			case Gate::AND4:
-				for (int j = 0; j < g.nfi_; j++)
+				for (int j = 0; j < gate.nfi_; j++)
 				{
-					Gate &gin = pCircuit_->gates_[g.fis_[j]];
-					if (j == 0 || (gin.cc0_ < g.cc0_))
+					Gate &gateInput = pCircuit_->gates_[gate.fis_[j]];
+					if (j == 0 || (gateInput.cc0_ < gate.cc0_))
 					{
-						g.cc0_ = gin.cc0_;
+						gate.cc0_ = gateInput.cc0_;
 					}
-					g.cc1_ += gin.cc1_;
+					gate.cc1_ += gateInput.cc1_;
 				}
-				g.cc1_++;
-				g.cc0_++;
+				gate.cc1_++;
+				gate.cc0_++;
 				break;
 
 			case Gate::NAND2:
 			case Gate::NAND3:
 			case Gate::NAND4:
-				for (int j = 0; j < g.nfi_; j++)
+				for (int j = 0; j < gate.nfi_; j++)
 				{
-					Gate &gin = pCircuit_->gates_[g.fis_[j]];
-					if (j == 0 || (gin.cc0_ < g.cc1_))
+					Gate &gateInput = pCircuit_->gates_[gate.fis_[j]];
+					if (j == 0 || (gateInput.cc0_ < gate.cc1_))
 					{
-						g.cc1_ = gin.cc0_;
+						gate.cc1_ = gateInput.cc0_;
 					}
-					g.cc0_ += gin.cc1_;
+					gate.cc0_ += gateInput.cc1_;
 				}
-				g.cc0_++;
-				g.cc1_++;
+				gate.cc0_++;
+				gate.cc1_++;
 				break;
 
 			case Gate::OR2:
 			case Gate::OR3:
 			case Gate::OR4:
-				for (int j = 0; j < g.nfi_; j++)
+				for (int j = 0; j < gate.nfi_; j++)
 				{
-					Gate &gin = pCircuit_->gates_[g.fis_[j]];
-					if (j == 0 || (gin.cc1_ < g.cc1_))
+					Gate &gateInput = pCircuit_->gates_[gate.fis_[j]];
+					if (j == 0 || (gateInput.cc1_ < gate.cc1_))
 					{
-						g.cc1_ = gin.cc1_;
+						gate.cc1_ = gateInput.cc1_;
 					}
-					g.cc0_ += gin.cc0_;
+					gate.cc0_ += gateInput.cc0_;
 				}
-				g.cc0_++;
-				g.cc1_++;
+				gate.cc0_++;
+				gate.cc1_++;
 				break;
 			case Gate::NOR2:
 			case Gate::NOR3:
 			case Gate::NOR4:
-				for (int j = 0; j < g.nfi_; j++)
+				for (int j = 0; j < gate.nfi_; j++)
 				{
-					Gate &gin = pCircuit_->gates_[g.fis_[j]];
-					if (j == 0 || (gin.cc1_ < g.cc0_))
+					Gate &gateInput = pCircuit_->gates_[gate.fis_[j]];
+					if (j == 0 || (gateInput.cc1_ < gate.cc0_))
 					{
-						g.cc0_ = gin.cc1_;
+						gate.cc0_ = gateInput.cc1_;
 					}
-					g.cc1_ += gin.cc0_;
+					gate.cc1_ += gateInput.cc0_;
 				}
-				g.cc0_++;
-				g.cc1_++;
+				gate.cc0_++;
+				gate.cc1_++;
 				break;
 			case Gate::XOR2:
-				xorgin[0] = pCircuit_->gates_[g.fis_[0]];
-				xorgin[1] = pCircuit_->gates_[g.fis_[1]];
-				xorcc[0] = xorgin[0].cc0_ + xorgin[1].cc0_;
-				xorcc[1] = xorgin[0].cc0_ + xorgin[1].cc1_;
-				xorcc[2] = xorgin[0].cc1_ + xorgin[1].cc0_;
-				xorcc[3] = xorgin[0].cc1_ + xorgin[1].cc1_;
-				g.cc0_ = std::min(xorcc[0], xorcc[3]);
-				g.cc1_ = std::min(xorcc[1], xorcc[2]);
-				g.cc0_++;
-				g.cc1_++;
+				gateInputs[0] = pCircuit_->gates_[gate.fis_[0]];
+				gateInputs[1] = pCircuit_->gates_[gate.fis_[1]];
+				xorcc[0] = gateInputs[0].cc0_ + gateInputs[1].cc0_;
+				xorcc[1] = gateInputs[0].cc0_ + gateInputs[1].cc1_;
+				xorcc[2] = gateInputs[0].cc1_ + gateInputs[1].cc0_;
+				xorcc[3] = gateInputs[0].cc1_ + gateInputs[1].cc1_;
+				gate.cc0_ = std::min(xorcc[0], xorcc[3]);
+				gate.cc1_ = std::min(xorcc[1], xorcc[2]);
+				gate.cc0_++;
+				gate.cc1_++;
 				break;
 			case Gate::XOR3:
-				xorgin[0] = pCircuit_->gates_[g.fis_[0]];
-				xorgin[1] = pCircuit_->gates_[g.fis_[1]];
-				xorgin[2] = pCircuit_->gates_[g.fis_[2]];
-				xorcc[0] = xorgin[0].cc0_ + xorgin[1].cc0_ + xorgin[2].cc0_;
-				xorcc[1] = xorgin[0].cc0_ + xorgin[1].cc0_ + xorgin[2].cc1_;
-				xorcc[2] = xorgin[0].cc0_ + xorgin[1].cc1_ + xorgin[2].cc0_;
-				xorcc[3] = xorgin[0].cc0_ + xorgin[1].cc1_ + xorgin[2].cc1_;
-				xorcc[4] = xorgin[0].cc1_ + xorgin[1].cc0_ + xorgin[2].cc0_;
-				xorcc[5] = xorgin[0].cc1_ + xorgin[1].cc0_ + xorgin[2].cc1_;
-				xorcc[6] = xorgin[0].cc1_ + xorgin[1].cc1_ + xorgin[2].cc0_;
-				xorcc[7] = xorgin[0].cc1_ + xorgin[1].cc1_ + xorgin[2].cc1_;
-				g.cc0_ = std::min(xorcc[0], xorcc[7]);
+				gateInputs[0] = pCircuit_->gates_[gate.fis_[0]];
+				gateInputs[1] = pCircuit_->gates_[gate.fis_[1]];
+				gateInputs[2] = pCircuit_->gates_[gate.fis_[2]];
+				xorcc[0] = gateInputs[0].cc0_ + gateInputs[1].cc0_ + gateInputs[2].cc0_;
+				xorcc[1] = gateInputs[0].cc0_ + gateInputs[1].cc0_ + gateInputs[2].cc1_;
+				xorcc[2] = gateInputs[0].cc0_ + gateInputs[1].cc1_ + gateInputs[2].cc0_;
+				xorcc[3] = gateInputs[0].cc0_ + gateInputs[1].cc1_ + gateInputs[2].cc1_;
+				xorcc[4] = gateInputs[0].cc1_ + gateInputs[1].cc0_ + gateInputs[2].cc0_;
+				xorcc[5] = gateInputs[0].cc1_ + gateInputs[1].cc0_ + gateInputs[2].cc1_;
+				xorcc[6] = gateInputs[0].cc1_ + gateInputs[1].cc1_ + gateInputs[2].cc0_;
+				xorcc[7] = gateInputs[0].cc1_ + gateInputs[1].cc1_ + gateInputs[2].cc1_;
+				gate.cc0_ = std::min(xorcc[0], xorcc[7]);
 				for (int j = 1; j < 7; j++)
 				{
-					if (j == 1 || xorcc[j] < g.cc1_)
+					if (j == 1 || xorcc[j] < gate.cc1_)
 					{
-						g.cc1_ = xorcc[j];
+						gate.cc1_ = xorcc[j];
 					}
 				}
-				g.cc0_++;
-				g.cc1_++;
+				gate.cc0_++;
+				gate.cc1_++;
 				break;
 			case Gate::XNOR2:
-				xorgin[0] = pCircuit_->gates_[g.fis_[0]];
-				xorgin[1] = pCircuit_->gates_[g.fis_[1]];
-				xorcc[0] = xorgin[0].cc0_ + xorgin[1].cc0_;
-				xorcc[1] = xorgin[0].cc0_ + xorgin[1].cc1_;
-				xorcc[2] = xorgin[0].cc1_ + xorgin[1].cc0_;
-				xorcc[3] = xorgin[0].cc1_ + xorgin[1].cc1_;
-				g.cc0_ = std::min(xorcc[1], xorcc[2]);
-				g.cc1_ = std::min(xorcc[0], xorcc[3]);
-				g.cc0_++;
-				g.cc1_++;
+				gateInputs[0] = pCircuit_->gates_[gate.fis_[0]];
+				gateInputs[1] = pCircuit_->gates_[gate.fis_[1]];
+				xorcc[0] = gateInputs[0].cc0_ + gateInputs[1].cc0_;
+				xorcc[1] = gateInputs[0].cc0_ + gateInputs[1].cc1_;
+				xorcc[2] = gateInputs[0].cc1_ + gateInputs[1].cc0_;
+				xorcc[3] = gateInputs[0].cc1_ + gateInputs[1].cc1_;
+				gate.cc0_ = std::min(xorcc[1], xorcc[2]);
+				gate.cc1_ = std::min(xorcc[0], xorcc[3]);
+				gate.cc0_++;
+				gate.cc1_++;
 				break;
 			case Gate::XNOR3:
-				xorgin[0] = pCircuit_->gates_[g.fis_[0]];
-				xorgin[1] = pCircuit_->gates_[g.fis_[1]];
-				xorgin[2] = pCircuit_->gates_[g.fis_[2]];
-				xorcc[0] = xorgin[0].cc0_ + xorgin[1].cc0_ + xorgin[2].cc0_;
-				xorcc[1] = xorgin[0].cc0_ + xorgin[1].cc0_ + xorgin[2].cc1_;
-				xorcc[2] = xorgin[0].cc0_ + xorgin[1].cc1_ + xorgin[2].cc0_;
-				xorcc[3] = xorgin[0].cc0_ + xorgin[1].cc1_ + xorgin[2].cc1_;
-				xorcc[4] = xorgin[0].cc1_ + xorgin[1].cc0_ + xorgin[2].cc0_;
-				xorcc[5] = xorgin[0].cc1_ + xorgin[1].cc0_ + xorgin[2].cc1_;
-				xorcc[6] = xorgin[0].cc1_ + xorgin[1].cc1_ + xorgin[2].cc0_;
-				xorcc[7] = xorgin[0].cc1_ + xorgin[1].cc1_ + xorgin[2].cc1_;
+				gateInputs[0] = pCircuit_->gates_[gate.fis_[0]];
+				gateInputs[1] = pCircuit_->gates_[gate.fis_[1]];
+				gateInputs[2] = pCircuit_->gates_[gate.fis_[2]];
+				xorcc[0] = gateInputs[0].cc0_ + gateInputs[1].cc0_ + gateInputs[2].cc0_;
+				xorcc[1] = gateInputs[0].cc0_ + gateInputs[1].cc0_ + gateInputs[2].cc1_;
+				xorcc[2] = gateInputs[0].cc0_ + gateInputs[1].cc1_ + gateInputs[2].cc0_;
+				xorcc[3] = gateInputs[0].cc0_ + gateInputs[1].cc1_ + gateInputs[2].cc1_;
+				xorcc[4] = gateInputs[0].cc1_ + gateInputs[1].cc0_ + gateInputs[2].cc0_;
+				xorcc[5] = gateInputs[0].cc1_ + gateInputs[1].cc0_ + gateInputs[2].cc1_;
+				xorcc[6] = gateInputs[0].cc1_ + gateInputs[1].cc1_ + gateInputs[2].cc0_;
+				xorcc[7] = gateInputs[0].cc1_ + gateInputs[1].cc1_ + gateInputs[2].cc1_;
+				gate.cc1_ = std::min(xorcc[0], xorcc[7]);
 				for (int j = 1; j < 7; j++)
 				{
-					if (j == 1 || xorcc[j] < g.cc1_)
+					if (j == 1 || xorcc[j] < gate.cc1_)
 					{
-						g.cc0_ = xorcc[j];
+						gate.cc0_ = xorcc[j];
 					}
 				}
-				g.cc1_ = std::min(xorcc[0], xorcc[7]);
-				g.cc0_++;
-				g.cc1_++;
+				gate.cc0_++;
+				gate.cc1_++;
 				break;
 			default:
 				DEBUG("default", "should not happen");
@@ -197,29 +197,28 @@ void Atpg::calSCOAP()
 	}
 
 	// calculate co_ starting from PO and PP
-	for (int i = 0; i < pCircuit_->tgate_; ++i)
+	for (int gateID = 0; gateID < pCircuit_->tgate_; ++gateID)
 	{
-		Gate &g = pCircuit_->gates_[i];
-		Gate &gout = pCircuit_->gates_[0]; // for fanout free
-		switch (g.type_)
+		Gate &gate = pCircuit_->gates_[gateID];
+		switch (gate.type_)
 		{
 			case Gate::PO:
 			case Gate::PPO:
-				g.co_ = 0;
+				gate.co_ = 0;
 				break;
 			case Gate::PPI:
 			case Gate::PI:
 			case Gate::BUF:
-				for (int j = 0; j < g.nfo_; j++)
+				for (int j = 0; j < gate.nfo_; j++)
 				{
-					if (j == 0 || pCircuit_->gates_[g.fos_[j]].co_ < g.co_)
+					if (j == 0 || pCircuit_->gates_[gate.fos_[j]].co_ < gate.co_)
 					{
-						g.co_ = pCircuit_->gates_[g.fos_[j]].co_;
+						gate.co_ = pCircuit_->gates_[gate.fos_[j]].co_;
 					}
 				}
 				break;
 			case Gate::INV:
-				g.co_ = gout.co_ + 1;
+				gate.co_ = pCircuit_->gates_[gate.fos_[0]].co_ + 1;
 				break;
 			case Gate::AND2:
 			case Gate::AND3:
@@ -227,13 +226,13 @@ void Atpg::calSCOAP()
 			case Gate::NAND2:
 			case Gate::NAND3:
 			case Gate::NAND4:
-				g.co_ = gout.co_ + 1;
-				for (int j = 0; j < gout.nfi_; j++)
+				gate.co_ = pCircuit_->gates_[gate.fos_[0]].co_ + 1;
+				for (int j = 0; j < pCircuit_->gates_[gate.fos_[0]].nfi_; j++)
 				{
-					Gate &gin = pCircuit_->gates_[g.fis_[j]];
-					if (g.fis_[j] != i)
+					if (pCircuit_->gates_[gate.fos_[0]].fis_[j] != gateID)
 					{
-						g.co_ += g.cc1_;
+						Gate &gateSibling = pCircuit_->gates_[pCircuit_->gates_[gate.fos_[0]].fis_[j]];
+						gate.co_ += gateSibling.cc1_;
 					}
 				}
 				break;
@@ -243,13 +242,13 @@ void Atpg::calSCOAP()
 			case Gate::NOR2:
 			case Gate::NOR3:
 			case Gate::NOR4:
-				g.co_ = gout.co_ + 1;
-				for (int j = 0; j < gout.nfi_; j++)
+				gate.co_ = pCircuit_->gates_[gate.fos_[0]].co_ + 1;
+				for (int j = 0; j < pCircuit_->gates_[gate.fos_[0]].nfi_; j++)
 				{
-					Gate &gin = pCircuit_->gates_[g.fis_[j]];
-					if (g.fis_[j] != i)
+					if (pCircuit_->gates_[gate.fos_[0]].fis_[j] != gateID)
 					{
-						g.co_ += g.cc0_;
+						Gate &gateSibling = pCircuit_->gates_[pCircuit_->gates_[gate.fos_[0]].fis_[j]];
+						gate.co_ += gateSibling.cc0_;
 					}
 				}
 				break;
@@ -257,18 +256,15 @@ void Atpg::calSCOAP()
 			case Gate::XNOR2:
 			case Gate::XOR3:
 			case Gate::XNOR3:
-				int minccin;
-				g.co_ = gout.co_ + 1;
-				for (int j = 0; j < gout.nfo_; j++)
+				gate.co_ = pCircuit_->gates_[gate.fos_[0]].co_ + 1;
+				for (int j = 0; j < pCircuit_->gates_[gate.fos_[0]].nfi_; j++)
 				{
-					Gate &gin = pCircuit_->gates_[g.fis_[j]];
-					if (g.fis_[j] != i)
+					Gate &gateSibling = pCircuit_->gates_[pCircuit_->gates_[gate.fos_[0]].fis_[j]];
+					if (pCircuit_->gates_[gate.fos_[0]].fis_[j] != gateID)
 					{
-						int temp = std::min(gin.cc0_, gin.cc1_);
-						minccin = std::min(temp, minccin);
+						gate.co_ += std::min(gateSibling.cc0_, gateSibling.cc1_);
 					}
 				}
-				g.co_ += minccin;
 				break;
 			default:
 				DEBUG("default", "should not happen");

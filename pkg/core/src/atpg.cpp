@@ -650,7 +650,7 @@ bool Atpg::continuationMeaningful(Gate *pLastDFrontier)
 	for (int k = initObject_.size() - 1; k >= 0; k--)
 	{
 		if (gateID_to_valModified_[initObject_[k]])
-			listDelete(initObject_, k);
+			vecDelete(initObject_, k);
 	}
 
 	// determine the pLastDFrontier should be changed or not
@@ -689,7 +689,7 @@ int Atpg::countNumGatesInDFrontier(Gate *pFaultyLine)
 	for (int k = dFrontier_.size() - 1; k >= 0; k--)
 	{
 		if (!xPathTracing(&pCircuit_->gates_[dFrontier_[k]]))
-			listDelete(dFrontier_, k);
+			vecDelete(dFrontier_, k);
 	}
 
 	return dFrontier_.size();
@@ -1616,7 +1616,7 @@ void Atpg::updateUnjustifiedLines()
 	{
 		Gate &mGate = pCircuit_->gates_[unjustified_[i]];
 		if (gateID_to_valModified_[mGate.id_])
-			listDelete(unjustified_, i);
+			vecDelete(unjustified_, i);
 		else
 		{
 			gateID_to_valModified_[mGate.id_] = 0;
@@ -1652,12 +1652,12 @@ void Atpg::updateDFrontier()
 		{
 			for (j = 0; j < mGate.nfo_; j++)
 				dFrontier_.push_back(mGate.fos_[j]);
-			listDelete(dFrontier_, i);
+			vecDelete(dFrontier_, i);
 		}
 		else if (mGate.v_ == X)
 			i++;
 		else
-			listDelete(dFrontier_, i);
+			vecDelete(dFrontier_, i);
 	}
 }
 
@@ -1769,7 +1769,7 @@ bool Atpg::backtrack(int &BackImpLevel)
 		for (int k = unjustified_.size() - 1; k >= 0; k--)
 			// Update unjustified_ list.
 			if (pCircuit_->gates_[unjustified_[k]].v_ == X)
-				listDelete(unjustified_, k);
+				vecDelete(unjustified_, k);
 
 		for (i = pFaultyGate->id_; i < pCircuit_->tgate_; i++)
 			gateID_to_xPathStatus_[i] = UNKNOWN;
@@ -2297,7 +2297,7 @@ Gate *Atpg::findEasiestInput(Gate *pGate, Value Val)
 			Gate *pFaninGate = &pCircuit_->gates_[pGate->fis_[i]];
 			if (pFaninGate->v_ != X)
 				continue;
-			if ((unsigned)pFaninGate->cc0_ < easyControlVal)
+			if (pFaninGate->cc0_ < easyControlVal)
 			{
 				easyControlVal = pFaninGate->cc0_;
 				pRetGate = pFaninGate;
@@ -2312,7 +2312,7 @@ Gate *Atpg::findEasiestInput(Gate *pGate, Value Val)
 			Gate *pFaninGate = &pCircuit_->gates_[pGate->fis_[i]];
 			if (pFaninGate->v_ != X)
 				continue;
-			if ((unsigned)pFaninGate->cc1_ < easyControlVal)
+			if (pFaninGate->cc1_ < easyControlVal)
 			{
 				easyControlVal = pFaninGate->cc1_;
 				pRetGate = pFaninGate;
@@ -2561,7 +2561,7 @@ Atpg::BACKTRACE_RESULT Atpg::multipleBacktrace(BACKTRACE_STATUS atpgStatus, int 
 
 				// ListDelete() defined in <atpg.h>, delete the element
 				// specified by the index from FanObject
-				listDelete(fanoutObjective_, index);
+				vecDelete(fanoutObjective_, index);
 
 				// if value of pCurrent is not X
 				// ignore the Fanout-Point Objective that already set value

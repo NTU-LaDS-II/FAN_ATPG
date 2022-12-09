@@ -172,7 +172,7 @@ namespace CoreNs
 		// bad readability and performance, removed by wang
 		// void pushInputEvents(const int &gateID, int index);
 		int vecPop(std::vector<int> &vec);
-		void listDelete(std::vector<int> &list, int index);
+		void vecDelete(std::vector<int> &list, int index);
 		void clearAllEvent();
 
 		// 5-Value logic evaluation functions
@@ -321,7 +321,7 @@ namespace CoreNs
 	// 	pushGateToEventStack(g.fis_[index]);
 	// 	pushGateFanoutsToEventStack(g.fis_[index]);
 	// }
-	inline void Atpg::listDelete(std::vector<int> &list, int index)
+	inline void Atpg::vecDelete(std::vector<int> &list, int index)
 	{
 		list[index] = list.back();
 		list.pop_back();
@@ -329,12 +329,16 @@ namespace CoreNs
 	inline void Atpg::clearAllEvent()
 	{
 		int gateID;
-		for (int i = 0; i < pCircuit_->tlvl_; ++i)
-			while (!circuitLevel_to_EventStack_[i].empty())
+		// change old for loop to range-based for loop
+		for (std::stack<int> &eventStack : circuitLevel_to_EventStack_)
+		{
+			while (!eventStack.empty())
 			{
-				gateID = popEventStack(i);
+				gateID = eventStack.top();
+				eventStack.pop();
 				gateID_to_valModified_[gateID] = 0;
 			}
+		}
 	}
 
 	// 5-value logic evaluation functions

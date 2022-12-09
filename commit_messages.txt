@@ -1,0 +1,11 @@
+Refactor - 13th modification
+
+  name changes:
+    listDelete => vecDelete
+  performance related changes:
+    Atpg::clearAllEvent():
+      old for loop => range-based for loop
+  debug:
+    fix scoap.cpp bugs
+  note:
+    after scoap.cpp bugs fixed, the heuristic still does not seem to help
