@@ -439,12 +439,12 @@ void Atpg::StuckAtFaultATPGWithDTC(FaultList &faultListToGen, PatternProcessor *
 			for (FaultListIter it = faultListTemp.begin(); it != faultListTemp.end(); ++it)
 			{
 				// skip detected faults
-				if ((*it)->state_ == Fault::DT)
+				if ((*it)->faultState_ == Fault::DT)
 					continue;
 
 				Gate *pGateForAtivation = getWireForActivation((**it));
-				if (((pGateForAtivation->v_ == L) && ((*it)->type_ == Fault::SA0)) ||
-						((pGateForAtivation->v_ == H) && ((*it)->type_ == Fault::SA1)))
+				if (((pGateForAtivation->v_ == L) && ((*it)->faultType_ == Fault::SA0)) ||
+						((pGateForAtivation->v_ == H) && ((*it)->faultType_ == Fault::SA1)))
 				{
 					continue;
 				}
@@ -452,7 +452,7 @@ void Atpg::StuckAtFaultATPGWithDTC(FaultList &faultListToGen, PatternProcessor *
 				// Activation check
 				if (pGateForAtivation->v_ != X)
 				{
-					if (((*it)->type_ == Fault::SA0) || ((*it)->type_ == Fault::SA1))
+					if (((*it)->faultType_ == Fault::SA0) || ((*it)->faultType_ == Fault::SA1))
 					{
 						setValueAndRunImp((*pGateForAtivation), X);
 					}
@@ -516,13 +516,13 @@ void Atpg::StuckAtFaultATPGWithDTC(FaultList &faultListToGen, PatternProcessor *
 	}
 	else if (result == UNTESTABLE)
 	{
-		faultListToGen.front()->state_ = Fault::AU;
+		faultListToGen.front()->faultState_ = Fault::AU;
 		faultListToGen.pop_front();
 		untest++;
 	}
 	else
 	{
-		faultListToGen.front()->state_ = Fault::AB;
+		faultListToGen.front()->faultState_ = Fault::AB;
 		faultListToGen.push_back(faultListToGen.front());
 		faultListToGen.pop_front();
 	}
@@ -540,12 +540,12 @@ void Atpg::StuckAtFaultATPGWithDTC(FaultList &faultListToGen, PatternProcessor *
 // **************************************************************************
 Gate *Atpg::getWireForActivation(Fault &fault)
 {
-	bool isOutputFault = (fault.line_ == 0);
+	bool isOutputFault = (fault.faultyLine_ == 0);
 	Gate *pGateForAtivation;
-	Gate *pFaultyGate = &cir_->gates_[fault.gate_];
+	Gate *pFaultyGate = &cir_->gates_[fault.gateID_];
 	if (!isOutputFault)
 	{
-		pGateForAtivation = &cir_->gates_[pFaultyGate->fis_[fault.line_ - 1]];
+		pGateForAtivation = &cir_->gates_[pFaultyGate->fis_[fault.faultyLine_ - 1]];
 	}
 	else
 	{
@@ -570,10 +570,10 @@ void Atpg::reverseFaultSimulation(PatternProcessor *pcoll, FaultList &originalFa
 	// set TD to UD
 	for (auto it = originalFaultList.begin(); it != originalFaultList.end(); ++it)
 	{
-		(*it)->det_ = 0;
-		if ((*it)->state_ == Fault::DT)
+		(*it)->detection_ = 0;
+		if ((*it)->faultState_ == Fault::DT)
 		{
-			(*it)->state_ = Fault::UD;
+			(*it)->faultState_ = Fault::UD;
 		}
 	}
 
