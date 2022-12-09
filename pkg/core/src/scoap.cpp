@@ -35,7 +35,7 @@ void Atpg::calSCOAP()
 	// xor2 xnor2 : {00,01,10,11}
 	// xor3 xnor3 : {000, 001, 010, 011, 100, 101, 110, 111}
 	int xorcc[8] = {0};
-	Gate xorgin[2];
+	Gate xorgin[3];
 
 	// calculate cc0 and cc1 starting from PI and PPI
 	for (int i = 0; i < pCircuit_->tgate_; ++i)
