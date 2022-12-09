@@ -96,7 +96,7 @@ namespace CoreNs
 
 		Fault currentTargetHeadLineFault_; // Fault headLineFault_ => Fault currentTargetHeadLineFault_ by wang
 		Fault currentTargetFault_;				 // Fault currentFault_; => Fault currentTargetFault_ by wang
-		const int backtrackLimit_;				 // unsigned => int by wang
+		const int BACKTRACK_LIMIT;				 // unsigned => int by wang
 
 		std::vector<int> gateID_to_n0_;											 // unsigned *n0_ => std::vector<int> gateID_to_n0_ by wang
 		std::vector<int> gateID_to_n1_;											 // unsigned *n1_ => std::vector<int> gateID_to_n1_ by wang
@@ -164,9 +164,12 @@ namespace CoreNs
 		//
 		void pushGateToEventStack(const int &gateID); // push events to the event list of corresponding level
 		int popEventStack(const int &level);
-		void pushGateFanoutsToEventStack(const int &gateID);								 // push all the gate output events to event list of the corresponding level
-		void pushGateFanoutsToEventStack(const int &gateID, int &gateCount); // record how many gates are pushed
-		void pushInputEvents(const int &gateID, int index);
+		// void pushGateFanoutsToEventStack(const int &gateID);, removed by wang
+		// push all the gate output events to event list of the corresponding level
+		// return how many gates are pushed
+		int pushGateFanoutsToEventStack(const int &gateID);
+		// bad readability and performance, removed by wang
+		// void pushInputEvents(const int &gateID, int index);
 		int vecPop(std::vector<int> &vec);
 		void listDelete(std::vector<int> &list, int index);
 		void clearAllEvent();
@@ -221,7 +224,7 @@ namespace CoreNs
 				gateID_to_xPathStatus_(pCircuit->tgate_),
 				gateID_to_uniquePath_(pCircuit->tgate_, std::vector<int>()),
 				circuitLevel_to_EventStack_(pCircuit->lvl_),
-				backtrackLimit_(MAX_BACKTRACK)
+				BACKTRACK_LIMIT(MAX_BACKTRACK)
 	{
 		pCircuit_ = pCircuit;
 		pSimulator_ = pSimulator;
@@ -295,27 +298,29 @@ namespace CoreNs
 	// 	{
 	// 		pushGateToEventStack(g.fos_[i]);
 	// 	}
-	// }
-	inline void Atpg::pushGateFanoutsToEventStack(const int &gateID, int &gateCount)
+	// } originally duplicate function and implemented for performance but bad readability, removed by wang
+	inline int Atpg::pushGateFanoutsToEventStack(const int &gateID)
 	{
+		int pushedGateCount = 0;
 		Gate &g = pCircuit_->gates_[gateID];
 		for (int i = 0; i < g.nfo_; ++i)
 		{
-			Gate &gOut = pCircuit_->gates_[g.fos_[i]];
+			int &outputGateLevel = pCircuit_->gates_[g.fos_[i]].lvl_;
 			if (!gateID_to_valModified_[g.fos_[i]])
 			{
-				circuitLevel_to_EventStack_[gOut.lvl_].push(g.fos_[i]);
+				circuitLevel_to_EventStack_[outputGateLevel].push(g.fos_[i]);
 				gateID_to_valModified_[g.fos_[i]] = 1;
-				gateCount++;
+				++pushedGateCount;
 			}
 		}
+		return pushedGateCount;
 	}
-	inline void Atpg::pushInputEvents(const int &gateID, int index)
-	{
-		Gate &g = pCircuit_->gates_[gateID];
-		pushGateToEventStack(g.fis_[index]);
-		pushGateFanoutsToEventStack(g.fis_[index]);
-	}
+	// inline void Atpg::pushInputEvents(const int &gateID, int index)
+	// {
+	// 	Gate &g = pCircuit_->gates_[gateID];
+	// 	pushGateToEventStack(g.fis_[index]);
+	// 	pushGateFanoutsToEventStack(g.fis_[index]);
+	// }
 	inline void Atpg::listDelete(std::vector<int> &list, int index)
 	{
 		list[index] = list.back();

@@ -93,7 +93,7 @@ ifeq "$(MODE)" "$(DBGDIR)"
     CFLAGS   = -std=c++11 -Wall -g -D DEBUG
     LIBLOC   = -L$(G_DBGDIR) $(addprefix -L,$(EXTDBGLIBLOC))
 else
-    CFLAGS   = -std=c++11 -Wall -O2
+    CFLAGS   = -std=c++11 -Wall -O3
     LIBLOC   = -L$(G_OPTDIR) $(addprefix -L,$(EXTOPTLIBLOC))
 endif
 

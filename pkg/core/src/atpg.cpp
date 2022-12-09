@@ -494,8 +494,8 @@ Atpg::SINGLE_PATTERN_GENERATION_STATUS Atpg::generateSinglePatternOnTargetFault(
 			// record the number of backtrack
 			if (decisionTree_.lastNodeMark())
 				numOfBacktrack++;
-			// Abort if numOfBacktrack reaching the backtrackLimit_
-			if (numOfBacktrack > backtrackLimit_) // (int)backtrackLimit_ => backtrackLimit_
+			// Abort if numOfBacktrack reaching the BACKTRACK_LIMIT
+			if (numOfBacktrack > BACKTRACK_LIMIT) // (int)BACKTRACK_LIMIT => BACKTRACK_LIMIT
 			{
 				genStatus = ABORT;
 				Finish = true;
@@ -564,8 +564,8 @@ Atpg::SINGLE_PATTERN_GENERATION_STATUS Atpg::generateSinglePatternOnTargetFault(
 				// record the number of backtrack
 				if (decisionTree_.lastNodeMark())
 					numOfBacktrack++;
-				// Abort if numOfBacktrack reaching the backtrackLimit_
-				if (numOfBacktrack > backtrackLimit_)
+				// Abort if numOfBacktrack reaching the BACKTRACK_LIMIT
+				if (numOfBacktrack > BACKTRACK_LIMIT)
 				{
 					genStatus = ABORT;
 					Finish = true;
@@ -1464,7 +1464,7 @@ void Atpg::fanoutFreeBacktrace(Gate *pObjectGate)
 			currentObject_.push_back(pGate->fis_[0]);
 			currentObject_.push_back(pGate->fis_[1]); // push both input gates into currentObject_ list
 		}
-		else if (pGate->type_ == Gate::XOR3 && pGate->type_ == Gate::XNOR3)
+		else if (pGate->type_ == Gate::XOR3 || pGate->type_ == Gate::XNOR3) // debugged by wang
 		{
 			if (&pCircuit_->gates_[pGate->fis_[1]] != firstTimeFrameHeadLine_)
 			{

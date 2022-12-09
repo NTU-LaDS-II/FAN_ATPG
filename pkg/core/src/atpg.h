@@ -21,7 +21,7 @@ namespace CoreNs
 {
 
 	const int MAX_LIST_SIZE = 1000;	 // unsigned => int by wang
-	const int MAX_BACKTRACK = 500;	 // unsigned => int by wang
+	const int BACKTRACK_LIMIT = 500; // unsigned => int by wang
 	const int INFINITE = 0x7fffffff; // unsigned => int by wang
 	const int UNIQUE_PATH_SENSITIZE_FAIL = -2;
 	const int NO_UNIQUE_PATH = -1; // added by wang
@@ -96,7 +96,7 @@ namespace CoreNs
 
 		Fault currentTargetHeadLineFault_; // Fault headLineFault_ => Fault currentTargetHeadLineFault_ by wang
 		Fault currentTargetFault_;				 // Fault currentFault_; => Fault currentTargetFault_ by wang
-		const int backtrackLimit_;				 // unsigned => int by wang
+		// const int BACKTRACK_LIMIT;				 // unsigned => int by wang
 
 		std::vector<int> gateID_to_n0_;											 // unsigned *n0_ => std::vector<int> gateID_to_n0_ by wang
 		std::vector<int> gateID_to_n1_;											 // unsigned *n1_ => std::vector<int> gateID_to_n1_ by wang
@@ -223,8 +223,7 @@ namespace CoreNs
 				gateID_to_lineType_(pCircuit->tgate_),
 				gateID_to_xPathStatus_(pCircuit->tgate_),
 				gateID_to_uniquePath_(pCircuit->tgate_, std::vector<int>()),
-				circuitLevel_to_EventStack_(pCircuit->lvl_),
-				backtrackLimit_(MAX_BACKTRACK)
+				circuitLevel_to_EventStack_(pCircuit->lvl_)
 	{
 		pCircuit_ = pCircuit;
 		pSimulator_ = pSimulator;
