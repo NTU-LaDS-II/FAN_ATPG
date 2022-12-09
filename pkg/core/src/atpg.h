@@ -168,7 +168,8 @@ namespace CoreNs
 		// push all the gate output events to event list of the corresponding level
 		// return how many gates are pushed
 		int pushGateFanoutsToEventStack(const int &gateID);
-		void pushInputEvents(const int &gateID, int index);
+		// bad readability and performance, removed by wang
+		// void pushInputEvents(const int &gateID, int index);
 		int vecPop(std::vector<int> &vec);
 		void listDelete(std::vector<int> &list, int index);
 		void clearAllEvent();
@@ -314,12 +315,12 @@ namespace CoreNs
 		}
 		return pushedGateCount;
 	}
-	inline void Atpg::pushInputEvents(const int &gateID, int index)
-	{
-		Gate &g = pCircuit_->gates_[gateID];
-		pushGateToEventStack(g.fis_[index]);
-		pushGateFanoutsToEventStack(g.fis_[index]);
-	}
+	// inline void Atpg::pushInputEvents(const int &gateID, int index)
+	// {
+	// 	Gate &g = pCircuit_->gates_[gateID];
+	// 	pushGateToEventStack(g.fis_[index]);
+	// 	pushGateFanoutsToEventStack(g.fis_[index]);
+	// }
 	inline void Atpg::listDelete(std::vector<int> &list, int index)
 	{
 		list[index] = list.back();

@@ -987,7 +987,9 @@ int Atpg::setFaultyGate(Fault &fault)
 				if (BackImpLevel < pFaninGate->lvl_)
 					BackImpLevel = pFaninGate->lvl_;
 				// shedule all fanout gates of the fanin gate
-				pushInputEvents(pFaultyGate->id_, i);
+				// pushInputEvents(pFaultyGate->id_, i); replaced by folloing, by wang
+				pushGateToEventStack(pFaultyGate->fis_[i]);
+				pushGateFanoutsToEventStack(pFaultyGate->fis_[i]);
 			}
 		}
 	}
@@ -1014,7 +1016,9 @@ int Atpg::setFaultyGate(Fault &fault)
 			vtemp = pFaultyGate->isInverse();
 			pFaninGate->v_ = cXOR2(vtemp, Val);
 			backtrackList_.push_back(pFaninGate->id_);
-			pushInputEvents(pFaultyGate->id_, 0);
+			// pushInputEvents(pFaultyGate->id_, 0); replaced by following 2 func, by wang
+			pushGateToEventStack(pFaultyGate->fis_[0]);
+			pushGateFanoutsToEventStack(pFaultyGate->fis_[0]);
 
 			if (BackImpLevel < pFaninGate->lvl_)
 				BackImpLevel = pFaninGate->lvl_;
@@ -1032,7 +1036,9 @@ int Atpg::setFaultyGate(Fault &fault)
 					pFaninGate->v_ = pFaultyGate->getInputNonCtrlValue();
 					backtrackList_.push_back(pFaninGate->id_);
 					// shedule all fanout gate of the pFaninGate
-					pushInputEvents(pFaultyGate->id_, i);
+					// pushInputEvents(pFaultyGate->id_, i); removed by wang
+					pushGateToEventStack(pFaultyGate->fis_[i]);
+					pushGateFanoutsToEventStack(pFaultyGate->fis_[i]);
 					if (BackImpLevel < pFaninGate->lvl_)
 						BackImpLevel = pFaninGate->lvl_;
 				}
@@ -1138,7 +1144,9 @@ int Atpg::firstTimeFrameSetUp(Fault &fault)
 			vtemp = pFaultyLine->isInverse();
 			pFaninGate->v_ = cXOR2(vtemp, Val);
 			backtrackList_.push_back(pFaninGate->id_);
-			pushInputEvents(pFaultyLine->id_, 0);
+			// pushInputEvents(pFaultyLine->id_, 0); replaced by folloing by wang
+			pushGateToEventStack(pFaultyLine->fis_[0]);
+			pushGateFanoutsToEventStack(pFaultyLine->fis_[0]);
 			if (BackImpLevel < pFaninGate->lvl_)
 				BackImpLevel = pFaninGate->lvl_;
 		}
@@ -1154,7 +1162,9 @@ int Atpg::firstTimeFrameSetUp(Fault &fault)
 				{
 					pFaninGate->v_ = pFaultyLine->getInputNonCtrlValue();
 					backtrackList_.push_back(pFaninGate->id_);
-					pushInputEvents(pFaultyLine->id_, i);
+					// pushInputEvents(pFaultyLine->id_, i); replaced by folloing by wang
+					pushGateToEventStack(pFaultyLine->fis_[i]);
+					pushGateFanoutsToEventStack(pFaultyLine->fis_[i]);
 					// set the BackImpLevel to be maximum of fanin gate's level
 					if (BackImpLevel < pFaninGate->lvl_)
 						BackImpLevel = pFaninGate->lvl_;
@@ -1268,7 +1278,9 @@ int Atpg::uniquePathSensitize(Gate &gate)
 						BackImpLevel = pFaninGate->lvl_;
 
 					backtrackList_.push_back(pFaninGate->id_);
-					pushInputEvents(gate.id_, i);
+					// pushInputEvents(gate.id_, i); replaced by wang
+					pushGateToEventStack(gate.fis_[i]);
+					pushGateFanoutsToEventStack(gate.fis_[i]);
 				}
 				else if (pFaninGate->v_ == gate.getInputCtrlValue())
 					return UNIQUE_PATH_SENSITIZE_FAIL;
@@ -1319,7 +1331,9 @@ int Atpg::uniquePathSensitize(Gate &gate)
 							BackImpLevel = pFaninGate->lvl_;
 						// BackImpLevel becomes MAX of pNextGate's fanin level
 						backtrackList_.push_back(pFaninGate->id_);
-						pushInputEvents(pNextGate->id_, i);
+						// pushInputEvents(pNextGate->id_, i); replaced by wang
+						pushGateToEventStack(pNextGate->fis_[i]);
+						pushGateFanoutsToEventStack(pNextGate->fis_[i]);
 					}
 				}
 			}
@@ -1355,7 +1369,9 @@ int Atpg::uniquePathSensitize(Gate &gate)
 						if (BackImpLevel < pFaninGate->lvl_)
 							BackImpLevel = pFaninGate->lvl_; // BackImpLevel becomes MAX of pNextGate's fanin level
 						backtrackList_.push_back(pFaninGate->id_);
-						pushInputEvents(pNextGate->id_, i);
+						// pushInputEvents(pNextGate->id_, i); replaced by wang
+						pushGateToEventStack(pNextGate->fis_[i]);
+						pushGateFanoutsToEventStack(pNextGate->fis_[i]);
 					}
 				}
 			}
@@ -1924,7 +1940,9 @@ Atpg::IMPLICATION_STATUS Atpg::faultyGateEvaluation(Gate *pGate)
 				pImpGate->v_ = ImpVal;
 
 				// backward setting
-				pushInputEvents(pGate->id_, ImpPtr);
+				// pushInputEvents(pGate->id_, ImpPtr);
+				pushGateToEventStack(pGate->fis_[ImpPtr]);
+				pushGateFanoutsToEventStack(pGate->fis_[ImpPtr]);
 				backtrackList_.push_back(pImpGate->id_);
 
 				return BACKWARD;
@@ -1970,7 +1988,9 @@ Atpg::IMPLICATION_STATUS Atpg::backwardImplication(Gate *pGate)
 		pImpGate->v_ = cXOR2(pGate->v_, isINV);
 
 		backtrackList_.push_back(pImpGate->id_);
-		pushInputEvents(pGate->id_, 0);
+		// pushInputEvents(pGate->id_, 0); replaced by wang
+		pushGateToEventStack(pGate->fis_[0]);
+		pushGateFanoutsToEventStack(pGate->fis_[0]);
 		implyStatus = BACKWARD;
 	}
 	else if (pGate->type_ == Gate::XOR2 || pGate->type_ == Gate::XNOR2)
@@ -1988,7 +2008,9 @@ Atpg::IMPLICATION_STATUS Atpg::backwardImplication(Gate *pGate)
 				pInputGate0->v_ = cXNOR2(pGate->v_, pInputGate1->v_);
 			gateID_to_valModified_[pGate->id_] = 1;
 			backtrackList_.push_back(pInputGate0->id_);
-			pushInputEvents(pGate->id_, 0);
+			// pushInputEvents(pGate->id_, 0); replaced by wang
+			pushGateToEventStack(pGate->fis_[0]);
+			pushGateFanoutsToEventStack(pGate->fis_[0]);
 		}
 		else if (pInputGate1->v_ == X && pInputGate0->v_ != X)
 		{
@@ -1998,7 +2020,9 @@ Atpg::IMPLICATION_STATUS Atpg::backwardImplication(Gate *pGate)
 				pInputGate1->v_ = cXNOR2(pGate->v_, pInputGate0->v_);
 			gateID_to_valModified_[pGate->id_] = 1;
 			backtrackList_.push_back(pInputGate1->id_);
-			pushInputEvents(pGate->id_, 1);
+			// pushInputEvents(pGate->id_, 1); replaced by wang
+			pushGateToEventStack(pGate->fis_[1]);
+			pushGateFanoutsToEventStack(pGate->fis_[1]);
 		}
 		else
 		{
@@ -2044,7 +2068,9 @@ Atpg::IMPLICATION_STATUS Atpg::backwardImplication(Gate *pGate)
 			pImpGate->v_ = temp;
 			gateID_to_valModified_[pGate->id_] = 1;
 			backtrackList_.push_back(pImpGate->id_);
-			pushInputEvents(pGate->id_, ImpPtr);
+			// pushInputEvents(pGate->id_, ImpPtr); replaced by wang
+			pushGateToEventStack(pGate->fis_[ImpPtr]);
+			pushGateFanoutsToEventStack(pGate->fis_[ImpPtr]);
 			implyStatus = BACKWARD;
 		}
 		else
@@ -2072,7 +2098,9 @@ Atpg::IMPLICATION_STATUS Atpg::backwardImplication(Gate *pGate)
 				{
 					pFaninGate->v_ = InputNonControlVal;
 					backtrackList_.push_back(pFaninGate->id_);
-					pushInputEvents(pGate->id_, i);
+					// pushInputEvents(pGate->id_, i); replaced by wang
+					pushGateToEventStack(pGate->fis_[i]);
+					pushGateFanoutsToEventStack(pGate->fis_[i]);
 				}
 			}
 
@@ -2099,7 +2127,9 @@ Atpg::IMPLICATION_STATUS Atpg::backwardImplication(Gate *pGate)
 				pImpGate->v_ = InputControlVal;
 				gateID_to_valModified_[pGate->id_] = 1;
 				backtrackList_.push_back(pImpGate->id_);
-				pushInputEvents(pGate->id_, ImpPtr);
+				// pushInputEvents(pGate->id_, ImpPtr); replaced by wang
+				pushGateToEventStack(pGate->fis_[ImpPtr]);
+				pushGateFanoutsToEventStack(pGate->fis_[ImpPtr]);
 				implyStatus = BACKWARD;
 			}
 			else
