@@ -64,14 +64,14 @@ namespace CoreNs
 		Fault(int gateID, FAULT_TYPE faultType, int faultyLine, int equivalent = 1, FAULT_STATE faultState = UD);
 		~Fault();
 
-		// int aggr_;						// ID of the aggressor gate ,removed by pan
-		int gateID_;						// ID of the faulty gate. gate_ => gateID_, modified by pan
-		FAULT_TYPE faultType_;	 // fault type. type_ => faultType_, modified by pan
-		int faultyLine_;				// faulty line location: 0 means gate output fault. 1+ means gate input fault
-											// on the corresponding gate input line. line_ => faultyLine_, modified by pan
-		int detection_;					// number of detection. det_ => detection_, modified by pan
-		FAULT_STATE faultState_; // fault state. state_ => faultState_, modified by pan
-		int equivalent_;				// the number of equivalent faults, used to calculate uncollapsed fault coverage. eq => equivalent, modified by pan
+		// int aggr_;			// ID of the aggressor gate ,removed by pan
+		int gateID_;			// ID of the faulty gate. gate_ => gateID_, modified by pan
+		FAULT_TYPE faultType_;	// fault type. type_ => faultType_, modified by pan
+		int faultyLine_;		// faulty line location: 0 means gate output fault. 1+ means gate input fault
+							// on the corresponding gate input line. line_ => faultyLine_, modified by pan
+		int detection_;		// number of detection. det_ => detection_, modified by pan
+		FAULT_STATE faultState_;	// fault state. state_ => faultState_, modified by pan
+		int equivalent_;		// the number of equivalent faults, used to calculate uncollapsed fault coverage. eq => equivalent, modified by pan
 	};
 
 	class FaultListExtract
@@ -89,11 +89,11 @@ namespace CoreNs
 
 		void extractFaultFromCircuit(Circuit *circuit); // cir => circuit, modified by pan
 
-		std::vector<int> gateIndexToFaultIndex_; // map gate index to fault list index. int* => std::vector<int>, gateToFault => gateIndexToFaultIndex, modified by pan
+		std::vector<int> gateIndexToFaultIndex_;	// map gate index to fault list index. int* => std::vector<int>, gateToFault => gateIndexToFaultIndex, modified by pan
 		std::vector<Fault> uncollapsedFaults_;	// record faults without fault collapsing, used for adding part of faults in atpg_cmd.cpp
-		std::vector<Fault> extractedFaults_;		// faults extracted from the circuit. faults => extractedFaults, modified by pan
-		FaultList faultsInCircuit_;						// faults used in the ATPG. current_ => faultsInCircuit_, modified by pan
-		FAULTLIST_TYPE faultListType_;				// fault list type. type_ => faultListType, modified by pan
+		std::vector<Fault> extractedFaults_;	// faults extracted from the circuit. faults => extractedFaults, modified by pan
+		FaultList faultsInCircuit_;			// faults used in the ATPG. current_ => faultsInCircuit_, modified by pan
+		FAULTLIST_TYPE faultListType_;			// fault list type. type_ => faultListType, modified by pan
 	};
 
 	inline Fault::Fault()

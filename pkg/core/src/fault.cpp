@@ -16,13 +16,12 @@ using namespace CoreNs;
 
 void FaultListExtract::extractFaultFromCircuit(Circuit *circuit)
 {
-	// clear faults
-	uncollapsedFaults_.clear();
+	// since the function only called once, we don't need to clear faults initially
+	// reserve enough space for faults push_back, 10 * circuit->ngate_ is maximum possible faults in a circuit
 	uncollapsedFaults_.reserve(10 * circuit->ngate_);
-	extractedFaults_.clear();
 	extractedFaults_.reserve(10 * circuit->ngate_);
 
-	gateIndexToFaultIndex_.clear();
+	// resize gateIndexToFaultIndex to proper size
 	gateIndexToFaultIndex_.resize(circuit->ngate_);
 
 	// add stuck-at faults
