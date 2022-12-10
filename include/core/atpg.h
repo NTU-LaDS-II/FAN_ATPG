@@ -7,29 +7,27 @@
 
 #ifndef _CORE_ATPG_H_
 #define _CORE_ATPG_H_
-// header file order modified by wang
+
 #include <cstdlib>
 #include <string>
 #include <vector> // added by wang
 #include <stack>	// added by wang
 #include <algorithm>
-// #include <cassert> removed by wang
 #include "decision_tree.h"
 #include "simulator.h"
 
 namespace CoreNs
 {
-
-	const int MAX_LIST_SIZE = 1000;	 // unsigned => int by wang
-	const int BACKTRACK_LIMIT = 500; // unsigned => int by wang
-	const int INFINITE = 0x7fffffff; // unsigned => int by wang
-	const int UNIQUE_PATH_SENSITIZE_FAIL = -2;
-	const int NO_UNIQUE_PATH = -1; // added by wang
+	constexpr int MAX_LIST_SIZE = 1000;	 // unsigned => int by wang
+	constexpr int BACKTRACK_LIMIT = 500; // unsigned => int by wang
+	constexpr int INFINITE = 0x7fffffff; // unsigned => int by wang
+	constexpr int UNIQUE_PATH_SENSITIZE_FAIL = -2;
+	constexpr int NO_UNIQUE_PATH = -1; // added by wang
 
 	class Atpg
 	{
 	public:
-		Atpg(Circuit *pCircuit, Simulator *pSimulator); // cir => pCircuit, sim => pSmiulator by wang
+		inline Atpg(Circuit *pCircuit, Simulator *pSimulator); // cir => pCircuit, sim => pSmiulator by wang
 		// ~Atpg(); now that there is no new ptr, useless destructor is redundant and might slow the program
 		// removed by wang
 
@@ -77,20 +75,17 @@ namespace CoreNs
 		// void generatePatternSet(PatternProcessor *pPatternProcessor, FaultListExtract *pFaultListExtracted); by wang
 		void generatePatternSet(PatternProcessor *pPatternProcessor, FaultListExtract *pFaultListExtracted);
 
-	private: // protected -> private no need to be protected, by wang
-		// void XFill(PatternProcessor *pPatternProcessor); not used, removed by wang
-
+	private:									// protected -> private no need to be protected, by wang
 		Circuit *pCircuit_;			// cir_ => pCircuit_ by wang
 		Simulator *pSimulator_; // sim_ => simulator by wang
 
 		Fault currentTargetHeadLineFault_; // Fault headLineFault_ => Fault currentTargetHeadLineFault_ by wang
 		Fault currentTargetFault_;				 // Fault currentFault_; => Fault currentTargetFault_ by wang
-		// const int BACKTRACK_LIMIT;				 // unsigned => int by wang
 
 		std::vector<int> gateID_to_n0_;											 // unsigned *n0_ => std::vector<int> gateID_to_n0_ by wang
 		std::vector<int> gateID_to_n1_;											 // unsigned *n1_ => std::vector<int> gateID_to_n1_ by wang
 		std::vector<int> gateID_to_valModified_;						 // indicate whether the gate has been backtraced or implied, true means the gate has been modified, new => vec by wang
-		std::vector<int> headLIneGateIDs_;									 // array of headlines, new => vec by wang
+		std::vector<int> headLineGateIDs_;									 // array of headlines, new => vec by wang
 		int nHeadLine_;																			 // number of headlines
 		std::vector<int> gateID_to_reachableByTargetFault_;	 // TRUE means this fanout is in fanout cone of target fault;
 		std::vector<GATE_LINE_TYPE> gateID_to_lineType_;		 // array of line types for all gates: FREE HEAD or BOUND
@@ -108,127 +103,126 @@ namespace CoreNs
 		std::vector<int> finalObject_; // final objectives include fanout objectives and headline objectives.
 		std::vector<int> dFrontier_;	 // D-frontier list
 		DecisionTree decisionTree_;
-		std::vector<bool> isInEventList_;
+		std::vector<bool> isInEventStack_;
 
 		Gate *firstTimeFrameHeadLine_;
 
-		// private methods
+		// ---------------private methods----------------- //
 
 		// set up circuit parameters
 		void setupCircuitParameter();
-		void calDepthFromPo();
+		void calGateDepthFromPO();
 		void identifyLineParameter();
 		void identifyDominator();
 		void identifyUniquePath();
 
 		void TransitionDelayFaultATPG(FaultList &faultListToGen, PatternProcessor *pPatternProcessor, int &untest);
-		void StuckAtFaultATPG(FaultList &faultListToGen, PatternProcessor *pPatternProcessor, int &untest); // not used
+		// void StuckAtFaultATPG(FaultList &faultListToGen, PatternProcessor *pPatternProcessor, int &untest); // not used
 		void StuckAtFaultATPGWithDTC(FaultList &faultListToGen, PatternProcessor *pPatternProcessor, int &untest);
 
-		SINGLE_PATTERN_GENERATION_STATUS generateSinglePatternOnTargetFault(Fault targetFault, bool isDTC); // name changed by wang
+		Gate *getWireForActivation(Fault &fault);
+		void setValueAndRunImp(Gate &gate, Value val);
 
 		void resetPreValue();
 		int storeCurrentGateValue();
 		void clearAllFaultEffectBySimulation();
 		void clearOneGateFaultEffect(Gate &gate);
 
+		SINGLE_PATTERN_GENERATION_STATUS generateSinglePatternOnTargetFault(Fault targetFault, bool isDTC); // name changed by wang
+
 		// initialization at the start of single pattern generation
 		Gate *initialize(Fault &targetFault, int &BackImpLevel, IMPLICATION_STATUS &implyStatus, bool isDTC);
 		void initialList(bool initFlag);
 		void initialNetlist(Gate &gFaultyLine, bool isDTC);
+		void clearEventStack(bool isDebug);
 
-		void assignPatternPI_fromGateVal(Pattern *pPat);		// write PI values to pattern
-		void assignPatternPO_fromGoodSimVal(Pattern *pPat); // write PO values to pattern
-		
-		void staticTestCompressionByReverseFaultSimulation(PatternProcessor *pPatternProcessor, FaultList &originalFaultList);
-
-		int countNumGatesInDFrontier(Gate *pFaultyLine);
-
-		bool continuationMeaningful(Gate *pLastDFrontier);
-		bool checkFaultPropToPO(bool &faultPropToPO);
-		bool checkUnjustifiedBoundLines();
-		void assignValueToFinalObject();
-
-		int setFaultyGate(Fault &fault);
-		Fault setFreeFaultyGate(Gate &gate);
-		void setGaten0n1(const int &gateID, const int &n0, const int &n1); // void setn0n1(int gate, int n0, int n1) => void setGaten0n1(int gateID, int n0, int n1) by wang
-
-		int uniquePathSensitize(Gate &gate);
-
-		void justifyFreeLines(Fault &fOriginalFault);
-		void restoreFault(Fault &fOriginalFault);
-
-		BACKTRACE_RESULT multipleBacktrace(BACKTRACE_STATUS atpgStatus, int &finalObjectiveId);
-		void fanoutFreeBacktrace(Gate *pObjectGate);
-
-		void updateUnjustifiedLines();
-		void updateDFrontier();
+		bool Implication(IMPLICATION_STATUS atpgStatus, int StartLevel);
+		IMPLICATION_STATUS backwardImplication(Gate *pGate);
 
 		bool backtrack(int &BackImpLevel);
-
-		void initialObjectives();
+		bool continuationMeaningful(Gate *pLastDFrontier);
+		void updateUnjustifiedLines();
+		void updateDFrontier();
+		bool checkFaultPropToPO(bool &faultPropToPO);
+		bool checkUnjustifiedBoundLines();
 		void findFinalObjective(BACKTRACE_STATUS &flag, bool FaultPropPO, Gate *&pLastDFrontier);
-
-		Gate *findEasiestInput(Gate *pGate, Value Val);
-		Gate *findCloseToOutput(std::vector<int> &list, int &index);
+		void assignValueToFinalObject();
+		void justifyFreeLines(Fault &fOriginalFault);
+		void restoreFault(Fault &fOriginalFault);
+		int countNumGatesInDFrontier(Gate *pFaultyLine);
+		int uniquePathSensitize(Gate &gate);
 
 		bool isExistXPath(Gate *pGate);
 		bool xPathTracing(Gate *pGate);
 
-		IMPLICATION_STATUS faultyGateEvaluation(Gate *pGate);
+		int setFaultyGate(Fault &fault);
+		Fault setFreeFaultyGate(Gate &gate);
+
+		void fanoutFreeBacktrace(Gate *pObjectGate);
+		BACKTRACE_RESULT multipleBacktrace(BACKTRACE_STATUS atpgStatus, int &finalObjectiveId);
+		Value assignBacktraceValue(int &n0, int &n1, Gate &gate);
+		void initialObjectives();
+		Gate *findEasiestInput(Gate *pGate, Value Val);
+		Gate *findCloseToOutput(std::vector<int> &list, int &index);
+
 		IMPLICATION_STATUS evaluation(Gate *pGate);
-		IMPLICATION_STATUS backwardImplication(Gate *pGate);
-		bool Implication(IMPLICATION_STATUS atpgStatus, int StartLevel);
+		IMPLICATION_STATUS faultyGateEvaluation(Gate *pGate);
 
-		Value evaluateGoodVal(Gate &gate);
-		Value evaluateFaultyVal(Gate &gate);
-		Value assignBacktraceValue(unsigned &n0, unsigned &n1, Gate &gate);
-
-		void randomFill(Pattern *pPat);
-		void adjacentFill(Pattern *pPat); // added by wang
-
-		// void pushGateFanoutsToEventStack(const int &gateID); overloaded function without readability, removed by wang
-		// void pushInputEvents(const int &gateID, int index);, bad readability and performance, removed by wang
-
-		void pushGateToEventStack(const int &gateID); // push events to the event list of corresponding level
-		int popEventStack(const int &level);
-		int pushGateFanoutsToEventStack(const int &gateID); // push all the gate's output to eventStack, return pushed gatecount
-		void clearAllEvent();
-		void clearEventList(bool isDebug);
-		void resetIsInEventList();
-
-		int vecPop(std::vector<int> &vec);
-		void vecDelete(std::vector<int> &list, const int &index);
-
-		void setValueAndRunImp(Gate &gate, Value val);
-		Gate *getWireForActivation(Fault &fault);
+		// statuc test compression
+		void staticTestCompressionByReverseFaultSimulation(PatternProcessor *pPatternProcessor, FaultList &originalFaultList);
 
 		int firstTimeFrameSetUp(Fault &fault); // this function is for multiple time frame
 
-		// 5-Value logic evaluation functions
-		Value cINV(const Value &i1);
-		Value cAND2(const Value &i1, const Value &i2);
-		Value cAND3(const Value &i1, const Value &i2, const Value &i3);
-		Value cAND4(const Value &i1, const Value &i2, const Value &i3, const Value &i4);
-		Value cNAND2(const Value &i1, const Value &i2);
-		Value cNAND3(const Value &i1, const Value &i2, const Value &i3);
-		Value cNAND4(const Value &i1, const Value &i2, const Value &i3, const Value &i4);
-		Value cOR2(const Value &i1, const Value &i2);
-		Value cOR3(const Value &i1, const Value &i2, const Value &i3);
-		Value cOR4(const Value &i1, const Value &i2, const Value &i3, const Value &i4);
-		Value cNOR2(const Value &i1, const Value &i2);
-		Value cNOR3(const Value &i1, const Value &i2, const Value &i3);
-		Value cNOR4(const Value &i1, const Value &i2, const Value &i3, const Value &i4);
-		Value cXOR2(const Value &i1, const Value &i2);
-		Value cXOR3(const Value &i1, const Value &i2, const Value &i3);
-		Value cXNOR2(const Value &i1, const Value &i2);
-		Value cXNOR3(const Value &i1, const Value &i2, const Value &i3);
+		inline Value evaluateGoodVal(Gate &gate);
+		inline Value evaluateFaultyVal(Gate &gate);
 
-		// debug function not used
+		inline void setGaten0n1(const int &gateID, const int &n0, const int &n1); // void setn0n1(int gate, int n0, int n1) => void setGaten0n1(int gateID, int n0, int n1) by wang
+
+		inline void assignPatternPI_fromGateVal(Pattern *pPat);		 // write PI values to pattern
+		inline void assignPatternPO_fromGoodSimVal(Pattern *pPat); // write PO values to pattern
+
+		inline void randomFill(Pattern *pPat);
+		inline void adjacentFill(Pattern *pPat); // added by wang, currently not used
+
+		inline void pushGateToEventStack(const int &gateID); // push events to the event list of corresponding level
+		inline int popEventStack(const int &level);
+		inline int pushGateFanoutsToEventStack(const int &gateID); // push all the gate's output to eventStack, return pushed gatecount
+
+		inline void clearAllEvent();
+
+		inline int vecPop(std::vector<int> &vec);
+		inline void vecDelete(std::vector<int> &list, const int &index);
+
+		// 5-Value logic evaluation functions
+		inline Value cINV(const Value &i1);
+		inline Value cAND2(const Value &i1, const Value &i2);
+		inline Value cAND3(const Value &i1, const Value &i2, const Value &i3);
+		inline Value cAND4(const Value &i1, const Value &i2, const Value &i3, const Value &i4);
+		inline Value cNAND2(const Value &i1, const Value &i2);
+		inline Value cNAND3(const Value &i1, const Value &i2, const Value &i3);
+		inline Value cNAND4(const Value &i1, const Value &i2, const Value &i3, const Value &i4);
+		inline Value cOR2(const Value &i1, const Value &i2);
+		inline Value cOR3(const Value &i1, const Value &i2, const Value &i3);
+		inline Value cOR4(const Value &i1, const Value &i2, const Value &i3, const Value &i4);
+		inline Value cNOR2(const Value &i1, const Value &i2);
+		inline Value cNOR3(const Value &i1, const Value &i2, const Value &i3);
+		inline Value cNOR4(const Value &i1, const Value &i2, const Value &i3, const Value &i4);
+		inline Value cXOR2(const Value &i1, const Value &i2);
+		inline Value cXOR3(const Value &i1, const Value &i2, const Value &i3);
+		inline Value cXNOR2(const Value &i1, const Value &i2);
+		inline Value cXNOR3(const Value &i1, const Value &i2, const Value &i3);
+
+		// function not used or removed
 		void checkLevelInfo();																 // for debug use
 		std::string getValStr(Value val);											 // for debug use
 		void calSCOAP();																			 // heuristic not effective, currently not used, added by Wei-Shen Wang
 		void testClearFaultEffect(FaultList &faultListToTest); // removed from generatePatternSet() for now seems like debug usage
+		void resetIsInEventStack();														 // not used
+		void XFill(PatternProcessor *pPatternProcessor);			 // redundant function, removed by wang
+
+		// considered not neccesary function
+		// void pushGateFanoutsToEventStack(const int &gateID); overloaded function without readability, removed by wang
+		// void pushInputEvents(const int &gateID, int index);, bad readability and performance, removed by wang
 	};
 
 	// inline functions
@@ -256,8 +250,8 @@ namespace CoreNs
 		finalObject_.reserve(MAX_LIST_SIZE);
 		unjustified_.reserve(MAX_LIST_SIZE);
 		currentObject_.reserve(MAX_LIST_SIZE);
-		isInEventList_.resize(pCircuit->tgate_);
-		std::fill(isInEventList_.begin(), isInEventList_.end(), false);
+		isInEventStack_.resize(pCircuit->tgate_);
+		std::fill(isInEventStack_.begin(), isInEventStack_.end(), false);
 		// gateID_to_n0_.resize(pCircuit->tgate_); removed by wang
 		// gateID_to_n1_.resize(pCircuit->tgate_); removed by wang
 		// gateID_to_lineType_ = new GATE_LINE_TYPE[pCircuit->tgate_];
@@ -266,7 +260,7 @@ namespace CoreNs
 		// gateID_to_uniquePath_ = new std::vector<int>[pCircuit->tgate_];
 		// gateID_to_valModified_ = new bool[pCircuit->tgate_];
 		// circuitLevel_to_EventStack_ = new std::stack<int>[pCircuit->tlvl_]; removed by wang
-		// headLIneGateIDs_ = NULL;
+		// headLineGateIDs_ = NULL; new => vector by wang
 	}
 	// inline Atpg::~Atpg()
 	// {bunch of delete... from previous new keyword dynmaic array allocation
@@ -291,12 +285,6 @@ namespace CoreNs
 		int gateID = circuitLevel_to_EventStack_[level].top();
 		circuitLevel_to_EventStack_[level].pop();
 		return gateID;
-	}
-	inline int Atpg::vecPop(std::vector<int> &vec) // listPop => vecPop by wang
-	{
-		int lastElement = vec.back();
-		vec.pop_back();
-		return lastElement;
 	}
 	// inline void Atpg::pushGateFanoutsToEventStack(const int &gateID)
 	// {
@@ -332,6 +320,12 @@ namespace CoreNs
 	{
 		list[index] = list.back();
 		list.pop_back();
+	}
+	inline int Atpg::vecPop(std::vector<int> &vec) // listPop => vecPop by wang
+	{
+		int lastElement = vec.back();
+		vec.pop_back();
+		return lastElement;
 	}
 	inline void Atpg::clearAllEvent()
 	{

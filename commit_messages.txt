@@ -1,10 +1,12 @@
-Refactor - 22nd modification
+Refactor - 23rd modification
 
   name changes:
-    change debug message from cout to cerr
+    finish ordering all the function declaration for readability
+    move all the functions of compression.cpp and scoap.cpp into atpg.cpp
+    and delete compression.cpp and scoap.cpp
   performance related changes:
   bug fixed:
-    add resetPreValue() in stuckAtFaultDTC to prevent storeCurrentGateValue() bug occurance
   note:
+    it is now more clear with the function declaration order more organized
   function added:
   function removed:
