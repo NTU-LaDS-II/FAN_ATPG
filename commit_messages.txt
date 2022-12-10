@@ -1,10 +1,8 @@
-Refactor - 18th modification
+Refactor - 19th modification
 
   name changes:
-  assignPatternPiValue => assignPatternPiFromGateVal
-  all *pat => *pPat
   performance related changes:
-  assignPatternPiFromGateVal originally included pSimulator_->goodSim,
-  kick it out and call them seperately for readability, clear semantics, and performance
   debug:
   note:
+  function added:
+    Atpg::adjacentFill() for different XFilling option

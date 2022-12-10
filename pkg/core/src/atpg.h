@@ -158,6 +158,7 @@ namespace CoreNs
 		Value assignBacktraceValue(unsigned &n0, unsigned &n1, Gate &gate);
 
 		void randomFill(Pattern *pPat);
+		void adjacentFill(Pattern *pPat); // added by wang
 
 		// void setn0n1(int gate, int n0, int n1) => void setGaten0n1(int gateID, int n0, int n1) by wang
 		void setGaten0n1(const int &gateID, const int &n0, const int &n1);
@@ -901,20 +902,62 @@ namespace CoreNs
 	{
 		srand(0);
 		for (int i = 0; i < pCircuit_->npi_; ++i)
+		{
 			if (pPat->pi1_[i] == X)
 				pPat->pi1_[i] = rand() % 2;
+		}
 		for (int i = 0; i < pCircuit_->nppi_; ++i)
+		{
 			if (pPat->ppi_[i] == X)
 				pPat->ppi_[i] = rand() % 2;
-		if (pPat->pi2_ != NULL)
+		}
+		if (pPat->pi2_)
+		{
 			for (int i = 0; i < pCircuit_->npi_; ++i)
+			{
 				if (pPat->pi2_[i] == X)
 					pPat->pi2_[i] = rand() % 2;
-		if (pPat->si_ != NULL)
+			}
+		}
+		if (pPat->si_)
+		{
 			if (pPat->si_[0] == X)
 				pPat->si_[0] = rand() % 2;
+		}
 	}
+	inline void Atpg::adjacentFill(Pattern *pPat)
+	{
+		int i;
+		if (pPat->pi1_[0] == X)
+			pPat->pi1_[0] = L;
+		for (i = 1; i < pCircuit_->npi_; ++i)
+		{
+			if (pPat->pi1_[i] == X)
+				pPat->pi1_[i] = pPat->pi1_[i - 1];
+		}
 
+		if (pPat->ppi_[0] == X)
+			pPat->ppi_[0] = pPat->pi1_[pCircuit_->npi_ - 1];
+		for (i = 1; i < pCircuit_->nppi_; ++i)
+		{
+			if (pPat->ppi_[i] == X)
+				pPat->ppi_[i] = pPat->ppi_[i - 1];
+		}
+
+		if (pPat->pi2_)
+		{
+			for (i = 0; i < pCircuit_->npi_; ++i)
+			{
+				if (pPat->pi2_[i] == X)
+					pPat->pi2_[i] = pPat->pi1_[i];
+			}
+		}
+		if (pPat->si_)
+		{
+			if (pPat->si_[0] == X)
+				pPat->si_[0] = L;
+		}
+	}
 };
 
 #endif
