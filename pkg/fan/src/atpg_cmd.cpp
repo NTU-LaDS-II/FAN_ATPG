@@ -236,14 +236,14 @@ bool AddFaultCmd::exec(const vector<string> &argv)
 	if (!fanMgr_->fListExtract)
 		fanMgr_->fListExtract = new FaultListExtract;
 
-	fanMgr_->fListExtract->extract(fanMgr_->cir);
+	fanMgr_->fListExtract->extractFaultFromCircuit(fanMgr_->cir);
 
 	// add all faults
 	if (optMgr_.isFlagSet("a"))
 		addAllFault();
 	else
 	{ // add specific faults
-		if (fanMgr_->fListExtract->faultType_ == FaultListExtract::SAF || fanMgr_->fListExtract->faultType_ == FaultListExtract::TDF)
+		if (fanMgr_->fListExtract->faultListType_ == FaultListExtract::SAF || fanMgr_->fListExtract->faultListType_ == FaultListExtract::TDF)
 		{
 			if (optMgr_.getNParsedArg() < 2)
 			{
@@ -252,14 +252,14 @@ bool AddFaultCmd::exec(const vector<string> &argv)
 				return false;
 			}
 			string type = optMgr_.getParsedArg(0);
-			if (fanMgr_->fListExtract->faultType_ == FaultListExtract::SAF &&
+			if (fanMgr_->fListExtract->faultListType_ == FaultListExtract::SAF &&
 					(type != "SA0" && type != "SA1"))
 			{
 				cerr << "**ERROR AddFaultCmd::exec(): stuck-at fault only ";
 				cerr << "supports SA0 and SA1" << endl;
 				return false;
 			}
-			if (fanMgr_->fListExtract->faultType_ == FaultListExtract::TDF &&
+			if (fanMgr_->fListExtract->faultListType_ == FaultListExtract::TDF &&
 					(type != "STR" && type != "STF"))
 			{
 				cerr << "**ERROR AddFaultCmd::exec(): transition delay ";
@@ -429,7 +429,7 @@ bool ReportFaultCmd::exec(const vector<string> &argv)
 
 	cout << "#  fault information" << endl;
 	cout << "#    fault type:       ";
-	switch (fanMgr_->fListExtract->faultType_)
+	switch (fanMgr_->fListExtract->faultListType_)
 	{
 		case FaultListExtract::SAF:
 			cout << "stuck-at fault" << endl;
@@ -857,7 +857,7 @@ bool ReportStatsCmd::exec(const vector<string> &argv)
 
 	// determine fault model
 	string ftype = "";
-	switch (fanMgr_->fListExtract->faultType_)
+	switch (fanMgr_->fListExtract->faultListType_)
 	{
 		case FaultListExtract::SAF:
 			ftype = "SAF";
@@ -1208,7 +1208,7 @@ bool RunAtpgCmd::exec(const vector<string> &argv)
 	if (!fanMgr_->fListExtract)
 	{
 		fanMgr_->fListExtract = new FaultListExtract;
-		fanMgr_->fListExtract->extract(fanMgr_->cir);
+		fanMgr_->fListExtract->extractFaultFromCircuit(fanMgr_->cir);
 	}
 
 	if (!fanMgr_->sim)

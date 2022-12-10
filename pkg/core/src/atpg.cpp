@@ -31,10 +31,11 @@ void Atpg::generatePatternSet(PatternProcessor *pPatternProcessor, FaultListExtr
 	// checkLevelInfo(); // for debug, not neccessary, removed by wang
 
 	// setting faults for running ATPG
-	for (; it != fListExtract->faultsInCircuit_.end(); ++it)
+	while(it != fListExtract->faultsInCircuit_.end())
 	{
 		if ((*it)->faultState_ != Fault::DT && (*it)->faultState_ != Fault::RE && (*it)->faultyLine_ >= 0)
 			faultListToGen.push_back(*it);
+		++it;
 	}
 
 	faultOri = faultListToGen; // ori fault copy
@@ -129,9 +130,8 @@ void Atpg::calGateDepthFromPO()
 	{
 		gateID_to_valModified_[i] = 0;
 		Gate &gate = pCircuit_->gates_[i];
-		/*
-		 * Because the default is -1, I want to check if it was changed or not.
-		 * */
+		
+		// default -1, check if it was changed or not.
 		if (gate.depthFromPo_ != -1)
 		{
 			std::cerr << "depthFromPo_ is not -1\n";

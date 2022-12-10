@@ -84,9 +84,9 @@ void Simulator::eventFaultSim() {
 void Simulator::pfFaultSim(PatternProcessor *pcoll, FaultListExtract *fListExtract) {
     // undetected faults are remaining faults
     FaultList remain;
-    FaultListIter it = fListExtract->current_.begin();
-    for ( ; it != fListExtract->current_.end(); ++it)
-        if ((*it)->state_ != Fault::DT && (*it)->state_ != Fault::RE && (*it)->line_ >= 0)
+    FaultListIter it = fListExtract->faultsInCircuit_.begin();
+    for ( ; it != fListExtract->faultsInCircuit_.end(); ++it)
+        if ((*it)->faultState_ != Fault::DT && (*it)->faultState_ != Fault::RE && (*it)->faultyLine_ >= 0)
             remain.push_back(*it);
 
     // simulate all patterns for all faults
@@ -173,12 +173,12 @@ void Simulator::pfFaultSim(FaultList &remain) {
 // **************************************************************************
 //{{{ bool Simulator::pfCheckActivation(const Fault * const)
 bool Simulator::pfCheckActivation(const Fault * const f) {
-    const int &fg = f->line_ == 0 ? f->gate_ :
-                                    cir_->gates_[f->gate_].fis_[f->line_ - 1];
+    const int &fg = f->faultyLine_ == 0 ? f->gateID_ :
+                                    cir_->gates_[f->gateID_].fis_[f->faultyLine_ - 1];
     const ParaValue &gl = cir_->gates_[fg].gl_;
     const ParaValue &gh = cir_->gates_[fg].gh_;
 
-    switch (f->type_) {
+    switch (f->faultType_) {
         case Fault::SA0:
             return gh != PARA_L;
             break;
@@ -212,21 +212,21 @@ bool Simulator::pfCheckActivation(const Fault * const f) {
 // **************************************************************************
 //{{{ void Simulator::pfInject(const Fault * const , const size_t &)
 void Simulator::pfInject(const Fault * const f, const size_t &i) {
-    int fg = f->gate_;
-    switch (f->type_) {
+    int fg = f->gateID_;
+    switch (f->faultType_) {
         case Fault::SA0:
-            setBitValue(faultInjectL_[fg][f->line_], i, H);
+            setBitValue(faultInjectL_[fg][f->faultyLine_], i, H);
             break;
         case Fault::SA1:
-            setBitValue(faultInjectH_[fg][f->line_], i, H);
+            setBitValue(faultInjectH_[fg][f->faultyLine_], i, H);
             break;
         case Fault::STR:
             fg += cir_->ngate_;
-            setBitValue(faultInjectL_[fg][f->line_], i, H);
+            setBitValue(faultInjectL_[fg][f->faultyLine_], i, H);
             break;
         case Fault::STF:
             fg += cir_->ngate_;
-            setBitValue(faultInjectH_[fg][f->line_], i, H);
+            setBitValue(faultInjectH_[fg][f->faultyLine_], i, H);
             break;
         default:
             break;
@@ -261,9 +261,9 @@ void Simulator::pfCheckDetection(FaultList &remain) {
     for (int i = 0; i < ninjected_; ++i) {
         if (getBitValue(detected, (size_t)i) == L)
             continue;
-        (*injected_[i])->det_++;
-        if ((*injected_[i])->det_ >= ndet_) {
-            (*injected_[i])->state_ = Fault::DT;
+        (*injected_[i])->detection_++;
+        if ((*injected_[i])->detection_ >= ndet_) {
+            (*injected_[i])->faultState_ = Fault::DT;
             remain.erase(injected_[i]);
         }
     }
@@ -282,9 +282,9 @@ void Simulator::pfCheckDetection(FaultList &remain) {
 void Simulator::ppFaultSim(PatternProcessor *pcoll, FaultListExtract *fListExtract) {
     // undetected faults are remaining faults
     FaultList remain;
-    FaultListIter it = fListExtract->current_.begin();
-    for ( ; it != fListExtract->current_.end(); ++it)
-        if ((*it)->state_ != Fault::DT && (*it)->state_ != Fault::RE && (*it)->line_ >= 0)
+    FaultListIter it = fListExtract->faultsInCircuit_.begin();
+    for ( ; it != fListExtract->faultsInCircuit_.end(); ++it)
+        if ((*it)->faultState_ != Fault::DT && (*it)->faultState_ != Fault::RE && (*it)->faultyLine_ >= 0)
             remain.push_back(*it);
 
     // simulate all patterns for all faults
@@ -319,7 +319,7 @@ void Simulator::ppFaultSim(FaultList &remain) {
             ppCheckDetection((*it));
             ppReset();
         }
-        if ((*it)->state_ == Fault::DT)
+        if ((*it)->faultState_ == Fault::DT)
             it = remain.erase(it);
         else
             it++;
@@ -337,12 +337,12 @@ void Simulator::ppFaultSim(FaultList &remain) {
 // **************************************************************************
 //{{{ bool Simulator::ppCheckActivation(const Fault * const)
 bool Simulator::ppCheckActivation(const Fault * const f) {
-    const int &fg = f->line_ == 0 ? f->gate_ :///if output fault,fg=ID of the faulty gate,else if input fault,fg=ID of the faulty gate's fanin array
-                                    cir_->gates_[f->gate_].fis_[f->line_ - 1];
+    const int &fg = f->faultyLine_ == 0 ? f->gateID_ :///if output fault,fg=ID of the faulty gate,else if input fault,fg=ID of the faulty gate's fanin array
+                                    cir_->gates_[f->gateID_].fis_[f->faultyLine_ - 1];
     const ParaValue &gl = cir_->gates_[fg].gl_;
     const ParaValue &gh = cir_->gates_[fg].gh_;
 
-    switch (f->type_) {
+    switch (f->faultType_) {
         case Fault::SA0:
             activated_ = gh;
             return activated_ != PARA_L;
@@ -380,21 +380,21 @@ bool Simulator::ppCheckActivation(const Fault * const f) {
 // **************************************************************************
 //{{{ void Simulator::ppInject(const Fault * const)
 void Simulator::ppInject(const Fault * const f) {
-    int fg = f->gate_;
-    switch (f->type_) {
+    int fg = f->gateID_;
+    switch (f->faultType_) {
         case Fault::SA0:
-            faultInjectL_[fg][f->line_] = PARA_H;
+            faultInjectL_[fg][f->faultyLine_] = PARA_H;
             break;
         case Fault::SA1:
-            faultInjectH_[fg][f->line_] = PARA_H;
+            faultInjectH_[fg][f->faultyLine_] = PARA_H;
             break;
         case Fault::STR:
             fg += cir_->ngate_;
-            faultInjectL_[fg][f->line_] = PARA_H;
+            faultInjectL_[fg][f->faultyLine_] = PARA_H;
             break;
         case Fault::STF:
             fg += cir_->ngate_;
-            faultInjectH_[fg][f->line_] = PARA_H;
+            faultInjectH_[fg][f->faultyLine_] = PARA_H;
             break;
         default:
             break;
@@ -432,9 +432,9 @@ void Simulator::ppCheckDetection(Fault * const f) {
     for (size_t i = 0; i < WORD_SIZE; ++i) {
         if (getBitValue(detected, i) == L)
             continue;
-        f->det_++;
-        if (f->det_ >= ndet_) {
-            f->state_ = Fault::DT;
+        f->detection_++;
+        if (f->detection_ >= ndet_) {
+            f->faultState_ = Fault::DT;
             break;
         }
     }

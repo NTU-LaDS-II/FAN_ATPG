@@ -86,7 +86,7 @@ namespace CoreNs
 		FaultListExtract();
 		~FaultListExtract();
 
-		void extract(Circuit *cir);
+		void extractFaultFromCircuit(Circuit *cir);
 
 		int *gateIndexToFaultIndex;
 		FaultVec extractedFaults_;
