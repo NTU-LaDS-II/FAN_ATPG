@@ -88,8 +88,8 @@ namespace CoreNs
 		void identifyLineParameter();
 		void identifyDominator();
 		void identifyUniquePath();
-		void assignPatternPiValue(Pattern *pat); // write PI values to pattern
-		void assignPatternPoValue(Pattern *pat); // write PO values to pattern
+		void assignPatternPiFromGateVal(Pattern *pPat); // write PI values to pattern
+		void assignPatternPoValue(Pattern *pPat);				// write PO values to pattern
 
 	protected:
 		Circuit *pCircuit_;			// cir_ => pCircuit_ by wang
@@ -157,7 +157,7 @@ namespace CoreNs
 		Value evaluateFaultyVal(Gate &gate);
 		Value assignBacktraceValue(unsigned &n0, unsigned &n1, Gate &gate);
 
-		void randomFill(Pattern *pat);
+		void randomFill(Pattern *pPat);
 
 		// void setn0n1(int gate, int n0, int n1) => void setGaten0n1(int gateID, int n0, int n1) by wang
 		void setGaten0n1(const int &gateID, const int &n0, const int &n1);
@@ -194,7 +194,7 @@ namespace CoreNs
 		Value cXNOR2(const Value &i1, const Value &i2);
 		Value cXNOR3(const Value &i1, const Value &i2, const Value &i3);
 
-		// added by Wei-Shen Wang
+		// heuristic not effective, added by Wei-Shen Wang
 		void calSCOAP();
 
 		/* Added by Shi-Tang Liu */
@@ -449,7 +449,6 @@ namespace CoreNs
 	//            ]
 	// Date       [ WYH Ver. 1.0 started 2013/08/15]
 	// **************************************************************************
-	//{{{ Value Atpg::evaluateGoodVal(Gate& gate)
 	inline Value Atpg::evaluateGoodVal(Gate &gate)
 	{
 		if (gate.type_ == Gate::PI || gate.type_ == Gate::PPI)
@@ -522,7 +521,8 @@ namespace CoreNs
 	inline Value Atpg::evaluateFaultyVal(Gate &gate)
 	{
 		Value val;
-		int i, FaultyLine;
+		int i;
+		int &faultyLine = currentTargetFault_.line_;
 		switch (gate.type_)
 		{
 			case Gate::PI:
@@ -539,7 +539,7 @@ namespace CoreNs
 				return val;
 			case Gate::INV:
 				val = pCircuit_->gates_[gate.fis_[0]].v_;
-				if (currentTargetFault_.line_ == 0)
+				if (faultyLine == 0)
 				{
 					val = cINV(val);
 					if (val == L && (currentTargetFault_.type_ == Fault::SA1 || currentTargetFault_.type_ == Fault::STF))
@@ -559,8 +559,7 @@ namespace CoreNs
 			case Gate::AND2:
 			case Gate::AND3:
 			case Gate::AND4:
-				FaultyLine = currentTargetFault_.line_;
-				if (currentTargetFault_.line_ == 0)
+				if (faultyLine == 0)
 				{
 					val = pCircuit_->gates_[gate.fis_[0]].v_;
 					for (i = 1; i < gate.nfi_; ++i)
@@ -572,21 +571,22 @@ namespace CoreNs
 				}
 				else
 				{
-					val = pCircuit_->gates_[gate.fis_[FaultyLine - 1]].v_;
+					val = pCircuit_->gates_[gate.fis_[faultyLine - 1]].v_;
 					if (val == L && (currentTargetFault_.type_ == Fault::SA1 || currentTargetFault_.type_ == Fault::STF))
 						val = B;
 					if (val == H && (currentTargetFault_.type_ == Fault::SA0 || currentTargetFault_.type_ == Fault::STR))
 						val = D;
 					for (i = 0; i < gate.nfi_; ++i)
-						if (i != FaultyLine - 1)
+					{
+						if (i != faultyLine - 1)
 							val = cAND2(val, pCircuit_->gates_[gate.fis_[i]].v_);
+					}
 				}
 				return val;
 			case Gate::NAND2:
 			case Gate::NAND3:
 			case Gate::NAND4:
-				FaultyLine = currentTargetFault_.line_;
-				if (currentTargetFault_.line_ == 0)
+				if (faultyLine == 0)
 				{
 					val = pCircuit_->gates_[gate.fis_[0]].v_;
 					for (i = 1; i < gate.nfi_; ++i)
@@ -601,13 +601,13 @@ namespace CoreNs
 				}
 				else
 				{
-					val = pCircuit_->gates_[gate.fis_[FaultyLine - 1]].v_;
+					val = pCircuit_->gates_[gate.fis_[faultyLine - 1]].v_;
 					if (val == L && (currentTargetFault_.type_ == Fault::SA1 || currentTargetFault_.type_ == Fault::STF))
 						val = B;
 					if (val == H && (currentTargetFault_.type_ == Fault::SA0 || currentTargetFault_.type_ == Fault::STR))
 						val = D;
 					for (i = 0; i < gate.nfi_; ++i)
-						if (i != FaultyLine - 1)
+						if (i != faultyLine - 1)
 							val = cAND2(val, pCircuit_->gates_[gate.fis_[i]].v_);
 					val = cINV(val);
 				}
@@ -615,8 +615,8 @@ namespace CoreNs
 			case Gate::OR2:
 			case Gate::OR3:
 			case Gate::OR4:
-				FaultyLine = currentTargetFault_.line_;
-				if (currentTargetFault_.line_ == 0)
+
+				if (faultyLine == 0)
 				{
 					val = pCircuit_->gates_[gate.fis_[0]].v_;
 					for (i = 1; i < gate.nfi_; ++i)
@@ -628,21 +628,22 @@ namespace CoreNs
 				}
 				else
 				{
-					val = pCircuit_->gates_[gate.fis_[FaultyLine - 1]].v_;
+					val = pCircuit_->gates_[gate.fis_[faultyLine - 1]].v_;
 					if (val == L && (currentTargetFault_.type_ == Fault::SA1 || currentTargetFault_.type_ == Fault::STF))
 						val = B;
 					if (val == H && (currentTargetFault_.type_ == Fault::SA0 || currentTargetFault_.type_ == Fault::STR))
 						val = D;
 					for (i = 0; i < gate.nfi_; ++i)
-						if (i != FaultyLine - 1)
+					{
+						if (i != faultyLine - 1)
 							val = cOR2(val, pCircuit_->gates_[gate.fis_[i]].v_);
+					}
 				}
 				return val;
 			case Gate::NOR2:
 			case Gate::NOR3:
 			case Gate::NOR4:
-				FaultyLine = currentTargetFault_.line_;
-				if (currentTargetFault_.line_ == 0)
+				if (faultyLine == 0)
 				{
 					val = pCircuit_->gates_[gate.fis_[0]].v_;
 					for (i = 1; i < gate.nfi_; ++i)
@@ -657,23 +658,23 @@ namespace CoreNs
 				}
 				else
 				{
-					val = pCircuit_->gates_[gate.fis_[FaultyLine - 1]].v_;
+					val = pCircuit_->gates_[gate.fis_[faultyLine - 1]].v_;
 					if (val == L && (currentTargetFault_.type_ == Fault::SA1 || currentTargetFault_.type_ == Fault::STF))
 						val = B;
 					if (val == H && (currentTargetFault_.type_ == Fault::SA0 || currentTargetFault_.type_ == Fault::STR))
 						val = D;
 					for (i = 0; i < gate.nfi_; ++i)
-						if (i != FaultyLine - 1)
+					{
+						if (i != faultyLine - 1)
 							val = cOR2(val, pCircuit_->gates_[gate.fis_[i]].v_);
+					}
 					val = cINV(val);
 				}
 				return val;
 			case Gate::XOR2:
 			case Gate::XOR3:
-				FaultyLine = currentTargetFault_.line_;
-				if (currentTargetFault_.line_ == 0)
+				if (faultyLine == 0)
 				{
-
 					if (gate.type_ == Gate::XOR2)
 						val = cXOR2(pCircuit_->gates_[gate.fis_[0]].v_, pCircuit_->gates_[gate.fis_[1]].v_);
 					else
@@ -686,7 +687,7 @@ namespace CoreNs
 				}
 				else
 				{
-					val = pCircuit_->gates_[gate.fis_[FaultyLine - 1]].v_;
+					val = pCircuit_->gates_[gate.fis_[faultyLine - 1]].v_;
 					if (val == L && (currentTargetFault_.type_ == Fault::SA1 || currentTargetFault_.type_ == Fault::STF))
 						val = B;
 					if (val == H && (currentTargetFault_.type_ == Fault::SA0 || currentTargetFault_.type_ == Fault::STR))
@@ -694,26 +695,53 @@ namespace CoreNs
 
 					if (gate.type_ == Gate::XOR2)
 					{
-						if (FaultyLine - 1 == 0)
-							val = cXOR2(pCircuit_->gates_[gate.fis_[1]].v_, val);
-						else
-							val = cXOR2(pCircuit_->gates_[gate.fis_[0]].v_, val);
+						// if (faultyLine - 1 == 0)
+						// 	val = cXOR2(pCircuit_->gates_[gate.fis_[1]].v_, val);
+						// else
+						// 	val = cXOR2(pCircuit_->gates_[gate.fis_[0]].v_, val);
+						switch (faultyLine - 1)
+						{
+							case 0:
+								val = cXOR2(pCircuit_->gates_[gate.fis_[1]].v_, val);
+								break;
+							case 1:
+								val = cXOR2(pCircuit_->gates_[gate.fis_[0]].v_, val);
+								break;
+							default:
+								std::cerr << "switch case default, should not happen\n";
+								break;
+						}
 					}
 					else
 					{ // XOR3
-						if (FaultyLine - 1 == 0)
-							val = cXOR3(pCircuit_->gates_[gate.fis_[1]].v_, pCircuit_->gates_[gate.fis_[2]].v_, val);
-						else if (FaultyLine - 1 == 1)
-							val = cXOR3(pCircuit_->gates_[gate.fis_[0]].v_, pCircuit_->gates_[gate.fis_[2]].v_, val);
-						else
-							val = cXOR3(pCircuit_->gates_[gate.fis_[1]].v_, pCircuit_->gates_[gate.fis_[0]].v_, val);
+						// if (faultyLine - 1 == 0)
+						// 	val = cXOR3(pCircuit_->gates_[gate.fis_[1]].v_, pCircuit_->gates_[gate.fis_[2]].v_, val);
+						// else if (faultyLine - 1 == 1)
+						// 	val = cXOR3(pCircuit_->gates_[gate.fis_[0]].v_, pCircuit_->gates_[gate.fis_[2]].v_, val);
+						// else
+						// 	val = cXOR3(pCircuit_->gates_[gate.fis_[1]].v_, pCircuit_->gates_[gate.fis_[0]].v_, val);
+						switch (faultyLine - 1)
+						{
+							case 0:
+								val = cXOR3(pCircuit_->gates_[gate.fis_[1]].v_, pCircuit_->gates_[gate.fis_[2]].v_, val);
+								break;
+							case 1:
+								val = cXOR3(pCircuit_->gates_[gate.fis_[0]].v_, pCircuit_->gates_[gate.fis_[2]].v_, val);
+								break;
+							case 2:
+								val = cXOR3(pCircuit_->gates_[gate.fis_[1]].v_, pCircuit_->gates_[gate.fis_[0]].v_, val);
+								break;
+							default:
+								std::cerr << "switch case default, should not happen\n";
+								break;
+						}
 					}
 				}
 				return val;
 			case Gate::XNOR2:
 			case Gate::XNOR3:
-				FaultyLine = currentTargetFault_.line_;
-				if (currentTargetFault_.line_ == 0)
+
+				if (faultyLine == 0)
 				{
 
 					if (gate.type_ == Gate::XNOR2)
@@ -728,7 +756,7 @@ namespace CoreNs
 				}
 				else
 				{
-					val = pCircuit_->gates_[gate.fis_[FaultyLine - 1]].v_;
+					val = pCircuit_->gates_[gate.fis_[faultyLine - 1]].v_;
 					if (val == L && (currentTargetFault_.type_ == Fault::SA1 || currentTargetFault_.type_ == Fault::STF))
 						val = B;
 					if (val == H && (currentTargetFault_.type_ == Fault::SA0 || currentTargetFault_.type_ == Fault::STR))
@@ -736,19 +764,47 @@ namespace CoreNs
 
 					if (gate.type_ == Gate::XNOR2)
 					{
-						if (FaultyLine - 1 == 0)
-							val = cXNOR2(pCircuit_->gates_[gate.fis_[1]].v_, val);
-						else
-							val = cXNOR2(pCircuit_->gates_[gate.fis_[0]].v_, val);
+						// if (faultyLine - 1 == 0)
+						// 	val = cXNOR2(pCircuit_->gates_[gate.fis_[1]].v_, val);
+						// else
+						// 	val = cXNOR2(pCircuit_->gates_[gate.fis_[0]].v_, val);
+						switch (faultyLine - 1)
+						{
+							case 0:
+								val = cXNOR2(pCircuit_->gates_[gate.fis_[1]].v_, val);
+								break;
+							case 1:
+								val = cXNOR2(pCircuit_->gates_[gate.fis_[0]].v_, val);
+								break;
+							default:
+								std::cerr << "switch case default, should not happen\n";
+								break;
+						}
 					}
 					else
 					{ // XOR3
-						if (FaultyLine - 1 == 0)
-							val = cXNOR3(pCircuit_->gates_[gate.fis_[1]].v_, pCircuit_->gates_[gate.fis_[2]].v_, val);
-						else if (FaultyLine - 1 == 1)
-							val = cXNOR3(pCircuit_->gates_[gate.fis_[0]].v_, pCircuit_->gates_[gate.fis_[2]].v_, val);
-						else
-							val = cXNOR3(pCircuit_->gates_[gate.fis_[1]].v_, pCircuit_->gates_[gate.fis_[0]].v_, val);
+						// change from if else to switch by wang
+						// if (faultyLine - 1 == 0)
+						// 	val = cXNOR3(pCircuit_->gates_[gate.fis_[1]].v_, pCircuit_->gates_[gate.fis_[2]].v_, val);
+						// else if (faultyLine - 1 == 1)
+						// 	val = cXNOR3(pCircuit_->gates_[gate.fis_[0]].v_, pCircuit_->gates_[gate.fis_[2]].v_, val);
+						// else
+						// 	val = cXNOR3(pCircuit_->gates_[gate.fis_[1]].v_, pCircuit_->gates_[gate.fis_[0]].v_, val);
+						switch (faultyLine - 1)
+						{
+							case 0:
+								val = cXNOR3(pCircuit_->gates_[gate.fis_[1]].v_, pCircuit_->gates_[gate.fis_[2]].v_, val);
+								break;
+							case 1:
+								val = cXNOR3(pCircuit_->gates_[gate.fis_[0]].v_, pCircuit_->gates_[gate.fis_[2]].v_, val);
+								break;
+							case 2:
+								val = cXNOR3(pCircuit_->gates_[gate.fis_[1]].v_, pCircuit_->gates_[gate.fis_[0]].v_, val);
+								break;
+							default:
+								std::cerr << "switch case default, should not happen\n";
+								break;
+						}
 					}
 				}
 				return val;
@@ -756,10 +812,9 @@ namespace CoreNs
 				return gate.v_;
 		}
 	}
-	//}}}
 
 	// **************************************************************************
-	// Function   [ Atpg::assignPatternPiValue ]
+	// Function   [ Atpg::assignPatternPiFromGateVal ]
 	// Commentor  [ CAL ]
 	// Synopsis   [ usage: assign primary input pattern value
 	//              in:    Pattern list
@@ -768,17 +823,19 @@ namespace CoreNs
 	//            ]
 	// Date       [ Ver. 1.0 started 2013/08/13 ]
 	// **************************************************************************
-	inline void Atpg::assignPatternPiValue(Pattern *pat)
+	inline void Atpg::assignPatternPiFromGateVal(Pattern *pPat)
 	{
 		for (int i = 0; i < pCircuit_->npi_; ++i)
-			pat->pi1_[i] = pCircuit_->gates_[i].v_;
-		if (pat->pi2_ != NULL && pCircuit_->nframe_ > 1)
+			pPat->pi1_[i] = pCircuit_->gates_[i].v_;
+		if (pPat->pi2_ != NULL && pCircuit_->nframe_ > 1)
+		{
 			for (int i = 0; i < pCircuit_->npi_; ++i)
-				pat->pi2_[i] = pCircuit_->gates_[i + pCircuit_->ngate_].v_;
+				pPat->pi2_[i] = pCircuit_->gates_[i + pCircuit_->ngate_].v_;
+		}
 		for (int i = 0; i < pCircuit_->nppi_; ++i)
-			pat->ppi_[i] = pCircuit_->gates_[pCircuit_->npi_ + i].v_;
-		if (pat->si_ != NULL && pCircuit_->nframe_ > 1)
-			pat->si_[0] = pCircuit_->connType_ == Circuit::SHIFT ? pCircuit_->gates_[pCircuit_->ngate_ + pCircuit_->npi_].v_ : X;
+			pPat->ppi_[i] = pCircuit_->gates_[pCircuit_->npi_ + i].v_;
+		if (pPat->si_ != NULL && pCircuit_->nframe_ > 1)
+			pPat->si_[0] = (pCircuit_->connType_ == Circuit::SHIFT) ? pCircuit_->gates_[pCircuit_->ngate_ + pCircuit_->npi_].v_ : X;
 	}
 
 	// **************************************************************************
@@ -791,28 +848,28 @@ namespace CoreNs
 	//            ]
 	// Date       [ Ver. 1.0 started 2013/08/13 ]
 	// **************************************************************************
-	inline void Atpg::assignPatternPoValue(Pattern *pat)
+	inline void Atpg::assignPatternPoValue(Pattern *pPat)
 	{
 		pSimulator_->goodSim();
 		int offset = pCircuit_->ngate_ - pCircuit_->npo_ - pCircuit_->nppi_;
 		for (int i = 0; i < pCircuit_->npo_; ++i)
 		{
 			if (pCircuit_->gates_[offset + i].gl_ == PARA_H)
-				pat->po1_[i] = L;
+				pPat->po1_[i] = L;
 			else if (pCircuit_->gates_[offset + i].gh_ == PARA_H)
-				pat->po1_[i] = H;
+				pPat->po1_[i] = H;
 			else
-				pat->po1_[i] = X;
+				pPat->po1_[i] = X;
 		}
-		if (pat->po2_ != NULL && pCircuit_->nframe_ > 1)
+		if (pPat->po2_ != NULL && pCircuit_->nframe_ > 1)
 			for (int i = 0; i < pCircuit_->npo_; ++i)
 			{
 				if (pCircuit_->gates_[offset + i + pCircuit_->ngate_].gl_ == PARA_H)
-					pat->po2_[i] = L;
+					pPat->po2_[i] = L;
 				else if (pCircuit_->gates_[offset + i + pCircuit_->ngate_].gh_ == PARA_H)
-					pat->po2_[i] = H;
+					pPat->po2_[i] = H;
 				else
-					pat->po2_[i] = X;
+					pPat->po2_[i] = X;
 			}
 
 		offset = pCircuit_->ngate_ - pCircuit_->nppi_;
@@ -821,11 +878,11 @@ namespace CoreNs
 		for (int i = 0; i < pCircuit_->nppi_; ++i)
 		{
 			if (pCircuit_->gates_[offset + i].gl_ == PARA_H)
-				pat->ppo_[i] = L;
+				pPat->ppo_[i] = L;
 			else if (pCircuit_->gates_[offset + i].gh_ == PARA_H)
-				pat->ppo_[i] = H;
+				pPat->ppo_[i] = H;
 			else
-				pat->ppo_[i] = X;
+				pPat->ppo_[i] = X;
 		}
 	}
 
@@ -840,22 +897,22 @@ namespace CoreNs
 	//            ]
 	// Date       [ Ver. 1.0 started 2013/08/13 ]
 	// **************************************************************************
-	inline void Atpg::randomFill(Pattern *pat)
+	inline void Atpg::randomFill(Pattern *pPat)
 	{
 		srand(0);
 		for (int i = 0; i < pCircuit_->npi_; ++i)
-			if (pat->pi1_[i] == X)
-				pat->pi1_[i] = rand() % 2;
+			if (pPat->pi1_[i] == X)
+				pPat->pi1_[i] = rand() % 2;
 		for (int i = 0; i < pCircuit_->nppi_; ++i)
-			if (pat->ppi_[i] == X)
-				pat->ppi_[i] = rand() % 2;
-		if (pat->pi2_ != NULL)
+			if (pPat->ppi_[i] == X)
+				pPat->ppi_[i] = rand() % 2;
+		if (pPat->pi2_ != NULL)
 			for (int i = 0; i < pCircuit_->npi_; ++i)
-				if (pat->pi2_[i] == X)
-					pat->pi2_[i] = rand() % 2;
-		if (pat->si_ != NULL)
-			if (pat->si_[0] == X)
-				pat->si_[0] = rand() % 2;
+				if (pPat->pi2_[i] == X)
+					pPat->pi2_[i] = rand() % 2;
+		if (pPat->si_ != NULL)
+			if (pPat->si_[0] == X)
+				pPat->si_[0] = rand() % 2;
 	}
 
 };

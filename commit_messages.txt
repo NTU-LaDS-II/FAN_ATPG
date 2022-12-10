@@ -1,8 +1,8 @@
 Refactor - 16th modification
 
   name changes:
+  assignPatternPiValue => assignPatternPiFromGateVal
+  all *pat => *pPat
   performance related changes:
-    atpg::evaluateFaultyVal
-      if else => switch case
   debug:
   note:

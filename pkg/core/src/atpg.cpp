@@ -108,7 +108,7 @@ void Atpg::TransitionDelayFaultATPG(FaultList &faultListToGen, PatternProcessor 
 		p->po2_ = new Value[pCircuit_->npo_];
 		p->ppo_ = new Value[pCircuit_->nppi_];
 		pPatternProcessor->pats_.push_back(p);
-		assignPatternPiValue(pPatternProcessor->pats_.back());
+		assignPatternPiFromGateVal(pPatternProcessor->pats_.back());
 
 		if ((pPatternProcessor->staticCompression_ == PatternProcessor::OFF) && (pPatternProcessor->XFill_ == PatternProcessor::ON))
 		{
@@ -153,7 +153,7 @@ void Atpg::StuckAtFaultATPG(FaultList &faultListToGen, PatternProcessor *pPatter
 		p->po1_ = new Value[pCircuit_->npo_];
 		p->ppo_ = new Value[pCircuit_->nppi_];
 		pPatternProcessor->pats_.push_back(p);
-		assignPatternPiValue(pPatternProcessor->pats_.back());
+		assignPatternPiFromGateVal(pPatternProcessor->pats_.back());
 
 		// if static compression is OFF and random fill in on
 		// do random x-fill

@@ -88,8 +88,8 @@ namespace CoreNs
 		void identifyLineParameter();
 		void identifyDominator();
 		void identifyUniquePath();
-		void assignPatternPiValue(Pattern *pat); // write PI values to pattern
-		void assignPatternPoValue(Pattern *pat); // write PO values to pattern
+		void assignPatternPiFromGateVal(Pattern *pPat); // write PI values to pattern
+		void assignPatternPoValue(Pattern *pPat);				// write PO values to pattern
 
 	protected:
 		Circuit *pCircuit_;			// cir_ => pCircuit_ by wang
@@ -157,7 +157,7 @@ namespace CoreNs
 		Value evaluateFaultyVal(Gate &gate);
 		Value assignBacktraceValue(unsigned &n0, unsigned &n1, Gate &gate);
 
-		void randomFill(Pattern *pat);
+		void randomFill(Pattern *pPat);
 
 		// void setn0n1(int gate, int n0, int n1) => void setGaten0n1(int gateID, int n0, int n1) by wang
 		void setGaten0n1(const int &gateID, const int &n0, const int &n1);
@@ -812,10 +812,9 @@ namespace CoreNs
 				return gate.v_;
 		}
 	}
-	//}}}
 
 	// **************************************************************************
-	// Function   [ Atpg::assignPatternPiValue ]
+	// Function   [ Atpg::assignPatternPiFromGateVal ]
 	// Commentor  [ CAL ]
 	// Synopsis   [ usage: assign primary input pattern value
 	//              in:    Pattern list
@@ -824,17 +823,19 @@ namespace CoreNs
 	//            ]
 	// Date       [ Ver. 1.0 started 2013/08/13 ]
 	// **************************************************************************
-	inline void Atpg::assignPatternPiValue(Pattern *pat)
+	inline void Atpg::assignPatternPiFromGateVal(Pattern *pPat)
 	{
 		for (int i = 0; i < pCircuit_->npi_; ++i)
-			pat->pi1_[i] = pCircuit_->gates_[i].v_;
-		if (pat->pi2_ != NULL && pCircuit_->nframe_ > 1)
+			pPat->pi1_[i] = pCircuit_->gates_[i].v_;
+		if (pPat->pi2_ != NULL && pCircuit_->nframe_ > 1)
+		{
 			for (int i = 0; i < pCircuit_->npi_; ++i)
-				pat->pi2_[i] = pCircuit_->gates_[i + pCircuit_->ngate_].v_;
+				pPat->pi2_[i] = pCircuit_->gates_[i + pCircuit_->ngate_].v_;
+		}
 		for (int i = 0; i < pCircuit_->nppi_; ++i)
-			pat->ppi_[i] = pCircuit_->gates_[pCircuit_->npi_ + i].v_;
-		if (pat->si_ != NULL && pCircuit_->nframe_ > 1)
-			pat->si_[0] = pCircuit_->connType_ == Circuit::SHIFT ? pCircuit_->gates_[pCircuit_->ngate_ + pCircuit_->npi_].v_ : X;
+			pPat->ppi_[i] = pCircuit_->gates_[pCircuit_->npi_ + i].v_;
+		if (pPat->si_ != NULL && pCircuit_->nframe_ > 1)
+			pPat->si_[0] = (pCircuit_->connType_ == Circuit::SHIFT) ? pCircuit_->gates_[pCircuit_->ngate_ + pCircuit_->npi_].v_ : X;
 	}
 
 	// **************************************************************************
@@ -847,28 +848,28 @@ namespace CoreNs
 	//            ]
 	// Date       [ Ver. 1.0 started 2013/08/13 ]
 	// **************************************************************************
-	inline void Atpg::assignPatternPoValue(Pattern *pat)
+	inline void Atpg::assignPatternPoValue(Pattern *pPat)
 	{
 		pSimulator_->goodSim();
 		int offset = pCircuit_->ngate_ - pCircuit_->npo_ - pCircuit_->nppi_;
 		for (int i = 0; i < pCircuit_->npo_; ++i)
 		{
 			if (pCircuit_->gates_[offset + i].gl_ == PARA_H)
-				pat->po1_[i] = L;
+				pPat->po1_[i] = L;
 			else if (pCircuit_->gates_[offset + i].gh_ == PARA_H)
-				pat->po1_[i] = H;
+				pPat->po1_[i] = H;
 			else
-				pat->po1_[i] = X;
+				pPat->po1_[i] = X;
 		}
-		if (pat->po2_ != NULL && pCircuit_->nframe_ > 1)
+		if (pPat->po2_ != NULL && pCircuit_->nframe_ > 1)
 			for (int i = 0; i < pCircuit_->npo_; ++i)
 			{
 				if (pCircuit_->gates_[offset + i + pCircuit_->ngate_].gl_ == PARA_H)
-					pat->po2_[i] = L;
+					pPat->po2_[i] = L;
 				else if (pCircuit_->gates_[offset + i + pCircuit_->ngate_].gh_ == PARA_H)
-					pat->po2_[i] = H;
+					pPat->po2_[i] = H;
 				else
-					pat->po2_[i] = X;
+					pPat->po2_[i] = X;
 			}
 
 		offset = pCircuit_->ngate_ - pCircuit_->nppi_;
@@ -877,11 +878,11 @@ namespace CoreNs
 		for (int i = 0; i < pCircuit_->nppi_; ++i)
 		{
 			if (pCircuit_->gates_[offset + i].gl_ == PARA_H)
-				pat->ppo_[i] = L;
+				pPat->ppo_[i] = L;
 			else if (pCircuit_->gates_[offset + i].gh_ == PARA_H)
-				pat->ppo_[i] = H;
+				pPat->ppo_[i] = H;
 			else
-				pat->ppo_[i] = X;
+				pPat->ppo_[i] = X;
 		}
 	}
 
@@ -896,22 +897,22 @@ namespace CoreNs
 	//            ]
 	// Date       [ Ver. 1.0 started 2013/08/13 ]
 	// **************************************************************************
-	inline void Atpg::randomFill(Pattern *pat)
+	inline void Atpg::randomFill(Pattern *pPat)
 	{
 		srand(0);
 		for (int i = 0; i < pCircuit_->npi_; ++i)
-			if (pat->pi1_[i] == X)
-				pat->pi1_[i] = rand() % 2;
+			if (pPat->pi1_[i] == X)
+				pPat->pi1_[i] = rand() % 2;
 		for (int i = 0; i < pCircuit_->nppi_; ++i)
-			if (pat->ppi_[i] == X)
-				pat->ppi_[i] = rand() % 2;
-		if (pat->pi2_ != NULL)
+			if (pPat->ppi_[i] == X)
+				pPat->ppi_[i] = rand() % 2;
+		if (pPat->pi2_ != NULL)
 			for (int i = 0; i < pCircuit_->npi_; ++i)
-				if (pat->pi2_[i] == X)
-					pat->pi2_[i] = rand() % 2;
-		if (pat->si_ != NULL)
-			if (pat->si_[0] == X)
-				pat->si_[0] = rand() % 2;
+				if (pPat->pi2_[i] == X)
+					pPat->pi2_[i] = rand() % 2;
+		if (pPat->si_ != NULL)
+			if (pPat->si_[0] == X)
+				pPat->si_[0] = rand() % 2;
 	}
 
 };

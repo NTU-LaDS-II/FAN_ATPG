@@ -427,7 +427,7 @@ void Atpg::StuckAtFaultATPGWithDTC(FaultList &faultListToGen, PatternProcessor *
 		resetPreValue();
 		clearAllFaultEffectBySimulation();
 		storeCurrentGateValue();
-		assignPatternPiValue(pcoll->pats_.back());
+		assignPatternPiFromGateVal(pcoll->pats_.back());
 
 		if (pcoll->dynamicCompression_ == PatternProcessor::ON)
 		{
@@ -470,7 +470,7 @@ void Atpg::StuckAtFaultATPGWithDTC(FaultList &faultListToGen, PatternProcessor *
 					{
 						clearAllFaultEffectBySimulation();
 						storeCurrentGateValue();
-						assignPatternPiValue(pcoll->pats_.back());
+						assignPatternPiFromGateVal(pcoll->pats_.back());
 					}
 					else
 					{
@@ -490,7 +490,7 @@ void Atpg::StuckAtFaultATPGWithDTC(FaultList &faultListToGen, PatternProcessor *
 
 		clearAllFaultEffectBySimulation();
 		storeCurrentGateValue();
-		assignPatternPiValue(pcoll->pats_.back());
+		assignPatternPiFromGateVal(pcoll->pats_.back());
 
 		if (pcoll->XFill_ == PatternProcessor::ON)
 		{
