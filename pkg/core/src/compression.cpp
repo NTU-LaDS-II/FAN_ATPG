@@ -115,8 +115,8 @@ int Atpg::storeCurrentGateValue()
 	}
 	if (numAssignedValueChanged != 0)
 	{
-		std::cout << "Bug: storeCurrentGateValue detects the numAssignedValueChanged is not 0." << std::endl;
-		// std::cin.get();
+		std::cerr << "Bug: storeCurrentGateValue detects the numAssignedValueChanged is not 0.\n";
+		std::cin.get();
 	}
 	return numAssignedValueChanged;
 }
@@ -145,7 +145,7 @@ void Atpg::calDepthFromPo()
 		 * */
 		if (gate.depthFromPo_ != -1)
 		{
-			std::cout << "depthFromPo_ is not -1 " << std::endl;
+			std::cerr << "depthFromPo_ is not -1\n";
 			std::cin.get();
 		}
 	}
@@ -188,7 +188,7 @@ void Atpg::calDepthFromPo()
 
 	// for ( int i = 0 ; i < pCircuit_->tgate_ ; ++i ) {
 	//   Gate &gate = pCircuit_->gates_[i];
-	//   std::cout << "gate.depthFromPo_ is " << gate.depthFromPo_ << std::endl;
+	//   std::cerr << "gate.depthFromPo_ is " << gate.depthFromPo_ << std::endl;
 	// }
 	// std::cin.get();
 }
@@ -273,7 +273,7 @@ void Atpg::clearEventList(bool isDebug)
 		{
 			if (isInEventList_[i] == true)
 			{
-				std::cout << "Warning clearEventList found unexpected behavior" << std::endl;
+				std::cerr << "Warning clearEventList found unexpected behavior\n";
 				isInEventList_[i] = false;
 				std::cin.get();
 			}
@@ -383,13 +383,14 @@ void Atpg::checkLevelInfo()
 // **************************************************************************
 void Atpg::StuckAtFaultATPGWithDTC(FaultList &faultListToGen, PatternProcessor *pcoll, int &untest)
 {
-	static int oriPatNum = 0;
+	// static int oriPatNum = 0; for debug, removed by wang
+
 	SINGLE_PATTERN_GENERATION_STATUS result = generateSinglePatternOnTargetFault(*faultListToGen.front(), false);
 
 	if (result == PATTERN_FOUND)
 	{
-		oriPatNum++;
-		// std::cout << oriPatNum << "-th pattern" << std::endl;
+		// oriPatNum++;
+		// std::cerr << oriPatNum << "-th pattern" << std::endl;
 		Pattern *p = new Pattern;
 		p->pi1_ = new Value[pCircuit_->npi_];
 		p->ppi_ = new Value[pCircuit_->nppi_];
@@ -399,7 +400,7 @@ void Atpg::StuckAtFaultATPGWithDTC(FaultList &faultListToGen, PatternProcessor *
 		resetPreValue();
 		clearAllFaultEffectBySimulation();
 		storeCurrentGateValue();
-		assignPatternPiFromGateVal(pcoll->pats_.back());
+		assignPatternPI_fromGateVal(pcoll->pats_.back());
 
 		if (pcoll->dynamicCompression_ == PatternProcessor::ON)
 		{
@@ -407,7 +408,7 @@ void Atpg::StuckAtFaultATPGWithDTC(FaultList &faultListToGen, PatternProcessor *
 			FaultList faultListTemp = faultListToGen;
 			pSimulator_->pfFaultSim(pcoll->pats_.back(), faultListToGen);
 			pSimulator_->goodSim();
-			assignPatternPoFromGoodSimVal(pcoll->pats_.back());
+			assignPatternPO_fromGoodSimVal(pcoll->pats_.back());
 
 			for (FaultListIter it = faultListTemp.begin(); it != faultListTemp.end(); ++it)
 			{
@@ -441,9 +442,10 @@ void Atpg::StuckAtFaultATPGWithDTC(FaultList &faultListToGen, PatternProcessor *
 					SINGLE_PATTERN_GENERATION_STATUS resultDTC = generateSinglePatternOnTargetFault((**it), true);
 					if (resultDTC == PATTERN_FOUND)
 					{
+						resetPreValue();
 						clearAllFaultEffectBySimulation();
 						storeCurrentGateValue();
-						assignPatternPiFromGateVal(pcoll->pats_.back());
+						assignPatternPI_fromGateVal(pcoll->pats_.back());
 					}
 					else
 					{
@@ -463,7 +465,7 @@ void Atpg::StuckAtFaultATPGWithDTC(FaultList &faultListToGen, PatternProcessor *
 
 		clearAllFaultEffectBySimulation();
 		storeCurrentGateValue();
-		assignPatternPiFromGateVal(pcoll->pats_.back());
+		assignPatternPI_fromGateVal(pcoll->pats_.back());
 
 		if (pcoll->XFill_ == PatternProcessor::ON)
 		{
@@ -483,10 +485,10 @@ void Atpg::StuckAtFaultATPGWithDTC(FaultList &faultListToGen, PatternProcessor *
 		/*
 		 * After pSimulator_->pfFaultSim(pcoll->pats_.back(),faultListToGen) , the pi/ppi
 		 * values have been passed to gh_ and gl_ of each gate.  Therefore, we can
-		 * directly use "assignPatternPoFromGoodSimVal" to perform goodSim to get the PoValue.
+		 * directly use "assignPatternPO_fromGoodSimVal" to perform goodSim to get the PoValue.
 		 * */
 		pSimulator_->goodSim();
-		assignPatternPoFromGoodSimVal(pcoll->pats_.back());
+		assignPatternPO_fromGoodSimVal(pcoll->pats_.back());
 	}
 	else if (result == FAULT_UNTESTABLE)
 	{
@@ -530,7 +532,7 @@ Gate *Atpg::getWireForActivation(Fault &fault)
 }
 
 // **************************************************************************
-// Function   [ Atpg::reverseFaultSimulation ]
+// Function   [ Atpg::staticTestCompressionByReverseFaultSimulation ]
 // Commentor  [ CAL ]
 // Synopsis   [ usage:
 //                Perform reverse fault simulation
@@ -539,7 +541,7 @@ Gate *Atpg::getWireForActivation(Fault &fault)
 //            ]
 // Date       [ started 2020/07/08    last modified 2020/07/08 ]
 // **************************************************************************
-void Atpg::reverseFaultSimulation(PatternProcessor *pcoll, FaultList &originalFaultList)
+void Atpg::staticTestCompressionByReverseFaultSimulation(PatternProcessor *pcoll, FaultList &originalFaultList)
 {
 	// set TD to UD
 	for (auto it = originalFaultList.begin(); it != originalFaultList.end(); ++it)
@@ -566,7 +568,7 @@ void Atpg::reverseFaultSimulation(PatternProcessor *pcoll, FaultList &originalFa
 		}
 		else if (leftFaultCount < originalFaultList.size())
 		{
-			std::cout << "reverseFaultSimulation: unexpected behavior" << std::endl;
+			std::cerr << "staticTestCompressionByReverseFaultSimulation: unexpected behavior\n";
 			std::cin.get();
 		}
 		else

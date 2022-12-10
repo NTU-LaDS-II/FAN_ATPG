@@ -22,7 +22,7 @@ void Atpg::generatePatternSet(PatternProcessor *pPatternProcessor, FaultListExtr
 {
 	int untest = 0;
 	Fault *currF = NULL;
-	FaultList faultOri; 
+	FaultList faultOri;
 	FaultList faultListToGen;
 	FaultListIter it = fListExtract->current_.begin();
 
@@ -71,9 +71,9 @@ void Atpg::generatePatternSet(PatternProcessor *pPatternProcessor, FaultListExtr
 	if (pPatternProcessor->staticCompression_ == PatternProcessor::ON)
 	{
 		// pPatternProcessor->StaticCompression();
-		reverseFaultSimulation(pPatternProcessor, faultOri);
+		staticTestCompressionByReverseFaultSimulation(pPatternProcessor, faultOri);
 	}
-	// do XFill
+
 	// if (pPatternProcessor->XFill_ == PatternProcessor::ON) XFill(pPatternProcessor);, unecessary, alread Xfilled in previsous functions, removed by wang
 }
 
@@ -132,7 +132,7 @@ void Atpg::TransitionDelayFaultATPG(FaultList &faultListToGen, PatternProcessor 
 		p->po2_ = new Value[pCircuit_->npo_];
 		p->ppo_ = new Value[pCircuit_->nppi_];
 		pPatternProcessor->pats_.push_back(p);
-		assignPatternPiFromGateVal(pPatternProcessor->pats_.back());
+		assignPatternPI_fromGateVal(pPatternProcessor->pats_.back());
 
 		if ((pPatternProcessor->staticCompression_ == PatternProcessor::OFF) && (pPatternProcessor->XFill_ == PatternProcessor::ON))
 		{
@@ -141,7 +141,7 @@ void Atpg::TransitionDelayFaultATPG(FaultList &faultListToGen, PatternProcessor 
 
 		pSimulator_->pfFaultSim(pPatternProcessor->pats_.back(), faultListToGen);
 		pSimulator_->goodSim();
-		assignPatternPoFromGoodSimVal(pPatternProcessor->pats_.back());
+		assignPatternPO_fromGoodSimVal(pPatternProcessor->pats_.back());
 	}
 	else if (result == FAULT_UNTESTABLE)
 	{
@@ -177,7 +177,7 @@ void Atpg::StuckAtFaultATPG(FaultList &faultListToGen, PatternProcessor *pPatter
 		p->po1_ = new Value[pCircuit_->npo_];
 		p->ppo_ = new Value[pCircuit_->nppi_];
 		pPatternProcessor->pats_.push_back(p);
-		assignPatternPiFromGateVal(pPatternProcessor->pats_.back());
+		assignPatternPI_fromGateVal(pPatternProcessor->pats_.back());
 
 		// if static compression is OFF and random fill in on
 		// do random x-fill
@@ -188,7 +188,7 @@ void Atpg::StuckAtFaultATPG(FaultList &faultListToGen, PatternProcessor *pPatter
 
 		pSimulator_->pfFaultSim(pPatternProcessor->pats_.back(), faultListToGen);
 		pSimulator_->goodSim();
-		assignPatternPoFromGoodSimVal(pPatternProcessor->pats_.back());
+		assignPatternPO_fromGoodSimVal(pPatternProcessor->pats_.back());
 	}
 	else if (result == FAULT_UNTESTABLE)
 	{
@@ -338,7 +338,7 @@ void Atpg::identifyDominator()
 				gateCount--;
 				if (gateCount == 0)
 				{
-					if (gateID_to_uniquePath_.capacity() < pCircuit_->tlvl_)
+					if ((int)gateID_to_uniquePath_.capacity() < pCircuit_->tlvl_)
 					{
 						gateID_to_uniquePath_.reserve(pCircuit_->tlvl_);
 					}
@@ -1542,7 +1542,7 @@ void Atpg::fanoutFreeBacktrace(Gate *pObjectGate)
 // **************************************************************************
 void Atpg::restoreFault(Fault &fOriginalFault)
 {
-	Gate *pFaultPropGate;
+	Gate *pFaultPropGate = NULL;
 	int i;
 
 	fanoutObjective_.clear();
@@ -2904,6 +2904,6 @@ Value Atpg::assignBacktraceValue(unsigned &n0, unsigned &n1, Gate &gate)
 // 		randomFill(pPatternProcessor->pats_[i]);
 // 		pSimulator_->assignPatternToPi(pPatternProcessor->pats_.at(i));
 // 		pSimulator_->goodSim();
-// 		assignPatternPoFromGoodSimVal(pPatternProcessor->pats_.at(i));
+// 		assignPatternPO_fromGoodSimVal(pPatternProcessor->pats_.at(i));
 // 	}
 // }

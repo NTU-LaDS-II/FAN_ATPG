@@ -1,14 +1,10 @@
-Refactor - 21st modification
+Refactor - 22nd modification
 
   name changes:
-    Atpg: protected => private
+    change debug message from cout to cerr
   performance related changes:
-    checkLevelInfo and testClearFaultEffect looks like debug function, removed it for performance
   bug fixed:
+    add resetPreValue() in stuckAtFaultDTC to prevent storeCurrentGateValue() bug occurance
   note:
-    need to remember to reconsider 
-    adding back the for loop initializationin in
-    setupCircuitParameter(), because atpg is a command line tool
-    , might crash running second time if not initialized
   function added:
   function removed:

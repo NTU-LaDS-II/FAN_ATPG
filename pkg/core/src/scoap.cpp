@@ -1,12 +1,7 @@
 #include "atpg.h"
+
 using namespace CoreNs;
-template <typename T>
-void DEBUG(const std::string &message, T var)
-{
-	std::cout << "[DEBUG]"
-						<< "\t";
-	std::cout << message << "\t" << var << "\n";
-}
+
 void Atpg::calSCOAP()
 {
 	// cc0, cc1 and co default is 0
@@ -16,17 +11,17 @@ void Atpg::calSCOAP()
 		Gate &gate = pCircuit_->gates_[gateID];
 		if (gate.cc0_ != 0)
 		{
-			std::cout << "cc0_ is not -1\n";
+			std::cerr << "cc0_ is not -1\n";
 			std::cin.get();
 		}
 		if (gate.cc1_ != 0)
 		{
-			std::cout << "cc1_ is not -1\n";
+			std::cerr << "cc1_ is not -1\n";
 			std::cin.get();
 		}
 		if (gate.co_ != 0)
 		{
-			std::cout << "co_ is not -1\n";
+			std::cerr << "co_ is not -1\n";
 			std::cin.get();
 		}
 	}
@@ -191,7 +186,8 @@ void Atpg::calSCOAP()
 				gate.cc1_++;
 				break;
 			default:
-				DEBUG("default", "should not happen");
+				std::cerr << "Bug: reach switch case default while calculating cc0_, cc1_";
+				std::cin.get();
 				break;
 		}
 	}
@@ -267,7 +263,8 @@ void Atpg::calSCOAP()
 				}
 				break;
 			default:
-				DEBUG("default", "should not happen");
+				std::cerr << "Bug: reach switch case default while calculating co_";
+				std::cin.get();
 				break;
 		}
 	}

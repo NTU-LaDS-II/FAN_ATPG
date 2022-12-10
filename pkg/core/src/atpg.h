@@ -122,20 +122,25 @@ namespace CoreNs
 		void identifyUniquePath();
 
 		void TransitionDelayFaultATPG(FaultList &faultListToGen, PatternProcessor *pPatternProcessor, int &untest);
-		void StuckAtFaultATPG(FaultList &faultListToGen, PatternProcessor *pPatternProcessor, int &untest);
+		void StuckAtFaultATPG(FaultList &faultListToGen, PatternProcessor *pPatternProcessor, int &untest); // not used
 		void StuckAtFaultATPGWithDTC(FaultList &faultListToGen, PatternProcessor *pPatternProcessor, int &untest);
 
-		void reverseFaultSimulation(PatternProcessor *pPatternProcessor, FaultList &originalFaultList);
+		SINGLE_PATTERN_GENERATION_STATUS generateSinglePatternOnTargetFault(Fault targetFault, bool isDTC); // name changed by wang
+
+		void resetPreValue();
+		int storeCurrentGateValue();
+		void clearAllFaultEffectBySimulation();
+		void clearOneGateFaultEffect(Gate &gate);
 
 		// initialization at the start of single pattern generation
 		Gate *initialize(Fault &targetFault, int &BackImpLevel, IMPLICATION_STATUS &implyStatus, bool isDTC);
 		void initialList(bool initFlag);
 		void initialNetlist(Gate &gFaultyLine, bool isDTC);
 
-		SINGLE_PATTERN_GENERATION_STATUS generateSinglePatternOnTargetFault(Fault targetFault, bool isDTC); // name changed by wang
-
-		void assignPatternPiFromGateVal(Pattern *pPat);		 // write PI values to pattern
-		void assignPatternPoFromGoodSimVal(Pattern *pPat); // write PO values to pattern
+		void assignPatternPI_fromGateVal(Pattern *pPat);		// write PI values to pattern
+		void assignPatternPO_fromGoodSimVal(Pattern *pPat); // write PO values to pattern
+		
+		void staticTestCompressionByReverseFaultSimulation(PatternProcessor *pPatternProcessor, FaultList &originalFaultList);
 
 		int countNumGatesInDFrontier(Gate *pFaultyLine);
 
@@ -195,12 +200,6 @@ namespace CoreNs
 		int vecPop(std::vector<int> &vec);
 		void vecDelete(std::vector<int> &list, const int &index);
 
-
-		void clearOneGateFaultEffect(Gate &gate);
-		void clearAllFaultEffectBySimulation();
-
-		void resetPreValue();
-		int storeCurrentGateValue();
 		void setValueAndRunImp(Gate &gate, Value val);
 		Gate *getWireForActivation(Fault &fault);
 
@@ -224,7 +223,7 @@ namespace CoreNs
 		Value cXOR3(const Value &i1, const Value &i2, const Value &i3);
 		Value cXNOR2(const Value &i1, const Value &i2);
 		Value cXNOR3(const Value &i1, const Value &i2, const Value &i3);
-		
+
 		// debug function not used
 		void checkLevelInfo();																 // for debug use
 		std::string getValStr(Value val);											 // for debug use
@@ -822,7 +821,7 @@ namespace CoreNs
 	}
 
 	// **************************************************************************
-	// Function   [ Atpg::assignPatternPiFromGateVal ]
+	// Function   [ Atpg::assignPatternPI_fromGateVal ]
 	// Commentor  [ CAL ]
 	// Synopsis   [ usage: assign primary input pattern value
 	//              in:    Pattern list
@@ -831,7 +830,7 @@ namespace CoreNs
 	//            ]
 	// Date       [ Ver. 1.0 started 2013/08/13 ]
 	// **************************************************************************
-	inline void Atpg::assignPatternPiFromGateVal(Pattern *pPat)
+	inline void Atpg::assignPatternPI_fromGateVal(Pattern *pPat)
 	{
 		for (int i = 0; i < pCircuit_->npi_; ++i)
 			pPat->pi1_[i] = pCircuit_->gates_[i].v_;
@@ -847,7 +846,7 @@ namespace CoreNs
 	}
 
 	// **************************************************************************
-	// Function   [ Atpg::assignPatternPoFromGoodSimVal ]
+	// Function   [ Atpg::assignPatternPO_fromGoodSimVal ]
 	// Commentor  [ CAL ]
 	// Synopsis   [ usage: assign primary output pattern value
 	//              in:    Pattern list
@@ -856,7 +855,7 @@ namespace CoreNs
 	//            ]
 	// Date       [ Ver. 1.0 started 2013/08/13 ]
 	// **************************************************************************
-	inline void Atpg::assignPatternPoFromGoodSimVal(Pattern *pPat)
+	inline void Atpg::assignPatternPO_fromGoodSimVal(Pattern *pPat)
 	{
 		// pSimulator_->goodSim();call externally instead, removed by wang
 		int offset = pCircuit_->ngate_ - pCircuit_->npo_ - pCircuit_->nppi_;
