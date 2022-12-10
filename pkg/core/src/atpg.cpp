@@ -116,7 +116,8 @@ void Atpg::TransitionDelayFaultATPG(FaultList &faultListToGen, PatternProcessor 
 		}
 
 		pSimulator_->pfFaultSim(pPatternProcessor->pats_.back(), faultListToGen);
-		assignPatternPoValue(pPatternProcessor->pats_.back());
+		pSimulator_->goodSim();
+		assignPatternPoFromGoodSimVal(pPatternProcessor->pats_.back());
 	}
 	else if (result == FAULT_UNTESTABLE)
 	{
@@ -163,7 +164,8 @@ void Atpg::StuckAtFaultATPG(FaultList &faultListToGen, PatternProcessor *pPatter
 		}
 
 		pSimulator_->pfFaultSim(pPatternProcessor->pats_.back(), faultListToGen);
-		assignPatternPoValue(pPatternProcessor->pats_.back());
+		pSimulator_->goodSim();
+		assignPatternPoFromGoodSimVal(pPatternProcessor->pats_.back());
 	}
 	else if (result == FAULT_UNTESTABLE)
 	{
@@ -196,7 +198,7 @@ void Atpg::XFill(PatternProcessor *pPatternProcessor)
 		randomFill(pPatternProcessor->pats_[i]);
 		pSimulator_->assignPatternToPi(pPatternProcessor->pats_.at(i));
 		pSimulator_->goodSim();
-		assignPatternPoValue(pPatternProcessor->pats_.at(i));
+		assignPatternPoFromGoodSimVal(pPatternProcessor->pats_.at(i));
 	}
 }
 

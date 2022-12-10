@@ -434,7 +434,8 @@ void Atpg::StuckAtFaultATPGWithDTC(FaultList &faultListToGen, PatternProcessor *
 
 			FaultList faultListTemp = faultListToGen;
 			pSimulator_->pfFaultSim(pcoll->pats_.back(), faultListToGen);
-			assignPatternPoValue(pcoll->pats_.back());
+			pSimulator_->goodSim();
+			assignPatternPoFromGoodSimVal(pcoll->pats_.back());
 
 			for (FaultListIter it = faultListTemp.begin(); it != faultListTemp.end(); ++it)
 			{
@@ -510,9 +511,10 @@ void Atpg::StuckAtFaultATPGWithDTC(FaultList &faultListToGen, PatternProcessor *
 		/*
 		 * After pSimulator_->pfFaultSim(pcoll->pats_.back(),faultListToGen) , the pi/ppi
 		 * values have been passed to gh_ and gl_ of each gate.  Therefore, we can
-		 * directly use "assignPatternPoValue" to perform goodSim to get the PoValue.
+		 * directly use "assignPatternPoFromGoodSimVal" to perform goodSim to get the PoValue.
 		 * */
-		assignPatternPoValue(pcoll->pats_.back());
+		pSimulator_->goodSim();
+		assignPatternPoFromGoodSimVal(pcoll->pats_.back());
 	}
 	else if (result == FAULT_UNTESTABLE)
 	{

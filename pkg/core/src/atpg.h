@@ -88,8 +88,8 @@ namespace CoreNs
 		void identifyLineParameter();
 		void identifyDominator();
 		void identifyUniquePath();
-		void assignPatternPiFromGateVal(Pattern *pPat); // write PI values to pattern
-		void assignPatternPoValue(Pattern *pPat);				// write PO values to pattern
+		void assignPatternPiFromGateVal(Pattern *pPat);		 // write PI values to pattern
+		void assignPatternPoFromGoodSimVal(Pattern *pPat); // write PO values to pattern
 
 	protected:
 		Circuit *pCircuit_;			// cir_ => pCircuit_ by wang
@@ -839,7 +839,7 @@ namespace CoreNs
 	}
 
 	// **************************************************************************
-	// Function   [ Atpg::assignPatternPoValue ]
+	// Function   [ Atpg::assignPatternPoFromGoodSimVal ]
 	// Commentor  [ CAL ]
 	// Synopsis   [ usage: assign primary output pattern value
 	//              in:    Pattern list
@@ -848,9 +848,9 @@ namespace CoreNs
 	//            ]
 	// Date       [ Ver. 1.0 started 2013/08/13 ]
 	// **************************************************************************
-	inline void Atpg::assignPatternPoValue(Pattern *pPat)
+	inline void Atpg::assignPatternPoFromGoodSimVal(Pattern *pPat)
 	{
-		pSimulator_->goodSim();
+		// pSimulator_->goodSim();call externally instead, removed by wang
 		int offset = pCircuit_->ngate_ - pCircuit_->npo_ - pCircuit_->nppi_;
 		for (int i = 0; i < pCircuit_->npo_; ++i)
 		{
