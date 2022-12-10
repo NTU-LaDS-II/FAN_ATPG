@@ -1,9 +1,10 @@
-Refactor - 25th modification
+Refactor - 26th modification
 
   name changes:
-    add all the cross file change from pan's fault.h/cpp refactor
+    Atpg: nHeadLine_ => numberOfHeadLine_
   performance related changes:
   bug fixed:
+    atpg_cmd.cpp:457 faultState_ => faultType_
   note:
   function added:
   function removed:

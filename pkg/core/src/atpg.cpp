@@ -31,7 +31,7 @@ void Atpg::generatePatternSet(PatternProcessor *pPatternProcessor, FaultListExtr
 	// checkLevelInfo(); // for debug, not neccessary, removed by wang
 
 	// setting faults for running ATPG
-	while(it != fListExtract->faultsInCircuit_.end())
+	while (it != fListExtract->faultsInCircuit_.end())
 	{
 		if ((*it)->faultState_ != Fault::DT && (*it)->faultState_ != Fault::RE && (*it)->faultyLine_ >= 0)
 			faultListToGen.push_back(*it);
@@ -126,23 +126,25 @@ void Atpg::setupCircuitParameter()
 void Atpg::calGateDepthFromPO()
 {
 	int tlvlAddPlus100 = pCircuit_->tlvl_ + 100;
-	for (int i = 0; i < pCircuit_->tgate_; ++i)
-	{
-		gateID_to_valModified_[i] = 0;
-		Gate &gate = pCircuit_->gates_[i];
-		
-		// default -1, check if it was changed or not.
-		if (gate.depthFromPo_ != -1)
-		{
-			std::cerr << "depthFromPo_ is not -1\n";
-			std::cin.get();
-		}
-	}
+
+	// debug code removed by wang
+	// for (int i = 0; i < pCircuit_->tgate_; ++i)
+	// {
+	// 	Gate &gate = pCircuit_->gates_[i];
+
+	// 	// default -1, check if it was changed or not.
+	// 	if (gate.depthFromPo_ != -1)
+	// 	{
+	// 		std::cerr << "depthFromPo_ is not -1\n";
+	// 		std::cin.get();
+	// 	}
+	// }
 
 	// Update depthFromPo_ form PO/PPO to PI/PPI
 	for (int i = pCircuit_->tgate_ - 1; i >= 0; --i)
 	{
 		Gate &gate = pCircuit_->gates_[i];
+		gateID_to_valModified_[i] = 0; // sneak the initialization assignment in here
 		if ((gate.type_ == Gate::PO) || (gate.type_ == Gate::PPO))
 		{
 			gate.depthFromPo_ = 0;
@@ -174,12 +176,6 @@ void Atpg::calGateDepthFromPO()
 			gate.depthFromPo_ = tlvlAddPlus100;
 		}
 	}
-
-	// for ( int i = 0 ; i < pCircuit_->tgate_ ; ++i ) {
-	//   Gate &gate = pCircuit_->gates_[i];
-	//   std::cerr << "gate.depthFromPo_ is " << gate.depthFromPo_ << std::endl;
-	// }
-	// std::cin.get();
 }
 
 // **************************************************************************
@@ -193,7 +189,8 @@ void Atpg::calGateDepthFromPO()
 // **************************************************************************
 void Atpg::identifyLineParameter()
 {
-	nHeadLine_ = 0; // number of head line
+	int count = 0;
+	numberOfHeadLine_ = 0; // number of head line
 
 	// go through all the gates
 	for (int i = 0; i < pCircuit_->tgate_; i++)
@@ -219,7 +216,7 @@ void Atpg::identifyLineParameter()
 		if (gateID_to_lineType_[gate.id_] == FREE_LINE && gate.nfo_ != 1)
 		{ // gate.nfo_  number of fanout
 			gateID_to_lineType_[gate.id_] = HEAD_LINE;
-			nHeadLine_++; // number of head line + 1
+			numberOfHeadLine_++; // number of head line + 1
 		}
 
 		// check it is HEAD_LINE or not(rule 2)
@@ -228,20 +225,21 @@ void Atpg::identifyLineParameter()
 				if (gateID_to_lineType_[gate.fis_[j]] == FREE_LINE)
 				{
 					gateID_to_lineType_[gate.fis_[j]] = HEAD_LINE;
-					nHeadLine_++;
+					numberOfHeadLine_++;
 				}
 	}
 
 	// store all head lines to array  headLineGateIDs_
-	headLineGateIDs_.resize(nHeadLine_); // resize instead of new, by wang
-	int inHead = 0;
+	headLineGateIDs_.resize(numberOfHeadLine_); // resize instead of new, by wang
 	for (int i = 0; i < pCircuit_->tgate_; i++)
+	{
 		if (gateID_to_lineType_[i] == HEAD_LINE)
 		{
-			headLineGateIDs_[inHead++] = i;
-			if (inHead == nHeadLine_)
+			headLineGateIDs_[count++] = i;
+			if (count == numberOfHeadLine_)
 				break;
 		}
+	}
 }
 
 // **************************************************************************
@@ -267,8 +265,9 @@ void Atpg::identifyDominator()
 
 		for (int j = gate.lvl_ + 1; j < pCircuit_->tlvl_; j++)
 		{
+			// if next level's output isn't empty
 			while (!circuitLevel_to_EventStack_[j].empty())
-			{ // if next level's output isn't empty
+			{
 				Gate &gDom = pCircuit_->gates_[circuitLevel_to_EventStack_[j].top()];
 				circuitLevel_to_EventStack_[j].pop();
 				gateID_to_valModified_[gDom.id_] = 0; // set the gDom to not handle
@@ -1794,7 +1793,7 @@ void Atpg::justifyFreeLines(Fault &fOriginalFault)
 		pHeadLineFaultGate = &pCircuit_->gates_[gateID];
 
 	// scan each HEADLINE
-	for (i = 0; i < nHeadLine_; i++)
+	for (i = 0; i < numberOfHeadLine_; i++)
 	{
 		Gate *pGate = &pCircuit_->gates_[headLineGateIDs_[i]];
 		if (pGate->preV_ == pGate->v_)

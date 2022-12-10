@@ -86,7 +86,7 @@ namespace CoreNs
 		std::vector<int> gateID_to_n1_;											 // unsigned *n1_ => std::vector<int> gateID_to_n1_ by wang
 		std::vector<int> gateID_to_valModified_;						 // indicate whether the gate has been backtraced or implied, true means the gate has been modified, new => vec by wang
 		std::vector<int> headLineGateIDs_;									 // array of headlines, new => vec by wang
-		int nHeadLine_;																			 // number of headlines
+		int numberOfHeadLine_;																			 // number of headlines
 		std::vector<int> gateID_to_reachableByTargetFault_;	 // TRUE means this fanout is in fanout cone of target fault;
 		std::vector<GATE_LINE_TYPE> gateID_to_lineType_;		 // array of line types for all gates: FREE HEAD or BOUND
 		std::vector<XPATH_STATE> gateID_to_xPathStatus_;		 // changed by wang

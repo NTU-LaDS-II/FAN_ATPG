@@ -454,7 +454,7 @@ bool ReportFaultCmd::exec(const vector<string> &argv)
 		if (!stateSet || (*it)->faultState_ != state)
 			continue;
 		cout << "#    ";
-		switch ((*it)->faultState_)
+		switch ((*it)->faultType_)
 		{
 			case Fault::SA0:
 				cout << "SA0     ";
