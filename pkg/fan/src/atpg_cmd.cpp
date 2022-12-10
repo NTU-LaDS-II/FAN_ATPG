@@ -295,7 +295,7 @@ void AddFaultCmd::addAllFault()
 	fanMgr_->fListExtract->faultsInCircuit_.resize(fanMgr_->fListExtract->extractedFaults_.size());
 	FaultListIter it = fanMgr_->fListExtract->faultsInCircuit_.begin();
 	for (size_t i = 0; i < fanMgr_->fListExtract->extractedFaults_.size(); ++i, ++it)
-		(*it) = fanMgr_->fListExtract->extractedFaults_[i];
+		(*it) = &fanMgr_->fListExtract->extractedFaults_[i];
 
 	TmStat stat;
 	fanMgr_->tmusg.getPeriodUsage(stat);
@@ -316,7 +316,7 @@ bool AddFaultCmd::addPinFault(const string &type, const string &pin)
 	int gid = fanMgr_->cir->portToGate_[p->id_];
 	int offset = (type == "SA0" || type == "STR") ? 0 : 1;
 	int fid = fanMgr_->fListExtract->gateIndexToFaultIndex_[gid] + offset;
-	Fault *f = fanMgr_->fListExtract->uncollapsedFaults_[fid];
+	Fault *f = &fanMgr_->fListExtract->uncollapsedFaults_[fid];
 	fanMgr_->fListExtract->faultsInCircuit_.push_back(f);
 	return true;
 } //}}}
@@ -359,7 +359,7 @@ bool AddFaultCmd::addCellFault(const string &type, const string &cell,
 		}
 		int offset = (type == "SA0" || type == "STR") ? 0 : 1;
 		int fid = fanMgr_->fListExtract->gateIndexToFaultIndex_[gid] + 2 * pid + offset;
-		Fault *f = fanMgr_->fListExtract->uncollapsedFaults_[fid];
+		Fault *f = &fanMgr_->fListExtract->uncollapsedFaults_[fid];
 		fanMgr_->fListExtract->faultsInCircuit_.push_back(f);
 	}
 	return true;
