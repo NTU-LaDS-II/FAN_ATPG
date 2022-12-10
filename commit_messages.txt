@@ -1,12 +1,10 @@
-Refactor - 23rd modification
+Refactor - 24th modification
 
   name changes:
-    finish ordering all the function declaration for readability
-    move all the functions of compression.cpp and scoap.cpp into atpg.cpp
-    and delete compression.cpp and scoap.cpp
   performance related changes:
   bug fixed:
   note:
-    it is now more clear with the function declaration order more organized
   function added:
+    add initialization of gateID_to_valModified_[i] = 0 back, but add it
+    into calGateDepthFromPO() to save additional for loop
   function removed:

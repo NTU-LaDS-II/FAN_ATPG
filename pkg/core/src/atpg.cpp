@@ -81,23 +81,20 @@ void Atpg::generatePatternSet(PatternProcessor *pPatternProcessor, FaultListExtr
 // Function   [ Atpg::setupCircuitParameter ]
 // Commentor  [ KOREAL ]
 // Synopsis   [ usage: initialize gate's data including
-//					    numOfZero = {0}
-//						numOfOne  = {0}
-//						gateID_to_valModified_
+//					    numOfZero = {0} numOfOne  = {0} // unneccesary by wang
+//							gateID_to_valModified_ // initialized in calGateDepthFromPO()
 //						circuitLevel_to_EventStack_
-//				//TODO in out
 //            ]
 // Date       [ KOREAL Ver. 1.0 started 2013/08/10 ]
 // **************************************************************************
 void Atpg::setupCircuitParameter()
 {
-	// vector is 0 at the start, vector of false can be initialized in constructor
-	// hence, removed by wang
+	// vector is 0 at the start and can be initialized in constructor hence, removed by wang
 	// for (int i = 0; i < pCircuit_->tgate_; i++)
 	// {
-	// 	gateID_to_n0_[i] = 0;
-	// 	gateID_to_n1_[i] = 0;
-	// 	gateID_to_valModified_[i] = false;
+	// 	gateID_to_n0_[i] = 0;          // unneccesary
+	// 	gateID_to_n1_[i] = 0;          // unneccesary
+	// 	gateID_to_valModified_[i] = 0; // moved to calGateDepthFromPO() by wang
 	// }
 
 	// set depthFromPo_
@@ -130,6 +127,7 @@ void Atpg::calGateDepthFromPO()
 	int tlvlAddPlus100 = pCircuit_->tlvl_ + 100;
 	for (int i = 0; i < pCircuit_->tgate_; ++i)
 	{
+		gateID_to_valModified_[i] = 0;
 		Gate &gate = pCircuit_->gates_[i];
 		/*
 		 * Because the default is -1, I want to check if it was changed or not.
@@ -268,18 +266,19 @@ void Atpg::identifyDominator()
 		int gateCount = pushGateFanoutsToEventStack(i);
 
 		for (int j = gate.lvl_ + 1; j < pCircuit_->tlvl_; j++)
+		{
 			while (!circuitLevel_to_EventStack_[j].empty())
 			{ // if next level's output isn't empty
 				Gate &gDom = pCircuit_->gates_[circuitLevel_to_EventStack_[j].top()];
 				circuitLevel_to_EventStack_[j].pop();
-				gateID_to_valModified_[gDom.id_] = 0; // set the gDom is not handle
+				gateID_to_valModified_[gDom.id_] = 0; // set the gDom to not handle
 				/*
 				 * Because the gateCount is zero while the circuitLevel_to_EventStack_ is not zero, we
 				 * only need to pop without other operations. That is, continue operation.
 				 */
 				if (gateCount <= 0)
 					continue;
-				gateCount--;
+				--gateCount;
 				if (gateCount == 0)
 				{
 					if ((int)gateID_to_uniquePath_.capacity() < pCircuit_->tlvl_)
@@ -328,6 +327,7 @@ void Atpg::identifyDominator()
 					gateCount++;
 				}
 			}
+		}
 	}
 }
 
@@ -1642,10 +1642,10 @@ bool Atpg::checkUnjustifiedBoundLines()
 // **************************************************************************
 void Atpg::findFinalObjective(BACKTRACE_STATUS &flag, bool FaultPropPO, Gate *&pLastDFrontier)
 {
-	BACKTRACE_RESULT result;
-	Gate *pGate;
-	int finalObjectiveId = -1;
 	int index;
+	Gate *pGate = NULL;
+	BACKTRACE_RESULT result;
+	int finalObjectiveId = -1;
 
 	while (true)
 	{
@@ -1656,7 +1656,7 @@ void Atpg::findFinalObjective(BACKTRACE_STATUS &flag, bool FaultPropPO, Gate *&p
 			flag = FAN_OBJ_DETERMINE;
 			// set the times of objective 0 and objective 1 of the gate to be zero
 			// AND LET ALL THE SETS OF OBJECTIVES BE EMPTY
-			for (unsigned i = 0; i < backtraceResetList_.size(); i++)
+			for (int i = 0; i < backtraceResetList_.size(); i++)
 				setGaten0n1(backtraceResetList_[i], 0, 0);
 			backtraceResetList_.clear();
 			initialList(false);
@@ -1749,9 +1749,13 @@ void Atpg::assignValueToFinalObject()
 
 		// judge the value by numOfZero and numOfOne
 		if (gateID_to_n0_[pGate->id_] > gateID_to_n1_[pGate->id_])
+		{
 			pGate->v_ = L;
+		}
 		else
+		{
 			pGate->v_ = H;
+		}
 
 		// put decision of the finalObjective into decisionTree
 		decisionTree_.put(pGate->id_, backtrackList_.size());
@@ -1759,9 +1763,14 @@ void Atpg::assignValueToFinalObject()
 		backtrackList_.push_back(pGate->id_);
 
 		if (gateID_to_lineType_[pGate->id_] == HEAD_LINE)
+		{
 			gateID_to_valModified_[pGate->id_] = 1;
+		}
 		else
+		{
 			pushGateToEventStack(pGate->id_);
+		}
+
 		pushGateFanoutsToEventStack(pGate->id_);
 	}
 }
@@ -2603,15 +2612,11 @@ Atpg::BACKTRACE_RESULT Atpg::multipleBacktrace(BACKTRACE_STATUS atpgStatus, int 
 								if (gateID_to_n0_[pFaninGate->id_] == 0 && gateID_to_n1_[pFaninGate->id_] == 0)
 									fanoutObjective_.push_back(pFaninGate->id_);
 
-								// new value = old value(gateID_to_n0_(),
-								// gateID_to_n1_()) + this branch's value
-								// (nn0, nn1)
-								// rule6: fanout point's n0, n1 = sum of it's
-								// branch's no, n1
+								// new value = old value(gateID_to_n0_(),gateID_to_n1_()) + this branch's value (nn0, nn1)
+								// rule6: fanout point's n0, n1 = sum of it's branch's no, n1
 								// int NewZero = gateID_to_n1_[pFaninGate->id_] + nn0; removed by wang
 								// int NewOne = gateID_to_n1_[pFaninGate->id_] + nn1; removed by wang
 								// ADD n0 AND n1 TO THE CORRESPONDING
-								// FANOUT-POINT OBJECTIVE BY THE RULE(6)
 								// modified to safe
 								setGaten0n1(pFaninGate->id_, gateID_to_n0_[pFaninGate->id_] + nn0, gateID_to_n1_[pFaninGate->id_] + nn1);
 								backtraceResetList_.push_back(pFaninGate->id_);
@@ -2619,7 +2624,6 @@ Atpg::BACKTRACE_RESULT Atpg::multipleBacktrace(BACKTRACE_STATUS atpgStatus, int 
 						}
 						else
 						{ // NO
-
 							// rule 1 ~ rule 5
 							if (pFaninGate == pEasiestInput)
 							{
@@ -2670,7 +2674,6 @@ Atpg::BACKTRACE_RESULT Atpg::multipleBacktrace(BACKTRACE_STATUS atpgStatus, int 
 				// TAKE OUT A FANOUT-POINT OBJECTIVE p CLOSEST TO A PRIMARY OUTPUT
 				pCurrentObj = findCloseToOutput(fanoutObjective_, index);
 
-				// ListDelete() defined in <atpg.h>, delete the element
 				// specified by the index from FanObject
 				vecDelete(fanoutObjective_, index);
 
@@ -2711,7 +2714,6 @@ Atpg::BACKTRACE_RESULT Atpg::multipleBacktrace(BACKTRACE_STATUS atpgStatus, int 
 				break;
 		}
 	}
-
 	// after breaking while loop
 	return NO_CONTRADICTORY;
 }
@@ -2844,7 +2846,7 @@ void Atpg::initialObjectives()
 	currentObject_ = initObject_; // vector assignment
 
 	// go through all current Object size
-	for (unsigned i = 0; i < currentObject_.size(); i++)
+	for (int i = 0; i < currentObject_.size(); ++i)
 	{
 		// get currentObject gate in pCircuit_ to pGate
 		Gate *pGate = &pCircuit_->gates_[currentObject_[i]];
