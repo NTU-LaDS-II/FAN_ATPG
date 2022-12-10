@@ -2,7 +2,7 @@ Refactor - 19th modification
 
   name changes:
   performance related changes:
+    atpg.cpp:79 remove uneccesary remove XFill function call
   debug:
   note:
   function added:
-    Atpg::adjacentFill() for different XFilling option

@@ -76,10 +76,10 @@ void Atpg::generatePatternSet(PatternProcessor *pPatternProcessor, FaultListExtr
 		reverseFaultSimulation(pPatternProcessor, faultOri);
 	}
 	// do XFill
-	if (pPatternProcessor->XFill_ == PatternProcessor::ON)
-	{
-		XFill(pPatternProcessor);
-	}
+	// if (pPatternProcessor->XFill_ == PatternProcessor::ON)
+	// {
+	// 	XFill(pPatternProcessor);
+	// }, unecessary, alread Xfilled in previsous functions, removed by wang
 }
 
 // **************************************************************************
