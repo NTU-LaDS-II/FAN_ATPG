@@ -91,34 +91,6 @@ void Atpg::clearAllFaultEffectBySimulation()
 }
 
 // **************************************************************************
-// Function   [ Atpg::testClearFaultEffect ]
-// Commentor  [ CAL ]
-// Synopsis   [ usage:
-//                Test clearAllFaultEffectBySimulation for all faults
-//              in:    void
-//              out:   void
-//            ]
-// Date       [ started 2020/07/04    last modified 2020/07/04 ]
-// **************************************************************************
-void Atpg::testClearFaultEffect(FaultList &faultListToTest)
-{
-	for (auto it = faultListToTest.begin(); it != faultListToTest.end(); ++it)
-	{
-		SINGLE_PATTERN_GENERATION_STATUS result = generateSinglePatternOnTargetFault((**it), false);
-		clearAllFaultEffectBySimulation();
-		for (int i = 0; i < pCircuit_->tgate_; ++i)
-		{
-			Gate &gate = pCircuit_->gates_[i];
-			if ((gate.v_ == D) || (gate.v_ == B))
-			{
-				std::cerr << "testClearFaultEffect found bug" << std::endl;
-				std::cin.get();
-			}
-		}
-	}
-}
-
-// **************************************************************************
 // Function   [ Atpg::storeCurrentGateValue ]
 // Commentor  [ CAL ]
 // Synopsis   [ usage:
@@ -267,7 +239,7 @@ bool Atpg::isExistXPath(Gate *pGate)
 }
 
 // **************************************************************************
-// Function   [ Atpg::clearEventList_ ]
+// Function   [ Atpg::clearEventList ]
 // Commentor  [ CAL ]
 // Synopsis   [ usage:
 //                Clear circuitLevel_to_EventStack_ and carefully reset gateID_to_valModified_ and isInEventList_
@@ -276,7 +248,7 @@ bool Atpg::isExistXPath(Gate *pGate)
 //            ]
 // Date       [ started 2020/07/07    last modified 2020/07/07 ]
 // **************************************************************************
-void Atpg::clearEventList_(bool isDebug)
+void Atpg::clearEventList(bool isDebug)
 {
 
 	// pop and unmark
@@ -301,7 +273,7 @@ void Atpg::clearEventList_(bool isDebug)
 		{
 			if (isInEventList_[i] == true)
 			{
-				std::cout << "Warning clearEventList_ found unexpected behavior" << std::endl;
+				std::cout << "Warning clearEventList found unexpected behavior" << std::endl;
 				isInEventList_[i] = false;
 				std::cin.get();
 			}
@@ -337,7 +309,7 @@ void Atpg::resetIsInEventList()
 // **************************************************************************
 void Atpg::setValueAndRunImp(Gate &gate, Value val)
 {
-	clearEventList_(true);
+	clearEventList(true);
 	gate.v_ = val;
 	for (int i = 0; i < gate.nfo_; ++i)
 	{
@@ -394,7 +366,7 @@ void Atpg::checkLevelInfo()
 		Gate &gate = pCircuit_->gates_[i];
 		if (gate.lvl_ >= pCircuit_->tlvl_)
 		{
-			std::cout << "checkLevelInfo found that at least one gate.lvl_ is greater than pCircuit_->tlvl_" << std::endl;
+			std::cerr << "checkLevelInfo found that at least one gate.lvl_ is greater than pCircuit_->tlvl_\n";
 			std::cin.get();
 		}
 	}

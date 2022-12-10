@@ -1,8 +1,14 @@
-Refactor - 19th modification
+Refactor - 21st modification
 
   name changes:
+    Atpg: protected => private
   performance related changes:
-    atpg.cpp:79 remove uneccesary remove XFill function call
-  debug:
+    checkLevelInfo and testClearFaultEffect looks like debug function, removed it for performance
+  bug fixed:
   note:
+    need to remember to reconsider 
+    adding back the for loop initializationin in
+    setupCircuitParameter(), because atpg is a command line tool
+    , might crash running second time if not initialized
   function added:
+  function removed:

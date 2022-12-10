@@ -1,7 +1,7 @@
 // **************************************************************************
 // File       [ atpg.cpp ]
 // Author     [ littleshamoo ]
-// Synopsis   [ ]
+// Synopsis   [ This files include most of the method of class Atpg]
 // Date       [ 2011/11/01 created ]
 // **************************************************************************
 
@@ -18,30 +18,33 @@ using namespace CoreNs;
 //            ]
 // Date       [ Ver. 1.0 started 2013/08/13 ]
 // **************************************************************************
-
 void Atpg::generatePatternSet(PatternProcessor *pPatternProcessor, FaultListExtract *fListExtract)
 {
-	setupCircuitParameter();
-	pPatternProcessor->init(pCircuit_);
-	checkLevelInfo();
-	// setting faults for running ATPG
+	int untest = 0;
+	Fault *currF = NULL;
+	FaultList faultOri; 
 	FaultList faultListToGen;
 	FaultListIter it = fListExtract->current_.begin();
-	int untest = 0;
+
+	setupCircuitParameter();
+	pPatternProcessor->init(pCircuit_);
+	// checkLevelInfo(); // for debug, not neccessary, removed by wang
+
+	// setting faults for running ATPG
 	for (; it != fListExtract->current_.end(); ++it)
+	{
 		if ((*it)->state_ != Fault::DT && (*it)->state_ != Fault::RE && (*it)->line_ >= 0)
 			faultListToGen.push_back(*it);
-	// ori fault copy
-	FaultList faultOri = faultListToGen; //
+	}
 
-	Fault *currF = NULL;
+	faultOri = faultListToGen; // ori fault copy
+
+	// To test clearAllFaultEffectBySimulation
+	// testClearFaultEffect(faultListToGen); // removed for now seems like debug usage
+
 	// start ATPG
 	// take one undetected fault from the faultListToGen
 	// if the fault is undetected, run ATPG on it
-
-	// To test clearAllFaultEffectBySimulation
-	testClearFaultEffect(faultListToGen);
-
 	while (faultListToGen.begin() != faultListToGen.end())
 	{
 		if (faultListToGen.front()->state_ == Fault::AB)
@@ -49,10 +52,6 @@ void Atpg::generatePatternSet(PatternProcessor *pPatternProcessor, FaultListExtr
 
 		if (currF == faultListToGen.front())
 		{
-			// cout << "Bug!!!" <<endl;
-			// cout << faultListToGen.size() << endl;
-			// cout << faultListToGen.front()->gate_ << ' ' << faultListToGen.front()->line_ << ' ' << faultListToGen.front()->type_ << ' '
-			// 	 << ((faultListToGen.front()->line_==0)?(0):(circuit_->gates_[faultListToGen.front()->gate_].fis_[faultListToGen.front()->line_-1])) << endl;
 			faultListToGen.front()->state_ = Fault::DT;
 			faultListToGen.pop_front();
 			continue;
@@ -66,7 +65,6 @@ void Atpg::generatePatternSet(PatternProcessor *pPatternProcessor, FaultListExtr
 		// stuck-at fault ATPG
 		else
 			StuckAtFaultATPGWithDTC(faultListToGen, pPatternProcessor, untest);
-		// StuckAtFaultATPG( faultListToGen, pPatternProcessor, untest );
 	}
 
 	// do static compression using compability graph
@@ -76,10 +74,37 @@ void Atpg::generatePatternSet(PatternProcessor *pPatternProcessor, FaultListExtr
 		reverseFaultSimulation(pPatternProcessor, faultOri);
 	}
 	// do XFill
-	// if (pPatternProcessor->XFill_ == PatternProcessor::ON)
-	// {
-	// 	XFill(pPatternProcessor);
-	// }, unecessary, alread Xfilled in previsous functions, removed by wang
+	// if (pPatternProcessor->XFill_ == PatternProcessor::ON) XFill(pPatternProcessor);, unecessary, alread Xfilled in previsous functions, removed by wang
+}
+
+// **************************************************************************
+// Function   [ Atpg::testClearFaultEffect ]
+// Commentor  [ CAL ]
+// Synopsis   [ usage:
+//                Test clearAllFaultEffectBySimulation for all faults
+//              in:    void
+//              out:   void
+//            ]
+// Date       [ started 2020/07/04    last modified 2020/07/04 ]
+// **************************************************************************
+void Atpg::testClearFaultEffect(FaultList &faultListToTest)
+{
+	for (auto it = faultListToTest.begin(); it != faultListToTest.end(); ++it)
+	{
+		SINGLE_PATTERN_GENERATION_STATUS result = generateSinglePatternOnTargetFault((**it), false);
+		clearAllFaultEffectBySimulation();
+
+		// DEBUG message, removed for performance
+		for (int i = 0; i < pCircuit_->tgate_; ++i)
+		{
+			Gate &gate = pCircuit_->gates_[i];
+			if ((gate.v_ == D) || (gate.v_ == B))
+			{
+				std::cerr << "testClearFaultEffect found bug" << std::endl;
+				std::cin.get();
+			}
+		}
+	}
 }
 
 // **************************************************************************
@@ -91,7 +116,6 @@ void Atpg::generatePatternSet(PatternProcessor *pPatternProcessor, FaultListExtr
 //            ]
 // Date       [ HKY Ver. 1.0 started 2014/09/01 ]
 // **************************************************************************
-
 void Atpg::TransitionDelayFaultATPG(FaultList &faultListToGen, PatternProcessor *pPatternProcessor, int &untest)
 {
 	Fault fTDF = *faultListToGen.front();
@@ -142,7 +166,6 @@ void Atpg::TransitionDelayFaultATPG(FaultList &faultListToGen, PatternProcessor 
 //            ]
 // Date       [ HKY Ver. 1.0 started 2014/09/01 ]
 // **************************************************************************
-
 void Atpg::StuckAtFaultATPG(FaultList &faultListToGen, PatternProcessor *pPatternProcessor, int &untest)
 {
 	SINGLE_PATTERN_GENERATION_STATUS result = generateSinglePatternOnTargetFault(*faultListToGen.front(), false);
@@ -182,27 +205,6 @@ void Atpg::StuckAtFaultATPG(FaultList &faultListToGen, PatternProcessor *pPatter
 }
 
 // **************************************************************************
-// Function   [ Atpg::XFill ]
-// Commentor  [ HKY CYW ]
-// Synopsis   [ usage: do X-Fill on generated pattern
-//              in:    Pattern list
-//              out:   void //TODO
-//            ]
-// Date       [ HKY Ver. 1.0 started 2014/09/01 ]
-// **************************************************************************
-
-void Atpg::XFill(PatternProcessor *pPatternProcessor)
-{
-	for (int i = 0; i < (int)pPatternProcessor->pats_.size(); ++i)
-	{
-		randomFill(pPatternProcessor->pats_[i]);
-		pSimulator_->assignPatternToPi(pPatternProcessor->pats_.at(i));
-		pSimulator_->goodSim();
-		assignPatternPoFromGoodSimVal(pPatternProcessor->pats_.at(i));
-	}
-}
-
-// **************************************************************************
 // Function   [ Atpg::setupCircuitParameter ]
 // Commentor  [ KOREAL ]
 // Synopsis   [ usage: initialize gate's data including
@@ -216,7 +218,6 @@ void Atpg::XFill(PatternProcessor *pPatternProcessor)
 // **************************************************************************
 void Atpg::setupCircuitParameter()
 {
-
 	// vector is 0 at the start, vector of false can be initialized in constructor
 	// hence, removed by wang
 	// for (int i = 0; i < pCircuit_->tgate_; i++)
@@ -2887,3 +2888,22 @@ Value Atpg::assignBacktraceValue(unsigned &n0, unsigned &n1, Gate &gate)
 			return X;
 	}
 }
+// **************************************************************************
+// Function   [ Atpg::XFill ]
+// Commentor  [ HKY CYW ]
+// Synopsis   [ usage: do X-Fill on generated pattern
+//              in:    Pattern list
+//              out:   void //TODO
+//            ]
+// Date       [ HKY Ver. 1.0 started 2014/09/01 ]
+// **************************************************************************
+// void Atpg::XFill(PatternProcessor *pPatternProcessor)
+// {
+// 	for (int i = 0; i < (int)pPatternProcessor->pats_.size(); ++i)
+// 	{
+// 		randomFill(pPatternProcessor->pats_[i]);
+// 		pSimulator_->assignPatternToPi(pPatternProcessor->pats_.at(i));
+// 		pSimulator_->goodSim();
+// 		assignPatternPoFromGoodSimVal(pPatternProcessor->pats_.at(i));
+// 	}
+// }
