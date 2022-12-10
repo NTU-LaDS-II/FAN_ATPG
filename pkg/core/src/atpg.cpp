@@ -24,42 +24,42 @@ void Atpg::generatePatternSet(PatternProcessor *pPatternProcessor, FaultListExtr
 	Fault *currF = NULL;
 	FaultList faultOri;
 	FaultList faultListToGen;
-	FaultListIter it = fListExtract->current_.begin();
+	FaultListIter it = fListExtract->faultsInCircuit_.begin();
 
 	setupCircuitParameter();
 	pPatternProcessor->init(pCircuit_);
 	// checkLevelInfo(); // for debug, not neccessary, removed by wang
 
 	// setting faults for running ATPG
-	for (; it != fListExtract->current_.end(); ++it)
+	for (; it != fListExtract->faultsInCircuit_.end(); ++it)
 	{
-		if ((*it)->state_ != Fault::DT && (*it)->state_ != Fault::RE && (*it)->line_ >= 0)
+		if ((*it)->faultState_ != Fault::DT && (*it)->faultState_ != Fault::RE && (*it)->faultyLine_ >= 0)
 			faultListToGen.push_back(*it);
 	}
 
 	faultOri = faultListToGen; // ori fault copy
 
 	// To test clearAllFaultEffectBySimulation
-	// testClearFaultEffect(faultListToGen); // removed for now seems like debug usage
+	// testClearFaultEffect(faultListToGen); // removed for now seems like debug usage, by wang
 
 	// start ATPG
 	// take one undetected fault from the faultListToGen
 	// if the fault is undetected, run ATPG on it
 	while (faultListToGen.begin() != faultListToGen.end())
 	{
-		if (faultListToGen.front()->state_ == Fault::AB)
+		if (faultListToGen.front()->faultState_ == Fault::AB)
 			break;
 
 		if (currF == faultListToGen.front())
 		{
-			faultListToGen.front()->state_ = Fault::DT;
+			faultListToGen.front()->faultState_ = Fault::DT;
 			faultListToGen.pop_front();
 			continue;
 		}
 		currF = faultListToGen.front();
 
 		// Transition delay fault ATPG
-		if ((*faultListToGen.front()).type_ == Fault::STR || (*faultListToGen.front()).type_ == Fault::STF)
+		if ((*faultListToGen.front()).faultType_ == Fault::STR || (*faultListToGen.front()).faultType_ == Fault::STF)
 			TransitionDelayFaultATPG(faultListToGen, pPatternProcessor, untest);
 
 		// stuck-at fault ATPG
@@ -407,7 +407,7 @@ void Atpg::TransitionDelayFaultATPG(FaultList &faultListToGen, PatternProcessor 
 {
 	Fault fTDF = *faultListToGen.front();
 
-	SINGLE_PATTERN_GENERATION_STATUS result = generateSinglePatternOnTargetFault(Fault(fTDF.gate_ + pCircuit_->ngate_, fTDF.type_, fTDF.line_, fTDF.eq_, fTDF.state_, fTDF.aggr_), false);
+	SINGLE_PATTERN_GENERATION_STATUS result = generateSinglePatternOnTargetFault(Fault(fTDF.gateID_ + pCircuit_->ngate_, fTDF.faultType_, fTDF.faultyLine_, fTDF.equivalent_, fTDF.faultState_, fTDF.aggr_), false);
 	if (result == PATTERN_FOUND)
 	{
 		Pattern *p = new Pattern;
@@ -432,13 +432,13 @@ void Atpg::TransitionDelayFaultATPG(FaultList &faultListToGen, PatternProcessor 
 	}
 	else if (result == FAULT_UNTESTABLE)
 	{
-		faultListToGen.front()->state_ = Fault::AU;
+		faultListToGen.front()->faultState_ = Fault::AU;
 		faultListToGen.pop_front();
 		untest++;
 	}
 	else
 	{
-		faultListToGen.front()->state_ = Fault::AB;
+		faultListToGen.front()->faultState_ = Fault::AB;
 		faultListToGen.push_back(faultListToGen.front());
 		faultListToGen.pop_front();
 	}
@@ -477,13 +477,13 @@ void Atpg::TransitionDelayFaultATPG(FaultList &faultListToGen, PatternProcessor 
 // 	}
 // 	else if (result == FAULT_UNTESTABLE)
 // 	{
-// 		faultListToGen.front()->state_ = Fault::AU;
+// 		faultListToGen.front()->faultState_ = Fault::AU;
 // 		faultListToGen.pop_front();
 // 		untest++;
 // 	}
 // 	else
 // 	{
-// 		faultListToGen.front()->state_ = Fault::AB;
+// 		faultListToGen.front()->faultState_ = Fault::AB;
 // 		faultListToGen.push_back(faultListToGen.front());
 // 		faultListToGen.pop_front();
 // 	}
@@ -530,12 +530,12 @@ void Atpg::StuckAtFaultATPGWithDTC(FaultList &faultListToGen, PatternProcessor *
 			for (FaultListIter it = faultListTemp.begin(); it != faultListTemp.end(); ++it)
 			{
 				// skip detected faults
-				if ((*it)->state_ == Fault::DT)
+				if ((*it)->faultState_ == Fault::DT)
 					continue;
 
 				Gate *pGateForAtivation = getWireForActivation((**it));
-				if (((pGateForAtivation->v_ == L) && ((*it)->type_ == Fault::SA0)) ||
-						((pGateForAtivation->v_ == H) && ((*it)->type_ == Fault::SA1)))
+				if (((pGateForAtivation->v_ == L) && ((*it)->faultType_ == Fault::SA0)) ||
+						((pGateForAtivation->v_ == H) && ((*it)->faultType_ == Fault::SA1)))
 				{
 					continue;
 				}
@@ -543,7 +543,7 @@ void Atpg::StuckAtFaultATPGWithDTC(FaultList &faultListToGen, PatternProcessor *
 				// Activation check
 				if (pGateForAtivation->v_ != X)
 				{
-					if (((*it)->type_ == Fault::SA0) || ((*it)->type_ == Fault::SA1))
+					if (((*it)->faultType_ == Fault::SA0) || ((*it)->faultType_ == Fault::SA1))
 					{
 						setValueAndRunImp((*pGateForAtivation), X);
 					}
@@ -608,13 +608,13 @@ void Atpg::StuckAtFaultATPGWithDTC(FaultList &faultListToGen, PatternProcessor *
 	}
 	else if (result == FAULT_UNTESTABLE)
 	{
-		faultListToGen.front()->state_ = Fault::AU;
+		faultListToGen.front()->faultState_ = Fault::AU;
 		faultListToGen.pop_front();
 		untest++;
 	}
 	else
 	{
-		faultListToGen.front()->state_ = Fault::AB;
+		faultListToGen.front()->faultState_ = Fault::AB;
 		faultListToGen.push_back(faultListToGen.front());
 		faultListToGen.pop_front();
 	}
@@ -632,12 +632,12 @@ void Atpg::StuckAtFaultATPGWithDTC(FaultList &faultListToGen, PatternProcessor *
 // **************************************************************************
 Gate *Atpg::getWireForActivation(Fault &fault)
 {
-	bool isOutputFault = (fault.line_ == 0);
+	bool isOutputFault = (fault.faultyLine_ == 0);
 	Gate *pGateForAtivation;
-	Gate *pFaultyGate = &pCircuit_->gates_[fault.gate_];
+	Gate *pFaultyGate = &pCircuit_->gates_[fault.gateID_];
 	if (!isOutputFault)
 	{
-		pGateForAtivation = &pCircuit_->gates_[pFaultyGate->fis_[fault.line_ - 1]];
+		pGateForAtivation = &pCircuit_->gates_[pFaultyGate->fis_[fault.faultyLine_ - 1]];
 	}
 	else
 	{
@@ -994,19 +994,19 @@ Gate *Atpg::initialize(Fault &fault, int &BackImpLevel, IMPLICATION_STATUS &impl
 {
 	currentTargetFault_ = fault;
 
-	Gate *gFaultyLine = &pCircuit_->gates_[fault.gate_];
-	int line = fault.line_;
+	Gate *gFaultyLine = &pCircuit_->gates_[fault.gateID_];
+	int line = fault.faultyLine_;
 	if (line)
 		gFaultyLine = &pCircuit_->gates_[gFaultyLine->fis_[line - 1]];
 	initialList(true);
 	initialNetlist(*gFaultyLine, isDTC);
-	int fGate_id = fault.gate_;
-	// currentTargetHeadLineFault_.gate_ = -1; //bug report
+	int fGate_id = fault.gateID_;
+	// currentTargetHeadLineFault_.gateID_ = -1; //bug report
 	if (gateID_to_lineType_[gFaultyLine->id_] == FREE_LINE)
 	{
-		if ((fault.type_ == Fault::SA0 || fault.type_ == Fault::STR) && gFaultyLine->v_ != L)
+		if ((fault.faultType_ == Fault::SA0 || fault.faultType_ == Fault::STR) && gFaultyLine->v_ != L)
 			gFaultyLine->v_ = D;
-		if ((fault.type_ == Fault::SA1 || fault.type_ == Fault::STF) && gFaultyLine->v_ != H)
+		if ((fault.faultType_ == Fault::SA1 || fault.faultType_ == Fault::STF) && gFaultyLine->v_ != H)
 			gFaultyLine->v_ = B;
 		backtrackList_.push_back(gFaultyLine->id_);
 
@@ -1014,7 +1014,7 @@ Gate *Atpg::initialize(Fault &fault, int &BackImpLevel, IMPLICATION_STATUS &impl
 		currentTargetFault_ = currentTargetHeadLineFault_;
 		BackImpLevel = 0;
 		implyStatus = FORWARD;
-		fGate_id = currentTargetHeadLineFault_.gate_;
+		fGate_id = currentTargetHeadLineFault_.gateID_;
 	}
 
 	else
@@ -1033,7 +1033,7 @@ Gate *Atpg::initialize(Fault &fault, int &BackImpLevel, IMPLICATION_STATUS &impl
 		BackImpLevel = Level;
 		implyStatus = BACKWARD;
 	}
-	if (fault.type_ == Fault::STR || fault.type_ == Fault::STF)
+	if (fault.faultType_ == Fault::STR || fault.faultType_ == Fault::STF)
 	{
 		Level = firstTimeFrameSetUp(fault);
 		if (Level < 0)
@@ -1480,7 +1480,7 @@ bool Atpg::backtrack(int &BackImpLevel)
 
 		pushGateFanoutsToEventStack(pDecisionGate->id_);
 
-		Gate *pFaultyGate = &pCircuit_->gates_[currentTargetFault_.gate_];
+		Gate *pFaultyGate = &pCircuit_->gates_[currentTargetFault_.gateID_];
 
 		dFrontier_.clear();
 		dFrontier_.push_back(pFaultyGate->id_);
@@ -1789,7 +1789,7 @@ void Atpg::justifyFreeLines(Fault &fOriginalFault)
 	int i;
 	Gate *pHeadLineFaultGate = NULL;
 
-	int gateID = currentTargetHeadLineFault_.gate_;
+	int gateID = currentTargetHeadLineFault_.gateID_;
 	if (gateID != -1)
 		pHeadLineFaultGate = &pCircuit_->gates_[gateID];
 
@@ -1834,8 +1834,8 @@ void Atpg::restoreFault(Fault &fOriginalFault)
 	int i;
 
 	fanoutObjective_.clear();
-	pFaultPropGate = &pCircuit_->gates_[fOriginalFault.gate_];
-	if (fOriginalFault.line_ == 0)
+	pFaultPropGate = &pCircuit_->gates_[fOriginalFault.gateID_];
+	if (fOriginalFault.faultyLine_ == 0)
 	{
 		fanoutObjective_.push_back(pFaultPropGate->id_);
 	}
@@ -1928,7 +1928,7 @@ int Atpg::uniquePathSensitize(Gate &gate)
 {
 	int i, j;
 	int BackImpLevel = NO_UNIQUE_PATH;
-	Gate *pFaultyGate = &pCircuit_->gates_[currentTargetFault_.gate_];
+	Gate *pFaultyGate = &pCircuit_->gates_[currentTargetFault_.gateID_];
 
 	if (pFaultyGate->id_ != gate.id_)
 	{ // if gate is not the FaultyGate
@@ -2162,17 +2162,17 @@ int Atpg::setFaultyGate(Fault &fault)
 	// pFaultyLine is the gate before the fault (fanin gate of pFaultyGate)
 	Gate *pFaultyLine;
 	int BackImpLevel = 0;
-	bool isOutputFault = (fault.line_ == 0);
+	bool isOutputFault = (fault.faultyLine_ == 0);
 	// if the fault is SA0 or STR, then set faulty value to D (1/0)
-	Value FaultyValue = (fault.type_ == Fault::SA0 || fault.type_ == Fault::STR) ? D : B;
+	Value FaultyValue = (fault.faultType_ == Fault::SA0 || fault.faultType_ == Fault::STR) ? D : B;
 	Value vtemp;
 	int i;
 
-	pFaultyGate = &pCircuit_->gates_[fault.gate_];
-	// if the fault is input fault, the pFaultyLine is decided by fault.line_
+	pFaultyGate = &pCircuit_->gates_[fault.gateID_];
+	// if the fault is input fault, the pFaultyLine is decided by fault.faultyLine_
 	// else pFaultyLine is pFaultyGate
 	if (!isOutputFault)
-		pFaultyLine = &pCircuit_->gates_[pFaultyGate->fis_[fault.line_ - 1]];
+		pFaultyLine = &pCircuit_->gates_[pFaultyGate->fis_[fault.faultyLine_ - 1]];
 	else
 		pFaultyLine = pFaultyGate;
 
@@ -3015,7 +3015,7 @@ Atpg::IMPLICATION_STATUS Atpg::evaluation(Gate *pGate)
 	}
 
 	// pGate is the faulty gate, see FaultEvaluation();
-	if (pGate->id_ == currentTargetFault_.gate_)
+	if (pGate->id_ == currentTargetFault_.gateID_)
 		return faultyGateEvaluation(pGate);
 
 	// pGate is not the faulty gate, see evaluateGoodVal(*pGate)
@@ -3185,13 +3185,12 @@ Atpg::IMPLICATION_STATUS Atpg::faultyGateEvaluation(Gate *pGate)
 // **************************************************************************
 void Atpg::staticTestCompressionByReverseFaultSimulation(PatternProcessor *pcoll, FaultList &originalFaultList)
 {
-	// set TD to UD
 	for (auto it = originalFaultList.begin(); it != originalFaultList.end(); ++it)
 	{
-		(*it)->det_ = 0;
-		if ((*it)->state_ == Fault::DT)
+		(*it)->detection_ = 0;
+		if ((*it)->faultState_ == Fault::DT)
 		{
-			(*it)->state_ = Fault::UD;
+			(*it)->faultState_ = Fault::UD;
 		}
 	}
 
@@ -3248,15 +3247,15 @@ int Atpg::firstTimeFrameSetUp(Fault &fault)
 	Gate *pFaultyGate;
 	Gate *pFaultyLine;
 	int BackImpLevel = 0;
-	bool isOutputFault = (fault.line_ == 0);
-	Value FaultyValue = (fault.type_ == Fault::STR) ? L : H;
+	bool isOutputFault = (fault.faultyLine_ == 0);
+	Value FaultyValue = (fault.faultType_ == Fault::STR) ? L : H;
 	Value vtemp;
 	int i;
 
-	pFaultyGate = &pCircuit_->gates_[fault.gate_ - pCircuit_->ngate_];
+	pFaultyGate = &pCircuit_->gates_[fault.gateID_ - pCircuit_->ngate_];
 
 	if (!isOutputFault)
-		pFaultyLine = &pCircuit_->gates_[pFaultyGate->fis_[fault.line_ - 1]];
+		pFaultyLine = &pCircuit_->gates_[pFaultyGate->fis_[fault.faultyLine_ - 1]];
 	else
 		pFaultyLine = pFaultyGate;
 

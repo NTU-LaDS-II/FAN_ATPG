@@ -243,7 +243,7 @@ bool AddFaultCmd::exec(const vector<string> &argv)
 		addAllFault();
 	else
 	{ // add specific faults
-		if (fanMgr_->fListExtract->type_ == FaultListExtract::SAF || fanMgr_->fListExtract->type_ == FaultListExtract::TDF)
+		if (fanMgr_->fListExtract->faultType_ == FaultListExtract::SAF || fanMgr_->fListExtract->faultType_ == FaultListExtract::TDF)
 		{
 			if (optMgr_.getNParsedArg() < 2)
 			{
@@ -252,14 +252,14 @@ bool AddFaultCmd::exec(const vector<string> &argv)
 				return false;
 			}
 			string type = optMgr_.getParsedArg(0);
-			if (fanMgr_->fListExtract->type_ == FaultListExtract::SAF &&
+			if (fanMgr_->fListExtract->faultType_ == FaultListExtract::SAF &&
 					(type != "SA0" && type != "SA1"))
 			{
 				cerr << "**ERROR AddFaultCmd::exec(): stuck-at fault only ";
 				cerr << "supports SA0 and SA1" << endl;
 				return false;
 			}
-			if (fanMgr_->fListExtract->type_ == FaultListExtract::TDF &&
+			if (fanMgr_->fListExtract->faultType_ == FaultListExtract::TDF &&
 					(type != "STR" && type != "STF"))
 			{
 				cerr << "**ERROR AddFaultCmd::exec(): transition delay ";
@@ -292,10 +292,10 @@ void AddFaultCmd::addAllFault()
 	cout << "#  Building fault list ..." << endl;
 	fanMgr_->tmusg.periodStart();
 
-	fanMgr_->fListExtract->current_.resize(fanMgr_->fListExtract->faults_.size());
-	FaultListIter it = fanMgr_->fListExtract->current_.begin();
-	for (size_t i = 0; i < fanMgr_->fListExtract->faults_.size(); ++i, ++it)
-		(*it) = fanMgr_->fListExtract->faults_[i];
+	fanMgr_->fListExtract->faultsInCircuit_.resize(fanMgr_->fListExtract->extractedFaults_.size());
+	FaultListIter it = fanMgr_->fListExtract->faultsInCircuit_.begin();
+	for (size_t i = 0; i < fanMgr_->fListExtract->extractedFaults_.size(); ++i, ++it)
+		(*it) = fanMgr_->fListExtract->extractedFaults_[i];
 
 	TmStat stat;
 	fanMgr_->tmusg.getPeriodUsage(stat);
@@ -315,9 +315,9 @@ bool AddFaultCmd::addPinFault(const string &type, const string &pin)
 	}
 	int gid = fanMgr_->cir->portToGate_[p->id_];
 	int offset = (type == "SA0" || type == "STR") ? 0 : 1;
-	int fid = fanMgr_->fListExtract->gateToFault_[gid] + offset;
-	Fault *f = fanMgr_->fListExtract->faults_[fid];
-	fanMgr_->fListExtract->current_.push_back(f);
+	int fid = fanMgr_->fListExtract->gateIndexToFaultIndex[gid] + offset;
+	Fault *f = fanMgr_->fListExtract->extractedFaults_[fid];
+	fanMgr_->fListExtract->faultsInCircuit_.push_back(f);
 	return true;
 } //}}}
 //{{{ void AddFaultCmd::addCellFault(const string &, const string &, const string &)
@@ -358,9 +358,9 @@ bool AddFaultCmd::addCellFault(const string &type, const string &cell,
 			pid = (*it)->id_ - nOutput + 1;
 		}
 		int offset = (type == "SA0" || type == "STR") ? 0 : 1;
-		int fid = fanMgr_->fListExtract->gateToFault_[gid] + 2 * pid + offset;
-		Fault *f = fanMgr_->fListExtract->faults_[fid];
-		fanMgr_->fListExtract->current_.push_back(f);
+		int fid = fanMgr_->fListExtract->gateIndexToFaultIndex[gid] + 2 * pid + offset;
+		Fault *f = fanMgr_->fListExtract->extractedFaults_[fid];
+		fanMgr_->fListExtract->faultsInCircuit_.push_back(f);
 	}
 	return true;
 } //}}}
@@ -402,7 +402,7 @@ bool ReportFaultCmd::exec(const vector<string> &argv)
 	}
 
 	bool stateSet = false;
-	Fault::State state = Fault::UD;
+	Fault::FAULT_STATE state = Fault::UD;
 	if (optMgr_.isFlagSet("s"))
 	{
 		stateSet = true;
@@ -429,7 +429,7 @@ bool ReportFaultCmd::exec(const vector<string> &argv)
 
 	cout << "#  fault information" << endl;
 	cout << "#    fault type:       ";
-	switch (fanMgr_->fListExtract->type_)
+	switch (fanMgr_->fListExtract->faultType_)
 	{
 		case FaultListExtract::SAF:
 			cout << "stuck-at fault" << endl;
@@ -444,17 +444,17 @@ bool ReportFaultCmd::exec(const vector<string> &argv)
 			cout << endl;
 			break;
 	}
-	cout << "#    number of faults: " << fanMgr_->fListExtract->current_.size();
+	cout << "#    number of faults: " << fanMgr_->fListExtract->faultsInCircuit_.size();
 	cout << endl;
 	cout << "#    type    code    pin (cell)" << endl;
 	cout << "#    ----    ----    ----------------------------------" << endl;
-	FaultListIter it = fanMgr_->fListExtract->current_.begin();
-	for (; it != fanMgr_->fListExtract->current_.end(); ++it)
+	FaultListIter it = fanMgr_->fListExtract->faultsInCircuit_.begin();
+	for (; it != fanMgr_->fListExtract->faultsInCircuit_.end(); ++it)
 	{
-		if (!stateSet || (*it)->state_ != state)
+		if (!stateSet || (*it)->faultState_ != state)
 			continue;
 		cout << "#    ";
-		switch ((*it)->type_)
+		switch ((*it)->faultState_)
 		{
 			case Fault::SA0:
 				cout << "SA0     ";
@@ -472,7 +472,7 @@ bool ReportFaultCmd::exec(const vector<string> &argv)
 				cout << "BR      ";
 				break;
 		}
-		switch ((*it)->state_)
+		switch ((*it)->faultState_)
 		{
 			case Fault::UD:
 				cout << " UD     ";
@@ -496,31 +496,31 @@ bool ReportFaultCmd::exec(const vector<string> &argv)
 				cout << " AB     ";
 				break;
 		}
-		int cid = fanMgr_->cir->gates_[(*it)->gate_].cid_;
-		int pid = (*it)->line_;
-		int pmtid = fanMgr_->cir->gates_[(*it)->gate_].pmtid_;
-		if ((*it)->gate_ == -1)
+		int cid = fanMgr_->cir->gates_[(*it)->gateID_].cid_;
+		int pid = (*it)->faultyLine_;
+		int pmtid = fanMgr_->cir->gates_[(*it)->gateID_].pmtid_;
+		if ((*it)->gateID_ == -1)
 		{ // CK
 			cout << "CK";
 		}
-		else if ((*it)->gate_ == -2)
+		else if ((*it)->gateID_ == -2)
 		{ // test_si
 			cout << "test_si";
 		}
-		else if ((*it)->gate_ == -3)
+		else if ((*it)->gateID_ == -3)
 		{ // test_so
 			cout << "test_so";
 		}
-		else if ((*it)->gate_ == -4)
+		else if ((*it)->gateID_ == -4)
 		{ // test_se
 			cout << "test_se";
 		}
-		else if (fanMgr_->cir->gates_[(*it)->gate_].type_ == Gate::PI)
+		else if (fanMgr_->cir->gates_[(*it)->gateID_].type_ == Gate::PI)
 		{
 			cout << fanMgr_->nl->getTop()->getPort(cid)->name_ << " ";
 			cout << "(primary input)";
 		}
-		else if (fanMgr_->cir->gates_[(*it)->gate_].type_ == Gate::PO)
+		else if (fanMgr_->cir->gates_[(*it)->gateID_].type_ == Gate::PO)
 		{
 			cout << fanMgr_->nl->getTop()->getPort(cid)->name_ << " ";
 			cout << "(primary output)";
@@ -849,7 +849,7 @@ bool ReportStatsCmd::exec(const vector<string> &argv)
 		return true;
 	}
 
-	if (!fanMgr_->fListExtract || fanMgr_->fListExtract->current_.size() == 0)
+	if (!fanMgr_->fListExtract || fanMgr_->fListExtract->faultsInCircuit_.size() == 0)
 	{
 		cerr << "**WARN ReportStatsCmd::exec(): no statistics" << endl;
 		return false;
@@ -857,7 +857,7 @@ bool ReportStatsCmd::exec(const vector<string> &argv)
 
 	// determine fault model
 	string ftype = "";
-	switch (fanMgr_->fListExtract->type_)
+	switch (fanMgr_->fListExtract->faultType_)
 	{
 		case FaultListExtract::SAF:
 			ftype = "SAF";
@@ -902,15 +902,14 @@ bool ReportStatsCmd::exec(const vector<string> &argv)
 	size_t re = 0;
 	size_t ab = 0;
 
-	FaultListIter it = fanMgr_->fListExtract->current_.begin();
-	for (; it != fanMgr_->fListExtract->current_.end(); ++it)
+	FaultListIter it = fanMgr_->fListExtract->faultsInCircuit_.begin();
+	for (; it != fanMgr_->fListExtract->faultsInCircuit_.end(); ++it)
 	{
-		int eq = (*it)->eq_;
+		int eq = (*it)->equivalent_;
 		fu += eq;
-		switch ((*it)->state_)
+		switch ((*it)->faultState_)
 		{
 			case Fault::UD:
-				// cout << (*it)->gate_ << ' ' << (*it)->line_ << ' ' << (*it)->type_ << ' ' << (((*it)->line_==0)?(0):(fanMgr_->cir->gates_[(*it)->gate_].fis_[(*it)->line_-1])) << endl;
 				ud += eq;
 				break;
 			case Fault::DT:
@@ -920,7 +919,6 @@ bool ReportStatsCmd::exec(const vector<string> &argv)
 				pt += eq;
 				break;
 			case Fault::AU:
-				// cout << (*it)->gate_ << ' ' << (*it)->line_ << ' ' << (*it)->type_ << ' ' << (((*it)->line_==0)?(0):(fanMgr_->cir->gates_[(*it)->gate_].fis_[(*it)->line_-1])) << endl;
 				au += eq;
 				break;
 			case Fault::TI:
@@ -1144,7 +1142,7 @@ bool RunFaultSimCmd::exec(const vector<string> &argv)
 		return false;
 	}
 
-	if (!fanMgr_->fListExtract || fanMgr_->fListExtract->faults_.size() == 0)
+	if (!fanMgr_->fListExtract || fanMgr_->fListExtract->extractedFaults_.size() == 0)
 	{
 		cerr << "**ERROR RunFaultSimCmd::exec(): fault list needed" << endl;
 		return false;

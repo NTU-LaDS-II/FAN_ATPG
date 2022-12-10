@@ -1,10 +1,9 @@
-Refactor - 24th modification
+Refactor - 25th modification
 
   name changes:
+    add all the cross file change from pan's fault.h/cpp refactor
   performance related changes:
   bug fixed:
   note:
   function added:
-    add initialization of gateID_to_valModified_[i] = 0 back, but add it
-    into calGateDepthFromPO() to save additional for loop
   function removed:

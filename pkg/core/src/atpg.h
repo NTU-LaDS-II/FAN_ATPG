@@ -346,7 +346,7 @@ namespace CoreNs
 	{
 		Value val;
 		int i;
-		int &faultyLine = currentTargetFault_.line_;
+		int &faultyLine = currentTargetFault_.faultyLine_;
 		switch (gate.type_)
 		{
 			case Gate::PI:
@@ -356,9 +356,9 @@ namespace CoreNs
 			case Gate::PPO:
 			case Gate::BUF:
 				val = pCircuit_->gates_[gate.fis_[0]].v_;
-				if (val == L && (currentTargetFault_.type_ == Fault::SA1 || currentTargetFault_.type_ == Fault::STF))
+				if (val == L && (currentTargetFault_.faultType_ == Fault::SA1 || currentTargetFault_.faultType_ == Fault::STF))
 					val = B; // logic D' (0/1)
-				if (val == H && (currentTargetFault_.type_ == Fault::SA0 || currentTargetFault_.type_ == Fault::STR))
+				if (val == H && (currentTargetFault_.faultType_ == Fault::SA0 || currentTargetFault_.faultType_ == Fault::STR))
 					val = D; // logic D  (1/0)
 				return val;
 			case Gate::INV:
@@ -366,17 +366,17 @@ namespace CoreNs
 				if (faultyLine == 0)
 				{
 					val = cINV(val);
-					if (val == L && (currentTargetFault_.type_ == Fault::SA1 || currentTargetFault_.type_ == Fault::STF))
+					if (val == L && (currentTargetFault_.faultType_ == Fault::SA1 || currentTargetFault_.faultType_ == Fault::STF))
 						val = B;
-					if (val == H && (currentTargetFault_.type_ == Fault::SA0 || currentTargetFault_.type_ == Fault::STR))
+					if (val == H && (currentTargetFault_.faultType_ == Fault::SA0 || currentTargetFault_.faultType_ == Fault::STR))
 						val = D;
 					return val;
 				}
 				else
 				{
-					if (val == L && (currentTargetFault_.type_ == Fault::SA1 || currentTargetFault_.type_ == Fault::STF))
+					if (val == L && (currentTargetFault_.faultType_ == Fault::SA1 || currentTargetFault_.faultType_ == Fault::STF))
 						val = B;
-					if (val == H && (currentTargetFault_.type_ == Fault::SA0 || currentTargetFault_.type_ == Fault::STR))
+					if (val == H && (currentTargetFault_.faultType_ == Fault::SA0 || currentTargetFault_.faultType_ == Fault::STR))
 						val = D;
 					return cINV(val);
 				}
@@ -388,17 +388,17 @@ namespace CoreNs
 					val = pCircuit_->gates_[gate.fis_[0]].v_;
 					for (i = 1; i < gate.nfi_; ++i)
 						val = cAND2(val, pCircuit_->gates_[gate.fis_[i]].v_);
-					if (val == L && (currentTargetFault_.type_ == Fault::SA1 || currentTargetFault_.type_ == Fault::STF))
+					if (val == L && (currentTargetFault_.faultType_ == Fault::SA1 || currentTargetFault_.faultType_ == Fault::STF))
 						val = B;
-					if (val == H && (currentTargetFault_.type_ == Fault::SA0 || currentTargetFault_.type_ == Fault::STR))
+					if (val == H && (currentTargetFault_.faultType_ == Fault::SA0 || currentTargetFault_.faultType_ == Fault::STR))
 						val = D;
 				}
 				else
 				{
 					val = pCircuit_->gates_[gate.fis_[faultyLine - 1]].v_;
-					if (val == L && (currentTargetFault_.type_ == Fault::SA1 || currentTargetFault_.type_ == Fault::STF))
+					if (val == L && (currentTargetFault_.faultType_ == Fault::SA1 || currentTargetFault_.faultType_ == Fault::STF))
 						val = B;
-					if (val == H && (currentTargetFault_.type_ == Fault::SA0 || currentTargetFault_.type_ == Fault::STR))
+					if (val == H && (currentTargetFault_.faultType_ == Fault::SA0 || currentTargetFault_.faultType_ == Fault::STR))
 						val = D;
 					for (i = 0; i < gate.nfi_; ++i)
 					{
@@ -418,17 +418,17 @@ namespace CoreNs
 
 					val = cINV(val);
 
-					if (val == L && (currentTargetFault_.type_ == Fault::SA1 || currentTargetFault_.type_ == Fault::STF))
+					if (val == L && (currentTargetFault_.faultType_ == Fault::SA1 || currentTargetFault_.faultType_ == Fault::STF))
 						val = B;
-					if (val == H && (currentTargetFault_.type_ == Fault::SA0 || currentTargetFault_.type_ == Fault::STR))
+					if (val == H && (currentTargetFault_.faultType_ == Fault::SA0 || currentTargetFault_.faultType_ == Fault::STR))
 						val = D;
 				}
 				else
 				{
 					val = pCircuit_->gates_[gate.fis_[faultyLine - 1]].v_;
-					if (val == L && (currentTargetFault_.type_ == Fault::SA1 || currentTargetFault_.type_ == Fault::STF))
+					if (val == L && (currentTargetFault_.faultType_ == Fault::SA1 || currentTargetFault_.faultType_ == Fault::STF))
 						val = B;
-					if (val == H && (currentTargetFault_.type_ == Fault::SA0 || currentTargetFault_.type_ == Fault::STR))
+					if (val == H && (currentTargetFault_.faultType_ == Fault::SA0 || currentTargetFault_.faultType_ == Fault::STR))
 						val = D;
 					for (i = 0; i < gate.nfi_; ++i)
 						if (i != faultyLine - 1)
@@ -445,17 +445,17 @@ namespace CoreNs
 					val = pCircuit_->gates_[gate.fis_[0]].v_;
 					for (i = 1; i < gate.nfi_; ++i)
 						val = cOR2(val, pCircuit_->gates_[gate.fis_[i]].v_);
-					if (val == L && (currentTargetFault_.type_ == Fault::SA1 || currentTargetFault_.type_ == Fault::STF))
+					if (val == L && (currentTargetFault_.faultType_ == Fault::SA1 || currentTargetFault_.faultType_ == Fault::STF))
 						val = B;
-					if (val == H && (currentTargetFault_.type_ == Fault::SA0 || currentTargetFault_.type_ == Fault::STR))
+					if (val == H && (currentTargetFault_.faultType_ == Fault::SA0 || currentTargetFault_.faultType_ == Fault::STR))
 						val = D;
 				}
 				else
 				{
 					val = pCircuit_->gates_[gate.fis_[faultyLine - 1]].v_;
-					if (val == L && (currentTargetFault_.type_ == Fault::SA1 || currentTargetFault_.type_ == Fault::STF))
+					if (val == L && (currentTargetFault_.faultType_ == Fault::SA1 || currentTargetFault_.faultType_ == Fault::STF))
 						val = B;
-					if (val == H && (currentTargetFault_.type_ == Fault::SA0 || currentTargetFault_.type_ == Fault::STR))
+					if (val == H && (currentTargetFault_.faultType_ == Fault::SA0 || currentTargetFault_.faultType_ == Fault::STR))
 						val = D;
 					for (i = 0; i < gate.nfi_; ++i)
 					{
@@ -475,17 +475,17 @@ namespace CoreNs
 
 					val = cINV(val);
 
-					if (val == L && (currentTargetFault_.type_ == Fault::SA1 || currentTargetFault_.type_ == Fault::STF))
+					if (val == L && (currentTargetFault_.faultType_ == Fault::SA1 || currentTargetFault_.faultType_ == Fault::STF))
 						val = B;
-					if (val == H && (currentTargetFault_.type_ == Fault::SA0 || currentTargetFault_.type_ == Fault::STR))
+					if (val == H && (currentTargetFault_.faultType_ == Fault::SA0 || currentTargetFault_.faultType_ == Fault::STR))
 						val = D;
 				}
 				else
 				{
 					val = pCircuit_->gates_[gate.fis_[faultyLine - 1]].v_;
-					if (val == L && (currentTargetFault_.type_ == Fault::SA1 || currentTargetFault_.type_ == Fault::STF))
+					if (val == L && (currentTargetFault_.faultType_ == Fault::SA1 || currentTargetFault_.faultType_ == Fault::STF))
 						val = B;
-					if (val == H && (currentTargetFault_.type_ == Fault::SA0 || currentTargetFault_.type_ == Fault::STR))
+					if (val == H && (currentTargetFault_.faultType_ == Fault::SA0 || currentTargetFault_.faultType_ == Fault::STR))
 						val = D;
 					for (i = 0; i < gate.nfi_; ++i)
 					{
@@ -504,17 +504,17 @@ namespace CoreNs
 					else
 						val = cXOR3(pCircuit_->gates_[gate.fis_[0]].v_, pCircuit_->gates_[gate.fis_[1]].v_, pCircuit_->gates_[gate.fis_[2]].v_);
 
-					if (val == L && (currentTargetFault_.type_ == Fault::SA1 || currentTargetFault_.type_ == Fault::STF))
+					if (val == L && (currentTargetFault_.faultType_ == Fault::SA1 || currentTargetFault_.faultType_ == Fault::STF))
 						val = B;
-					if (val == H && (currentTargetFault_.type_ == Fault::SA0 || currentTargetFault_.type_ == Fault::STR))
+					if (val == H && (currentTargetFault_.faultType_ == Fault::SA0 || currentTargetFault_.faultType_ == Fault::STR))
 						val = D;
 				}
 				else
 				{
 					val = pCircuit_->gates_[gate.fis_[faultyLine - 1]].v_;
-					if (val == L && (currentTargetFault_.type_ == Fault::SA1 || currentTargetFault_.type_ == Fault::STF))
+					if (val == L && (currentTargetFault_.faultType_ == Fault::SA1 || currentTargetFault_.faultType_ == Fault::STF))
 						val = B;
-					if (val == H && (currentTargetFault_.type_ == Fault::SA0 || currentTargetFault_.type_ == Fault::STR))
+					if (val == H && (currentTargetFault_.faultType_ == Fault::SA0 || currentTargetFault_.faultType_ == Fault::STR))
 						val = D;
 
 					if (gate.type_ == Gate::XOR2)
@@ -573,17 +573,17 @@ namespace CoreNs
 					else
 						val = cXNOR3(pCircuit_->gates_[gate.fis_[0]].v_, pCircuit_->gates_[gate.fis_[1]].v_, pCircuit_->gates_[gate.fis_[2]].v_);
 
-					if (val == L && (currentTargetFault_.type_ == Fault::SA1 || currentTargetFault_.type_ == Fault::STF))
+					if (val == L && (currentTargetFault_.faultType_ == Fault::SA1 || currentTargetFault_.faultType_ == Fault::STF))
 						val = B;
-					if (val == H && (currentTargetFault_.type_ == Fault::SA0 || currentTargetFault_.type_ == Fault::STR))
+					if (val == H && (currentTargetFault_.faultType_ == Fault::SA0 || currentTargetFault_.faultType_ == Fault::STR))
 						val = D;
 				}
 				else
 				{
 					val = pCircuit_->gates_[gate.fis_[faultyLine - 1]].v_;
-					if (val == L && (currentTargetFault_.type_ == Fault::SA1 || currentTargetFault_.type_ == Fault::STF))
+					if (val == L && (currentTargetFault_.faultType_ == Fault::SA1 || currentTargetFault_.faultType_ == Fault::STF))
 						val = B;
-					if (val == H && (currentTargetFault_.type_ == Fault::SA0 || currentTargetFault_.type_ == Fault::STR))
+					if (val == H && (currentTargetFault_.faultType_ == Fault::SA0 || currentTargetFault_.faultType_ == Fault::STR))
 						val = D;
 
 					if (gate.type_ == Gate::XNOR2)

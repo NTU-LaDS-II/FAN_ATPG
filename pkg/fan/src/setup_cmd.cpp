@@ -204,11 +204,11 @@ bool SetFaultTypeCmd::exec(const vector<string> &argv) {
 
     if (optMgr_.getParsedArg(0) == "saf") {
         cout << "#  fault type set to stuck-at fault" << endl;
-        fanMgr_->fListExtract->type_ = FaultListExtract::SAF;
+        fanMgr_->fListExtract->faultListType_ = FaultListExtract::SAF;
     }
     else if (optMgr_.getParsedArg(0) == "tdf") {
         cout << "#  fault type set to transition delay fault" << endl;
-        fanMgr_->fListExtract->type_ = FaultListExtract::TDF;
+        fanMgr_->fListExtract->faultListType_ = FaultListExtract::TDF;
     }
     else {
         cerr << "**ERROR SetFaultTypeCmd::exec(): unknown fault type `";
