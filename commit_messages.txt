@@ -1,12 +1,9 @@
-Refactor - 27th modification
+Refactor - 28th modification
 
-  name changes:
-    removed uneccesary #include<cstring> in fault.cpp
+  readability related changes:
+    declare i,j... in for loop as there is no performance improve for declaration outside the for loop 
   performance related changes:
-    atpg.cpp:532 for loop to modern for loop
-    simulator.cpp:92 99 146 change alot of loop property
   bug fixed:
   note:
-    simulator.cpp change might cause bugs, beware of that in the future
   function added:
   function removed:
