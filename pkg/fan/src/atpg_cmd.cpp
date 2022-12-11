@@ -130,56 +130,56 @@ bool ReportPatCmd::exec(const vector<string> &argv)
 	}
 
 	cout << "#  pattern information" << endl;
-	cout << "#    number of pattern: " << fanMgr_->pcoll->pats_.size() << endl;
+	cout << "#    number of pattern: " << fanMgr_->pcoll->patternVector_.size() << endl;
 	if (!optMgr_.isFlagSet("disable-order"))
 	{
 		cout << "#    pi order: ";
-		for (int i = 0; i < fanMgr_->pcoll->npi_; ++i)
-			cout << " " << fanMgr_->pcoll->piOrder_[i];
+		for (int i = 0; i < fanMgr_->pcoll->numPI_; ++i)
+			cout << " " << fanMgr_->pcoll->pPIorder_[i];
 		cout << endl;
 		cout << "#    ppi order:";
-		for (int i = 0; i < fanMgr_->pcoll->nppi_; ++i)
-			cout << " " << fanMgr_->pcoll->ppiOrder_[i];
+		for (int i = 0; i < fanMgr_->pcoll->numPPI_; ++i)
+			cout << " " << fanMgr_->pcoll->pPPIorder_[i];
 		cout << endl;
 		cout << "#    po order: ";
-		for (int i = 0; i < fanMgr_->pcoll->npo_; ++i)
-			cout << " " << fanMgr_->pcoll->poOrder_[i];
+		for (int i = 0; i < fanMgr_->pcoll->numPO_; ++i)
+			cout << " " << fanMgr_->pcoll->pPOorder_[i];
 		cout << endl;
 	}
 	cout << "#" << endl;
 
-	for (int i = 0; i < (int)fanMgr_->pcoll->pats_.size(); ++i)
+	for (int i = 0; i < (int)fanMgr_->pcoll->patternVector_.size(); ++i)
 	{
 		cout << "#    pattern " << i << endl;
 		cout << "#      pi1: ";
-		if (fanMgr_->pcoll->pats_[i]->pi1_)
-			for (int j = 0; j < fanMgr_->pcoll->npi_; ++j)
-				printValue(fanMgr_->pcoll->pats_[i]->pi1_[j]);
+		if (!fanMgr_->pcoll->patternVector_[i]->pPI1_.empty())
+			for (int j = 0; j < fanMgr_->pcoll->numPI_; ++j)
+				printValue(fanMgr_->pcoll->patternVector_[i]->pPI1_[j]);
 		cout << endl;
 		cout << "#      pi2: ";
-		if (fanMgr_->pcoll->pats_[i]->pi2_)
-			for (int j = 0; j < fanMgr_->pcoll->npi_; ++j)
-				printValue(fanMgr_->pcoll->pats_[i]->pi2_[j]);
+		if (!fanMgr_->pcoll->patternVector_[i]->pPI2_.empty())
+			for (int j = 0; j < fanMgr_->pcoll->numPI_; ++j)
+				printValue(fanMgr_->pcoll->patternVector_[i]->pPI2_[j]);
 		cout << endl;
 		cout << "#      ppi: ";
-		if (fanMgr_->pcoll->pats_[i]->ppi_)
-			for (int j = 0; j < fanMgr_->pcoll->nppi_; ++j)
-				printValue(fanMgr_->pcoll->pats_[i]->ppi_[j]);
+		if (!fanMgr_->pcoll->patternVector_[i]->pPPI_.empty())
+			for (int j = 0; j < fanMgr_->pcoll->numPPI_; ++j)
+				printValue(fanMgr_->pcoll->patternVector_[i]->pPPI_[j]);
 		cout << endl;
 		cout << "#      po1: ";
-		if (fanMgr_->pcoll->pats_[i]->po1_)
-			for (int j = 0; j < fanMgr_->pcoll->npo_; ++j)
-				printValue(fanMgr_->pcoll->pats_[i]->po1_[j]);
+		if (!fanMgr_->pcoll->patternVector_[i]->pPO1_.empty())
+			for (int j = 0; j < fanMgr_->pcoll->numPO_; ++j)
+				printValue(fanMgr_->pcoll->patternVector_[i]->pPO1_[j]);
 		cout << endl;
 		cout << "#      po2: ";
-		if (fanMgr_->pcoll->pats_[i]->po2_)
-			for (int j = 0; j < fanMgr_->pcoll->npo_; ++j)
-				printValue(fanMgr_->pcoll->pats_[i]->po2_[j]);
+		if (!fanMgr_->pcoll->patternVector_[i]->pPO2_.empty())
+			for (int j = 0; j < fanMgr_->pcoll->numPO_; ++j)
+				printValue(fanMgr_->pcoll->patternVector_[i]->pPO2_[j]);
 		cout << endl;
 		cout << "#      ppo: ";
-		if (fanMgr_->pcoll->pats_[i]->ppo_)
-			for (int j = 0; j < fanMgr_->pcoll->nppi_; ++j)
-				printValue(fanMgr_->pcoll->pats_[i]->ppo_[j]);
+		if (!fanMgr_->pcoll->patternVector_[i]->pPPO_.empty())
+			for (int j = 0; j < fanMgr_->pcoll->numPPI_; ++j)
+				printValue(fanMgr_->pcoll->patternVector_[i]->pPPO_[j]);
 		cout << endl
 				 << "#" << endl;
 	}
@@ -891,7 +891,7 @@ bool ReportStatsCmd::exec(const vector<string> &argv)
 	size_t npat = 0;
 
 	if (fanMgr_->pcoll)
-		npat = fanMgr_->pcoll->pats_.size();
+		npat = fanMgr_->pcoll->patternVector_.size();
 
 	size_t fu = 0;
 	size_t ud = 0;

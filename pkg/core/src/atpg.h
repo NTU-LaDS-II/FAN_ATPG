@@ -86,7 +86,7 @@ namespace CoreNs
 		std::vector<int> gateID_to_n1_;											 // unsigned *n1_ => std::vector<int> gateID_to_n1_ by wang
 		std::vector<int> gateID_to_valModified_;						 // indicate whether the gate has been backtraced or implied, true means the gate has been modified, new => vec by wang
 		std::vector<int> headLineGateIDs_;									 // array of headlines, new => vec by wang
-		int numberOfHeadLine_;																			 // number of headlines
+		int numberOfHeadLine_;															 // number of headlines
 		std::vector<int> gateID_to_reachableByTargetFault_;	 // TRUE means this fanout is in fanout cone of target fault;
 		std::vector<GATE_LINE_TYPE> gateID_to_lineType_;		 // array of line types for all gates: FREE HEAD or BOUND
 		std::vector<XPATH_STATE> gateID_to_xPathStatus_;		 // changed by wang
@@ -178,8 +178,8 @@ namespace CoreNs
 
 		inline void setGaten0n1(const int &gateID, const int &n0, const int &n1); // void setn0n1(int gate, int n0, int n1) => void setGaten0n1(int gateID, int n0, int n1) by wang
 
-		inline void assignPatternPI_fromGateVal(Pattern *pPat);		 // write PI values to pattern
-		inline void assignPatternPO_fromGoodSimVal(Pattern *pPat); // write PO values to pattern
+		inline void assignPatternPI_fromGateVal(Pattern *pPattern);		 // write PI values to pattern
+		inline void assignPatternPO_fromGoodSimVal(Pattern *pPattern); // write PO values to pattern
 
 		inline void pushGateToEventStack(const int &gateID); // push events to the event list of corresponding level
 		inline int popEventStack(const int &level);
@@ -208,10 +208,10 @@ namespace CoreNs
 		inline Value cXOR3(const Value &i1, const Value &i2, const Value &i3);
 		inline Value cXNOR2(const Value &i1, const Value &i2);
 		inline Value cXNOR3(const Value &i1, const Value &i2, const Value &i3);
-		
+
 		// should be moved to pattern.h
-		inline void randomFill(Pattern *pPat);
-		inline void adjacentFill(Pattern *pPat); // added by wang, currently not used
+		inline void randomFill(Pattern *pPattern);
+		inline void adjacentFill(Pattern *pPattern); // added by wang, currently not used
 
 		// function not used or removed
 		void checkLevelInfo();																 // for debug use
@@ -653,19 +653,21 @@ namespace CoreNs
 	//            ]
 	// Date       [ Ver. 1.0 started 2013/08/13 ]
 	// **************************************************************************
-	inline void Atpg::assignPatternPI_fromGateVal(Pattern *pPat)
+	inline void Atpg::assignPatternPI_fromGateVal(Pattern *pPattern)
 	{
 		for (int i = 0; i < pCircuit_->npi_; ++i)
-			pPat->pi1_[i] = pCircuit_->gates_[i].v_;
-		if (pPat->pi2_ != NULL && pCircuit_->nframe_ > 1)
+			pPattern->pPI1_[i] = pCircuit_->gates_[i].v_;
+		// if (pPattern->pPI2_ != NULL && pCircuit_->nframe_ > 1)
+		if (!(pPattern->pPI2_.empty()) && pCircuit_->nframe_ > 1)
 		{
 			for (int i = 0; i < pCircuit_->npi_; ++i)
-				pPat->pi2_[i] = pCircuit_->gates_[i + pCircuit_->ngate_].v_;
+				pPattern->pPI2_[i] = pCircuit_->gates_[i + pCircuit_->ngate_].v_;
 		}
 		for (int i = 0; i < pCircuit_->nppi_; ++i)
-			pPat->ppi_[i] = pCircuit_->gates_[pCircuit_->npi_ + i].v_;
-		if (pPat->si_ != NULL && pCircuit_->nframe_ > 1)
-			pPat->si_[0] = (pCircuit_->connType_ == Circuit::SHIFT) ? pCircuit_->gates_[pCircuit_->ngate_ + pCircuit_->npi_].v_ : X;
+			pPattern->pPPI_[i] = pCircuit_->gates_[pCircuit_->npi_ + i].v_;
+		// if (pPattern->pSI_ != NULL && pCircuit_->nframe_ > 1)
+		if (!(pPattern->pSI_.empty()) && pCircuit_->nframe_ > 1)
+			pPattern->pSI_[0] = (pCircuit_->connType_ == Circuit::SHIFT) ? pCircuit_->gates_[pCircuit_->ngate_ + pCircuit_->npi_].v_ : X;
 	}
 
 	// **************************************************************************
@@ -678,28 +680,29 @@ namespace CoreNs
 	//            ]
 	// Date       [ Ver. 1.0 started 2013/08/13 ]
 	// **************************************************************************
-	inline void Atpg::assignPatternPO_fromGoodSimVal(Pattern *pPat)
+	inline void Atpg::assignPatternPO_fromGoodSimVal(Pattern *pPattern)
 	{
 		// pSimulator_->goodSim();call externally instead, removed by wang
 		int offset = pCircuit_->ngate_ - pCircuit_->npo_ - pCircuit_->nppi_;
 		for (int i = 0; i < pCircuit_->npo_; ++i)
 		{
 			if (pCircuit_->gates_[offset + i].gl_ == PARA_H)
-				pPat->po1_[i] = L;
+				pPattern->pPO1_[i] = L;
 			else if (pCircuit_->gates_[offset + i].gh_ == PARA_H)
-				pPat->po1_[i] = H;
+				pPattern->pPO1_[i] = H;
 			else
-				pPat->po1_[i] = X;
+				pPattern->pPO1_[i] = X;
 		}
-		if (pPat->po2_ != NULL && pCircuit_->nframe_ > 1)
+		// if (pPattern->pPO2_ != NULL && pCircuit_->nframe_ > 1)
+		if (!(pPattern->pPO2_.empty()) && pCircuit_->nframe_ > 1)
 			for (int i = 0; i < pCircuit_->npo_; ++i)
 			{
 				if (pCircuit_->gates_[offset + i + pCircuit_->ngate_].gl_ == PARA_H)
-					pPat->po2_[i] = L;
+					pPattern->pPO2_[i] = L;
 				else if (pCircuit_->gates_[offset + i + pCircuit_->ngate_].gh_ == PARA_H)
-					pPat->po2_[i] = H;
+					pPattern->pPO2_[i] = H;
 				else
-					pPat->po2_[i] = X;
+					pPattern->pPO2_[i] = X;
 			}
 
 		offset = pCircuit_->ngate_ - pCircuit_->nppi_;
@@ -708,11 +711,11 @@ namespace CoreNs
 		for (int i = 0; i < pCircuit_->nppi_; ++i)
 		{
 			if (pCircuit_->gates_[offset + i].gl_ == PARA_H)
-				pPat->ppo_[i] = L;
+				pPattern->pPPO_[i] = L;
 			else if (pCircuit_->gates_[offset + i].gh_ == PARA_H)
-				pPat->ppo_[i] = H;
+				pPattern->pPPO_[i] = H;
 			else
-				pPat->ppo_[i] = X;
+				pPattern->pPPO_[i] = X;
 		}
 	}
 
@@ -725,7 +728,7 @@ namespace CoreNs
 			gateID_to_valModified_[gateID] = 1;
 		}
 	}
-	
+
 	inline int Atpg::popEventStack(const int &level)
 	{
 		int gateID = circuitLevel_to_EventStack_[level].top();
@@ -770,14 +773,14 @@ namespace CoreNs
 		list[index] = list.back();
 		list.pop_back();
 	}
-	
+
 	inline int Atpg::vecPop(std::vector<int> &vec) // listPop => vecPop by wang
 	{
 		int lastElement = vec.back();
 		vec.pop_back();
 		return lastElement;
 	}
-	
+
 	// 5-value logic evaluation functions
 	inline Value Atpg::cINV(const Value &i1)
 	{
@@ -886,64 +889,64 @@ namespace CoreNs
 	//            ]
 	// Date       [ Ver. 1.0 started 2013/08/13 ]
 	// **************************************************************************
-	inline void Atpg::randomFill(Pattern *pPat)
+	inline void Atpg::randomFill(Pattern *pPattern)
 	{
 		srand(0);
 		for (int i = 0; i < pCircuit_->npi_; ++i)
 		{
-			if (pPat->pi1_[i] == X)
-				pPat->pi1_[i] = rand() % 2;
+			if (pPattern->pPI1_[i] == X)
+				pPattern->pPI1_[i] = rand() % 2;
 		}
 		for (int i = 0; i < pCircuit_->nppi_; ++i)
 		{
-			if (pPat->ppi_[i] == X)
-				pPat->ppi_[i] = rand() % 2;
+			if (pPattern->pPPI_[i] == X)
+				pPattern->pPPI_[i] = rand() % 2;
 		}
-		if (pPat->pi2_)
+		if (!pPattern->pPI2_.empty()) 
 		{
 			for (int i = 0; i < pCircuit_->npi_; ++i)
 			{
-				if (pPat->pi2_[i] == X)
-					pPat->pi2_[i] = rand() % 2;
+				if (pPattern->pPI2_[i] == X)
+					pPattern->pPI2_[i] = rand() % 2;
 			}
 		}
-		if (pPat->si_)
+		if (!pPattern->pSI_.empty())
 		{
-			if (pPat->si_[0] == X)
-				pPat->si_[0] = rand() % 2;
+			if (pPattern->pSI_[0] == X)
+				pPattern->pSI_[0] = rand() % 2;
 		}
 	}
-	inline void Atpg::adjacentFill(Pattern *pPat)
+	inline void Atpg::adjacentFill(Pattern *pPattern)
 	{
 		int i;
-		if (pPat->pi1_[0] == X)
-			pPat->pi1_[0] = L;
+		if (pPattern->pPI1_[0] == X)
+			pPattern->pPI1_[0] = L;
 		for (i = 1; i < pCircuit_->npi_; ++i)
 		{
-			if (pPat->pi1_[i] == X)
-				pPat->pi1_[i] = pPat->pi1_[i - 1];
+			if (pPattern->pPI1_[i] == X)
+				pPattern->pPI1_[i] = pPattern->pPI1_[i - 1];
 		}
 
-		if (pPat->ppi_[0] == X)
-			pPat->ppi_[0] = pPat->pi1_[pCircuit_->npi_ - 1];
+		if (pPattern->pPPI_[0] == X)
+			pPattern->pPPI_[0] = pPattern->pPI1_[pCircuit_->npi_ - 1];
 		for (i = 1; i < pCircuit_->nppi_; ++i)
 		{
-			if (pPat->ppi_[i] == X)
-				pPat->ppi_[i] = pPat->ppi_[i - 1];
+			if (pPattern->pPPI_[i] == X)
+				pPattern->pPPI_[i] = pPattern->pPPI_[i - 1];
 		}
 
-		if (pPat->pi2_)
+		if (!pPattern->pPI2_.empty())
 		{
 			for (i = 0; i < pCircuit_->npi_; ++i)
 			{
-				if (pPat->pi2_[i] == X)
-					pPat->pi2_[i] = pPat->pi1_[i];
+				if (pPattern->pPI2_[i] == X)
+					pPattern->pPI2_[i] = pPattern->pPI1_[i];
 			}
 		}
-		if (pPat->si_)
+		if (!pPattern->pSI_.empty())
 		{
-			if (pPat->si_[0] == X)
-				pPat->si_[0] = L;
+			if (pPattern->pSI_[0] == X)
+				pPattern->pSI_[0] = L;
 		}
 	}
 
@@ -955,7 +958,7 @@ namespace CoreNs
 	// 		pushGateToEventStack(gate.fos_[i]);
 	// 	}
 	// } originally duplicate function and implemented for performance but bad readability, removed by wang
-	
+
 	// inline void Atpg::pushInputEvents(const int &gateID, int index)
 	// {
 	// 	Gate &gate = pCircuit_->gates_[gateID];

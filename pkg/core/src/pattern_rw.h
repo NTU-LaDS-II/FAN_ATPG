@@ -16,7 +16,7 @@
 namespace CoreNs {
 
 // This is actually a patternReader
-// B.9 
+// B.9
 class PatternReader : public IntfNs::PatFile {
 public:
                  PatternReader(PatternProcessor *pcoll, Circuit *cir);
@@ -32,7 +32,7 @@ public:
                             const char * const ppo);
 
 protected:
-    void            assignValue(Value *v, const char * const pat,
+    void            assignValue(std::vector<Value> &v, const char * const pat,
                                 const int &size);
     int             curPat_;
     PatternProcessor     *pcoll_;
@@ -91,5 +91,3 @@ inline ProcedureWriter::~ProcedureWriter() {}
 
 
 #endif
-
-

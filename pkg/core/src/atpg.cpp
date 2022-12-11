@@ -408,24 +408,31 @@ void Atpg::TransitionDelayFaultATPG(FaultList &faultListToGen, PatternProcessor 
 	if (result == PATTERN_FOUND)
 	{
 		Pattern *p = new Pattern;
-		p->pi1_ = new Value[pCircuit_->npi_];
-		p->pi2_ = new Value[pCircuit_->npi_];
-		p->ppi_ = new Value[pCircuit_->nppi_];
-		p->si_ = new Value[1];
-		p->po1_ = new Value[pCircuit_->npo_];
-		p->po2_ = new Value[pCircuit_->npo_];
-		p->ppo_ = new Value[pCircuit_->nppi_];
-		pPatternProcessor->pats_.push_back(p);
-		assignPatternPI_fromGateVal(pPatternProcessor->pats_.back());
+		// p->pPI1_ = new Value[pCircuit_->npi_];
+		// p->pPI2_ = new Value[pCircuit_->npi_];
+		// p->pPPI_ = new Value[pCircuit_->nppi_];
+		// p->pSI_ = new Value[1];
+		// p->pPO1_ = new Value[pCircuit_->npo_];
+		// p->pPO2_ = new Value[pCircuit_->npo_];
+		// p->pPPO_ = new Value[pCircuit_->nppi_];
+		p->pPI1_.resize(pCircuit_->npi_);
+		p->pPI2_.resize(pCircuit_->npi_);
+		p->pPPI_.resize(pCircuit_->nppi_);
+		p->pSI_.resize(1);
+		p->pPO1_.resize(pCircuit_->npo_);
+		p->pPO2_.resize(pCircuit_->npo_);
+		p->pPPO_.resize(pCircuit_->nppi_);
+		pPatternProcessor->patternVector_.push_back(p);
+		assignPatternPI_fromGateVal(pPatternProcessor->patternVector_.back());
 
 		if ((pPatternProcessor->staticCompression_ == PatternProcessor::OFF) && (pPatternProcessor->XFill_ == PatternProcessor::ON))
 		{
-			randomFill(pPatternProcessor->pats_.back());
+			randomFill(pPatternProcessor->patternVector_.back());
 		}
 
-		pSimulator_->pfFaultSim(pPatternProcessor->pats_.back(), faultListToGen);
+		pSimulator_->pfFaultSim(pPatternProcessor->patternVector_.back(), faultListToGen);
 		pSimulator_->goodSim();
-		assignPatternPO_fromGoodSimVal(pPatternProcessor->pats_.back());
+		assignPatternPO_fromGoodSimVal(pPatternProcessor->patternVector_.back());
 	}
 	else if (result == FAULT_UNTESTABLE)
 	{
@@ -456,21 +463,21 @@ void Atpg::TransitionDelayFaultATPG(FaultList &faultListToGen, PatternProcessor 
 // 	if (result == PATTERN_FOUND)
 // 	{
 // 		Pattern *p = new Pattern;
-// 		p->pi1_ = new Value[pCircuit_->npi_];
-// 		p->ppi_ = new Value[pCircuit_->nppi_];
-// 		p->po1_ = new Value[pCircuit_->npo_];
-// 		p->ppo_ = new Value[pCircuit_->nppi_];
-// 		pPatternProcessor->pats_.push_back(p);
-// 		assignPatternPI_fromGateVal(pPatternProcessor->pats_.back());
+// 		p->pPI1_ = new Value[pCircuit_->npi_];
+// 		p->pPPI_ = new Value[pCircuit_->nppi_];
+// 		p->pPO1_ = new Value[pCircuit_->npo_];
+// 		p->pPPO_ = new Value[pCircuit_->nppi_];
+// 		pPatternProcessor->patternVector_.push_back(p);
+// 		assignPatternPI_fromGateVal(pPatternProcessor->patternVector_.back());
 // 		// if static compression is OFF and random fill in on
 // 		// do random x-fill
 // 		if ((pPatternProcessor->staticCompression_ == PatternProcessor::OFF) && (pPatternProcessor->XFill_ == PatternProcessor::ON))
 // 		{
-// 			randomFill(pPatternProcessor->pats_.back());
+// 			randomFill(pPatternProcessor->patternVector_.back());
 // 		}
-// 		pSimulator_->pfFaultSim(pPatternProcessor->pats_.back(), faultListToGen);
+// 		pSimulator_->pfFaultSim(pPatternProcessor->patternVector_.back(), faultListToGen);
 // 		pSimulator_->goodSim();
-// 		assignPatternPO_fromGoodSimVal(pPatternProcessor->pats_.back());
+// 		assignPatternPO_fromGoodSimVal(pPatternProcessor->patternVector_.back());
 // 	}
 // 	else if (result == FAULT_UNTESTABLE)
 // 	{
@@ -505,24 +512,28 @@ void Atpg::StuckAtFaultATPGWithDTC(FaultList &faultListToGen, PatternProcessor *
 	{
 		// oriPatNum++; //std::cerr << oriPatNum << "-th pattern" << std::endl;
 		Pattern *p = new Pattern;
-		p->pi1_ = new Value[pCircuit_->npi_];
-		p->ppi_ = new Value[pCircuit_->nppi_];
-		p->po1_ = new Value[pCircuit_->npo_];
-		p->ppo_ = new Value[pCircuit_->nppi_];
-		pcoll->pats_.push_back(p);
+		// p->pPI1_ = new Value[pCircuit_->npi_];
+		// p->pPPI_ = new Value[pCircuit_->nppi_];
+		// p->pPO1_ = new Value[pCircuit_->npo_];
+		// p->pPPO_ = new Value[pCircuit_->nppi_];
+		p->pPI1_.resize(pCircuit_->npi_);
+		p->pPPI_.resize(pCircuit_->nppi_);
+		p->pPO1_.resize(pCircuit_->npo_);
+		p->pPPO_.resize(pCircuit_->nppi_);
+		pcoll->patternVector_.push_back(p);
 
 		resetPreValue();
 		clearAllFaultEffectBySimulation();
 		storeCurrentGateValue();
-		assignPatternPI_fromGateVal(pcoll->pats_.back());
+		assignPatternPI_fromGateVal(pcoll->patternVector_.back());
 
 		if (pcoll->dynamicCompression_ == PatternProcessor::ON)
 		{
 
 			FaultList faultListTemp = faultListToGen;
-			pSimulator_->pfFaultSim(pcoll->pats_.back(), faultListToGen);
+			pSimulator_->pfFaultSim(pcoll->patternVector_.back(), faultListToGen);
 			pSimulator_->goodSim();
-			assignPatternPO_fromGoodSimVal(pcoll->pats_.back());
+			assignPatternPO_fromGoodSimVal(pcoll->patternVector_.back());
 
 			for (FaultListIter it = faultListTemp.begin(); it != faultListTemp.end(); ++it)
 			{
@@ -558,7 +569,7 @@ void Atpg::StuckAtFaultATPGWithDTC(FaultList &faultListToGen, PatternProcessor *
 						resetPreValue();
 						clearAllFaultEffectBySimulation();
 						storeCurrentGateValue();
-						assignPatternPI_fromGateVal(pcoll->pats_.back());
+						assignPatternPI_fromGateVal(pcoll->patternVector_.back());
 					}
 					else
 					{
@@ -578,7 +589,7 @@ void Atpg::StuckAtFaultATPGWithDTC(FaultList &faultListToGen, PatternProcessor *
 
 		clearAllFaultEffectBySimulation();
 		storeCurrentGateValue();
-		assignPatternPI_fromGateVal(pcoll->pats_.back());
+		assignPatternPI_fromGateVal(pcoll->patternVector_.back());
 
 		if (pcoll->XFill_ == PatternProcessor::ON)
 		{
@@ -586,7 +597,7 @@ void Atpg::StuckAtFaultATPGWithDTC(FaultList &faultListToGen, PatternProcessor *
 			 * Randomly fill the pats_.back().
 			 * Please note that the v_, gh_, gl_, fh_ and fl_ do not be changed.
 			 * */
-			randomFill(pcoll->pats_.back());
+			randomFill(pcoll->patternVector_.back());
 		}
 
 		/*
@@ -594,14 +605,14 @@ void Atpg::StuckAtFaultATPGWithDTC(FaultList &faultListToGen, PatternProcessor *
 		 * the gh_ and gl_ in each gate, and then it will run fault
 		 * simulation to drop fault.
 		 * */
-		pSimulator_->pfFaultSim(pcoll->pats_.back(), faultListToGen);
+		pSimulator_->pfFaultSim(pcoll->patternVector_.back(), faultListToGen);
 		/*
-		 * After pSimulator_->pfFaultSim(pcoll->pats_.back(),faultListToGen) , the pi/ppi
+		 * After pSimulator_->pfFaultSim(pcoll->patternVector_.back(),faultListToGen) , the pi/ppi
 		 * values have been passed to gh_ and gl_ of each gate.  Therefore, we can
 		 * directly use "assignPatternPO_fromGoodSimVal" to perform goodSim to get the PoValue.
 		 * */
 		pSimulator_->goodSim();
-		assignPatternPO_fromGoodSimVal(pcoll->pats_.back());
+		assignPatternPO_fromGoodSimVal(pcoll->patternVector_.back());
 	}
 	else if (result == FAULT_UNTESTABLE)
 	{
@@ -3191,8 +3202,8 @@ void Atpg::staticTestCompressionByReverseFaultSimulation(PatternProcessor *pcoll
 		}
 	}
 
-	PatternVec tmp = pcoll->pats_;
-	pcoll->pats_.clear();
+	PatternVec tmp = pcoll->patternVector_;
+	pcoll->patternVector_.clear();
 
 	// Perform reverse fault simulation
 	size_t leftFaultCount = originalFaultList.size();
@@ -3202,7 +3213,7 @@ void Atpg::staticTestCompressionByReverseFaultSimulation(PatternProcessor *pcoll
 		if (leftFaultCount > originalFaultList.size())
 		{
 			leftFaultCount = originalFaultList.size();
-			pcoll->pats_.push_back((*rit));
+			pcoll->patternVector_.push_back((*rit));
 		}
 		else if (leftFaultCount < originalFaultList.size())
 		{
@@ -3728,11 +3739,11 @@ void Atpg::resetIsInEventStack()
 // **************************************************************************
 void Atpg::XFill(PatternProcessor *pPatternProcessor)
 {
-	for (int i = 0; i < (int)pPatternProcessor->pats_.size(); ++i)
+	for (int i = 0; i < (int)pPatternProcessor->patternVector_.size(); ++i)
 	{
-		randomFill(pPatternProcessor->pats_[i]);
-		pSimulator_->assignPatternToPi(pPatternProcessor->pats_.at(i));
+		randomFill(pPatternProcessor->patternVector_[i]);
+		pSimulator_->assignPatternToPi(pPatternProcessor->patternVector_.at(i));
 		pSimulator_->goodSim();
-		assignPatternPO_fromGoodSimVal(pPatternProcessor->pats_.at(i));
+		assignPatternPO_fromGoodSimVal(pPatternProcessor->patternVector_.at(i));
 	}
 }
