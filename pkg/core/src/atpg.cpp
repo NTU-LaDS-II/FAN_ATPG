@@ -21,9 +21,9 @@ using namespace CoreNs;
 void Atpg::generatePatternSet(PatternProcessor *pPatternProcessor, FaultListExtract *fListExtract)
 {
 	int untest = 0;
-	Fault *currF = NULL;
+	Fault *pCurrentFault = NULL;
 	FaultList faultOri;
-	FaultList faultListToGen;
+	FaultList atpg_initial_pFaults;
 	FaultListIter it = fListExtract->faultsInCircuit_.begin();
 
 	setupCircuitParameter();
@@ -31,47 +31,40 @@ void Atpg::generatePatternSet(PatternProcessor *pPatternProcessor, FaultListExtr
 	// checkLevelInfo(); // for debug, not neccessary, removed by wang
 
 	// setting faults for running ATPG
-	while (it != fListExtract->faultsInCircuit_.end())
+	for (Fault *const &pFault : fListExtract->faultsInCircuit_)
 	{
-		if ((*it)->faultState_ != Fault::DT && (*it)->faultState_ != Fault::RE && (*it)->faultyLine_ >= 0)
-			faultListToGen.push_back(*it);
-		++it;
+		if (pFault->faultState_ != Fault::DT && pFault->faultState_ != Fault::RE && pFault->faultyLine_ >= 0)
+			atpg_initial_pFaults.push_back(pFault);
 	}
 
-	faultOri = faultListToGen; // ori fault copy
+	faultOri = atpg_initial_pFaults; // ori fault copy
 
 	// To test clearAllFaultEffectBySimulation
-	// testClearFaultEffect(faultListToGen); // removed for now seems like debug usage, by wang
+	// testClearFaultEffect(atpg_initial_pFaults); // removed for now seems like debug usage, by wang
 
-	// start ATPG
-	// take one undetected fault from the faultListToGen
+	// start ATPG, take one undetected fault from the atpg_initial_pFaults
 	// if the fault is undetected, run ATPG on it
-	while (faultListToGen.begin() != faultListToGen.end())
+	while (atpg_initial_pFaults.begin() != atpg_initial_pFaults.end())
 	{
-		if (faultListToGen.front()->faultState_ == Fault::AB)
+		if (atpg_initial_pFaults.front()->faultState_ == Fault::AB)
 			break;
 
-		if (currF == faultListToGen.front())
+		if (pCurrentFault == atpg_initial_pFaults.front())
 		{
-			faultListToGen.front()->faultState_ = Fault::DT;
-			faultListToGen.pop_front();
+			atpg_initial_pFaults.front()->faultState_ = Fault::DT;
+			atpg_initial_pFaults.pop_front();
 			continue;
 		}
-		currF = faultListToGen.front();
+		pCurrentFault = atpg_initial_pFaults.front();
 
-		// Transition delay fault ATPG
-		if ((*faultListToGen.front()).faultType_ == Fault::STR || (*faultListToGen.front()).faultType_ == Fault::STF)
-			TransitionDelayFaultATPG(faultListToGen, pPatternProcessor, untest);
-
-		// stuck-at fault ATPG
+		if ((*atpg_initial_pFaults.front()).faultType_ == Fault::STR || (*atpg_initial_pFaults.front()).faultType_ == Fault::STF)
+			TransitionDelayFaultATPG(atpg_initial_pFaults, pPatternProcessor, untest); // Transition delay fault ATPG
 		else
-			StuckAtFaultATPGWithDTC(faultListToGen, pPatternProcessor, untest);
+			StuckAtFaultATPGWithDTC(atpg_initial_pFaults, pPatternProcessor, untest); // stuck-at fault ATPG
 	}
 
-	// do static compression using compability graph
 	if (pPatternProcessor->staticCompression_ == PatternProcessor::ON)
 	{
-		// pPatternProcessor->StaticCompression();
 		staticTestCompressionByReverseFaultSimulation(pPatternProcessor, faultOri);
 	}
 
