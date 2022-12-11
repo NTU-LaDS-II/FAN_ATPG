@@ -125,13 +125,13 @@ void Atpg::setupCircuitParameter()
 // **************************************************************************
 void Atpg::calGateDepthFromPO()
 {
-	int i, j;
+	int gateID, index;
 	int circuitLevelPlus100 = pCircuit_->tlvl_ + 100;
 
 	// debug code removed by wang
-	// for (int i = 0; i < pCircuit_->tgate_; ++i)
+	// for (int gateD = 0; gateD < pCircuit_->tgate_; ++gateD)
 	// {
-	// 	Gate &gate = pCircuit_->gates_[i];
+	// 	Gate &gate = pCircuit_->gates_[gateD];
 	// 	// default -1, check if it was changed or not.
 	// 	if (gate.depthFromPo_ != -1)
 	// 	{
@@ -141,10 +141,10 @@ void Atpg::calGateDepthFromPO()
 	// }
 
 	// Update depthFromPo_ form PO/PPO to PI/PPI
-	for (i = pCircuit_->tgate_ - 1; i >= 0; --i)
+	for (gateID = pCircuit_->tgate_ - 1; gateID >= 0; --gateID)
 	{
-		Gate &gate = pCircuit_->gates_[i];
-		gateID_to_valModified_[i] = 0; // sneak the initialization assignment in here
+		Gate &gate = pCircuit_->gates_[gateID];
+		gateID_to_valModified_[gateID] = 0; // sneak the initialization assignment in here
 		if ((gate.type_ == Gate::PO) || (gate.type_ == Gate::PPO))
 		{
 			gate.depthFromPo_ = 0;
@@ -161,9 +161,9 @@ void Atpg::calGateDepthFromPO()
 				gate.depthFromPo_ = pCircuit_->gates_[gate.fos_[0]].depthFromPo_ + 1;
 			}
 
-			for (j = 1; j < gate.nfo_; ++j)
+			for (index = 1; index < gate.nfo_; ++index)
 			{
-				Gate &fanOutGate = pCircuit_->gates_[gate.fos_[j]];
+				const Gate &fanOutGate = pCircuit_->gates_[gate.fos_[index]];
 				if (fanOutGate.depthFromPo_ < gate.depthFromPo_)
 				{
 					gate.depthFromPo_ = fanOutGate.depthFromPo_ + 1;
@@ -189,44 +189,44 @@ void Atpg::calGateDepthFromPO()
 // **************************************************************************
 void Atpg::identifyLineParameter()
 {
-	int i, j;
+	int gateID, index; // index
 	int count = 0;
 	numberOfHeadLine_ = 0; // number of head line
 
-	for (i = 0; i < pCircuit_->tgate_; ++i)
+	for (gateID = 0; gateID < pCircuit_->tgate_; ++gateID)
 	{
-		Gate &gate = pCircuit_->gates_[i];
+		const Gate &gate = pCircuit_->gates_[gateID];
 
-		gateID_to_lineType_[i] = FREE_LINE; // assign as FREE_LINE first
+		gateID_to_lineType_[gateID] = FREE_LINE; // assign as FREE_LINE first
 
-		// check if it is BOUND_LINE
+		// check if the gate is BOUND_LINE
 		if (gate.type_ != Gate::PI && gate.type_ != Gate::PPI)
 		{
-			for (j = 0; j < gate.nfi_; ++j)
+			for (index = 0; index < gate.nfi_; ++index)
 			{
-				if (gateID_to_lineType_[gate.fis_[j]] != FREE_LINE)
+				if (gateID_to_lineType_[gate.fis_[index]] != FREE_LINE)
 				{
-					gateID_to_lineType_[i] = BOUND_LINE;
+					gateID_to_lineType_[gateID] = BOUND_LINE;
 					break;
 				}
 			}
 		}
 
-		// check if gate is HEAD_LINE (rule 1)
-		if (gateID_to_lineType_[i] == FREE_LINE && gate.nfo_ != 1)
-		{ // gate.nfo_  number of fanout
-			gateID_to_lineType_[i] = HEAD_LINE;
+		// check if the gate is HEAD_LINE (rule 1)
+		if ((gateID_to_lineType_[gateID] == FREE_LINE) && (gate.nfo_ != 1))
+		{
+			gateID_to_lineType_[gateID] = HEAD_LINE;
 			++numberOfHeadLine_;
 		}
 
 		// check it is HEAD_LINE or not(rule 2)
 		if (gateID_to_lineType_[gate.id_] == BOUND_LINE)
 		{
-			for (j = 0; j < gate.nfi_; ++j) // gate.nfi_  number of fanin
+			for (index = 0; index < gate.nfi_; ++index) // gate.nfi_  number of fanin
 			{
-				if (gateID_to_lineType_[gate.fis_[j]] == FREE_LINE)
+				if (gateID_to_lineType_[gate.fis_[index]] == FREE_LINE)
 				{
-					gateID_to_lineType_[gate.fis_[j]] = HEAD_LINE;
+					gateID_to_lineType_[gate.fis_[index]] = HEAD_LINE;
 					++numberOfHeadLine_;
 				}
 			}
@@ -236,11 +236,11 @@ void Atpg::identifyLineParameter()
 	// store all head lines to array headLineGateIDs_
 	headLineGateIDs_.resize(numberOfHeadLine_); // resize instead of new, by wang
 	// remeber to improve to reserve
-	for (i = 0; i < pCircuit_->tgate_; ++i)
+	for (gateID = 0; gateID < pCircuit_->tgate_; ++gateID)
 	{
-		if (gateID_to_lineType_[i] == HEAD_LINE)
+		if (gateID_to_lineType_[gateID] == HEAD_LINE)
 		{
-			headLineGateIDs_[count++] = i;
+			headLineGateIDs_[count++] = gateID;
 			if (count == numberOfHeadLine_)
 				break;
 		}
