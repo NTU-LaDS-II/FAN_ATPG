@@ -295,7 +295,7 @@ void AddFaultCmd::addAllFault()
 	fanMgr_->fListExtract->faultsInCircuit_.resize(fanMgr_->fListExtract->extractedFaults_.size());
 	FaultListIter it = fanMgr_->fListExtract->faultsInCircuit_.begin();
 	for (size_t i = 0; i < fanMgr_->fListExtract->extractedFaults_.size(); ++i, ++it)
-		(*it) = fanMgr_->fListExtract->extractedFaults_[i];
+		(*it) = &fanMgr_->fListExtract->extractedFaults_[i];
 
 	TmStat stat;
 	fanMgr_->tmusg.getPeriodUsage(stat);
@@ -315,8 +315,8 @@ bool AddFaultCmd::addPinFault(const string &type, const string &pin)
 	}
 	int gid = fanMgr_->cir->portToGate_[p->id_];
 	int offset = (type == "SA0" || type == "STR") ? 0 : 1;
-	int fid = fanMgr_->fListExtract->gateIndexToFaultIndex[gid] + offset;
-	Fault *f = fanMgr_->fListExtract->extractedFaults_[fid];
+	int fid = fanMgr_->fListExtract->gateIndexToFaultIndex_[gid] + offset;
+	Fault *f = &fanMgr_->fListExtract->extractedFaults_[fid];
 	fanMgr_->fListExtract->faultsInCircuit_.push_back(f);
 	return true;
 } //}}}
@@ -358,8 +358,8 @@ bool AddFaultCmd::addCellFault(const string &type, const string &cell,
 			pid = (*it)->id_ - nOutput + 1;
 		}
 		int offset = (type == "SA0" || type == "STR") ? 0 : 1;
-		int fid = fanMgr_->fListExtract->gateIndexToFaultIndex[gid] + 2 * pid + offset;
-		Fault *f = fanMgr_->fListExtract->extractedFaults_[fid];
+		int fid = fanMgr_->fListExtract->gateIndexToFaultIndex_[gid] + 2 * pid + offset;
+		Fault *f = &fanMgr_->fListExtract->extractedFaults_[fid];
 		fanMgr_->fListExtract->faultsInCircuit_.push_back(f);
 	}
 	return true;
@@ -1142,7 +1142,7 @@ bool RunFaultSimCmd::exec(const vector<string> &argv)
 		return false;
 	}
 
-	if (!fanMgr_->fListExtract || fanMgr_->fListExtract->extractedFaults_.size() == 0)
+	if (!fanMgr_->fListExtract || fanMgr_->fListExtract->faultsInCircuit_.size() == 0)
 	{
 		cerr << "**ERROR RunFaultSimCmd::exec(): fault list needed" << endl;
 		return false;
