@@ -1,8 +1,11 @@
-Refactor - 28th modification
+Refactor - 29th modification
 
   readability related changes:
-    declare i,j... in for loop as there is no performance improve for declaration outside the for loop 
+    add all the curly braces in atpg.cpp/h
   performance related changes:
+    Finish Refactor of Atpg::generatePatternSet()
+    including push_back twice instead of copying as this save
+    one O(n) operation (copying)
   bug fixed:
   note:
   function added:
