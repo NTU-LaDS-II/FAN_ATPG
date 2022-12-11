@@ -12,8 +12,8 @@ using namespace CoreNs;
 // **************************************************************************
 // Function   [ Atpg::generatePatternSet ]
 // Commentor  [ CAL ]
-// Synopsis   [ usage: generate patterns for faults
-//              in:    Pattern list, Fault list
+// Synopsis   [ usage: the main function of atpg generate the complete test pattern set for faults
+//              in:    PatternProcessor, FaultListExtract
 //              out:   void //TODO not void
 //            ]
 // Date       [ Ver. 1.0 started 2013/08/13 ]
@@ -24,7 +24,6 @@ void Atpg::generatePatternSet(PatternProcessor *pPatternProcessor, FaultListExtr
 	Fault *pCurrentFault = NULL;
 	FaultList faultOri;
 	FaultList atpg_initial_pFaults;
-	FaultListIter it = fListExtract->faultsInCircuit_.begin();
 
 	setupCircuitParameter();
 	pPatternProcessor->init(pCircuit_);
@@ -253,7 +252,8 @@ void Atpg::identifyLineParameter()
 // **************************************************************************
 void Atpg::identifyDominator()
 {
-	for (int i = pCircuit_->tgate_ - 1; i >= 0; i--)
+	int i, j;
+	for (i = pCircuit_->tgate_ - 1; i >= 0; i--)
 	{
 		Gate &gate = pCircuit_->gates_[i];
 		if (gate.nfo_ <= 1) // if gate has only 1 or 0 output skip this gate
@@ -261,7 +261,7 @@ void Atpg::identifyDominator()
 
 		int gateCount = pushGateFanoutsToEventStack(i);
 
-		for (int j = gate.lvl_ + 1; j < pCircuit_->tlvl_; j++)
+		for (j = gate.lvl_ + 1; j < pCircuit_->tlvl_; j++)
 		{
 			// if next level's output isn't empty
 			while (!circuitLevel_to_EventStack_[j].empty())
@@ -352,9 +352,9 @@ void Atpg::identifyDominator()
 // **************************************************************************
 void Atpg::identifyUniquePath()
 {
-	// replace the original faultReach_ to avoid ambiguity, added by wang
-	std::vector<int> reachableByDominator(pCircuit_->tgate_);
-	for (int i = pCircuit_->tgate_ - 1; i >= 0; i--)
+	int i, j, k;
+	std::vector<int> reachableByDominator(pCircuit_->tgate_); // replace the original faultReach_ to avoid ambiguity, added by wang
+	for (i = pCircuit_->tgate_ - 1; i >= 0; i--)
 	{
 		Gate &gate = pCircuit_->gates_[i];
 		int count;
@@ -368,7 +368,8 @@ void Atpg::identifyUniquePath()
 		reachableByDominator[gate.id_] = i;
 		count = pushGateFanoutsToEventStack(i);
 
-		for (int j = gate.lvl_ + 1; j < pCircuit_->tlvl_; j++)
+		for (j = gate.lvl_ + 1; j < pCircuit_->tlvl_; j++)
+		{
 			while (!circuitLevel_to_EventStack_[j].empty())
 			{ // if fanout gate was not empty
 				Gate &gTmp = pCircuit_->gates_[circuitLevel_to_EventStack_[j].top()];
@@ -378,7 +379,7 @@ void Atpg::identifyUniquePath()
 				count--;
 				if (count == 0)
 				{
-					for (int k = 0; k < gTmp.nfi_; k++)
+					for (k = 0; k < gTmp.nfi_; k++)
 					{
 						Gate &gReach = pCircuit_->gates_[gTmp.fis_[k]];
 						if (reachableByDominator[gReach.id_] == i)							 // if it is UniquePath
@@ -388,6 +389,7 @@ void Atpg::identifyUniquePath()
 				}
 				count += pushGateFanoutsToEventStack(gTmp.id_);
 			}
+		}
 	}
 }
 
@@ -504,18 +506,10 @@ void Atpg::TransitionDelayFaultATPG(FaultList &faultListToGen, PatternProcessor 
 // **************************************************************************
 void Atpg::StuckAtFaultATPGWithDTC(FaultList &faultListToGen, PatternProcessor *pcoll, int &untest)
 {
-	// static int oriPatNum = 0; for debug, removed by wang
-
 	SINGLE_PATTERN_GENERATION_STATUS result = generateSinglePatternOnTargetFault(*faultListToGen.front(), false);
-
 	if (result == PATTERN_FOUND)
 	{
-		// oriPatNum++; //std::cerr << oriPatNum << "-th pattern" << std::endl;
 		Pattern *p = new Pattern;
-		// p->pPI1_ = new Value[pCircuit_->npi_];
-		// p->pPPI_ = new Value[pCircuit_->nppi_];
-		// p->pPO1_ = new Value[pCircuit_->npo_];
-		// p->pPPO_ = new Value[pCircuit_->nppi_];
 		p->pPI1_.resize(pCircuit_->npi_);
 		p->pPPI_.resize(pCircuit_->nppi_);
 		p->pPO1_.resize(pCircuit_->npo_);
@@ -535,15 +529,15 @@ void Atpg::StuckAtFaultATPGWithDTC(FaultList &faultListToGen, PatternProcessor *
 			pSimulator_->goodSim();
 			assignPatternPO_fromGoodSimVal(pcoll->patternVector_.back());
 
-			for (FaultListIter it = faultListTemp.begin(); it != faultListTemp.end(); ++it)
+			for (Fault *const &pFault : faultListTemp)
 			{
 				// skip detected faults
-				if ((*it)->faultState_ == Fault::DT)
+				if (pFault->faultState_ == Fault::DT)
 					continue;
 
-				Gate *pGateForAtivation = getWireForActivation((**it));
-				if (((pGateForAtivation->v_ == L) && ((*it)->faultType_ == Fault::SA0)) ||
-						((pGateForAtivation->v_ == H) && ((*it)->faultType_ == Fault::SA1)))
+				Gate *pGateForAtivation = getWireForActivation(*pFault);
+				if (((pGateForAtivation->v_ == L) && (pFault->faultType_ == Fault::SA0)) ||
+						((pGateForAtivation->v_ == H) && (pFault->faultType_ == Fault::SA1)))
 				{
 					continue;
 				}
@@ -551,7 +545,7 @@ void Atpg::StuckAtFaultATPGWithDTC(FaultList &faultListToGen, PatternProcessor *
 				// Activation check
 				if (pGateForAtivation->v_ != X)
 				{
-					if (((*it)->faultType_ == Fault::SA0) || ((*it)->faultType_ == Fault::SA1))
+					if ((pFault->faultType_ == Fault::SA0) || (pFault->faultType_ == Fault::SA1))
 					{
 						setValueAndRunImp((*pGateForAtivation), X);
 					}
@@ -564,7 +558,7 @@ void Atpg::StuckAtFaultATPGWithDTC(FaultList &faultListToGen, PatternProcessor *
 				if (isExistXPath(pGateForAtivation))
 				{
 					// TO-DO homework 05 implement DTC here end of TO-DO
-					if (generateSinglePatternOnTargetFault((**it), true) == PATTERN_FOUND)
+					if (generateSinglePatternOnTargetFault(*pFault, true) == PATTERN_FOUND)
 					{
 						resetPreValue();
 						clearAllFaultEffectBySimulation();
@@ -3193,12 +3187,12 @@ Atpg::IMPLICATION_STATUS Atpg::faultyGateEvaluation(Gate *pGate)
 // **************************************************************************
 void Atpg::staticTestCompressionByReverseFaultSimulation(PatternProcessor *pcoll, FaultList &originalFaultList)
 {
-	for (auto it = originalFaultList.begin(); it != originalFaultList.end(); ++it)
+	for (Fault *const &pFault : originalFaultList)
 	{
-		(*it)->detection_ = 0;
-		if ((*it)->faultState_ == Fault::DT)
+		pFault->detection_ = 0;
+		if (pFault->faultState_ == Fault::DT)
 		{
-			(*it)->faultState_ = Fault::UD;
+			pFault->faultState_ = Fault::UD;
 		}
 	}
 
@@ -3695,12 +3689,11 @@ void Atpg::calSCOAP()
 // **************************************************************************
 void Atpg::testClearFaultEffect(FaultList &faultListToTest)
 {
-	for (auto it = faultListToTest.begin(); it != faultListToTest.end(); ++it)
+	for (Fault *const &pFault : faultListToTest)
 	{
-		SINGLE_PATTERN_GENERATION_STATUS result = generateSinglePatternOnTargetFault((**it), false);
+		SINGLE_PATTERN_GENERATION_STATUS result = generateSinglePatternOnTargetFault(*pFault, false);
 		clearAllFaultEffectBySimulation();
 
-		// DEBUG message, removed for performance
 		for (int i = 0; i < pCircuit_->tgate_; ++i)
 		{
 			Gate &gate = pCircuit_->gates_[i];

@@ -9,8 +9,6 @@
 
 #include "fault.h"
 
-#include <cstring>
-
 // using namespace IntfNs; removed by pan
 using namespace CoreNs;
 
@@ -18,8 +16,10 @@ void FaultListExtract::extractFaultFromCircuit(Circuit *circuit)
 {
 	// since the function only called once, we don't need to clear faults initially
 	// reserve enough space for faults push_back, 10 * circuit->ngate_ is maximum possible faults in a circuit
-	uncollapsedFaults_.reserve(10 * circuit->ngate_);
-	extractedFaults_.reserve(10 * circuit->ngate_);
+	bool useFC = true;
+	int reservedSize = 10 * circuit->ngate_;
+	uncollapsedFaults_.reserve(reservedSize);
+	extractedFaults_.reserve(reservedSize);
 
 	// resize gateIndexToFaultIndex to proper size
 	gateIndexToFaultIndex_.resize(circuit->ngate_);
@@ -66,19 +66,16 @@ void FaultListExtract::extractFaultFromCircuit(Circuit *circuit)
 		}
 
 		// extract faults
-		bool useFC = true;
 		// Without Fault Collapsing
 		if (!useFC)
 		{
-			// Copy uncollapsedFaults_ to extractedFaults_
 			extractedFaults_.resize(uncollapsedFaults_.size());
 			extractedFaults_.assign(uncollapsedFaults_.begin(), uncollapsedFaults_.end());
 		}
-		else
-		// Simple Equivalent Fault Collapsing
+		else // Simple Equivalent Fault Collapsing
 		{
 			std::vector<int> SA0Equivalent(circuit->ngate_), SA1Equivalent(circuit->ngate_); // used to count the number of equivalent faults
-			int SA0EquivalentOfInput, SA1EquivalentOfInput;				// SA0Equivalent, SA1Equivalent of the input gates
+			int SA0EquivalentOfInput, SA1EquivalentOfInput;																	 // SA0Equivalent, SA1Equivalent of the input gates
 			for (int i = 0; i < circuit->ngate_; ++i)
 			{
 				// initialize SA0Equivalent, SA1Equivalent

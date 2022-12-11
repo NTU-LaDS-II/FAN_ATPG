@@ -88,19 +88,11 @@ namespace CoreNs
 		// Fixed static compression
 		void StaticCompression();
 		bool updateTable(std::vector<bool> mergeRecord, std::vector<bool> patternTable);
-		// Not In Used
-		// bool updateTable2(std::vector<bool> mergeRecord, std::vector<bool> patternTable);
+		// bool updateTable2(std::vector<bool> mergeRecord, std::vector<bool> patternTable); not used, hence removed
 	};
 
 	inline Pattern::Pattern()
 	{
-		// pPI1_ = NULL;
-		// pPI2_ = NULL;
-		// pPPI_ = NULL;
-		// pSI_ = NULL;
-		// pPO1_ = NULL;
-		// pPO2_ = NULL;
-		// pPPO_ = NULL;
 	}
 
 	// inline Pattern::~Pattern()

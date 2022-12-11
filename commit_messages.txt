@@ -1,10 +1,12 @@
-Refactor - 26th modification
+Refactor - 27th modification
 
   name changes:
-    Atpg: nHeadLine_ => numberOfHeadLine_
+    removed uneccesary #include<cstring> in fault.cpp
   performance related changes:
+    atpg.cpp:532 for loop to modern for loop
+    simulator.cpp:92 99 146 change alot of loop property
   bug fixed:
-    atpg_cmd.cpp:457 faultState_ => faultType_
   note:
+    simulator.cpp change might cause bugs, beware of that in the future
   function added:
   function removed:

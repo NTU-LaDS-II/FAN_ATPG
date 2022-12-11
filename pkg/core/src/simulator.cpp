@@ -85,28 +85,25 @@ void Simulator::eventFaultSim()
 //			  ]
 // Date       [ ]
 // **************************************************************************
-//{{{ void Simulator::pfFaultSim(PatternProcessor *, FaultListExtract *)
 void Simulator::pfFaultSim(PatternProcessor *pcoll, FaultListExtract *fListExtract)
 {
 	// undetected faults are remaining faults
 	FaultList remain;
-	FaultListIter it = fListExtract->faultsInCircuit_.begin();
-	for (; it != fListExtract->faultsInCircuit_.end(); ++it)
-		if ((*it)->faultState_ != Fault::DT && (*it)->faultState_ != Fault::RE && (*it)->faultyLine_ >= 0)
-			remain.push_back(*it);
+	for (Fault *const &pFault : fListExtract->faultsInCircuit_)
+		if (pFault->faultState_ != Fault::DT && pFault->faultState_ != Fault::RE && pFault->faultyLine_ >= 0)
+			remain.push_back(pFault);
 
 	// simulate all patterns for all faults
-	for (size_t i = 0; i < pcoll->patternVector_.size(); ++i)
+	for (Pattern *const &pPattern : pcoll->patternVector_)
 	{
 		if (remain.size() == 0)
 			break;
 
 		// Assign pattern to circuit PI & PPI for further fault sim
-		assignPatternToPi(pcoll->patternVector_[i]);
+		assignPatternToPi(pPattern);
 		pfFaultSim(remain);
 	}
-
-} //}}}
+}
 
 // **************************************************************************
 // Function   [ Simulator::pfFaultSim ]
@@ -118,15 +115,13 @@ void Simulator::pfFaultSim(PatternProcessor *pcoll, FaultListExtract *fListExtra
 //            ]
 // Date       [ CJY Ver. 1.0 started 2013/08/14 ]
 // **************************************************************************
-//{{{ void Simulator::pfFaultSim(const Pattern * const, FaultList &)
 void Simulator::pfFaultSim(const Pattern *const p, FaultList &remain)
 {
 
 	// Assign pattern to circuit PI & PPI for further fault sim
 	assignPatternToPi(p);
 	pfFaultSim(remain);
-
-} //}}}
+}
 
 // **************************************************************************
 // Function   [ Simulator::pfFaultSim ]
@@ -137,7 +132,6 @@ void Simulator::pfFaultSim(const Pattern *const p, FaultList &remain)
 //            ]
 // Date       [ CJY Ver. 1.0 started 2013/08/14 ]
 // **************************************************************************
-//{{{ void Simulator::pfFaultSim(FaultList &)
 void Simulator::pfFaultSim(FaultList &remain)
 {
 	if (remain.size() == 0)
@@ -147,30 +141,26 @@ void Simulator::pfFaultSim(FaultList &remain)
 	goodSimCopyToFault();
 
 	// inject number of WORD_SIZE activated faults
-	// size_t i = 0;
 	// pfReset();
 	FaultListIter it = remain.begin();
-	do
+	while (it != remain.end()) // do while => while by wang
 	{
 		// if fault is activated, inject fault
 		if (pfCheckActivation(*it))
 		{
 			pfInject(*it, ninjected_);
-			injected_[ninjected_] = it;
-			ninjected_++;
+			injected_[ninjected_++] = it;
 		}
-		it++;
-
+		++it;
 		// run fault sim if enough fault or end of fault list
 		if (ninjected_ == (int)WORD_SIZE || (it == remain.end() && ninjected_ > 0))
 		{
 			eventFaultSim();
-			pfCheckDetection(remain);
+			pfCheckDetection(remain); // drop fault here
 			pfReset();
 		}
-
-	} while (it != remain.end());
-} //}}}
+	}
+}
 
 // **************************************************************************
 // Function   [ Simulator::pfCheckActivation ]
@@ -264,7 +254,6 @@ void Simulator::pfInject(const Fault *const f, const size_t &i)
 //            ]
 // Date       [ CBH Ver. 1.0 started 2031/08/18 ]
 // **************************************************************************
-//{{{ void Simulator::pfCheckDetection(FaultList &)
 void Simulator::pfCheckDetection(FaultList &remain)
 {
 	ParaValue detected = PARA_L;
@@ -284,7 +273,7 @@ void Simulator::pfCheckDetection(FaultList &remain)
 			remain.erase(injected_[i]);
 		}
 	}
-} //}}}
+}
 
 // **************************************************************************
 // Function   [ void Simulator::ppFaultSim(PatternSet *, FaultListExtract *) ]
@@ -295,7 +284,6 @@ void Simulator::pfCheckDetection(FaultList &remain)
 //			  ]
 // Date       [ ]
 // **************************************************************************
-//{{{ void Simulator::ppFaultSim(PatternProcessor *, FaultListExtract *)
 void Simulator::ppFaultSim(PatternProcessor *pcoll, FaultListExtract *fListExtract)
 {
 	// undetected faults are remaining faults
@@ -501,7 +489,7 @@ void Simulator::ppSetPattern(PatternProcessor *pcoll, const int &i)
 	for (int j = i; j < endpat; ++j)
 	{
 		// assign PI
-		if (!pcoll->patternVector_[j]->pPI1_.empty()) 
+		if (!pcoll->patternVector_[j]->pPI1_.empty())
 		{
 			for (int k = 0; k < pcoll->numPI_; ++k)
 			{
