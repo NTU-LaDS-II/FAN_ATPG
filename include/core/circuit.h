@@ -60,8 +60,8 @@ namespace CoreNs
 		// **********************************************************************
 		Gate *gates_; // gate array
 		// std::vector<Gate> gates_;
-		int *fis_; // fanin net array
-		int *fos_; // fanout net array
+		int             *fis_;        // fanin net array
+		int             *fos_;        // fanout net array
 		// std::vector<int> fis_;
 		// std::vector<int> fos_;
 		int *cellToGate_; // map cells in netlist to gates

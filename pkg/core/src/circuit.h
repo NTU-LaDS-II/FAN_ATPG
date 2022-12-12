@@ -58,10 +58,10 @@ namespace CoreNs
 		// |PI1|PPI1|cell|PO1|PPO1|PI2|PPI2|cell|PO2|PPO2| ... |PIn|PPIn|cell|...
 		// |--- ---- ---- --- ----|--- ---- ---- --- ----|     |--- ---- ----
 		// **********************************************************************
-		Gate *gates_; // gate array
-		// std::vector<Gate> gates_;
-		int             *fis_;        // fanin net array
-		int             *fos_;        // fanout net array
+		// Gate *gates_; // gate array
+		std::vector<Gate> gates_;
+		// int             *fis_;        // fanin net array
+		// int             *fos_;        // fanout net array
 		// std::vector<int> fis_;
 		// std::vector<int> fos_;
 		int *cellToGate_; // map cells in netlist to gates
@@ -106,8 +106,8 @@ namespace CoreNs
 	inline Circuit::~Circuit()
 	{
 		// delete[] gates_;
-		delete[] fis_;
-		delete[] fos_;
+		// delete[] fis_;
+		// delete[] fos_;
 		delete[] cellToGate_;
 		delete[] portToGate_;
 	}

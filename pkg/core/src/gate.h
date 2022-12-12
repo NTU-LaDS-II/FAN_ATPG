@@ -54,9 +54,12 @@ namespace CoreNs
 			TIEZ
 		};
 		inline Gate();
+		// inline Gate(int gateId, int cellId, int primitiveId, int numLevel, Type gateType);
 		// inline Gate(const Gate &g);
 		// inline Gate &operator=(const Gate &g);
-		// inline Gate(int gateId, int cellId, int primitiveId, int numLevel, Type gateType, int numFO);
+		inline Gate(int gateId, int cellId, int primitiveId, int numLevel, Type gateType, int numFO);
+
+		inline
 		~Gate();
 
 		// basic info
@@ -69,11 +72,11 @@ namespace CoreNs
 
 		// connection
 		int numFI_;											// number of fanin
-		int 	*faninVector_;	// fanin array
-		// std::vector<int> faninVector_;	// fanin array
+		// int 	*faninVector_;	// fanin array
+		std::vector<int> faninVector_;	// fanin array
 		int numFO_;											// number of fanout
-		// std::vector<int> fanoutVector_; // fanout array
-		int 	*fanoutVector_; // fanout array
+		std::vector<int> fanoutVector_; // fanout array
+		// int 	*fanoutVector_; // fanout array
 
 		// values
 		Value atpgVal_;					 // single value for ATPG
@@ -114,9 +117,9 @@ namespace CoreNs
 		frame_ = 0;
 		gateType_ = NA;
 		numFI_ = 0;
-		faninVector_ = NULL;
+		// faninVector_ = NULL;
 		numFO_ = 0;
-		fanoutVector_ = NULL;
+		// fanoutVector_ = NULL;
 		atpgVal_ = X;
 		goodSimLow_ = PARA_L;
 		goodSimHigh_ = PARA_L;
@@ -132,9 +135,14 @@ namespace CoreNs
 		depthFromPo_ = -1;
 		fiMinLvl_ = -1;
 
-		/* Added by Shi-Tang Liu */
+		// /* Added by Shi-Tang Liu */
 		preValue_ = X;
 	}
+
+	// inline Gate::Gate(int gateId, int cellId, int primitiveId, int numLevel, Type gateType)
+	// : gateId_(gateId_), cellId_(cellId), primitiveId_(primitiveId), numLevel_(numLevel), gateType_(gateType)
+	// {
+	// }
 
 	// inline Gate::Gate(const Gate &g)
 	// {
@@ -191,32 +199,32 @@ namespace CoreNs
 	// 	return *this;
 	// }
 
-	// inline Gate::Gate(int gateId, int cellId, int primitiveId, int numLevel, Type gateType, int numFO)
-	// 		: gateId_(gateId),
-	// 			cellId_(cellId),
-	// 			primitiveId_(primitiveId),
-	// 			numLevel_(numLevel),
-	// 			gateType_(gateType),
-	// 			numFO_(numFO)
-	// {
-	// 	frame_ = 0;
-	// 	numFI_ = 0;
-	// 	fanoutVector_ = std::vector<int>(numFO);
-	// 	atpgVal_ = X;
-	// 	goodSimLow_ = PARA_L;
-	// 	goodSimHigh_ = PARA_L;
-	// 	faultSimLow_ = PARA_L;
-	// 	faultSimHigh_ = PARA_L;
-	// 	hasConstraint_ = false;
-	// 	constraint_ = PARA_L;
-	// 	cc0_ = 0;
-	// 	cc1_ = 0;
-	// 	co_ = 0;
-	// 	depthFromPo_ = -1;
-	// 	fiMinLvl_ = -1;
-	// 	/* Added by Shi-Tang Liu */
-	// 	preValue_ = X;
-	// }
+	inline Gate::Gate(int gateId, int cellId, int primitiveId, int numLevel, Type gateType, int numFO)
+			: gateId_(gateId),
+				cellId_(cellId),
+				primitiveId_(primitiveId),
+				numLevel_(numLevel),
+				gateType_(gateType),
+				numFO_(numFO)
+	{
+		frame_ = 0;
+		numFI_ = 0;
+		fanoutVector_ = std::vector<int>(numFO);
+		atpgVal_ = X;
+		goodSimLow_ = PARA_L;
+		goodSimHigh_ = PARA_L;
+		faultSimLow_ = PARA_L;
+		faultSimHigh_ = PARA_L;
+		hasConstraint_ = false;
+		constraint_ = PARA_L;
+		cc0_ = 0;
+		cc1_ = 0;
+		co_ = 0;
+		depthFromPo_ = -1;
+		fiMinLvl_ = -1;
+		/* Added by Shi-Tang Liu */
+		preValue_ = X;
+	}
 
 	inline Gate::~Gate() {}
 
