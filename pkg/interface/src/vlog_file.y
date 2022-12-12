@@ -6,7 +6,7 @@
 // Date       [ 2010/07/07 created ]
 // **************************************************************************
 
-#define YYPARSE_PARAM param
+// #define YYPARSE_PARAM param
 
 #include <cstdio>
 #include <cstring>
@@ -17,16 +17,19 @@ using namespace std;
 using namespace IntfNs;
 
 extern char *vlog_filetext;
-extern int  vlog_fileline;
+extern int vlog_fileline;
 extern int  vlog_filelex(void);
 
-void vlog_fileerror(char const *msg);
+int vlog_fileparse(void*);
+void vlog_fileerror(void*, char const *msg);
 void vlog_filefreeNames(VlogNames *names);
 void vlog_filefreePortToNet(VlogPortToNet *p2ns);
 
 IntfNs::VlogFile *vlog;
 
 %}
+
+%parse-param {void* param}
 
 %union {
     char                  ychar[IntfNs::NAME_LEN];
@@ -218,7 +221,7 @@ mapping_list
 
 %%
 
-void vlog_fileerror(const char *msg) {
+void vlog_fileerror(void *a,const char *msg) {
     fprintf(stderr, "**ERROR vlog_fileerror(): ");
     fprintf(stderr, "At line %d. Near `%s'. ", vlog_fileline, vlog_filetext);
     fprintf(stderr, "%s\n", msg);

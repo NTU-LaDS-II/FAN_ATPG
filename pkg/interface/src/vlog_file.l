@@ -10,9 +10,10 @@
 #include "vlog_file.tab.hpp"
 
 using namespace std;
-
-int  vlog_fileline    = 1;
+// extern char *vlog_filetext;
+// extern int  vlog_fileline;
 bool vlog_filewarning = 1;
+int vlog_fileline = 1;
 
 void vlog_fileskipSpecify();
 void vlog_fileskipTable();
