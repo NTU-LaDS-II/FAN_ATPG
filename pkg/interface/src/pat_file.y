@@ -6,7 +6,7 @@
 // Date       [ ]
 // **************************************************************************
 
-#define YYPARSE_PARAM param
+// #define YYPARSE_PARAM param
 
 #include <cstdio>
 #include <cstring>
@@ -20,12 +20,16 @@ extern char *pat_filetext;
 extern int  pat_fileline;
 extern int  pat_filelex(void);
 
-void pat_fileerror(char const *msg);
+int pat_fileparse(void*);
+void pat_fileerror(void* a,char const *msg);
 void pat_filefreeNames(PatNames *names);
 
 PatFile *pat;
 
 %}
+
+%parse-param {void* param}
+
 
 %union {
     char             *ychar;
@@ -115,7 +119,7 @@ nameq
 
 %%
 
-void pat_fileerror(const char *msg) {
+void pat_fileerror(void *a,const char *msg) {
     fprintf(stderr, "**ERROR pat_fileerror(): ");
     fprintf(stderr, "At line %d. Near `%s'. ", pat_fileline, pat_filetext);
     fprintf(stderr, "%s\n", msg);

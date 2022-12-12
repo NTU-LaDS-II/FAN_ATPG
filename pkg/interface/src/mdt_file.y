@@ -6,7 +6,7 @@
 // Date       [ 2011/02/23 created ]
 // **************************************************************************
 
-#define YYPARSE_PARAM param
+// #define YYPARSE_PARAM param
 
 #include <cstdio>
 #include <cstring>
@@ -19,7 +19,7 @@ using namespace IntfNs;
 extern char *mdt_filetext;
 extern int  mdt_fileline;
 extern int  mdt_filelex(void);
-       void mdt_fileerror(char const *msg);
+void mdt_fileerror(void* a,char const *msg);
 
 void mdt_filefreeNames(MdtNames *names);
 void mdt_filefreePortToNet(MdtPortToNet *p2ns);
@@ -27,6 +27,9 @@ void mdt_filefreePortToNet(MdtPortToNet *p2ns);
 IntfNs::MdtFile *mdt;
 
 %}
+
+%parse-param {void* param}
+
 
 %union {
     char                 ychar[IntfNs::NAME_LEN];
@@ -202,7 +205,7 @@ mapping_list
 
 %%
 
-void mdt_fileerror(const char *msg) {
+void mdt_fileerror(void* a, const char *msg) {
     fprintf(stderr, "**ERROR mdt_fileerror(): ");
     fprintf(stderr, "At line %d. Near `%s'. ", mdt_fileline, mdt_filetext);
     fprintf(stderr, "%s\n", msg);

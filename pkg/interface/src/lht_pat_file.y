@@ -6,7 +6,7 @@
 // Date       [ 2011/10/14 created ]
 // **************************************************************************
 
-#define YYPARSE_PARAM param
+// #define YYPARSE_PARAM param
 
 #include <cstdio>
 #include <cstring>
@@ -20,11 +20,13 @@ extern char *lht_pat_filetext;
 extern int  lht_pat_fileline;
 extern int  lht_pat_filelex(void);
 
-void lht_pat_fileerror(char const *msg);
+void lht_pat_fileerror(void* param, char const *msg);
 
 LhtPatFile *lht_pat;
 
 %}
+
+%parse-param {void* param}
 
 %union {
     char            *ychar;
@@ -92,7 +94,7 @@ valueq
 
 %%
 
-void lht_pat_fileerror(const char *msg) {
+void lht_pat_fileerror(void* a,const char *msg) {
     fprintf(stderr, "**ERROR pat_fileerror(): ");
     fprintf(stderr, "At line %d. ", lht_pat_fileline);
     fprintf(stderr, "Near `%s'. %s\n", lht_pat_filetext, msg);

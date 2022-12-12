@@ -1,10 +1,5 @@
-Refactor - 31th modification
+lex and yacc now compatible with bison 3.5.1 (on ladryzen( working station in lads ))
 
-  readability related changes:
-    change all the new of pattern to vector or object,
-    and change the pattern's attributes name for readability
-  performance related changes:
-  bug fixed:
-  note:
-  function added:
-  function removed:
+I AM SO HAPPY
+
+I SPENT 7 HOURS on THIS!

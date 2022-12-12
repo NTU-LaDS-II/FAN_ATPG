@@ -7,7 +7,7 @@
 // Date       [ 2010/11/18 created ]
 // **************************************************************************
 
-#define YYPARSE_PARAM param
+// #define YYPARSE_PARAM param
 
 #include <cstring>
 #include <cstdio>
@@ -19,12 +19,14 @@ using namespace IntfNs;
 
 extern char *sdf_filetext;
 extern int  sdf_fileline;
-extern int  sdf_filelex(void);
-       void sdf_fileerror(char const *msg);
+int  sdf_filelex(void);
+void sdf_fileerror(void* a, char const *msg);
 
 IntfNs::SdfFile *sdf;
 
 %}
+
+%parse-param {void* param}
 
 %union {
     float                     yfloat;
@@ -789,7 +791,7 @@ equ_op
 
 %%
 
-void sdf_fileerror(const char *msg) {
+void sdf_fileerror(void *a, char const *msg) {
     fprintf(stderr, "**ERROR sdf_fileerror(): ");
     fprintf(stderr, "At line %d. Near `%s'. ", sdf_fileline, sdf_filetext);
     fprintf(stderr, "%s\n", msg);
