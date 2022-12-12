@@ -109,9 +109,9 @@ namespace CoreNs
 	inline PatternProcessor::PatternProcessor()
 	{
 
-		staticCompression_ = OFF;	 //
+		staticCompression_ = OFF;	 
 		dynamicCompression_ = OFF; // dynamic compression should be moved to ATPG
-		XFill_ = OFF;							 //
+		XFill_ = OFF;							
 
 		type_ = BASIC_SCAN;
 		numPI_ = 0;
@@ -140,15 +140,21 @@ namespace CoreNs
 
 		pPIorder_.resize(numPI_);
 		for (int i = 0; i < numPI_; ++i)
+		{
 			pPIorder_[i] = i;
+		}
 
 		pPOorder_.resize(numPO_);
 		for (int i = 0; i < numPO_; ++i)
+		{
 			pPOorder_[i] = pCircuit->ngate_ - pCircuit->npo_ - pCircuit->nppi_ + i;
+		}
 
 		pPPIorder_.resize(numPPI_);
 		for (int i = 0; i < numPPI_; ++i)
+		{
 			pPPIorder_[i] = pCircuit->npi_ + i;
+		}
 	}
 	// **************************************************************************
 	// Function   [ PatternProcessor::StaticCompression ]
@@ -170,7 +176,6 @@ namespace CoreNs
 	//            ]
 	// Date       [ HKY Ver. 1.0 started 2014/09/01 ]
 	// **************************************************************************
-
 	inline void PatternProcessor::StaticCompression()
 	{
 		int size = (int)patternVector_.size();

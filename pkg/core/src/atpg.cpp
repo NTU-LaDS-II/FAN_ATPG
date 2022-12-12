@@ -21,18 +21,20 @@ using namespace CoreNs;
 void Atpg::generatePatternSet(PatternProcessor *pPatternProcessor, FaultListExtract *pFaultListExtracter)
 {
 	Fault *pCurrentFault = NULL;
+	int numOfAtpgUntestableFaults = 0;
 	FaultList pFaultListForPatternGeneration;
 	FaultList pFaultListForStaticTestCompression;
-	int numOfAtpgUntestableFaults = 0;
 
 	setupCircuitParameter();
 	pPatternProcessor->init(pCircuit_);
 	// checkLevelInfo(); // for debug, not neccessary, removed by wang
 
 	// setting faults for running ATPG
+	bool faultIsQualified;
 	for (Fault *const &pFault : pFaultListExtracter->faultsInCircuit_)
 	{
-		if (pFault->faultState_ != Fault::DT && pFault->faultState_ != Fault::RE && pFault->faultyLine_ >= 0)
+		faultIsQualified = (pFault->faultState_ != Fault::DT && pFault->faultState_ != Fault::RE && pFault->faultyLine_ >= 0);
+		if (faultIsQualified)
 		{
 			pFaultListForPatternGeneration.push_back(pFault);
 			pFaultListForStaticTestCompression.push_back(pFault); // save a copy for static test compression
@@ -61,18 +63,14 @@ void Atpg::generatePatternSet(PatternProcessor *pPatternProcessor, FaultListExtr
 			pFaultListForPatternGeneration.pop_front();
 			continue;
 		}
-		pCurrentFault = pFaultListForPatternGeneration.front();
-
-		if (pCurrentFault->faultType_ == Fault::STR || pCurrentFault->faultType_ == Fault::STF)
-		{
-			// Transition delay fault ATPG
-			TransitionDelayFaultATPG(pFaultListForPatternGeneration, pPatternProcessor, numOfAtpgUntestableFaults);
-		}
 		else
 		{
-			// stuck-at fault ATPG
-			StuckAtFaultATPGWithDTC(pFaultListForPatternGeneration, pPatternProcessor, numOfAtpgUntestableFaults);
+			pCurrentFault = pFaultListForPatternGeneration.front();
 		}
+
+		bool isTransitionDelyFault = (pCurrentFault->faultType_ == Fault::STR || pCurrentFault->faultType_ == Fault::STF);
+		isTransitionDelyFault ? TransitionDelayFaultATPG(pFaultListForPatternGeneration, pPatternProcessor, numOfAtpgUntestableFaults)
+													: StuckAtFaultATPGWithDTC(pFaultListForPatternGeneration, pPatternProcessor, numOfAtpgUntestableFaults);
 	}
 
 	if (pPatternProcessor->staticCompression_ == PatternProcessor::ON)
@@ -121,7 +119,7 @@ void Atpg::setupCircuitParameter()
 // Commentor  [ CAL ]
 // Synopsis   [ usage: Calculate the depthFromPo_ of each gate.
 //              notes:
-//                If there is no path from a gate to PO/PPO, then I will
+//                If there is no path from a gate to PO/PPO,
 //                set its depthFromPo_ as pCircuit_->tlvl_ + 100
 //              in:    void
 //              out:   void
@@ -130,8 +128,6 @@ void Atpg::setupCircuitParameter()
 // **************************************************************************
 void Atpg::calGateDepthFromPO()
 {
-	int circuitLevelPlus100 = pCircuit_->tlvl_ + 100;
-
 	// debug code removed by wang
 	// for (int gateD = 0; gateD < pCircuit_->tgate_; ++gateD)
 	// {
@@ -144,11 +140,13 @@ void Atpg::calGateDepthFromPO()
 	// 	}
 	// }
 
-	// Update depthFromPo_ form PO/PPO to PI/PPI
+	int circuitLevelPlus100 = pCircuit_->tlvl_ + 100;
+
 	for (int gateID = pCircuit_->tgate_ - 1; gateID >= 0; --gateID)
 	{
 		Gate &gate = pCircuit_->gates_[gateID];
 		gateID_to_valModified_[gateID] = 0; // sneak the initialization assignment in here
+
 		if ((gate.type_ == Gate::PO) || (gate.type_ == Gate::PPO))
 		{
 			gate.depthFromPo_ = 0;
@@ -156,14 +154,14 @@ void Atpg::calGateDepthFromPO()
 		else if (gate.nfo_ > 0)
 		{
 			// This output gate does not exist a path to PO/PPO
-			if (pCircuit_->gates_[gate.fos_[0]].depthFromPo_ == circuitLevelPlus100)
-			{
-				gate.depthFromPo_ = circuitLevelPlus100;
-			}
-			else
-			{
-				gate.depthFromPo_ = pCircuit_->gates_[gate.fos_[0]].depthFromPo_ + 1;
-			}
+			// if (pCircuit_->gates_[gate.fos_[0]].depthFromPo_ == circuitLevelPlus100)
+			// {
+			// 	gate.depthFromPo_ = circuitLevelPlus100;
+			// }
+			// else
+			// {
+			gate.depthFromPo_ = pCircuit_->gates_[gate.fos_[0]].depthFromPo_ + 1; 
+			// previous if removed by wang, no need to check if the output exist a path to PO/PPO as 100+1 is still larger
 
 			for (int index = 1; index < gate.nfo_; ++index)
 			{
@@ -172,12 +170,11 @@ void Atpg::calGateDepthFromPO()
 				{
 					gate.depthFromPo_ = fanOutGate.depthFromPo_ + 1;
 				}
-			}
+			}// can be change to std::min_element, once changed to vector
 		}
 		else
 		{
-			/* Assign a value greater than maximal lvl_ as our default */
-			gate.depthFromPo_ = circuitLevelPlus100;
+			gate.depthFromPo_ = circuitLevelPlus100; // Assign a great value as infinite
 		}
 	}
 }

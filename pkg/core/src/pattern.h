@@ -47,7 +47,6 @@ namespace CoreNs
 	class PatternProcessor
 	{
 	public:
-		// Three types of patterns
 		// BASIC_SCAN is for single time frame, stuck-at fault
 		// LAUNCH_CAPTURE is for 2-pattern test , launch-on-capture
 		// LAUNCH_SHIFT is for 2-pattern test, launch-on-shift
@@ -64,7 +63,6 @@ namespace CoreNs
 		//  pattern set attribute
 		//  dynamic compression should be moved to ATPG  (E.4)
 		//  static compression and x fill should be rewritten as two independent methods (A.1)
-		//
 		enum State
 		{
 			OFF = 0,
@@ -72,7 +70,7 @@ namespace CoreNs
 		};
 		State staticCompression_;	 // Flag; ON = need static compression
 		State dynamicCompression_; // Flag; ON = need dynamic compression
-		State XFill_;							 //  Flag;  On = need X-Filling
+		State XFill_;							 // Flag; ON = need X-Filling
 
 		Type type_;
 		int numPI_;
@@ -108,10 +106,9 @@ namespace CoreNs
 
 	inline PatternProcessor::PatternProcessor()
 	{
-
-		staticCompression_ = OFF;	 //
+		staticCompression_ = OFF;
 		dynamicCompression_ = OFF; // dynamic compression should be moved to ATPG
-		XFill_ = OFF;							 //
+		XFill_ = OFF;
 
 		type_ = BASIC_SCAN;
 		numPI_ = 0;
@@ -140,15 +137,21 @@ namespace CoreNs
 
 		pPIorder_.resize(numPI_);
 		for (int i = 0; i < numPI_; ++i)
+		{
 			pPIorder_[i] = i;
+		}
 
 		pPOorder_.resize(numPO_);
 		for (int i = 0; i < numPO_; ++i)
+		{
 			pPOorder_[i] = pCircuit->ngate_ - pCircuit->npo_ - pCircuit->nppi_ + i;
+		}
 
 		pPPIorder_.resize(numPPI_);
 		for (int i = 0; i < numPPI_; ++i)
+		{
 			pPPIorder_[i] = pCircuit->npi_ + i;
+		}
 	}
 	// **************************************************************************
 	// Function   [ PatternProcessor::StaticCompression ]
@@ -170,7 +173,6 @@ namespace CoreNs
 	//            ]
 	// Date       [ HKY Ver. 1.0 started 2014/09/01 ]
 	// **************************************************************************
-
 	inline void PatternProcessor::StaticCompression()
 	{
 		int size = (int)patternVector_.size();
@@ -189,11 +191,15 @@ namespace CoreNs
 		for (int i = 0; i < size - 1; ++i)
 		{
 			if (mergeRecord[i] == true)
+			{
 				continue; // If the pattern has been merged before, no need to merge again
+			}
 			for (int j = i + 1; j < size; ++j)
 			{
 				if (mergeRecord[j] == true)
+				{
 					continue;
+				}
 
 				bool compatible = true; // Can be merged into one
 				for (int k = 0; k < numPI_; ++k)

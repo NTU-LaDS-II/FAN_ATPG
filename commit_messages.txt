@@ -1,11 +1,8 @@
 Refactor - 29th modification
 
   readability related changes:
-    add all the curly braces in atpg.cpp/h
   performance related changes:
-    Finish Refactor of Atpg::generatePatternSet()
-    including push_back twice instead of copying as this save
-    one O(n) operation (copying)
+    Atpg::calGateDepthFromPO(): remove unimportant check (if) of whether depth = 100
   bug fixed:
   note:
   function added:

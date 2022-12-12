@@ -13,7 +13,6 @@
 #include "core/pattern_rw.h"
 #include "core/simulator.h"
 
-using namespace std;
 using namespace CommonNs;
 using namespace IntfNs;
 using namespace CoreNs;
@@ -21,7 +20,6 @@ using namespace FanNs;
 
 double rtime;
 
-//{{{ ReadPatCmd::ReadPatCmd()
 ReadPatCmd::ReadPatCmd(const std::string &name, FanMgr *fanMgr) : Cmd(name)
 {
 	fanMgr_ = fanMgr;
@@ -39,9 +37,8 @@ ReadPatCmd::ReadPatCmd(const std::string &name, FanMgr *fanMgr) : Cmd(name)
 	optMgr_.regOpt(opt);
 }
 ReadPatCmd::~ReadPatCmd() {}
-//}}}
-//{{{ bool ReadPatCmd::exec()
-bool ReadPatCmd::exec(const vector<string> &argv)
+
+bool ReadPatCmd::exec(const std::vector<std::string> &argv)
 {
 	optMgr_.parse(argv);
 
@@ -53,15 +50,13 @@ bool ReadPatCmd::exec(const vector<string> &argv)
 
 	if (!fanMgr_->cir)
 	{
-		cerr << "**ERROR ReadPatCmd::exec(): circuit needed";
-		cerr << endl;
+		std::cerr << "**ERROR ReadPatCmd::exec(): circuit needed\n";
 		return false;
 	}
 
 	if (optMgr_.getNParsedArg() < 1)
 	{
-		cerr << "**ERROR ReadPatCmd::exec(): pattern file needed";
-		cerr << endl;
+		std::cerr << "**ERROR ReadPatCmd::exec(): pattern file needed\n";
 		return false;
 	}
 
@@ -72,11 +67,11 @@ bool ReadPatCmd::exec(const vector<string> &argv)
 
 	// read pattern
 	fanMgr_->tmusg.periodStart();
-	cout << "#  Reading pattern ..." << endl;
+	std::cout << "#  Reading pattern ...\n";
 	bool verbose = optMgr_.isFlagSet("v");
 	if (!patBlder->read(optMgr_.getParsedArg(0).c_str(), verbose))
 	{
-		cerr << "**ERROR ReadPatCmd()::exec(): pattern builder error" << endl;
+		std::cerr << "**ERROR ReadPatCmd()::exec(): pattern builder error\n";
 		delete fanMgr_->pcoll;
 		delete patBlder;
 		fanMgr_->pcoll = NULL;
@@ -85,15 +80,14 @@ bool ReadPatCmd::exec(const vector<string> &argv)
 
 	TmStat stat;
 	fanMgr_->tmusg.getPeriodUsage(stat);
-	cout << "#  Finished reading pattern `" << optMgr_.getParsedArg(0) << "'";
-	cout << "    " << (double)stat.rTime / 1000000.0 << " s";
-	cout << "    " << (double)stat.vmSize / 1024.0 << " MB" << endl;
+	std::cout << "#  Finished reading pattern `" << optMgr_.getParsedArg(0) << "'";
+	std::cout << "    " << (double)stat.rTime / 1000000.0 << " s";
+	std::cout << "    " << (double)stat.vmSize / 1024.0 << " MB\n";
 
 	delete patBlder;
 	return true;
-} //}}}
+}
 
-//{{{ ReportPatCmd::ReportPatCmd()
 ReportPatCmd::ReportPatCmd(const std::string &name, FanMgr *fanMgr) : Cmd(name)
 {
 	fanMgr_ = fanMgr;
@@ -111,9 +105,8 @@ ReportPatCmd::ReportPatCmd(const std::string &name, FanMgr *fanMgr) : Cmd(name)
 	optMgr_.regOpt(opt);
 }
 ReportPatCmd::~ReportPatCmd() {}
-//}}}
-//{{{ bool ReportPatCmd::exec()
-bool ReportPatCmd::exec(const vector<string> &argv)
+
+bool ReportPatCmd::exec(const std::vector<std::string> &argv)
 {
 	optMgr_.parse(argv);
 
@@ -125,80 +118,77 @@ bool ReportPatCmd::exec(const vector<string> &argv)
 
 	if (!fanMgr_->pcoll)
 	{
-		cerr << "**ERROR ReportPatCmd::exec(): pattern needed" << endl;
+		std::cerr << "**ERROR ReportPatCmd::exec(): pattern needed\n";
 		return false;
 	}
 
-	cout << "#  pattern information" << endl;
-	cout << "#    number of pattern: " << fanMgr_->pcoll->patternVector_.size() << endl;
+	std::cout << "#  pattern information\n";
+	std::cout << "#    number of pattern: " << fanMgr_->pcoll->patternVector_.size() << "\n";
 	if (!optMgr_.isFlagSet("disable-order"))
 	{
-		cout << "#    pi order: ";
+		std::cout << "#    pi order: ";
 		for (int i = 0; i < fanMgr_->pcoll->numPI_; ++i)
-			cout << " " << fanMgr_->pcoll->pPIorder_[i];
-		cout << endl;
-		cout << "#    ppi order:";
+			std::cout << " " << fanMgr_->pcoll->pPIorder_[i];
+		std::cout << "\n";
+		std::cout << "#    ppi order:";
 		for (int i = 0; i < fanMgr_->pcoll->numPPI_; ++i)
-			cout << " " << fanMgr_->pcoll->pPPIorder_[i];
-		cout << endl;
-		cout << "#    po order: ";
+			std::cout << " " << fanMgr_->pcoll->pPPIorder_[i];
+		std::cout << "\n";
+		std::cout << "#    po order: ";
 		for (int i = 0; i < fanMgr_->pcoll->numPO_; ++i)
-			cout << " " << fanMgr_->pcoll->pPOorder_[i];
-		cout << endl;
+			std::cout << " " << fanMgr_->pcoll->pPOorder_[i];
+		std::cout << "\n";
 	}
-	cout << "#" << endl;
+	std::cout << "#\n";
 
 	for (int i = 0; i < (int)fanMgr_->pcoll->patternVector_.size(); ++i)
 	{
-		cout << "#    pattern " << i << endl;
-		cout << "#      pi1: ";
+		std::cout << "#    pattern " << i << "\n";
+		std::cout << "#      pi1: ";
 		if (!fanMgr_->pcoll->patternVector_[i]->pPI1_.empty())
 			for (int j = 0; j < fanMgr_->pcoll->numPI_; ++j)
 				printValue(fanMgr_->pcoll->patternVector_[i]->pPI1_[j]);
-		cout << endl;
-		cout << "#      pi2: ";
+		std::cout << "\n";
+		std::cout << "#      pi2: ";
 		if (!fanMgr_->pcoll->patternVector_[i]->pPI2_.empty())
 			for (int j = 0; j < fanMgr_->pcoll->numPI_; ++j)
 				printValue(fanMgr_->pcoll->patternVector_[i]->pPI2_[j]);
-		cout << endl;
-		cout << "#      ppi: ";
+		std::cout << "\n";
+		std::cout << "#      ppi: ";
 		if (!fanMgr_->pcoll->patternVector_[i]->pPPI_.empty())
 			for (int j = 0; j < fanMgr_->pcoll->numPPI_; ++j)
 				printValue(fanMgr_->pcoll->patternVector_[i]->pPPI_[j]);
-		cout << endl;
-		cout << "#      po1: ";
+		std::cout << "\n";
+		std::cout << "#      po1: ";
 		if (!fanMgr_->pcoll->patternVector_[i]->pPO1_.empty())
 			for (int j = 0; j < fanMgr_->pcoll->numPO_; ++j)
 				printValue(fanMgr_->pcoll->patternVector_[i]->pPO1_[j]);
-		cout << endl;
-		cout << "#      po2: ";
+		std::cout << "\n";
+		std::cout << "#      po2: ";
 		if (!fanMgr_->pcoll->patternVector_[i]->pPO2_.empty())
 			for (int j = 0; j < fanMgr_->pcoll->numPO_; ++j)
 				printValue(fanMgr_->pcoll->patternVector_[i]->pPO2_[j]);
-		cout << endl;
-		cout << "#      ppo: ";
+		std::cout << "\n";
+		std::cout << "#      ppo: ";
 		if (!fanMgr_->pcoll->patternVector_[i]->pPPO_.empty())
 			for (int j = 0; j < fanMgr_->pcoll->numPPI_; ++j)
 				printValue(fanMgr_->pcoll->patternVector_[i]->pPPO_[j]);
-		cout << endl
-				 << "#" << endl;
+		std::cout << "\n"
+							<< "#\n";
 	}
 
 	return true;
-} //}}}
+}
 
-//{{{ AddFaultCmd::AddFaultCmd()
 AddFaultCmd::AddFaultCmd(const std::string &name, FanMgr *fanMgr) : Cmd(name)
 {
 	fanMgr_ = fanMgr;
 	optMgr_.setName(name);
 	optMgr_.setShortDes("add faults");
 	optMgr_.setDes("adds faults either by extract from circuit or from file");
-	Arg *arg = new Arg(Arg::OPT, "fault type. Can be SA0, SA1, STR, STF",
-										 "TYPE");
+	Arg *arg = new Arg(Arg::OPT, "fault type. Can be SA0, SA1, STR, STF", "TYPE");
 	optMgr_.regArg(arg);
-	arg = new Arg(Arg::OPT, "pin location. Hierachy separated by '/'",
-								"PIN");
+	arg = new Arg(Arg::OPT, "pin location. Hierachy separated by '/'", "PIN");
 	optMgr_.regArg(arg);
 	Opt *opt = new Opt(Opt::BOOL, "print usage", "");
 	opt->addFlag("h");
@@ -214,9 +204,8 @@ AddFaultCmd::AddFaultCmd(const std::string &name, FanMgr *fanMgr) : Cmd(name)
 	optMgr_.regOpt(opt);
 }
 AddFaultCmd::~AddFaultCmd() {}
-//}}}
-//{{{ bool AddFaultCmd::exec()
-bool AddFaultCmd::exec(const vector<string> &argv)
+
+bool AddFaultCmd::exec(const std::vector<std::string> &argv)
 {
 	optMgr_.parse(argv);
 
@@ -228,89 +217,100 @@ bool AddFaultCmd::exec(const vector<string> &argv)
 
 	if (!fanMgr_->cir)
 	{
-		cerr << "**ERROR AddFaultCmd::exec(): circuit needed";
-		cerr << endl;
+		std::cerr << "**ERROR AddFaultCmd::exec(): circuit needed\n";
 		return false;
 	}
 
 	if (!fanMgr_->fListExtract)
+	{
 		fanMgr_->fListExtract = new FaultListExtract;
+	}
 
 	fanMgr_->fListExtract->extractFaultFromCircuit(fanMgr_->cir);
 
 	// add all faults
 	if (optMgr_.isFlagSet("a"))
+	{
 		addAllFault();
+	}
 	else
 	{ // add specific faults
 		if (fanMgr_->fListExtract->faultListType_ == FaultListExtract::SAF || fanMgr_->fListExtract->faultListType_ == FaultListExtract::TDF)
 		{
 			if (optMgr_.getNParsedArg() < 2)
 			{
-				cerr << "**ERROR AddFaultCmd::exec(): need fault type ";
-				cerr << "and pin location" << endl;
+				std::cerr << "**ERROR AddFaultCmd::exec(): need fault type ";
+				std::cerr << "and pin location\n";
 				return false;
 			}
-			string type = optMgr_.getParsedArg(0);
+			std::string type = optMgr_.getParsedArg(0);
 			if (fanMgr_->fListExtract->faultListType_ == FaultListExtract::SAF &&
 					(type != "SA0" && type != "SA1"))
 			{
-				cerr << "**ERROR AddFaultCmd::exec(): stuck-at fault only ";
-				cerr << "supports SA0 and SA1" << endl;
+				std::cerr << "**ERROR AddFaultCmd::exec(): stuck-at fault only ";
+				std::cerr << "supports SA0 and SA1\n";
 				return false;
 			}
 			if (fanMgr_->fListExtract->faultListType_ == FaultListExtract::TDF &&
 					(type != "STR" && type != "STF"))
 			{
-				cerr << "**ERROR AddFaultCmd::exec(): transition delay ";
-				cerr << "fault only supports STR and STF" << endl;
+				std::cerr << "**ERROR AddFaultCmd::exec(): transition delay ";
+				std::cerr << "fault only supports STR and STF\n";
 				return false;
 			}
-			string pinloc = optMgr_.getParsedArg(1);
-			string cell = pinloc.substr(0, pinloc.find_first_of('/'));
-			string pin = pinloc.substr(cell.size());
+			std::string pinloc = optMgr_.getParsedArg(1);
+			std::string cell = pinloc.substr(0, pinloc.find_first_of('/'));
+			std::string pin = pinloc.substr(cell.size());
 			if (pin.size() > 0)
+			{
 				pin = pin.substr(1);
+			}
 			if (pin.size() == 0)
 			{
 				if (!addPinFault(type, cell))
+				{
 					return false;
+				}
 			}
 			else
 			{
 				if (!addCellFault(type, cell, pin))
+				{
 					return false;
+				}
 			}
 		}
 	}
 
 	return true;
-} //}}}
-//{{{ void AddFaultCmd::addAllFault()
+}
+
 void AddFaultCmd::addAllFault()
 {
-	cout << "#  Building fault list ..." << endl;
+	std::cout << "#  Building fault list ...\n";
 	fanMgr_->tmusg.periodStart();
 
 	fanMgr_->fListExtract->faultsInCircuit_.resize(fanMgr_->fListExtract->extractedFaults_.size());
 	FaultListIter it = fanMgr_->fListExtract->faultsInCircuit_.begin();
 	for (size_t i = 0; i < fanMgr_->fListExtract->extractedFaults_.size(); ++i, ++it)
+	{
 		(*it) = &fanMgr_->fListExtract->extractedFaults_[i];
+	}
 
 	TmStat stat;
 	fanMgr_->tmusg.getPeriodUsage(stat);
-	cout << "#  Finished building fault list";
-	cout << "    " << (double)stat.rTime / 1000000.0 << " s";
-	cout << "    " << (double)stat.vmSize / 1024.0 << " MB" << endl;
-} //}}}
-//{{{ void AddFaultCmd::addPinFault(const string &, const string &)
-bool AddFaultCmd::addPinFault(const string &type, const string &pin)
+	std::cout << "#  Finished building fault list";
+	std::cout << "    " << (double)stat.rTime / 1000000.0 << " s";
+	std::cout << "    " << (double)stat.vmSize / 1024.0 << " MB\n";
+}
+
+bool AddFaultCmd::addPinFault(const std::string &type, const std::string &pin)
 {
 	Port *p = fanMgr_->nl->getTop()->getPort(pin.c_str());
 	if (!p)
 	{
-		cerr << "**ERROR AddFaultCmd::exec(): port `";
-		cerr << pin << "' does not exist" << endl;
+		std::cerr << "**ERROR AddFaultCmd::exec(): port `";
+		std::cerr << pin << "' does not exist\n";
 		return false;
 	}
 	int gid = fanMgr_->cir->portToGate_[p->id_];
@@ -319,24 +319,24 @@ bool AddFaultCmd::addPinFault(const string &type, const string &pin)
 	Fault *f = &fanMgr_->fListExtract->extractedFaults_[fid];
 	fanMgr_->fListExtract->faultsInCircuit_.push_back(f);
 	return true;
-} //}}}
-//{{{ void AddFaultCmd::addCellFault(const string &, const string &, const string &)
-bool AddFaultCmd::addCellFault(const string &type, const string &cell,
-															 const string &pin)
+}
+
+bool AddFaultCmd::addCellFault(const std::string &type, const std::string &cell,
+															 const std::string &pin)
 {
 	Cell *c = fanMgr_->nl->getTop()->getCell(cell.c_str());
 	if (!c)
 	{
-		cerr << "**ERROR AddFaultCmd::exec(): cell `";
-		cerr << cell << "' does not exist" << endl;
+		std::cerr << "**ERROR AddFaultCmd::exec(): cell `";
+		std::cerr << cell << "' does not exist\n";
 		return false;
 	}
 	Cell *libc = c->libc_;
 	Port *p = libc->getPort(pin.c_str());
 	if (!p)
 	{
-		cerr << "**ERROR AddFaultCmd::exec(): port `";
-		cerr << cell << "/" << pin << "' does not exist" << endl;
+		std::cerr << "**ERROR AddFaultCmd::exec(): port `";
+		std::cerr << cell << "/" << pin << "' does not exist\n";
 		return false;
 	}
 	PortSet pset = libc->getNetPorts(p->inNet_->id_);
@@ -344,7 +344,9 @@ bool AddFaultCmd::addCellFault(const string &type, const string &cell,
 	for (; it != pset.end(); ++it)
 	{
 		if ((*it)->top_ == libc)
+		{
 			continue;
+		}
 		Cell *pmt = (*it)->top_;
 		int pmtid = pmt->id_;
 		int gid = fanMgr_->cir->cellToGate_[c->id_] + pmtid;
@@ -353,8 +355,12 @@ bool AddFaultCmd::addCellFault(const string &type, const string &cell,
 		{
 			int nOutput = 0;
 			for (int i = 0; i < (*it)->id_; ++i)
+			{
 				if (pmt->getPort(i)->type_ == Port::OUTPUT)
-					nOutput++;
+				{
+					++nOutput;
+				}
+			}
 			pid = (*it)->id_ - nOutput + 1;
 		}
 		int offset = (type == "SA0" || type == "STR") ? 0 : 1;
@@ -363,9 +369,8 @@ bool AddFaultCmd::addCellFault(const string &type, const string &cell,
 		fanMgr_->fListExtract->faultsInCircuit_.push_back(f);
 	}
 	return true;
-} //}}}
+}
 
-//{{{ ReportFaultCmd::ReportFaultCmd()
 ReportFaultCmd::ReportFaultCmd(const std::string &name, FanMgr *fanMgr) : Cmd(name)
 {
 	fanMgr_ = fanMgr;
@@ -376,16 +381,14 @@ ReportFaultCmd::ReportFaultCmd(const std::string &name, FanMgr *fanMgr) : Cmd(na
 	opt->addFlag("h");
 	opt->addFlag("help");
 	optMgr_.regOpt(opt);
-	opt = new Opt(Opt::STR_REQ, "print only faults with state STATE",
-								"STATE");
+	opt = new Opt(Opt::STR_REQ, "print only faults with state STATE", "STATE");
 	opt->addFlag("s");
 	opt->addFlag("state");
 	optMgr_.regOpt(opt);
 }
 ReportFaultCmd::~ReportFaultCmd() {}
-//}}}
-//{{{ bool ReportFaultCmd::exec()
-bool ReportFaultCmd::exec(const vector<string> &argv)
+
+bool ReportFaultCmd::exec(const std::vector<std::string> &argv)
 {
 	optMgr_.parse(argv);
 
@@ -397,7 +400,7 @@ bool ReportFaultCmd::exec(const vector<string> &argv)
 
 	if (!fanMgr_->fListExtract)
 	{
-		cerr << "**ERROR ReportFaultCmd::exec(): fault list needed" << endl;
+		std::cerr << "**ERROR ReportFaultCmd::exec(): fault list needed\n";
 		return false;
 	}
 
@@ -406,94 +409,108 @@ bool ReportFaultCmd::exec(const vector<string> &argv)
 	if (optMgr_.isFlagSet("s"))
 	{
 		stateSet = true;
-		string stateStr = optMgr_.getFlagVar("s");
+		std::string stateStr = optMgr_.getFlagVar("s");
 		if (stateStr == "ud" || stateStr == "UD")
+		{
 			state = Fault::UD;
+		}
 		else if (stateStr == "dt" || stateStr == "DT")
+		{
 			state = Fault::DT;
+		}
 		else if (stateStr == "au" || stateStr == "AU")
+		{
 			state = Fault::AU;
+		}
 		else if (stateStr == "ti" || stateStr == "TI")
+		{
 			state = Fault::TI;
+		}
 		else if (stateStr == "re" || stateStr == "RE")
+		{
 			state = Fault::RE;
+		}
 		else if (stateStr == "ab" || stateStr == "AB")
+		{
 			state = Fault::AB;
+		}
 		else
 		{
 			stateSet = true;
-			cerr << "**WARN ReportFaultCmd::exec(): fault state `";
-			cerr << stateStr << "' is not supported" << endl;
+			std::cerr << "**WARN ReportFaultCmd::exec(): fault state `";
+			std::cerr << stateStr << "' is not supported\n";
 		}
 	}
 
-	cout << "#  fault information" << endl;
-	cout << "#    fault type:       ";
+	std::cout << "#  fault information\n";
+	std::cout << "#    fault type:       ";
 	switch (fanMgr_->fListExtract->faultListType_)
 	{
 		case FaultListExtract::SAF:
-			cout << "stuck-at fault" << endl;
+			std::cout << "stuck-at fault\n";
 			break;
 		case FaultListExtract::TDF:
-			cout << "transition delay fault" << endl;
+			std::cout << "transition delay fault\n";
 			break;
 		case FaultListExtract::BRF:
-			cout << "bridging fault" << endl;
+			std::cout << "bridging fault\n";
 			break;
 		default:
-			cout << endl;
+			std::cout << "\n";
 			break;
 	}
-	cout << "#    number of faults: " << fanMgr_->fListExtract->faultsInCircuit_.size();
-	cout << endl;
-	cout << "#    type    code    pin (cell)" << endl;
-	cout << "#    ----    ----    ----------------------------------" << endl;
+	std::cout << "#    number of faults: " << fanMgr_->fListExtract->faultsInCircuit_.size();
+	std::cout << "\n";
+	std::cout << "#    type    code    pin (cell)\n";
+	std::cout << "#    ----    ----    ----------------------------------\n";
 	FaultListIter it = fanMgr_->fListExtract->faultsInCircuit_.begin();
 	for (; it != fanMgr_->fListExtract->faultsInCircuit_.end(); ++it)
 	{
 		if (!stateSet || (*it)->faultState_ != state)
+		{
 			continue;
-		cout << "#    ";
+		}
+		std::cout << "#    ";
 		switch ((*it)->faultType_)
 		{
 			case Fault::SA0:
-				cout << "SA0     ";
+				std::cout << "SA0     ";
 				break;
 			case Fault::SA1:
-				cout << "SA1     ";
+				std::cout << "SA1     ";
 				break;
 			case Fault::STR:
-				cout << "STR     ";
+				std::cout << "STR     ";
 				break;
 			case Fault::STF:
-				cout << "STF     ";
+				std::cout << "STF     ";
 				break;
 			case Fault::BR:
-				cout << "BR      ";
+				std::cout << "BR      ";
 				break;
 		}
 		switch ((*it)->faultState_)
 		{
 			case Fault::UD:
-				cout << " UD     ";
+				std::cout << " UD     ";
 				break;
 			case Fault::DT:
-				cout << " DT     ";
+				std::cout << " DT     ";
 				break;
 			case Fault::PT:
-				cout << " PT     ";
+				std::cout << " PT     ";
 				break;
 			case Fault::AU:
-				cout << " AU     ";
+				std::cout << " AU     ";
 				break;
 			case Fault::TI:
-				cout << " TI     ";
+				std::cout << " TI     ";
 				break;
 			case Fault::RE:
-				cout << " RE     ";
+				std::cout << " RE     ";
 				break;
 			case Fault::AB:
-				cout << " AB     ";
+				std::cout << " AB     ";
 				break;
 		}
 		int cid = fanMgr_->cir->gates_[(*it)->gateID_].cid_;
@@ -501,74 +518,90 @@ bool ReportFaultCmd::exec(const vector<string> &argv)
 		int pmtid = fanMgr_->cir->gates_[(*it)->gateID_].pmtid_;
 		if ((*it)->gateID_ == -1)
 		{ // CK
-			cout << "CK";
+			std::cout << "CK";
 		}
 		else if ((*it)->gateID_ == -2)
 		{ // test_si
-			cout << "test_si";
+			std::cout << "test_si";
 		}
 		else if ((*it)->gateID_ == -3)
 		{ // test_so
-			cout << "test_so";
+			std::cout << "test_so";
 		}
 		else if ((*it)->gateID_ == -4)
 		{ // test_se
-			cout << "test_se";
+			std::cout << "test_se";
 		}
 		else if (fanMgr_->cir->gates_[(*it)->gateID_].type_ == Gate::PI)
 		{
-			cout << fanMgr_->nl->getTop()->getPort(cid)->name_ << " ";
-			cout << "(primary input)";
+			std::cout << fanMgr_->nl->getTop()->getPort(cid)->name_ << " ";
+			std::cout << "(primary input)";
 		}
 		else if (fanMgr_->cir->gates_[(*it)->gateID_].type_ == Gate::PO)
 		{
-			cout << fanMgr_->nl->getTop()->getPort(cid)->name_ << " ";
-			cout << "(primary output)";
+			std::cout << fanMgr_->nl->getTop()->getPort(cid)->name_ << " ";
+			std::cout << "(primary output)";
 		}
 		else
 		{
 			Cell *c = fanMgr_->nl->getTop()->getCell(cid);
-			// cout << "test" << c->name_<< " " << cid << endl;
+			// std::cout << "test" << c->name_<< " " << cid << "\n";
 			Cell *libc = c->libc_;
 			Cell *pmt = libc->getCell(pmtid);
 			Port *p = NULL;
 			if (pid < 0)
 			{ // must be CK,SE,SI pins on FF
 				if (pid == -1)
-					cout << c->name_ << "/CK ";
+				{
+					std::cout << c->name_ << "/CK ";
+				}
 				else if (pid == -2)
-					cout << c->name_ << "/SE ";
+				{
+					std::cout << c->name_ << "/SE ";
+				}
 				else if (pid == -3)
-					cout << c->name_ << "/SI ";
+				{
+					std::cout << c->name_ << "/SI ";
+				}
 				else
-					cout << c->name_ << "/QN ";
+				{
+					std::cout << c->name_ << "/QN ";
+				}
 			}
 			else if (pid == 0)
 			{ // output
 				if (!strcmp(libc->name_, "SDFFXL"))
-					cout << c->name_ << "/"
-							 << "Q"
-							 << " ";
+				{
+					std::cout << c->name_ << "/Q ";
+				}
 				else
 				{
 					for (size_t i = 0; i < pmt->getNPort(); ++i)
 					{
 						if (pmt->getPort(i)->type_ != Port::OUTPUT)
+						{
 							continue;
+						}
 						Net *n = pmt->getPort(i)->exNet_;
 						if (!n)
+						{
 							continue;
+						}
 						PortSet pset = libc->getNetPorts(n->id_);
 						PortSet::iterator pit = pset.begin();
 						for (; pit != pset.end(); ++pit)
 						{
 							if ((*pit)->top_ != libc)
+							{
 								continue;
+							}
 							p = (*pit);
 							break;
 						}
 						if (p)
+						{
 							break;
+						}
 					}
 				}
 			}
@@ -578,37 +611,48 @@ bool ReportFaultCmd::exec(const vector<string> &argv)
 				for (size_t i = 0; i < pmt->getNPort(); ++i)
 				{
 					if (pmt->getPort(i)->type_ == Port::INPUT)
-						inCount++;
+					{
+						++inCount;
+					}
 					if (inCount != pid)
+					{
 						continue;
+					}
 					Net *n = pmt->getPort(i)->exNet_;
 					if (!n)
+					{
 						continue;
+					}
 					PortSet pset = libc->getNetPorts(n->id_);
 					PortSet::iterator pit = pset.begin();
 					for (; pit != pset.end(); ++pit)
 					{
 						if ((*pit)->top_ != libc)
+						{
 							continue;
+						}
 						p = (*pit);
 						break;
 					}
 					if (p)
+					{
 						break;
+					}
 				}
 			}
 			if (p)
-				cout << c->name_ << "/" << p->name_ << " ";
-			cout << "(" << libc->name_ << ")";
+			{
+				std::cout << c->name_ << "/" << p->name_ << " ";
+			}
+			std::cout << "(" << libc->name_ << ")";
 		}
-		cout << endl;
+		std::cout << "\n";
 	}
-	cout << endl;
+	std::cout << "\n";
 
 	return true;
-} //}}}
+}
 
-//{{{ ReportCircuitCmd::ReportCircuitCmd()
 ReportCircuitCmd::ReportCircuitCmd(const std::string &name, FanMgr *fanMgr) : Cmd(name)
 {
 	fanMgr_ = fanMgr;
@@ -621,9 +665,8 @@ ReportCircuitCmd::ReportCircuitCmd(const std::string &name, FanMgr *fanMgr) : Cm
 	optMgr_.regOpt(opt);
 }
 ReportCircuitCmd::~ReportCircuitCmd() {}
-//}}}
-//{{{ bool ReportCircuitCmd::exec()
-bool ReportCircuitCmd::exec(const vector<string> &argv)
+
+bool ReportCircuitCmd::exec(const std::vector<std::string> &argv)
 {
 	optMgr_.parse(argv);
 
@@ -635,33 +678,30 @@ bool ReportCircuitCmd::exec(const vector<string> &argv)
 
 	if (!fanMgr_->cir)
 	{
-		cerr << "**ERROR ReportCircuitCmd::exec(): circuit needed" << endl;
+		std::cerr << "**ERROR ReportCircuitCmd::exec(): circuit needed\n";
 		return false;
 	}
 
 	Cell *top = fanMgr_->cir->nl_->getTop();
-	cout << "#  circuit information" << endl;
-	cout << "#    netlist:         " << top->name_ << endl;
-	cout << "#    number of PIs:   " << fanMgr_->cir->npi_ << endl;
-	cout << "#    number of PPIs:  " << fanMgr_->cir->nppi_ << endl;
-	cout << "#    number of POs:   " << fanMgr_->cir->npo_ << endl;
-	cout << "#    number of combs: " << fanMgr_->cir->ncomb_ << endl;
-	cout << "#    number of gates: " << fanMgr_->cir->ngate_ << endl;
-	cout << "#    number of nets:  " << fanMgr_->cir->nnet_ << endl;
+	std::cout << "#  circuit information\n";
+	std::cout << "#    netlist:         " << top->name_ << "\n";
+	std::cout << "#    number of PIs:   " << fanMgr_->cir->npi_ << "\n";
+	std::cout << "#    number of PPIs:  " << fanMgr_->cir->nppi_ << "\n";
+	std::cout << "#    number of POs:   " << fanMgr_->cir->npo_ << "\n";
+	std::cout << "#    number of combs: " << fanMgr_->cir->ncomb_ << "\n";
+	std::cout << "#    number of gates: " << fanMgr_->cir->ngate_ << "\n";
+	std::cout << "#    number of nets:  " << fanMgr_->cir->nnet_ << "\n";
 
 	return true;
-} //}}}
+}
 
-//{{{ ReportGateCmd::ReportGateCmd()
 ReportGateCmd::ReportGateCmd(const std::string &name, FanMgr *fanMgr) : Cmd(name)
 {
 	fanMgr_ = fanMgr;
 	optMgr_.setName(name);
 	optMgr_.setShortDes("report gate information");
 	optMgr_.setDes("reports GATE information in the circuit");
-	Arg *arg = new Arg(Arg::OPT_INF,
-										 "if no name is specified, all gates will be reported",
-										 "GATE");
+	Arg *arg = new Arg(Arg::OPT_INF, "if no name is specified, all gates will be reported", "GATE");
 	optMgr_.regArg(arg);
 	Opt *opt = new Opt(Opt::BOOL, "print usage", "");
 	opt->addFlag("h");
@@ -669,9 +709,8 @@ ReportGateCmd::ReportGateCmd(const std::string &name, FanMgr *fanMgr) : Cmd(name
 	optMgr_.regOpt(opt);
 }
 ReportGateCmd::~ReportGateCmd() {}
-//}}}
-//{{{ bool ReportGateCmd::exec()
-bool ReportGateCmd::exec(const vector<string> &argv)
+
+bool ReportGateCmd::exec(const std::vector<std::string> &argv)
 {
 	optMgr_.parse(argv);
 
@@ -683,72 +722,80 @@ bool ReportGateCmd::exec(const vector<string> &argv)
 
 	if (!fanMgr_->cir)
 	{
-		cerr << "**ERROR ReportGateCmd::exec(): circuit needed" << endl;
+		std::cerr << "**ERROR ReportGateCmd::exec(): circuit needed\n";
 		return false;
 	}
 
 	if (optMgr_.getNParsedArg() == 0)
 	{
 		for (int i = 0; i < fanMgr_->cir->ngate_ * fanMgr_->cir->nframe_; ++i)
+		{
 			reportGate(i);
+		}
 	}
 	else
 	{
 		for (size_t i = 0; i < optMgr_.getNParsedArg(); ++i)
 		{
-			string name = optMgr_.getParsedArg(i);
+			std::string name = optMgr_.getParsedArg(i);
 			Cell *c = fanMgr_->nl->getTop()->getCell(name.c_str());
 			if (c)
+			{
 				for (size_t j = 0; j < c->libc_->getNCell(); ++j)
+				{
 					reportGate(fanMgr_->cir->cellToGate_[c->id_] + j);
+				}
+			}
 			Port *p = fanMgr_->nl->getTop()->getPort(name.c_str());
 			if (p)
+			{
 				reportGate(fanMgr_->cir->portToGate_[p->id_]);
+			}
 			if (!c && !p)
 			{
-				cerr << "**ERROR ReportGateCmd::exec(): cell or port `";
-				cerr << name << "' does not exist" << endl;
+				std::cerr << "**ERROR ReportGateCmd::exec(): cell or port `";
+				std::cerr << name << "' does not exist\n";
 			}
 		}
 	}
-
 	return true;
-} //}}}
-//{{{ void ReportGateCmd::reportGate()
+}
+
 void ReportGateCmd::reportGate(const int &i) const
 {
 	Gate *g = &fanMgr_->cir->gates_[i];
-	cout << "#  ";
+	std::cout << "#  ";
 	if (g->type_ == Gate::PI || g->type_ == Gate::PO)
-		cout << fanMgr_->nl->getTop()->getPort((size_t)g->cid_)->name_;
+	{
+		std::cout << fanMgr_->nl->getTop()->getPort((size_t)g->cid_)->name_;
+	}
 	else
-		cout << fanMgr_->nl->getTop()->getCell((size_t)g->cid_)->name_;
-	cout << " id(" << i << ") ";
-	cout << "lvl(" << g->lvl_ << ") ";
-	cout << "type(" << g->type_ << ") ";
-	cout << "frame(" << g->frame_ << ")";
-	cout << endl;
-	cout << "#    fi[" << g->nfi_ << "]";
+	{
+		std::cout << fanMgr_->nl->getTop()->getCell((size_t)g->cid_)->name_;
+	}
+	std::cout << " id(" << i << ") ";
+	std::cout << "lvl(" << g->lvl_ << ") ";
+	std::cout << "type(" << g->type_ << ") ";
+	std::cout << "frame(" << g->frame_ << ")";
+	std::cout << "\n";
+	std::cout << "#    fi[" << g->nfi_ << "]";
 	for (int j = 0; j < g->nfi_; ++j)
-		cout << " " << g->fis_[j];
-	cout << endl;
-	cout << "#    fo[" << g->nfo_ << "]";
+		std::cout << " " << g->fis_[j];
+	std::cout << "\n";
+	std::cout << "#    fo[" << g->nfo_ << "]";
 	for (int j = 0; j < g->nfo_; ++j)
-		cout << " " << g->fos_[j];
-	cout << endl
-			 << endl;
-} //}}}
+		std::cout << " " << g->fos_[j];
+	std::cout << "\n"
+						<< "\n";
+}
 
-//{{{ ReportValueCmd::ReportValueCmd()
 ReportValueCmd::ReportValueCmd(const std::string &name, FanMgr *fanMgr) : Cmd(name)
 {
 	fanMgr_ = fanMgr;
 	optMgr_.setName(name);
 	optMgr_.setShortDes("report gate values");
 	optMgr_.setDes("reports GATE values in the circuit");
-	Arg *arg = new Arg(Arg::OPT_INF,
-										 "if no name is specified, all gates will be reported",
-										 "GATE");
+	Arg *arg = new Arg(Arg::OPT_INF, "if no name is specified, all gates will be reported", "GATE");
 	optMgr_.regArg(arg);
 	Opt *opt = new Opt(Opt::BOOL, "print usage", "");
 	opt->addFlag("h");
@@ -756,9 +803,8 @@ ReportValueCmd::ReportValueCmd(const std::string &name, FanMgr *fanMgr) : Cmd(na
 	optMgr_.regOpt(opt);
 }
 ReportValueCmd::~ReportValueCmd() {}
-//}}}
-//{{{ bool ReportValueCmd::exec()
-bool ReportValueCmd::exec(const vector<string> &argv)
+
+bool ReportValueCmd::exec(const std::vector<std::string> &argv)
 {
 	optMgr_.parse(argv);
 
@@ -770,61 +816,67 @@ bool ReportValueCmd::exec(const vector<string> &argv)
 
 	if (!fanMgr_->cir)
 	{
-		cerr << "**ERROR ReportValueCmd::exec(): circuit needed" << endl;
+		std::cerr << "**ERROR ReportValueCmd::exec(): circuit needed\n";
 		return false;
 	}
 
 	if (optMgr_.getNParsedArg() == 0)
 	{
 		for (int i = 0; i < fanMgr_->cir->tgate_; ++i)
+		{
 			reportValue(i);
+		}
 	}
 	else
 	{
 		for (size_t i = 0; i < optMgr_.getNParsedArg(); ++i)
 		{
-			string name = optMgr_.getParsedArg(i);
+			std::string name = optMgr_.getParsedArg(i);
 			Cell *c = fanMgr_->nl->getTop()->getCell(name.c_str());
 			if (c)
+			{
 				for (size_t j = 0; j < c->libc_->getNCell(); ++j)
+				{
 					reportValue(fanMgr_->cir->cellToGate_[c->id_] + j);
+				}
+			}
 			Port *p = fanMgr_->nl->getTop()->getPort(name.c_str());
 			if (p)
+			{
 				reportValue(fanMgr_->cir->portToGate_[p->id_]);
+			}
 			if (!c && !p)
 			{
-				cerr << "**ERROR ReportValueCmd::exec(): cell or port `";
-				cerr << name << "' does not exist" << endl;
+				std::cerr << "**ERROR ReportValueCmd::exec(): cell or port `";
+				std::cerr << name << "' does not exist\n";
 			}
 		}
 	}
-
 	return true;
-} //}}}
-//{{{ void ReportValueCmd::reportGate()
+}
+
 void ReportValueCmd::reportValue(const int &i) const
 {
 	Gate *g = &fanMgr_->cir->gates_[i];
-	cout << "#  ";
+	std::cout << "#  ";
 	if (g->type_ == Gate::PI || g->type_ == Gate::PO)
-		cout << fanMgr_->nl->getTop()->getPort((size_t)g->cid_)->name_;
+		std::cout << fanMgr_->nl->getTop()->getPort((size_t)g->cid_)->name_;
 	else
-		cout << fanMgr_->nl->getTop()->getCell((size_t)g->cid_)->name_;
-	cout << " id(" << i << ") ";
-	cout << "lvl(" << g->lvl_ << ") ";
-	cout << "type(" << g->type_ << ") ";
-	cout << "frame(" << g->frame_ << ")";
-	cout << endl;
-	cout << "#    good:   ";
+		std::cout << fanMgr_->nl->getTop()->getCell((size_t)g->cid_)->name_;
+	std::cout << " id(" << i << ") ";
+	std::cout << "lvl(" << g->lvl_ << ") ";
+	std::cout << "type(" << g->type_ << ") ";
+	std::cout << "frame(" << g->frame_ << ")";
+	std::cout << "\n";
+	std::cout << "#    good:   ";
 	printValue(g->gl_, g->gh_);
-	cout << endl;
-	cout << "#    faulty: ";
+	std::cout << "\n";
+	std::cout << "#    faulty: ";
 	printValue(g->fl_, g->fh_);
-	cout << endl
-			 << endl;
-} //}}}
+	std::cout << "\n"
+						<< "\n";
+}
 
-//{{{ ReportStatsCmd::ReportStatsCmd()
 ReportStatsCmd::ReportStatsCmd(const std::string &name, FanMgr *fanMgr) : Cmd(name)
 {
 	fanMgr_ = fanMgr;
@@ -837,9 +889,8 @@ ReportStatsCmd::ReportStatsCmd(const std::string &name, FanMgr *fanMgr) : Cmd(na
 	optMgr_.regOpt(opt);
 }
 ReportStatsCmd::~ReportStatsCmd() {}
-//}}}
-//{{{ bool ReportStatsCmd::exec()
-bool ReportStatsCmd::exec(const vector<string> &argv)
+
+bool ReportStatsCmd::exec(const std::vector<std::string> &argv)
 {
 	optMgr_.parse(argv);
 
@@ -851,12 +902,12 @@ bool ReportStatsCmd::exec(const vector<string> &argv)
 
 	if (!fanMgr_->fListExtract || fanMgr_->fListExtract->faultsInCircuit_.size() == 0)
 	{
-		cerr << "**WARN ReportStatsCmd::exec(): no statistics" << endl;
+		std::cerr << "**WARN ReportStatsCmd::exec(): no statistics\n";
 		return false;
 	}
 
 	// determine fault model
-	string ftype = "";
+	std::string ftype = "";
 	switch (fanMgr_->fListExtract->faultListType_)
 	{
 		case FaultListExtract::SAF:
@@ -871,7 +922,7 @@ bool ReportStatsCmd::exec(const vector<string> &argv)
 	}
 
 	// determine pattern type
-	string ptype = "";
+	std::string ptype = "";
 	switch (fanMgr_->pcoll->type_)
 	{
 		case PatternProcessor::BASIC_SCAN:
@@ -891,7 +942,9 @@ bool ReportStatsCmd::exec(const vector<string> &argv)
 	size_t npat = 0;
 
 	if (fanMgr_->pcoll)
+	{
 		npat = fanMgr_->pcoll->patternVector_.size();
+	}
 
 	size_t fu = 0;
 	size_t ud = 0;
@@ -937,48 +990,46 @@ bool ReportStatsCmd::exec(const vector<string> &argv)
 	float tc = (float)dt / (float)(ud + dt + pt + ab) * 100;
 	float ae = (float)(dt + au + ti + re) / (float)fu * 100;
 
-	cout << right;
-	cout << setprecision(4);
-	cout << "#                 Statistics Report" << endl;
-	cout << "#  Circuit name                  " << setw(19);
-	cout << fanMgr_->nl->getTop()->name_ << endl;
-	cout << "#  Fault model                   " << setw(19) << ftype << endl;
-	cout << "#  Pattern type                  " << setw(19) << ptype << endl;
-	cout << "#  -------------------------------------------------" << endl;
-	cout << "#  Fault classes                             #faults" << endl;
-	cout << "#  ----------------------------  -------------------" << endl;
-	cout << "#    FU (full)                   " << setw(19) << fu << endl;
-	cout << "#    --------------------------  -------------------" << endl;
-	cout << "#    UD (undetected)             " << setw(19) << ud << endl;
-	cout << "#    PT (possibly testable)      " << setw(19) << pt << endl;
-	cout << "#    AU (atpg untestable)        " << setw(19) << au << endl;
-	cout << "#    RE (redundant)              " << setw(19) << re << endl;
-	cout << "#    AB (atpg abort)             " << setw(19) << ab << endl;
-	cout << "#    TI (tied)                   " << setw(19) << ti << endl;
-	cout << "#    --------------------------  -------------------" << endl;
-	cout << "#    DT (detected)               " << setw(19) << dt << endl;
-	cout << "#  -------------------------------------------------" << endl;
-	cout << "#  Coverage                               percentage" << endl;
-	cout << "#    --------------------------  -------------------" << endl;
-	cout << "#    test coverage                            ";
-	cout << setw(5) << tc << "%" << endl;
-	cout << "#    fault coverage                           ";
-	cout << setw(5) << fc << "%" << endl;
-	cout << "#    atpg effectiveness                       ";
-	cout << setw(5) << ae << "%" << endl;
-	cout << "#  -------------------------------------------------" << endl;
-	cout << "#  #Patterns                     " << setw(19) << npat << endl;
-	cout << "#  -------------------------------------------------" << endl;
-	cout << "#  ATPG runtime                  " << setw(17) << rtime;
-	cout << " s" << endl;
-	cout << "#  -------------------------------------------------" << endl;
+	std::cout << std::right;
+	std::cout << std::setprecision(4);
+	std::cout << "#                 Statistics Report\n";
+	std::cout << "#  Circuit name                  " << std::setw(19);
+	std::cout << fanMgr_->nl->getTop()->name_ << "\n";
+	std::cout << "#  Fault model                   " << std::setw(19) << ftype << "\n";
+	std::cout << "#  Pattern type                  " << std::setw(19) << ptype << "\n";
+	std::cout << "#  -------------------------------------------------\n";
+	std::cout << "#  Fault classes                             #faults\n";
+	std::cout << "#  ----------------------------  -------------------\n";
+	std::cout << "#    FU (full)                   " << std::setw(19) << fu << "\n";
+	std::cout << "#    --------------------------  -------------------\n";
+	std::cout << "#    UD (undetected)             " << std::setw(19) << ud << "\n";
+	std::cout << "#    PT (possibly testable)      " << std::setw(19) << pt << "\n";
+	std::cout << "#    AU (atpg untestable)        " << std::setw(19) << au << "\n";
+	std::cout << "#    RE (redundant)              " << std::setw(19) << re << "\n";
+	std::cout << "#    AB (atpg abort)             " << std::setw(19) << ab << "\n";
+	std::cout << "#    TI (tied)                   " << std::setw(19) << ti << "\n";
+	std::cout << "#    --------------------------  -------------------\n";
+	std::cout << "#    DT (detected)               " << std::setw(19) << dt << "\n";
+	std::cout << "#  -------------------------------------------------\n";
+	std::cout << "#  Coverage                               percentage\n";
+	std::cout << "#    --------------------------  -------------------\n";
+	std::cout << "#    test coverage                            ";
+	std::cout << std::setw(5) << tc << "%\n";
+	std::cout << "#    fault coverage                           ";
+	std::cout << std::setw(5) << fc << "%\n";
+	std::cout << "#    atpg effectiveness                       ";
+	std::cout << std::setw(5) << ae << "%\n";
+	std::cout << "#  -------------------------------------------------\n";
+	std::cout << "#  #Patterns                     " << std::setw(19) << npat << "\n";
+	std::cout << "#  -------------------------------------------------\n";
+	std::cout << "#  ATPG runtime                  " << std::setw(17) << rtime;
+	std::cout << " s\n";
+	std::cout << "#  -------------------------------------------------\n";
 
 	return true;
-} //}}}
+}
 
-//{{{ AddPinConsCmd::AddnPinConsCmd()
-AddPinConsCmd::AddPinConsCmd(const std::string &name,
-														 FanMgr *fanMgr) : Cmd(name)
+AddPinConsCmd::AddPinConsCmd(const std::string &name, FanMgr *fanMgr) : Cmd(name)
 {
 	fanMgr_ = fanMgr;
 	optMgr_.setName(name);
@@ -994,9 +1045,8 @@ AddPinConsCmd::AddPinConsCmd(const std::string &name,
 	optMgr_.regOpt(opt);
 }
 AddPinConsCmd::~AddPinConsCmd() {}
-//}}}
-//{{{ bool AddPinConsCmd::exec()
-bool AddPinConsCmd::exec(const vector<string> &argv)
+
+bool AddPinConsCmd::exec(const std::vector<std::string> &argv)
 {
 	optMgr_.parse(argv);
 
@@ -1008,15 +1058,15 @@ bool AddPinConsCmd::exec(const vector<string> &argv)
 
 	if (!fanMgr_->cir)
 	{
-		cerr << "**ERROR AddPinConsCmd::exec(): circuit needed";
-		cerr << endl;
+		std::cerr << "**ERROR AddPinConsCmd::exec(): circuit needed";
+		std::cerr << "\n";
 		return false;
 	}
 
 	if (optMgr_.getNParsedArg() < 2)
 	{
-		cerr << "**ERROR AddPinConsCmd::exec(): need at least one PI ";
-		cerr << "and the constraint value" << endl;
+		std::cerr << "**ERROR AddPinConsCmd::exec(): need at least one PI ";
+		std::cerr << "and the constraint value\n";
 		return false;
 	}
 
@@ -1024,19 +1074,19 @@ bool AddPinConsCmd::exec(const vector<string> &argv)
 	int cons = atoi(optMgr_.getParsedArg(npi).c_str());
 	for (size_t i = 0; i < npi; ++i)
 	{
-		string piname = optMgr_.getParsedArg(i);
+		std::string piname = optMgr_.getParsedArg(i);
 		Port *p = fanMgr_->nl->getTop()->getPort(piname.c_str());
 		if (!p)
 		{
-			cerr << "**ERROR AddPinConsCmd::exec(): Port `" << piname;
-			cerr << "' not found" << endl;
+			std::cerr << "**ERROR AddPinConsCmd::exec(): Port `" << piname;
+			std::cerr << "' not found\n";
 			continue;
 		}
 		int gid = fanMgr_->cir->portToGate_[p->id_];
 		if (fanMgr_->cir->gates_[gid].type_ != Gate::PI)
 		{
-			cerr << "**ERROR AddPinConsCmd::exec(): Port `" << piname;
-			cerr << "' is not PI" << endl;
+			std::cerr << "**ERROR AddPinConsCmd::exec(): Port `" << piname;
+			std::cerr << "' is not PI\n";
 			continue;
 		}
 		fanMgr_->cir->gates_[gid].hasCons_ = true;
@@ -1047,9 +1097,8 @@ bool AddPinConsCmd::exec(const vector<string> &argv)
 	}
 
 	return true;
-} //}}}
+}
 
-//{{{ RunLogicSimCmd::RunLogicSimCmd()
 RunLogicSimCmd::RunLogicSimCmd(const std::string &name, FanMgr *fanMgr) : Cmd(name)
 {
 	fanMgr_ = fanMgr;
@@ -1062,9 +1111,8 @@ RunLogicSimCmd::RunLogicSimCmd(const std::string &name, FanMgr *fanMgr) : Cmd(na
 	optMgr_.regOpt(opt);
 }
 RunLogicSimCmd::~RunLogicSimCmd() {}
-//}}}
-//{{{ bool RunLogicSimCmd::exec()
-bool RunLogicSimCmd::exec(const vector<string> &argv)
+
+bool RunLogicSimCmd::exec(const std::vector<std::string> &argv)
 {
 	optMgr_.parse(argv);
 
@@ -1076,32 +1124,31 @@ bool RunLogicSimCmd::exec(const vector<string> &argv)
 
 	if (!fanMgr_->cir)
 	{
-		cerr << "**ERROR RunLogicSimCmd::exec(): circuit needed" << endl;
+		std::cerr << "**ERROR RunLogicSimCmd::exec(): circuit needed\n";
 		return false;
 	}
 
 	if (!fanMgr_->pcoll)
 	{
-		cerr << "**ERROR RunLogicSimCmd::exec(): pattern needed" << endl;
+		std::cerr << "**ERROR RunLogicSimCmd::exec(): pattern needed\n";
 		return false;
 	}
 
 	fanMgr_->tmusg.periodStart();
-	cout << "#  Performing logic simulation ..." << endl;
+	std::cout << "#  Performing logic simulation ...\n";
 
 	Simulator sim(fanMgr_->cir);
 	sim.ppGoodSim(fanMgr_->pcoll);
 
 	TmStat stat;
 	fanMgr_->tmusg.getPeriodUsage(stat);
-	cout << "#  Finished logic simulation";
-	cout << "    " << (double)stat.rTime / 1000000.0 << " s";
-	cout << "    " << (double)stat.vmSize / 1024.0 << " MB" << endl;
+	std::cout << "#  Finished logic simulation";
+	std::cout << "    " << (double)stat.rTime / 1000000.0 << " s";
+	std::cout << "    " << (double)stat.vmSize / 1024.0 << " MB\n";
 
 	return true;
-} //}}}
+}
 
-//{{{ RunFaultSimCmd::RunFaultSimCmd()
 RunFaultSimCmd::RunFaultSimCmd(const std::string &name, FanMgr *fanMgr) : Cmd(name)
 {
 	fanMgr_ = fanMgr;
@@ -1118,9 +1165,8 @@ RunFaultSimCmd::RunFaultSimCmd(const std::string &name, FanMgr *fanMgr) : Cmd(na
 	optMgr_.regOpt(opt);
 }
 RunFaultSimCmd::~RunFaultSimCmd() {}
-//}}}
-//{{{ bool RunFaultSimCmd::exec()
-bool RunFaultSimCmd::exec(const vector<string> &argv)
+
+bool RunFaultSimCmd::exec(const std::vector<std::string> &argv)
 {
 	optMgr_.parse(argv);
 
@@ -1132,26 +1178,26 @@ bool RunFaultSimCmd::exec(const vector<string> &argv)
 
 	if (!fanMgr_->cir)
 	{
-		cerr << "**ERROR RunFaultSimCmd::exec(): circuit needed" << endl;
+		std::cerr << "**ERROR RunFaultSimCmd::exec(): circuit needed\n";
 		return false;
 	}
 
 	if (!fanMgr_->pcoll)
 	{
-		cerr << "**ERROR RunFaultSimCmd::exec(): pattern needed" << endl;
+		std::cerr << "**ERROR RunFaultSimCmd::exec(): pattern needed\n";
 		return false;
 	}
 
 	if (!fanMgr_->fListExtract || fanMgr_->fListExtract->faultsInCircuit_.size() == 0)
 	{
-		cerr << "**ERROR RunFaultSimCmd::exec(): fault list needed" << endl;
+		std::cerr << "**ERROR RunFaultSimCmd::exec(): fault list needed\n";
 		return false;
 	}
 
 	if (!fanMgr_->sim)
 		fanMgr_->sim = new Simulator(fanMgr_->cir);
 
-	cout << "#  Performing fault simulation ..." << endl;
+	std::cout << "#  Performing fault simulation ...\n";
 	fanMgr_->tmusg.periodStart();
 
 	if (optMgr_.isFlagSet("m") && optMgr_.getFlagVar("m") == "pf")
@@ -1161,9 +1207,9 @@ bool RunFaultSimCmd::exec(const vector<string> &argv)
 
 	TmStat stat;
 	fanMgr_->tmusg.getPeriodUsage(stat);
-	cout << "#  Finished fault simulation";
-	cout << "    " << (double)stat.rTime / 1000000.0 << " s";
-	cout << "    " << (double)stat.vmSize / 1024.0 << " MB" << endl;
+	std::cout << "#  Finished fault simulation";
+	std::cout << "    " << (double)stat.rTime / 1000000.0 << " s";
+	std::cout << "    " << (double)stat.vmSize / 1024.0 << " MB\n";
 	rtime = (double)stat.rTime / 1000000.0;
 
 	return true;
@@ -1182,9 +1228,8 @@ RunAtpgCmd::RunAtpgCmd(const std::string &name, FanMgr *fanMgr) : Cmd(name)
 	optMgr_.regOpt(opt);
 }
 RunAtpgCmd::~RunAtpgCmd() {}
-//}}}
-//{{{ bool RunAtpgCmd::exec()
-bool RunAtpgCmd::exec(const vector<string> &argv)
+
+bool RunAtpgCmd::exec(const std::vector<std::string> &argv)
 {
 	optMgr_.parse(argv);
 
@@ -1196,7 +1241,7 @@ bool RunAtpgCmd::exec(const vector<string> &argv)
 
 	if (!fanMgr_->cir)
 	{
-		cerr << "**ERROR RunFaultSimCmd::exec(): circuit needed" << endl;
+		std::cerr << "**ERROR RunFaultSimCmd::exec(): circuit needed\n";
 		return false;
 	}
 
@@ -1217,22 +1262,21 @@ bool RunAtpgCmd::exec(const vector<string> &argv)
 	delete fanMgr_->atpg;
 	fanMgr_->atpg = new Atpg(fanMgr_->cir, fanMgr_->sim);
 
-	cout << "#  Performing pattern generation ..." << endl;
+	std::cout << "#  Performing pattern generation ...\n";
 	fanMgr_->tmusg.periodStart();
 
 	fanMgr_->atpg->generatePatternSet(fanMgr_->pcoll, fanMgr_->fListExtract);
 
 	fanMgr_->tmusg.getPeriodUsage(fanMgr_->atpgStat);
-	cout << "#  Finished pattern generation";
-	cout << "    " << (double)fanMgr_->atpgStat.rTime / 1000000.0 << " s";
-	cout << "    " << (double)fanMgr_->atpgStat.vmSize / 1024.0 << " MB";
-	cout << endl;
+	std::cout << "#  Finished pattern generation";
+	std::cout << "    " << (double)fanMgr_->atpgStat.rTime / 1000000.0 << " s";
+	std::cout << "    " << (double)fanMgr_->atpgStat.vmSize / 1024.0 << " MB";
+	std::cout << "\n";
 	rtime = (double)fanMgr_->atpgStat.rTime / 1000000.0;
 
 	return true;
-} //}}}
+}
 
-//{{{ WritePatCmd::WritePatCmd()
 WritePatCmd::WritePatCmd(const std::string &name, FanMgr *fanMgr) : Cmd(name)
 {
 	fanMgr_ = fanMgr;
@@ -1251,9 +1295,8 @@ WritePatCmd::WritePatCmd(const std::string &name, FanMgr *fanMgr) : Cmd(name)
 	optMgr_.regOpt(opt);
 }
 WritePatCmd::~WritePatCmd() {}
-//}}}
-//{{{ bool WritePatCmd::exec()
-bool WritePatCmd::exec(const vector<string> &argv)
+
+bool WritePatCmd::exec(const std::vector<std::string> &argv)
 {
 	optMgr_.parse(argv);
 
@@ -1265,31 +1308,31 @@ bool WritePatCmd::exec(const vector<string> &argv)
 
 	if (optMgr_.getNParsedArg() < 1)
 	{
-		cerr << "**ERROR WritePatternCmd::exec(): output file needed";
-		cerr << endl;
+		std::cerr << "**ERROR WritePatternCmd::exec(): output file needed";
+		std::cerr << "\n";
 		return false;
 	}
 
 	if (!fanMgr_->cir)
 	{
-		cerr << "**ERROR WritePatternCmd::exec(): circuit needed" << endl;
+		std::cerr << "**ERROR WritePatternCmd::exec(): circuit needed\n";
 		return false;
 	}
 
 	if (!fanMgr_->pcoll)
 	{
-		cerr << "**ERROR WritePatternCmd::exec(): pattern needed" << endl;
+		std::cerr << "**ERROR WritePatternCmd::exec(): pattern needed\n";
 		return false;
 	}
 
-	cout << "#  Writing pattern to `" << optMgr_.getParsedArg(0) << "' ...";
-	cout << endl;
+	std::cout << "#  Writing pattern to `" << optMgr_.getParsedArg(0) << "' ...";
+	std::cout << "\n";
 	PatternWriter writer(fanMgr_->pcoll, fanMgr_->cir);
 	if (optMgr_.getFlagVar("f") == "lht")
 	{
 		if (!writer.writeLht(optMgr_.getParsedArg(0).c_str()))
 		{
-			cerr << "**ERROR WritePatternCmd::exec(): writer failed" << endl;
+			std::cerr << "**ERROR WritePatternCmd::exec(): writer failed\n";
 			return false;
 		}
 	}
@@ -1297,7 +1340,7 @@ bool WritePatCmd::exec(const vector<string> &argv)
 	{
 		if (!writer.writeAscii(optMgr_.getParsedArg(0).c_str()))
 		{
-			cerr << "**ERROR WritePatternCmd::exec(): writer failed" << endl;
+			std::cerr << "**ERROR WritePatternCmd::exec(): writer failed\n";
 			return false;
 		}
 	}
@@ -1305,18 +1348,19 @@ bool WritePatCmd::exec(const vector<string> &argv)
 	{
 		if (!writer.writePat(optMgr_.getParsedArg(0).c_str()))
 		{
-			cerr << "**ERROR WritePatternCmd::exec(): writer failed" << endl;
+			std::cerr << "**ERROR WritePatternCmd::exec(): writer failed\n";
 			return false;
 		}
 	}
 	else
-		cerr << "**ERROR WritePatternCmd::exec(): undefined parameter in -f" << endl;
+	{
+		std::cerr << "**ERROR WritePatternCmd::exec(): undefined parameter in -f\n";
+	}
 
 	return true;
-} //}}}
+}
 
 // Ne
-//{{{ AddScanChainsCmd::AddScanChainsCmd()
 AddScanChainsCmd::AddScanChainsCmd(const std::string &name, FanMgr *fanMgr) : Cmd(name)
 {
 	fanMgr_ = fanMgr;
@@ -1329,9 +1373,8 @@ AddScanChainsCmd::AddScanChainsCmd(const std::string &name, FanMgr *fanMgr) : Cm
 	optMgr_.regOpt(opt);
 }
 AddScanChainsCmd::~AddScanChainsCmd() {}
-//}}}
-//{{{ bool AddScanChainsCmd::exec()
-bool AddScanChainsCmd::exec(const vector<string> &argv)
+
+bool AddScanChainsCmd::exec(const std::vector<std::string> &argv)
 {
 	optMgr_.parse(argv);
 
@@ -1343,17 +1386,16 @@ bool AddScanChainsCmd::exec(const vector<string> &argv)
 
 	if (!fanMgr_->cir)
 	{
-		cerr << "**ERROR AddScanChainsCmd::exec(): circuit needed" << endl;
+		std::cerr << "**ERROR AddScanChainsCmd::exec(): circuit needed\n";
 		return false;
 	}
 
-	cout << "#  Add Scan Chains " << endl;
+	std::cout << "#  Add Scan Chains \n";
 
 	return true;
-} //}}}
+}
 // Ne
 
-//{{{ WriteProcCmd::WriteProcCmd()
 WriteProcCmd::WriteProcCmd(const std::string &name, FanMgr *fanMgr) : Cmd(name)
 {
 	fanMgr_ = fanMgr;
@@ -1368,9 +1410,8 @@ WriteProcCmd::WriteProcCmd(const std::string &name, FanMgr *fanMgr) : Cmd(name)
 	optMgr_.regOpt(opt);
 }
 WriteProcCmd::~WriteProcCmd() {}
-//}}}
-//{{{ bool WriteProcCmd::exec()
-bool WriteProcCmd::exec(const vector<string> &argv)
+
+bool WriteProcCmd::exec(const std::vector<std::string> &argv)
 {
 	optMgr_.parse(argv);
 
@@ -1382,30 +1423,29 @@ bool WriteProcCmd::exec(const vector<string> &argv)
 
 	if (optMgr_.getNParsedArg() < 1)
 	{
-		cerr << "**ERROR WritePatternCmd::exec(): output file needed";
-		cerr << endl;
+		std::cerr << "**ERROR WritePatternCmd::exec(): output file needed";
+		std::cerr << "\n";
 		return false;
 	}
 
 	if (!fanMgr_->cir)
 	{
-		cerr << "**ERROR WritePatternCmd::exec(): circuit needed" << endl;
+		std::cerr << "**ERROR WritePatternCmd::exec(): circuit needed\n";
 		return false;
 	}
 
-	cout << "#  Writing test procedure file ...";
-	cout << endl;
+	std::cout << "#  Writing test procedure file ...";
+	std::cout << "\n";
 	ProcedureWriter writer(fanMgr_->cir);
 	if (!writer.writeProc(optMgr_.getParsedArg(0).c_str()))
 	{
-		cerr << "**ERROR WritePatternCmd::exec(): writer failed" << endl;
+		std::cerr << "**ERROR WritePatternCmd::exec(): writer failed\n";
 		return false;
 	}
 
 	return true;
-} //}}}
+}
 
-//{{{ WriteStilCmd::WriteStilCmd()
 WriteStilCmd::WriteStilCmd(const std::string &name, FanMgr *fanMgr) : Cmd(name)
 {
 	fanMgr_ = fanMgr;
@@ -1424,9 +1464,8 @@ WriteStilCmd::WriteStilCmd(const std::string &name, FanMgr *fanMgr) : Cmd(name)
 	optMgr_.regOpt(opt);
 }
 WriteStilCmd::~WriteStilCmd() {}
-//}}}
-//{{{ bool WriteStilCmd::exec()
-bool WriteStilCmd::exec(const vector<string> &argv)
+
+bool WriteStilCmd::exec(const std::vector<std::string> &argv)
 {
 	optMgr_.parse(argv);
 
@@ -1438,32 +1477,32 @@ bool WriteStilCmd::exec(const vector<string> &argv)
 
 	if (optMgr_.getNParsedArg() < 1)
 	{
-		cerr << "**ERROR WriteSTILCmd::exec(): output file needed";
-		cerr << endl;
+		std::cerr << "**ERROR WriteSTILCmd::exec(): output file needed";
+		std::cerr << "\n";
 		return false;
 	}
 
 	if (!fanMgr_->cir)
 	{
-		cerr << "**ERROR WriteSTILCmd::exec(): circuit needed" << endl;
+		std::cerr << "**ERROR WriteSTILCmd::exec(): circuit needed\n";
 		return false;
 	}
 
 	if (!fanMgr_->pcoll)
 	{
-		cerr << "**ERROR WriteSTILCmd::exec(): pattern needed" << endl;
+		std::cerr << "**ERROR WriteSTILCmd::exec(): pattern needed\n";
 		return false;
 	}
 
-	cout << "#  Writing pattern to STIL...";
-	cout << endl;
+	std::cout << "#  Writing pattern to STIL...";
+	std::cout << "\n";
 	PatternWriter writer(fanMgr_->pcoll, fanMgr_->cir);
 
 	if (!writer.writeSTIL(optMgr_.getParsedArg(0).c_str()))
 	{
-		cerr << "**ERROR WriteSTILCmd::exec(): writer failed" << endl;
+		std::cerr << "**ERROR WriteSTILCmd::exec(): writer failed\n";
 		return false;
 	}
 
 	return true;
-} //}}}
+}
