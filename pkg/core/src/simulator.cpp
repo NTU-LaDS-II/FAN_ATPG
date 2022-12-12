@@ -59,16 +59,16 @@ void Simulator::eventFaultSim()
 			nrecover_++;
 
 			// check whether faulty value and good value are equal
-			if (cir_->gates_[gid].fl_ == cir_->gates_[gid].gl_ && cir_->gates_[gid].fh_ == cir_->gates_[gid].gh_)
+			if (cir_->gates_[gid].faultSimLow_ == cir_->gates_[gid].goodSimLow_ && cir_->gates_[gid].faultSimHigh_ == cir_->gates_[gid].goodSimHigh_)
 				continue;
 
 			// if not equal and flag = false. set flag true
-			for (int j = 0; j < cir_->gates_[gid].nfo_; ++j)
+			for (int j = 0; j < cir_->gates_[gid].numFO_; ++j)
 			{
-				int foid = cir_->gates_[gid].fos_[j];
+				int foid = cir_->gates_[gid].fanoutVector_[j];
 				if (processed_[foid])
 					continue;
-				events_[cir_->gates_[foid].lvl_].push(foid);
+				events_[cir_->gates_[foid].numLevel_].push(foid);
 				processed_[foid] = true;
 			}
 		}
@@ -175,9 +175,9 @@ void Simulator::pfFaultSim(FaultList &remain)
 // **************************************************************************
 bool Simulator::pfCheckActivation(const Fault *const f)
 {
-	const int &fg = f->faultyLine_ == 0 ? f->gateID_ : cir_->gates_[f->gateID_].fis_[f->faultyLine_ - 1];
-	const ParaValue &gl = cir_->gates_[fg].gl_;
-	const ParaValue &gh = cir_->gates_[fg].gh_;
+	const int &fg = f->faultyLine_ == 0 ? f->gateID_ : cir_->gates_[f->gateID_].faninVector_[f->faultyLine_ - 1];
+	const ParaValue &gl = cir_->gates_[fg].goodSimLow_;
+	const ParaValue &gh = cir_->gates_[fg].goodSimHigh_;
 
 	switch (f->faultType_)
 	{
@@ -190,12 +190,12 @@ bool Simulator::pfCheckActivation(const Fault *const f)
 		case Fault::STR:
 			if (cir_->nframe_ < 2)
 				return false;
-			return (gl & cir_->gates_[fg + cir_->ngate_].gh_) != PARA_L;
+			return (gl & cir_->gates_[fg + cir_->ngate_].goodSimHigh_) != PARA_L;
 			break;
 		case Fault::STF:
 			if (cir_->nframe_ < 2)
 				return false;
-			return (gh & cir_->gates_[fg + cir_->ngate_].gl_) != PARA_L;
+			return (gh & cir_->gates_[fg + cir_->ngate_].goodSimLow_) != PARA_L;
 			break;
 		default:
 			break;
@@ -238,7 +238,7 @@ void Simulator::pfInject(const Fault *const f, const size_t &i)
 	// put gate into event list
 	if (!processed_[fg])
 	{
-		events_[cir_->gates_[fg].lvl_].push(fg);
+		events_[cir_->gates_[fg].numLevel_].push(fg);
 		processed_[fg] = true;
 	}
 }
@@ -258,7 +258,7 @@ void Simulator::pfCheckDetection(FaultList &remain)
 	ParaValue detected = PARA_L;
 	int start = cir_->tgate_ - cir_->npo_ - cir_->nppi_;
 	for (int i = start; i < cir_->tgate_; ++i)
-		detected |= ((cir_->gates_[i].gl_ & cir_->gates_[i].fh_) | (cir_->gates_[i].gh_ & cir_->gates_[i].fl_));
+		detected |= ((cir_->gates_[i].goodSimLow_ & cir_->gates_[i].faultSimHigh_) | (cir_->gates_[i].goodSimHigh_ & cir_->gates_[i].faultSimLow_));
 
 	// fault drop
 	for (int i = 0; i < ninjected_; ++i)
@@ -358,9 +358,9 @@ void Simulator::ppFaultSim(FaultList &remain)
 bool Simulator::ppCheckActivation(const Fault *const f)
 {
 	const int &fg = f->faultyLine_ == 0 ? f->gateID_ : /// if output fault,fg=ID of the faulty gate,else if input fault,fg=ID of the faulty gate's fanin array
-											cir_->gates_[f->gateID_].fis_[f->faultyLine_ - 1];
-	const ParaValue &gl = cir_->gates_[fg].gl_;
-	const ParaValue &gh = cir_->gates_[fg].gh_;
+											cir_->gates_[f->gateID_].faninVector_[f->faultyLine_ - 1];
+	const ParaValue &gl = cir_->gates_[fg].goodSimLow_;
+	const ParaValue &gh = cir_->gates_[fg].goodSimHigh_;
 
 	switch (f->faultType_)
 	{
@@ -375,13 +375,13 @@ bool Simulator::ppCheckActivation(const Fault *const f)
 		case Fault::STR:
 			if (cir_->nframe_ < 2)
 				return false;
-			activated_ = (gl & cir_->gates_[fg + cir_->ngate_].gh_);
+			activated_ = (gl & cir_->gates_[fg + cir_->ngate_].goodSimHigh_);
 			return activated_ != PARA_L;
 			break;
 		case Fault::STF:
 			if (cir_->nframe_ < 2)
 				return false;
-			activated_ = (gh & cir_->gates_[fg + cir_->ngate_].gl_);
+			activated_ = (gh & cir_->gates_[fg + cir_->ngate_].goodSimLow_);
 			return activated_ != PARA_L;
 			break;
 		default:
@@ -426,7 +426,7 @@ void Simulator::ppInject(const Fault *const f)
 	// put gate into event list
 	if (!processed_[fg])
 	{
-		events_[cir_->gates_[fg].lvl_].push(fg);
+		events_[cir_->gates_[fg].numLevel_].push(fg);
 		processed_[fg] = true;
 	}
 }
@@ -448,7 +448,7 @@ void Simulator::ppCheckDetection(Fault *const f)
 	for (int i = start; i < cir_->tgate_; ++i)
 	{
 		// TO-DO homework 02
-		detected |= ((cir_->gates_[i].gl_ & cir_->gates_[i].fh_) | (cir_->gates_[i].gh_ & cir_->gates_[i].fl_));
+		detected |= ((cir_->gates_[i].goodSimLow_ & cir_->gates_[i].faultSimHigh_) | (cir_->gates_[i].goodSimHigh_ & cir_->gates_[i].faultSimLow_));
 		// end of TO-DO
 	}
 	detected &= activated_;
@@ -486,8 +486,8 @@ void Simulator::ppSetPattern(PatternProcessor *pPatternProcessor, const int &i)
 	{
 		for (int k = 0; k < cir_->nframe_; ++k)
 		{
-			cir_->gates_[j + k * cir_->ngate_].gl_ = PARA_L;
-			cir_->gates_[j + k * cir_->ngate_].gh_ = PARA_L;
+			cir_->gates_[j + k * cir_->ngate_].goodSimLow_ = PARA_L;
+			cir_->gates_[j + k * cir_->ngate_].goodSimHigh_ = PARA_L;
 		}
 	}
 	// assign up to WORD_SIZE number of pattern values
@@ -502,9 +502,9 @@ void Simulator::ppSetPattern(PatternProcessor *pPatternProcessor, const int &i)
 			for (int k = 0; k < pPatternProcessor->numPI_; ++k)
 			{
 				if (pPatternProcessor->patternVector_[j].primaryInputs1st_[k] == L)
-					setBitValue(cir_->gates_[k].gl_, j - i, H);
+					setBitValue(cir_->gates_[k].goodSimLow_, j - i, H);
 				else if (pPatternProcessor->patternVector_[j].primaryInputs1st_[k] == H)
-					setBitValue(cir_->gates_[k].gh_, j - i, H);
+					setBitValue(cir_->gates_[k].goodSimHigh_, j - i, H);
 			}
 		}
 		// if (pcoll->patternVector_[j].primaryInputs2nd_ && cir_->nframe_ > 1)
@@ -514,9 +514,9 @@ void Simulator::ppSetPattern(PatternProcessor *pPatternProcessor, const int &i)
 			{
 				int index = k + cir_->ngate_;
 				if (pPatternProcessor->patternVector_[j].primaryInputs2nd_[k] == L)
-					setBitValue(cir_->gates_[index].gl_, j - i, H);
+					setBitValue(cir_->gates_[index].goodSimLow_, j - i, H);
 				else if (pPatternProcessor->patternVector_[j].primaryInputs2nd_[k] == H)
-					setBitValue(cir_->gates_[index].gh_, j - i, H);
+					setBitValue(cir_->gates_[index].goodSimHigh_, j - i, H);
 			}
 		}
 		// assign PPI
@@ -526,9 +526,9 @@ void Simulator::ppSetPattern(PatternProcessor *pPatternProcessor, const int &i)
 			{
 				int index = k + cir_->npi_;
 				if (pPatternProcessor->patternVector_[j].pseudoPrimaryInputs_[k] == L)
-					setBitValue(cir_->gates_[index].gl_, j - i, H);
+					setBitValue(cir_->gates_[index].goodSimLow_, j - i, H);
 				else if (pPatternProcessor->patternVector_[j].pseudoPrimaryInputs_[k] == H)
-					setBitValue(cir_->gates_[index].gh_, j - i, H);
+					setBitValue(cir_->gates_[index].goodSimHigh_, j - i, H);
 			}
 		}
 
@@ -537,9 +537,9 @@ void Simulator::ppSetPattern(PatternProcessor *pPatternProcessor, const int &i)
 		{
 			int index = cir_->ngate_ + cir_->npi_;
 			if (pPatternProcessor->patternVector_[j].shiftIn_[0] == L)
-				setBitValue(cir_->gates_[index].gl_, j - i, H);
+				setBitValue(cir_->gates_[index].goodSimLow_, j - i, H);
 			else if (pPatternProcessor->patternVector_[j].shiftIn_[0] == H)
-				setBitValue(cir_->gates_[index].gh_, j - i, H);
+				setBitValue(cir_->gates_[index].goodSimHigh_, j - i, H);
 		}
 	}
 } //}}}

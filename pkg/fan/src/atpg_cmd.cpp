@@ -513,9 +513,9 @@ bool ReportFaultCmd::exec(const std::vector<std::string> &argv)
 				std::cout << " AB     ";
 				break;
 		}
-		int cid = fanMgr_->cir->gates_[(*it)->gateID_].cid_;
+		int cid = fanMgr_->cir->gates_[(*it)->gateID_].cellId_;
 		int pid = (*it)->faultyLine_;
-		int pmtid = fanMgr_->cir->gates_[(*it)->gateID_].pmtid_;
+		int pmtid = fanMgr_->cir->gates_[(*it)->gateID_].primitiveId_;
 		if ((*it)->gateID_ == -1)
 		{ // CK
 			std::cout << "CK";
@@ -532,12 +532,12 @@ bool ReportFaultCmd::exec(const std::vector<std::string> &argv)
 		{ // test_se
 			std::cout << "test_se";
 		}
-		else if (fanMgr_->cir->gates_[(*it)->gateID_].type_ == Gate::PI)
+		else if (fanMgr_->cir->gates_[(*it)->gateID_].gateType_ == Gate::PI)
 		{
 			std::cout << fanMgr_->nl->getTop()->getPort(cid)->name_ << " ";
 			std::cout << "(primary input)";
 		}
-		else if (fanMgr_->cir->gates_[(*it)->gateID_].type_ == Gate::PO)
+		else if (fanMgr_->cir->gates_[(*it)->gateID_].gateType_ == Gate::PO)
 		{
 			std::cout << fanMgr_->nl->getTop()->getPort(cid)->name_ << " ";
 			std::cout << "(primary output)";
@@ -765,26 +765,26 @@ void ReportGateCmd::reportGate(const int &i) const
 {
 	Gate *g = &fanMgr_->cir->gates_[i];
 	std::cout << "#  ";
-	if (g->type_ == Gate::PI || g->type_ == Gate::PO)
+	if (g->gateType_ == Gate::PI || g->gateType_ == Gate::PO)
 	{
-		std::cout << fanMgr_->nl->getTop()->getPort((size_t)g->cid_)->name_;
+		std::cout << fanMgr_->nl->getTop()->getPort((size_t)g->cellId_)->name_;
 	}
 	else
 	{
-		std::cout << fanMgr_->nl->getTop()->getCell((size_t)g->cid_)->name_;
+		std::cout << fanMgr_->nl->getTop()->getCell((size_t)g->cellId_)->name_;
 	}
 	std::cout << " id(" << i << ") ";
-	std::cout << "lvl(" << g->lvl_ << ") ";
-	std::cout << "type(" << g->type_ << ") ";
+	std::cout << "lvl(" << g->numLevel_ << ") ";
+	std::cout << "type(" << g->gateType_ << ") ";
 	std::cout << "frame(" << g->frame_ << ")";
 	std::cout << "\n";
-	std::cout << "#    fi[" << g->nfi_ << "]";
-	for (int j = 0; j < g->nfi_; ++j)
-		std::cout << " " << g->fis_[j];
+	std::cout << "#    fi[" << g->numFI_ << "]";
+	for (int j = 0; j < g->numFI_; ++j)
+		std::cout << " " << g->faninVector_[j];
 	std::cout << "\n";
-	std::cout << "#    fo[" << g->nfo_ << "]";
-	for (int j = 0; j < g->nfo_; ++j)
-		std::cout << " " << g->fos_[j];
+	std::cout << "#    fo[" << g->numFO_ << "]";
+	for (int j = 0; j < g->numFO_; ++j)
+		std::cout << " " << g->fanoutVector_[j];
 	std::cout << "\n"
 						<< "\n";
 }
@@ -859,20 +859,20 @@ void ReportValueCmd::reportValue(const int &i) const
 {
 	Gate *g = &fanMgr_->cir->gates_[i];
 	std::cout << "#  ";
-	if (g->type_ == Gate::PI || g->type_ == Gate::PO)
-		std::cout << fanMgr_->nl->getTop()->getPort((size_t)g->cid_)->name_;
+	if (g->gateType_ == Gate::PI || g->gateType_ == Gate::PO)
+		std::cout << fanMgr_->nl->getTop()->getPort((size_t)g->cellId_)->name_;
 	else
-		std::cout << fanMgr_->nl->getTop()->getCell((size_t)g->cid_)->name_;
+		std::cout << fanMgr_->nl->getTop()->getCell((size_t)g->cellId_)->name_;
 	std::cout << " id(" << i << ") ";
-	std::cout << "lvl(" << g->lvl_ << ") ";
-	std::cout << "type(" << g->type_ << ") ";
+	std::cout << "lvl(" << g->numLevel_ << ") ";
+	std::cout << "type(" << g->gateType_ << ") ";
 	std::cout << "frame(" << g->frame_ << ")";
 	std::cout << "\n";
 	std::cout << "#    good:   ";
-	printValue(g->gl_, g->gh_);
+	printValue(g->goodSimLow_, g->goodSimHigh_);
 	std::cout << "\n";
 	std::cout << "#    faulty: ";
-	printValue(g->fl_, g->fh_);
+	printValue(g->faultSimLow_, g->faultSimHigh_);
 	std::cout << "\n"
 						<< "\n";
 }
@@ -1083,17 +1083,17 @@ bool AddPinConsCmd::exec(const std::vector<std::string> &argv)
 			continue;
 		}
 		int gid = fanMgr_->cir->portToGate_[p->id_];
-		if (fanMgr_->cir->gates_[gid].type_ != Gate::PI)
+		if (fanMgr_->cir->gates_[gid].gateType_ != Gate::PI)
 		{
 			std::cerr << "**ERROR AddPinConsCmd::exec(): Port `" << piname;
 			std::cerr << "' is not PI\n";
 			continue;
 		}
-		fanMgr_->cir->gates_[gid].hasCons_ = true;
+		fanMgr_->cir->gates_[gid].hasConstraint_ = true;
 		if (cons)
-			fanMgr_->cir->gates_[gid].cons_ = PARA_H;
+			fanMgr_->cir->gates_[gid].constraint_ = PARA_H;
 		else
-			fanMgr_->cir->gates_[gid].cons_ = PARA_L;
+			fanMgr_->cir->gates_[gid].constraint_ = PARA_L;
 	}
 
 	return true;

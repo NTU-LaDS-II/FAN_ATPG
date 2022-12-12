@@ -255,14 +255,14 @@ bool PatternWriter::writePat(const char *const fname)
 	for (int i = 0; i < cir_->npi_; ++i)
 	{
 		fprintf(fout, "%s ",
-						cir_->nl_->getTop()->getPort(cir_->gates_[i].cid_)->name_);
+						cir_->nl_->getTop()->getPort(cir_->gates_[i].cellId_)->name_);
 	}
 	fprintf(fout, " |\n");
 
 	for (int i = cir_->npi_; i < cir_->npi_ + cir_->nppi_; ++i)
 	{
 		fprintf(fout, "%s ",
-						cir_->nl_->getTop()->getCell(cir_->gates_[i].cid_)->name_);
+						cir_->nl_->getTop()->getCell(cir_->gates_[i].cellId_)->name_);
 	}
 	fprintf(fout, " |\n");
 
@@ -270,7 +270,7 @@ bool PatternWriter::writePat(const char *const fname)
 	for (int i = start; i < start + cir_->npo_; ++i)
 	{
 		fprintf(fout, "%s ",
-						cir_->nl_->getTop()->getPort(cir_->gates_[i].cid_)->name_);
+						cir_->nl_->getTop()->getPort(cir_->gates_[i].cellId_)->name_);
 	}
 	fprintf(fout, "\n");
 
@@ -766,7 +766,7 @@ bool PatternWriter::writeAscii(const char *const fname)
 		{
 			fprintf(fout,
 							"scan_cell = %d MASTER FFFF \"/%s\" \"I1\" \"SI\" \"Q\";\n",
-							cir_->npi_ + cir_->nppi_ - 1 - i, cir_->nl_->getTop()->getCell(cir_->gates_[i].cid_)->name_);
+							cir_->npi_ + cir_->nppi_ - 1 - i, cir_->nl_->getTop()->getCell(cir_->gates_[i].cellId_)->name_);
 		}
 
 		fprintf(fout, "end;\n");
@@ -801,18 +801,18 @@ bool PatternWriter::writeSTIL(const char *const fname)
 
 	for (int i = 0; i < cir_->npi_; ++i)
 	{
-		PI_Order.push_back(cir_->nl_->getTop()->getPort(cir_->gates_[i].cid_)->name_);
+		PI_Order.push_back(cir_->nl_->getTop()->getPort(cir_->gates_[i].cellId_)->name_);
 	}
 
 	for (int i = cir_->npi_; i < cir_->npi_ + cir_->nppi_; ++i)
 	{
-		SCAN_Order.push_back(cir_->nl_->getTop()->getCell(cir_->gates_[i].cid_)->name_);
+		SCAN_Order.push_back(cir_->nl_->getTop()->getCell(cir_->gates_[i].cellId_)->name_);
 	}
 
 	int start = cir_->npi_ + cir_->nppi_ + cir_->ncomb_;
 	for (int i = start; i < start + cir_->npo_; ++i)
 	{
-		PO_Order.push_back(cir_->nl_->getTop()->getPort(cir_->gates_[i].cid_)->name_);
+		PO_Order.push_back(cir_->nl_->getTop()->getPort(cir_->gates_[i].cellId_)->name_);
 	}
 
 	//

@@ -277,13 +277,13 @@ namespace CoreNs
 	// **************************************************************************
 	inline Value Atpg::evaluateGoodVal(Gate &gate)
 	{
-		if (gate.type_ == Gate::PI || gate.type_ == Gate::PPI)
-			return gate.v_;
+		if (gate.gateType_ == Gate::PI || gate.gateType_ == Gate::PPI)
+			return gate.atpgVal_;
 		Value v[4];
-		for (int i = 0; i < gate.nfi_; ++i)
-			v[i] = pCircuit_->gates_[gate.fis_[i]].v_;
+		for (int i = 0; i < gate.numFI_; ++i)
+			v[i] = pCircuit_->gates_[gate.faninVector_[i]].atpgVal_;
 
-		switch (gate.type_)
+		switch (gate.gateType_)
 		{
 			case Gate::PO:
 			case Gate::PPO:
@@ -346,15 +346,15 @@ namespace CoreNs
 	{
 		Value val;
 		int &faultyLine = currentTargetFault_.faultyLine_;
-		switch (gate.type_)
+		switch (gate.gateType_)
 		{
 			case Gate::PI:
 			case Gate::PPI:
-				return gate.v_;
+				return gate.atpgVal_;
 			case Gate::PO:
 			case Gate::PPO:
 			case Gate::BUF:
-				val = pCircuit_->gates_[gate.fis_[0]].v_;
+				val = pCircuit_->gates_[gate.faninVector_[0]].atpgVal_;
 				if (val == L && (currentTargetFault_.faultType_ == Fault::SA1 || currentTargetFault_.faultType_ == Fault::STF))
 				{
 					val = B; // logic D' (0/1)
@@ -365,7 +365,7 @@ namespace CoreNs
 				}
 				return val;
 			case Gate::INV:
-				val = pCircuit_->gates_[gate.fis_[0]].v_;
+				val = pCircuit_->gates_[gate.faninVector_[0]].atpgVal_;
 				if (faultyLine == 0)
 				{
 					val = cINV(val);
@@ -396,10 +396,10 @@ namespace CoreNs
 			case Gate::AND4:
 				if (faultyLine == 0)
 				{
-					val = pCircuit_->gates_[gate.fis_[0]].v_;
-					for (int i = 1; i < gate.nfi_; ++i)
+					val = pCircuit_->gates_[gate.faninVector_[0]].atpgVal_;
+					for (int i = 1; i < gate.numFI_; ++i)
 					{
-						val = cAND2(val, pCircuit_->gates_[gate.fis_[i]].v_);
+						val = cAND2(val, pCircuit_->gates_[gate.faninVector_[i]].atpgVal_);
 					}
 					if (val == L && (currentTargetFault_.faultType_ == Fault::SA1 || currentTargetFault_.faultType_ == Fault::STF))
 					{
@@ -412,7 +412,7 @@ namespace CoreNs
 				}
 				else
 				{
-					val = pCircuit_->gates_[gate.fis_[faultyLine - 1]].v_;
+					val = pCircuit_->gates_[gate.faninVector_[faultyLine - 1]].atpgVal_;
 					if (val == L && (currentTargetFault_.faultType_ == Fault::SA1 || currentTargetFault_.faultType_ == Fault::STF))
 					{
 						val = B;
@@ -421,11 +421,11 @@ namespace CoreNs
 					{
 						val = D;
 					}
-					for (int i = 0; i < gate.nfi_; ++i)
+					for (int i = 0; i < gate.numFI_; ++i)
 					{
 						if (i != faultyLine - 1)
 						{
-							val = cAND2(val, pCircuit_->gates_[gate.fis_[i]].v_);
+							val = cAND2(val, pCircuit_->gates_[gate.faninVector_[i]].atpgVal_);
 						}
 					}
 				}
@@ -435,10 +435,10 @@ namespace CoreNs
 			case Gate::NAND4:
 				if (faultyLine == 0)
 				{
-					val = pCircuit_->gates_[gate.fis_[0]].v_;
-					for (int i = 1; i < gate.nfi_; ++i)
+					val = pCircuit_->gates_[gate.faninVector_[0]].atpgVal_;
+					for (int i = 1; i < gate.numFI_; ++i)
 					{
-						val = cAND2(val, pCircuit_->gates_[gate.fis_[i]].v_);
+						val = cAND2(val, pCircuit_->gates_[gate.faninVector_[i]].atpgVal_);
 					}
 
 					val = cINV(val);
@@ -455,7 +455,7 @@ namespace CoreNs
 				}
 				else
 				{
-					val = pCircuit_->gates_[gate.fis_[faultyLine - 1]].v_;
+					val = pCircuit_->gates_[gate.faninVector_[faultyLine - 1]].atpgVal_;
 					if (val == L && (currentTargetFault_.faultType_ == Fault::SA1 || currentTargetFault_.faultType_ == Fault::STF))
 					{
 						val = B;
@@ -464,11 +464,11 @@ namespace CoreNs
 					{
 						val = D;
 					}
-					for (int i = 0; i < gate.nfi_; ++i)
+					for (int i = 0; i < gate.numFI_; ++i)
 					{
 						if (i != faultyLine - 1)
 						{
-							val = cAND2(val, pCircuit_->gates_[gate.fis_[i]].v_);
+							val = cAND2(val, pCircuit_->gates_[gate.faninVector_[i]].atpgVal_);
 						}
 					}
 					val = cINV(val);
@@ -480,10 +480,10 @@ namespace CoreNs
 
 				if (faultyLine == 0)
 				{
-					val = pCircuit_->gates_[gate.fis_[0]].v_;
-					for (int i = 1; i < gate.nfi_; ++i)
+					val = pCircuit_->gates_[gate.faninVector_[0]].atpgVal_;
+					for (int i = 1; i < gate.numFI_; ++i)
 					{
-						val = cOR2(val, pCircuit_->gates_[gate.fis_[i]].v_);
+						val = cOR2(val, pCircuit_->gates_[gate.faninVector_[i]].atpgVal_);
 					}
 					if (val == L && (currentTargetFault_.faultType_ == Fault::SA1 || currentTargetFault_.faultType_ == Fault::STF))
 					{
@@ -496,7 +496,7 @@ namespace CoreNs
 				}
 				else
 				{
-					val = pCircuit_->gates_[gate.fis_[faultyLine - 1]].v_;
+					val = pCircuit_->gates_[gate.faninVector_[faultyLine - 1]].atpgVal_;
 					if (val == L && (currentTargetFault_.faultType_ == Fault::SA1 || currentTargetFault_.faultType_ == Fault::STF))
 					{
 						val = B;
@@ -505,11 +505,11 @@ namespace CoreNs
 					{
 						val = D;
 					}
-					for (int i = 0; i < gate.nfi_; ++i)
+					for (int i = 0; i < gate.numFI_; ++i)
 					{
 						if (i != faultyLine - 1)
 						{
-							val = cOR2(val, pCircuit_->gates_[gate.fis_[i]].v_);
+							val = cOR2(val, pCircuit_->gates_[gate.faninVector_[i]].atpgVal_);
 						}
 					}
 				}
@@ -519,10 +519,10 @@ namespace CoreNs
 			case Gate::NOR4:
 				if (faultyLine == 0)
 				{
-					val = pCircuit_->gates_[gate.fis_[0]].v_;
-					for (int i = 1; i < gate.nfi_; ++i)
+					val = pCircuit_->gates_[gate.faninVector_[0]].atpgVal_;
+					for (int i = 1; i < gate.numFI_; ++i)
 					{
-						val = cOR2(val, pCircuit_->gates_[gate.fis_[i]].v_);
+						val = cOR2(val, pCircuit_->gates_[gate.faninVector_[i]].atpgVal_);
 					}
 
 					val = cINV(val);
@@ -538,7 +538,7 @@ namespace CoreNs
 				}
 				else
 				{
-					val = pCircuit_->gates_[gate.fis_[faultyLine - 1]].v_;
+					val = pCircuit_->gates_[gate.faninVector_[faultyLine - 1]].atpgVal_;
 					if (val == L && (currentTargetFault_.faultType_ == Fault::SA1 || currentTargetFault_.faultType_ == Fault::STF))
 					{
 						val = B;
@@ -547,11 +547,11 @@ namespace CoreNs
 					{
 						val = D;
 					}
-					for (int i = 0; i < gate.nfi_; ++i)
+					for (int i = 0; i < gate.numFI_; ++i)
 					{
 						if (i != faultyLine - 1)
 						{
-							val = cOR2(val, pCircuit_->gates_[gate.fis_[i]].v_);
+							val = cOR2(val, pCircuit_->gates_[gate.faninVector_[i]].atpgVal_);
 						}
 					}
 					val = cINV(val);
@@ -561,13 +561,13 @@ namespace CoreNs
 			case Gate::XOR3:
 				if (faultyLine == 0)
 				{
-					if (gate.type_ == Gate::XOR2)
+					if (gate.gateType_ == Gate::XOR2)
 					{
-						val = cXOR2(pCircuit_->gates_[gate.fis_[0]].v_, pCircuit_->gates_[gate.fis_[1]].v_);
+						val = cXOR2(pCircuit_->gates_[gate.faninVector_[0]].atpgVal_, pCircuit_->gates_[gate.faninVector_[1]].atpgVal_);
 					}
 					else
 					{
-						val = cXOR3(pCircuit_->gates_[gate.fis_[0]].v_, pCircuit_->gates_[gate.fis_[1]].v_, pCircuit_->gates_[gate.fis_[2]].v_);
+						val = cXOR3(pCircuit_->gates_[gate.faninVector_[0]].atpgVal_, pCircuit_->gates_[gate.faninVector_[1]].atpgVal_, pCircuit_->gates_[gate.faninVector_[2]].atpgVal_);
 					}
 
 					if (val == L && (currentTargetFault_.faultType_ == Fault::SA1 || currentTargetFault_.faultType_ == Fault::STF))
@@ -581,7 +581,7 @@ namespace CoreNs
 				}
 				else
 				{
-					val = pCircuit_->gates_[gate.fis_[faultyLine - 1]].v_;
+					val = pCircuit_->gates_[gate.faninVector_[faultyLine - 1]].atpgVal_;
 					if (val == L && (currentTargetFault_.faultType_ == Fault::SA1 || currentTargetFault_.faultType_ == Fault::STF))
 					{
 						val = B;
@@ -591,19 +591,19 @@ namespace CoreNs
 						val = D;
 					}
 
-					if (gate.type_ == Gate::XOR2)
+					if (gate.gateType_ == Gate::XOR2)
 					{
 						// if (faultyLine - 1 == 0)
-						// 	val = cXOR2(pCircuit_->gates_[gate.fis_[1]].v_, val);
+						// 	val = cXOR2(pCircuit_->gates_[gate.faninVector_[1]].atpgVal_, val);
 						// else
-						// 	val = cXOR2(pCircuit_->gates_[gate.fis_[0]].v_, val);
+						// 	val = cXOR2(pCircuit_->gates_[gate.faninVector_[0]].atpgVal_, val);
 						switch (faultyLine - 1)
 						{
 							case 0:
-								val = cXOR2(pCircuit_->gates_[gate.fis_[1]].v_, val);
+								val = cXOR2(pCircuit_->gates_[gate.faninVector_[1]].atpgVal_, val);
 								break;
 							case 1:
-								val = cXOR2(pCircuit_->gates_[gate.fis_[0]].v_, val);
+								val = cXOR2(pCircuit_->gates_[gate.faninVector_[0]].atpgVal_, val);
 								break;
 							default:
 								std::cerr << "switch case default, should not happen\n";
@@ -613,21 +613,21 @@ namespace CoreNs
 					else
 					{ // XOR3
 						// if (faultyLine - 1 == 0)
-						// 	val = cXOR3(pCircuit_->gates_[gate.fis_[1]].v_, pCircuit_->gates_[gate.fis_[2]].v_, val);
+						// 	val = cXOR3(pCircuit_->gates_[gate.faninVector_[1]].atpgVal_, pCircuit_->gates_[gate.faninVector_[2]].atpgVal_, val);
 						// else if (faultyLine - 1 == 1)
-						// 	val = cXOR3(pCircuit_->gates_[gate.fis_[0]].v_, pCircuit_->gates_[gate.fis_[2]].v_, val);
+						// 	val = cXOR3(pCircuit_->gates_[gate.faninVector_[0]].atpgVal_, pCircuit_->gates_[gate.faninVector_[2]].atpgVal_, val);
 						// else
-						// 	val = cXOR3(pCircuit_->gates_[gate.fis_[1]].v_, pCircuit_->gates_[gate.fis_[0]].v_, val);
+						// 	val = cXOR3(pCircuit_->gates_[gate.faninVector_[1]].atpgVal_, pCircuit_->gates_[gate.faninVector_[0]].atpgVal_, val);
 						switch (faultyLine - 1)
 						{
 							case 0:
-								val = cXOR3(pCircuit_->gates_[gate.fis_[1]].v_, pCircuit_->gates_[gate.fis_[2]].v_, val);
+								val = cXOR3(pCircuit_->gates_[gate.faninVector_[1]].atpgVal_, pCircuit_->gates_[gate.faninVector_[2]].atpgVal_, val);
 								break;
 							case 1:
-								val = cXOR3(pCircuit_->gates_[gate.fis_[0]].v_, pCircuit_->gates_[gate.fis_[2]].v_, val);
+								val = cXOR3(pCircuit_->gates_[gate.faninVector_[0]].atpgVal_, pCircuit_->gates_[gate.faninVector_[2]].atpgVal_, val);
 								break;
 							case 2:
-								val = cXOR3(pCircuit_->gates_[gate.fis_[1]].v_, pCircuit_->gates_[gate.fis_[0]].v_, val);
+								val = cXOR3(pCircuit_->gates_[gate.faninVector_[1]].atpgVal_, pCircuit_->gates_[gate.faninVector_[0]].atpgVal_, val);
 								break;
 							default:
 								std::cerr << "switch case default, should not happen\n";
@@ -640,13 +640,13 @@ namespace CoreNs
 			case Gate::XNOR3:
 				if (faultyLine == 0)
 				{
-					if (gate.type_ == Gate::XNOR2)
+					if (gate.gateType_ == Gate::XNOR2)
 					{
-						val = cXNOR2(pCircuit_->gates_[gate.fis_[0]].v_, pCircuit_->gates_[gate.fis_[1]].v_);
+						val = cXNOR2(pCircuit_->gates_[gate.faninVector_[0]].atpgVal_, pCircuit_->gates_[gate.faninVector_[1]].atpgVal_);
 					}
 					else
 					{
-						val = cXNOR3(pCircuit_->gates_[gate.fis_[0]].v_, pCircuit_->gates_[gate.fis_[1]].v_, pCircuit_->gates_[gate.fis_[2]].v_);
+						val = cXNOR3(pCircuit_->gates_[gate.faninVector_[0]].atpgVal_, pCircuit_->gates_[gate.faninVector_[1]].atpgVal_, pCircuit_->gates_[gate.faninVector_[2]].atpgVal_);
 					}
 
 					if (val == L && (currentTargetFault_.faultType_ == Fault::SA1 || currentTargetFault_.faultType_ == Fault::STF))
@@ -660,7 +660,7 @@ namespace CoreNs
 				}
 				else
 				{
-					val = pCircuit_->gates_[gate.fis_[faultyLine - 1]].v_;
+					val = pCircuit_->gates_[gate.faninVector_[faultyLine - 1]].atpgVal_;
 					if (val == L && (currentTargetFault_.faultType_ == Fault::SA1 || currentTargetFault_.faultType_ == Fault::STF))
 					{
 						val = B;
@@ -670,19 +670,19 @@ namespace CoreNs
 						val = D;
 					}
 
-					if (gate.type_ == Gate::XNOR2)
+					if (gate.gateType_ == Gate::XNOR2)
 					{
 						// if (faultyLine - 1 == 0)
-						// 	val = cXNOR2(pCircuit_->gates_[gate.fis_[1]].v_, val);
+						// 	val = cXNOR2(pCircuit_->gates_[gate.faninVector_[1]].atpgVal_, val);
 						// else
-						// 	val = cXNOR2(pCircuit_->gates_[gate.fis_[0]].v_, val);
+						// 	val = cXNOR2(pCircuit_->gates_[gate.faninVector_[0]].atpgVal_, val);
 						switch (faultyLine - 1)
 						{
 							case 0:
-								val = cXNOR2(pCircuit_->gates_[gate.fis_[1]].v_, val);
+								val = cXNOR2(pCircuit_->gates_[gate.faninVector_[1]].atpgVal_, val);
 								break;
 							case 1:
-								val = cXNOR2(pCircuit_->gates_[gate.fis_[0]].v_, val);
+								val = cXNOR2(pCircuit_->gates_[gate.faninVector_[0]].atpgVal_, val);
 								break;
 							default:
 								std::cerr << "switch case default, should not happen\n";
@@ -693,21 +693,21 @@ namespace CoreNs
 					{ // XOR3
 						// change from if else to switch by wang
 						// if (faultyLine - 1 == 0)
-						// 	val = cXNOR3(pCircuit_->gates_[gate.fis_[1]].v_, pCircuit_->gates_[gate.fis_[2]].v_, val);
+						// 	val = cXNOR3(pCircuit_->gates_[gate.faninVector_[1]].atpgVal_, pCircuit_->gates_[gate.faninVector_[2]].atpgVal_, val);
 						// else if (faultyLine - 1 == 1)
-						// 	val = cXNOR3(pCircuit_->gates_[gate.fis_[0]].v_, pCircuit_->gates_[gate.fis_[2]].v_, val);
+						// 	val = cXNOR3(pCircuit_->gates_[gate.faninVector_[0]].atpgVal_, pCircuit_->gates_[gate.faninVector_[2]].atpgVal_, val);
 						// else
-						// 	val = cXNOR3(pCircuit_->gates_[gate.fis_[1]].v_, pCircuit_->gates_[gate.fis_[0]].v_, val);
+						// 	val = cXNOR3(pCircuit_->gates_[gate.faninVector_[1]].atpgVal_, pCircuit_->gates_[gate.faninVector_[0]].atpgVal_, val);
 						switch (faultyLine - 1)
 						{
 							case 0:
-								val = cXNOR3(pCircuit_->gates_[gate.fis_[1]].v_, pCircuit_->gates_[gate.fis_[2]].v_, val);
+								val = cXNOR3(pCircuit_->gates_[gate.faninVector_[1]].atpgVal_, pCircuit_->gates_[gate.faninVector_[2]].atpgVal_, val);
 								break;
 							case 1:
-								val = cXNOR3(pCircuit_->gates_[gate.fis_[0]].v_, pCircuit_->gates_[gate.fis_[2]].v_, val);
+								val = cXNOR3(pCircuit_->gates_[gate.faninVector_[0]].atpgVal_, pCircuit_->gates_[gate.faninVector_[2]].atpgVal_, val);
 								break;
 							case 2:
-								val = cXNOR3(pCircuit_->gates_[gate.fis_[1]].v_, pCircuit_->gates_[gate.fis_[0]].v_, val);
+								val = cXNOR3(pCircuit_->gates_[gate.faninVector_[1]].atpgVal_, pCircuit_->gates_[gate.faninVector_[0]].atpgVal_, val);
 								break;
 							default:
 								std::cerr << "switch case default, should not happen\n";
@@ -717,7 +717,7 @@ namespace CoreNs
 				}
 				return val;
 			default:
-				return gate.v_;
+				return gate.atpgVal_;
 		}
 	}
 
@@ -741,24 +741,24 @@ namespace CoreNs
 	{
 		for (int i = 0; i < pCircuit_->npi_; ++i)
 		{
-			pattern.primaryInputs1st_[i] = pCircuit_->gates_[i].v_;
+			pattern.primaryInputs1st_[i] = pCircuit_->gates_[i].atpgVal_;
 		}
 		// if (pattern.primaryInputs2nd_ != NULL && pCircuit_->nframe_ > 1)
 		if (!(pattern.primaryInputs2nd_.empty()) && pCircuit_->nframe_ > 1)
 		{
 			for (int i = 0; i < pCircuit_->npi_; ++i)
 			{
-				pattern.primaryInputs2nd_[i] = pCircuit_->gates_[i + pCircuit_->ngate_].v_;
+				pattern.primaryInputs2nd_[i] = pCircuit_->gates_[i + pCircuit_->ngate_].atpgVal_;
 			}
 		}
 		for (int i = 0; i < pCircuit_->nppi_; ++i)
 		{
-			pattern.pseudoPrimaryInputs_[i] = pCircuit_->gates_[pCircuit_->npi_ + i].v_;
+			pattern.pseudoPrimaryInputs_[i] = pCircuit_->gates_[pCircuit_->npi_ + i].atpgVal_;
 		}
 		// if (pattern.shiftIn_ != NULL && pCircuit_->nframe_ > 1)
 		if (!(pattern.shiftIn_.empty()) && pCircuit_->nframe_ > 1)
 		{
-			pattern.shiftIn_[0] = (pCircuit_->connType_ == Circuit::SHIFT) ? pCircuit_->gates_[pCircuit_->ngate_ + pCircuit_->npi_].v_ : X;
+			pattern.shiftIn_[0] = (pCircuit_->connType_ == Circuit::SHIFT) ? pCircuit_->gates_[pCircuit_->ngate_ + pCircuit_->npi_].atpgVal_ : X;
 		}
 	}
 
@@ -778,11 +778,11 @@ namespace CoreNs
 		int offset = pCircuit_->ngate_ - pCircuit_->npo_ - pCircuit_->nppi_;
 		for (int i = 0; i < pCircuit_->npo_; ++i)
 		{
-			if (pCircuit_->gates_[offset + i].gl_ == PARA_H)
+			if (pCircuit_->gates_[offset + i].goodSimLow_ == PARA_H)
 			{
 				pattern.primaryOutputs1st_[i] = L;
 			}
-			else if (pCircuit_->gates_[offset + i].gh_ == PARA_H)
+			else if (pCircuit_->gates_[offset + i].goodSimHigh_ == PARA_H)
 			{
 				pattern.primaryOutputs1st_[i] = H;
 			}
@@ -796,11 +796,11 @@ namespace CoreNs
 		{
 			for (int i = 0; i < pCircuit_->npo_; ++i)
 			{
-				if (pCircuit_->gates_[offset + i + pCircuit_->ngate_].gl_ == PARA_H)
+				if (pCircuit_->gates_[offset + i + pCircuit_->ngate_].goodSimLow_ == PARA_H)
 				{
 					pattern.primaryOutputs2nd_[i] = L;
 				}
-				else if (pCircuit_->gates_[offset + i + pCircuit_->ngate_].gh_ == PARA_H)
+				else if (pCircuit_->gates_[offset + i + pCircuit_->ngate_].goodSimHigh_ == PARA_H)
 				{
 					pattern.primaryOutputs2nd_[i] = H;
 				}
@@ -818,11 +818,11 @@ namespace CoreNs
 		}
 		for (int i = 0; i < pCircuit_->nppi_; ++i)
 		{
-			if (pCircuit_->gates_[offset + i].gl_ == PARA_H)
+			if (pCircuit_->gates_[offset + i].goodSimLow_ == PARA_H)
 			{
 				pattern.pseudoPrimaryOutputs_[i] = L;
 			}
-			else if (pCircuit_->gates_[offset + i].gh_ == PARA_H)
+			else if (pCircuit_->gates_[offset + i].goodSimHigh_ == PARA_H)
 			{
 				pattern.pseudoPrimaryOutputs_[i] = H;
 			}
@@ -838,7 +838,7 @@ namespace CoreNs
 		Gate &gate = pCircuit_->gates_[gateID];
 		if (!gateID_to_valModified_[gateID])
 		{
-			circuitLevel_to_EventStack_[gate.lvl_].push(gateID);
+			circuitLevel_to_EventStack_[gate.numLevel_].push(gateID);
 			gateID_to_valModified_[gateID] = 1;
 		}
 	}
@@ -854,13 +854,13 @@ namespace CoreNs
 	{
 		int pushedGateCount = 0;
 		Gate &gate = pCircuit_->gates_[gateID];
-		for (int i = 0; i < gate.nfo_; ++i)
+		for (int i = 0; i < gate.numFO_; ++i)
 		{
-			int &outputGateLevel = pCircuit_->gates_[gate.fos_[i]].lvl_;
-			if (!gateID_to_valModified_[gate.fos_[i]])
+			int &outputGateLevel = pCircuit_->gates_[gate.fanoutVector_[i]].numLevel_;
+			if (!gateID_to_valModified_[gate.fanoutVector_[i]])
 			{
-				circuitLevel_to_EventStack_[outputGateLevel].push(gate.fos_[i]);
-				gateID_to_valModified_[gate.fos_[i]] = 1;
+				circuitLevel_to_EventStack_[outputGateLevel].push(gate.fanoutVector_[i]);
+				gateID_to_valModified_[gate.fanoutVector_[i]] = 1;
 				++pushedGateCount;
 			}
 		}
@@ -1094,17 +1094,17 @@ namespace CoreNs
 	// inline void Atpg::pushGateFanoutsToEventStack(const int &gateID)
 	// {
 	// 	Gate &gate = pCircuit_->gates_[gateID];
-	// 	for (int i = 0; i < gate.nfo_; ++i)
+	// 	for (int i = 0; i < gate.numFO_; ++i)
 	// 	{
-	// 		pushGateToEventStack(gate.fos_[i]);
+	// 		pushGateToEventStack(gate.fanoutVector_[i]);
 	// 	}
 	// } originally duplicate function and implemented for performance but bad readability, removed by wang
 
 	// inline void Atpg::pushInputEvents(const int &gateID, int index)
 	// {
 	// 	Gate &gate = pCircuit_->gates_[gateID];
-	// 	pushGateToEventStack(gate.fis_[index]);
-	// 	pushGateFanoutsToEventStack(gate.fis_[index]);
+	// 	pushGateToEventStack(gate.faninVector_[index]);
+	// 	pushGateFanoutsToEventStack(gate.faninVector_[index]);
 	// }
 };
 

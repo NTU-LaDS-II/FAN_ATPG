@@ -120,25 +120,25 @@ namespace CoreNs
 		// set pattern; apply pattern to PI
 		for (int j = 0; j < cir_->npi_; ++j)
 		{
-			cir_->gates_[j].gl_ = PARA_L;
-			cir_->gates_[j].gh_ = PARA_L;
+			cir_->gates_[j].goodSimLow_ = PARA_L;
+			cir_->gates_[j].goodSimHigh_ = PARA_L;
 			if (!pattern.primaryInputs1st_.empty())
 			{
 				if (pattern.primaryInputs1st_[j] == L)
-					cir_->gates_[j].gl_ = PARA_H;
+					cir_->gates_[j].goodSimLow_ = PARA_H;
 				else if (pattern.primaryInputs1st_[j] == H)
-					cir_->gates_[j].gh_ = PARA_H;
+					cir_->gates_[j].goodSimHigh_ = PARA_H;
 			}
 			if (cir_->nframe_ > 1)
 			{
-				cir_->gates_[j + cir_->ngate_].gl_ = PARA_L;
-				cir_->gates_[j + cir_->ngate_].gh_ = PARA_L;
+				cir_->gates_[j + cir_->ngate_].goodSimLow_ = PARA_L;
+				cir_->gates_[j + cir_->ngate_].goodSimHigh_ = PARA_L;
 				if (!pattern.primaryInputs2nd_.empty())
 				{
 					if (pattern.primaryInputs2nd_[j] == L)
-						cir_->gates_[j + cir_->ngate_].gl_ = PARA_H;
+						cir_->gates_[j + cir_->ngate_].goodSimLow_ = PARA_H;
 					else if (pattern.primaryInputs2nd_[j] == H)
-						cir_->gates_[j + cir_->ngate_].gh_ = PARA_H;
+						cir_->gates_[j + cir_->ngate_].goodSimHigh_ = PARA_H;
 				}
 			}
 		}
@@ -146,36 +146,36 @@ namespace CoreNs
 		// set pattern; apply pattern to PPI
 		for (int j = cir_->npi_; j < cir_->npi_ + cir_->nppi_; ++j)
 		{
-			cir_->gates_[j].gl_ = PARA_L;
-			cir_->gates_[j].gh_ = PARA_L;
+			cir_->gates_[j].goodSimLow_ = PARA_L;
+			cir_->gates_[j].goodSimHigh_ = PARA_L;
 			if (!pattern.pseudoPrimaryInputs_.empty())
 			{
 				if (pattern.pseudoPrimaryInputs_[j - cir_->npi_] == L)
 				{
-					cir_->gates_[j].gl_ = PARA_H;
+					cir_->gates_[j].goodSimLow_ = PARA_H;
 				}
 				else if (pattern.pseudoPrimaryInputs_[j - cir_->npi_] == H)
 				{
-					cir_->gates_[j].gh_ = PARA_H;
+					cir_->gates_[j].goodSimHigh_ = PARA_H;
 				}
 			}
 			if (cir_->connType_ == Circuit::SHIFT && cir_->nframe_ > 1)
 			{
 				for (int k = 1; k < cir_->nframe_; ++k)
 				{
-					cir_->gates_[j + cir_->ngate_ * k].gl_ = PARA_L;
-					cir_->gates_[j + cir_->ngate_ * k].gh_ = PARA_L;
+					cir_->gates_[j + cir_->ngate_ * k].goodSimLow_ = PARA_L;
+					cir_->gates_[j + cir_->ngate_ * k].goodSimHigh_ = PARA_L;
 					if (j == cir_->npi_)
 					{
 						if (!pattern.shiftIn_.empty())
 						{
 							if (pattern.shiftIn_[k - 1] == L)
 							{
-								cir_->gates_[j + cir_->ngate_ * k].gl_ = PARA_H;
+								cir_->gates_[j + cir_->ngate_ * k].goodSimLow_ = PARA_H;
 							}
 							else if (pattern.shiftIn_[k - 1] == H)
 							{
-								cir_->gates_[j + cir_->ngate_ * k].gh_ = PARA_H;
+								cir_->gates_[j + cir_->ngate_ * k].goodSimHigh_ = PARA_H;
 							}
 						}
 					}
@@ -234,8 +234,8 @@ namespace CoreNs
 		for (int i = 0; i < cir_->tgate_; ++i)
 		{
 			goodEval(i);
-			cir_->gates_[i].fl_ = cir_->gates_[i].gl_;
-			cir_->gates_[i].fh_ = cir_->gates_[i].gh_;
+			cir_->gates_[i].faultSimLow_ = cir_->gates_[i].goodSimLow_;
+			cir_->gates_[i].faultSimHigh_ = cir_->gates_[i].goodSimHigh_;
 		}
 	}
 
@@ -253,8 +253,8 @@ namespace CoreNs
 	{
 		for (int i = 0; i < nrecover_; ++i)
 		{
-			cir_->gates_[recover_[i]].fl_ = cir_->gates_[recover_[i]].gl_;
-			cir_->gates_[recover_[i]].fh_ = cir_->gates_[recover_[i]].gh_;
+			cir_->gates_[recover_[i]].faultSimLow_ = cir_->gates_[recover_[i]].goodSimLow_;
+			cir_->gates_[recover_[i]].faultSimHigh_ = cir_->gates_[recover_[i]].goodSimHigh_;
 		}
 		nrecover_ = 0;
 		memset(processed_, 0, cir_->tgate_ * sizeof(bool));
@@ -277,8 +277,8 @@ namespace CoreNs
 	{
 		for (int i = 0; i < nrecover_; ++i)
 		{
-			cir_->gates_[recover_[i]].fl_ = cir_->gates_[recover_[i]].gl_;
-			cir_->gates_[recover_[i]].fh_ = cir_->gates_[recover_[i]].gh_;
+			cir_->gates_[recover_[i]].faultSimLow_ = cir_->gates_[recover_[i]].goodSimLow_;
+			cir_->gates_[recover_[i]].faultSimHigh_ = cir_->gates_[recover_[i]].goodSimHigh_;
 		}
 		nrecover_ = 0;
 		memset(processed_, 0, cir_->tgate_ * sizeof(bool));
@@ -304,117 +304,117 @@ namespace CoreNs
 	inline void Simulator::goodEval(const int &i)
 	{
 		// find number of fanin
-		const int fi1 = cir_->gates_[i].nfi_ > 0 ? cir_->gates_[i].fis_[0] : 0;
-		const int fi2 = cir_->gates_[i].nfi_ > 1 ? cir_->gates_[i].fis_[1] : 0;
-		const int fi3 = cir_->gates_[i].nfi_ > 2 ? cir_->gates_[i].fis_[2] : 0;
-		const int fi4 = cir_->gates_[i].nfi_ > 3 ? cir_->gates_[i].fis_[3] : 0;
+		const int fi1 = cir_->gates_[i].numFI_ > 0 ? cir_->gates_[i].faninVector_[0] : 0;
+		const int fi2 = cir_->gates_[i].numFI_ > 1 ? cir_->gates_[i].faninVector_[1] : 0;
+		const int fi3 = cir_->gates_[i].numFI_ > 2 ? cir_->gates_[i].faninVector_[2] : 0;
+		const int fi4 = cir_->gates_[i].numFI_ > 3 ? cir_->gates_[i].faninVector_[3] : 0;
 		// read value of fanin
-		const ParaValue &l1 = cir_->gates_[fi1].gl_;
-		const ParaValue &h1 = cir_->gates_[fi1].gh_;
-		const ParaValue &l2 = cir_->gates_[fi2].gl_;
-		const ParaValue &h2 = cir_->gates_[fi2].gh_;
-		const ParaValue &l3 = cir_->gates_[fi3].gl_;
-		const ParaValue &h3 = cir_->gates_[fi3].gh_;
-		const ParaValue &l4 = cir_->gates_[fi4].gl_;
-		const ParaValue &h4 = cir_->gates_[fi4].gh_;
+		const ParaValue &l1 = cir_->gates_[fi1].goodSimLow_;
+		const ParaValue &h1 = cir_->gates_[fi1].goodSimHigh_;
+		const ParaValue &l2 = cir_->gates_[fi2].goodSimLow_;
+		const ParaValue &h2 = cir_->gates_[fi2].goodSimHigh_;
+		const ParaValue &l3 = cir_->gates_[fi3].goodSimLow_;
+		const ParaValue &h3 = cir_->gates_[fi3].goodSimHigh_;
+		const ParaValue &l4 = cir_->gates_[fi4].goodSimLow_;
+		const ParaValue &h4 = cir_->gates_[fi4].goodSimHigh_;
 		// evaluate good value of gate's output
-		switch (cir_->gates_[i].type_)
+		switch (cir_->gates_[i].gateType_)
 		{
 			case Gate::INV:
-				cir_->gates_[i].gl_ = h1;
-				cir_->gates_[i].gh_ = l1;
+				cir_->gates_[i].goodSimLow_ = h1;
+				cir_->gates_[i].goodSimHigh_ = l1;
 				break;
 			case Gate::PO:
 			case Gate::PPO:
 			case Gate::BUF:
-				cir_->gates_[i].gl_ = l1;
-				cir_->gates_[i].gh_ = h1;
+				cir_->gates_[i].goodSimLow_ = l1;
+				cir_->gates_[i].goodSimHigh_ = h1;
 				break;
 			case Gate::AND2:
-				cir_->gates_[i].gl_ = l1 | l2;
-				cir_->gates_[i].gh_ = h1 & h2;
+				cir_->gates_[i].goodSimLow_ = l1 | l2;
+				cir_->gates_[i].goodSimHigh_ = h1 & h2;
 				break;
 			case Gate::AND3:
-				cir_->gates_[i].gl_ = l1 | l2 | l3;
-				cir_->gates_[i].gh_ = h1 & h2 & h3;
+				cir_->gates_[i].goodSimLow_ = l1 | l2 | l3;
+				cir_->gates_[i].goodSimHigh_ = h1 & h2 & h3;
 				break;
 			case Gate::AND4:
-				cir_->gates_[i].gl_ = l1 | l2 | l3 | l4;
-				cir_->gates_[i].gh_ = h1 & h2 & h3 & h4;
+				cir_->gates_[i].goodSimLow_ = l1 | l2 | l3 | l4;
+				cir_->gates_[i].goodSimHigh_ = h1 & h2 & h3 & h4;
 				break;
 			case Gate::NAND2:
-				cir_->gates_[i].gl_ = h1 & h2;
-				cir_->gates_[i].gh_ = l1 | l2;
+				cir_->gates_[i].goodSimLow_ = h1 & h2;
+				cir_->gates_[i].goodSimHigh_ = l1 | l2;
 				break;
 			case Gate::NAND3:
-				cir_->gates_[i].gl_ = h1 & h2 & h3;
-				cir_->gates_[i].gh_ = l1 | l2 | l3;
+				cir_->gates_[i].goodSimLow_ = h1 & h2 & h3;
+				cir_->gates_[i].goodSimHigh_ = l1 | l2 | l3;
 				break;
 			case Gate::NAND4:
-				cir_->gates_[i].gl_ = h1 & h2 & h3 & h4;
-				cir_->gates_[i].gh_ = l1 | l2 | l3 | l4;
+				cir_->gates_[i].goodSimLow_ = h1 & h2 & h3 & h4;
+				cir_->gates_[i].goodSimHigh_ = l1 | l2 | l3 | l4;
 				break;
 			case Gate::OR2:
-				cir_->gates_[i].gl_ = l1 & l2;
-				cir_->gates_[i].gh_ = h1 | h2;
+				cir_->gates_[i].goodSimLow_ = l1 & l2;
+				cir_->gates_[i].goodSimHigh_ = h1 | h2;
 				break;
 			case Gate::OR3:
-				cir_->gates_[i].gl_ = l1 & l2 & l3;
-				cir_->gates_[i].gh_ = h1 | h2 | h3;
+				cir_->gates_[i].goodSimLow_ = l1 & l2 & l3;
+				cir_->gates_[i].goodSimHigh_ = h1 | h2 | h3;
 				break;
 			case Gate::OR4:
-				cir_->gates_[i].gl_ = l1 & l2 & l3 & l4;
-				cir_->gates_[i].gh_ = h1 | h2 | h3 | h4;
+				cir_->gates_[i].goodSimLow_ = l1 & l2 & l3 & l4;
+				cir_->gates_[i].goodSimHigh_ = h1 | h2 | h3 | h4;
 				break;
 			case Gate::NOR2:
-				cir_->gates_[i].gl_ = h1 | h2;
-				cir_->gates_[i].gh_ = l1 & l2;
+				cir_->gates_[i].goodSimLow_ = h1 | h2;
+				cir_->gates_[i].goodSimHigh_ = l1 & l2;
 				break;
 			case Gate::NOR3:
-				cir_->gates_[i].gl_ = h1 | h2 | h3;
-				cir_->gates_[i].gh_ = l1 & l2 & l3;
+				cir_->gates_[i].goodSimLow_ = h1 | h2 | h3;
+				cir_->gates_[i].goodSimHigh_ = l1 & l2 & l3;
 				break;
 			case Gate::NOR4:
-				cir_->gates_[i].gl_ = h1 | h2 | h3 | h4;
-				cir_->gates_[i].gh_ = l1 & l2 & l3 & l4;
+				cir_->gates_[i].goodSimLow_ = h1 | h2 | h3 | h4;
+				cir_->gates_[i].goodSimHigh_ = l1 & l2 & l3 & l4;
 				break;
 			case Gate::XOR2:
 				// TO-DO homework 01
-				cir_->gates_[i].gl_ = (l1 & l2) | (h1 & h2);
-				cir_->gates_[i].gh_ = (l1 & h2) | (l2 & h1);
+				cir_->gates_[i].goodSimLow_ = (l1 & l2) | (h1 & h2);
+				cir_->gates_[i].goodSimHigh_ = (l1 & h2) | (l2 & h1);
 				// end of TO-DO
 				break;
 			case Gate::XOR3:
 				// TO-DO homework 01
-				cir_->gates_[i].gl_ = (l1 & l2 & l3) | (l1 & h2 & h3) | (h1 & l2 & h3) | (h1 & h2 & l3);
-				cir_->gates_[i].gh_ = (h1 & l2 & l3) | (l1 & h2 & l3) | (l1 & l2 & h3) | (h1 & h2 & h3);
+				cir_->gates_[i].goodSimLow_ = (l1 & l2 & l3) | (l1 & h2 & h3) | (h1 & l2 & h3) | (h1 & h2 & l3);
+				cir_->gates_[i].goodSimHigh_ = (h1 & l2 & l3) | (l1 & h2 & l3) | (l1 & l2 & h3) | (h1 & h2 & h3);
 				// end of TO-DO
 				break;
 			case Gate::XNOR2:
 				// TO-DO homework 01
-				cir_->gates_[i].gl_ = (l1 & h2) | (l2 & h1);
-				cir_->gates_[i].gh_ = (l1 & l2) | (h1 & h2);
+				cir_->gates_[i].goodSimLow_ = (l1 & h2) | (l2 & h1);
+				cir_->gates_[i].goodSimHigh_ = (l1 & l2) | (h1 & h2);
 				// end of TO-DO
 				break;
 			case Gate::XNOR3:
 				// TO-DO homework 01
-				cir_->gates_[i].gl_ = (h1 & l2 & l3) | (l1 & h2 & l3) | (l1 & l2 & h3) | (h1 & h2 & h3);
-				cir_->gates_[i].gh_ = (l1 & l2 & l3) | (l1 & h2 & h3) | (h1 & l2 & h3) | (h1 & h2 & l3);
+				cir_->gates_[i].goodSimLow_ = (h1 & l2 & l3) | (l1 & h2 & l3) | (l1 & l2 & h3) | (h1 & h2 & h3);
+				cir_->gates_[i].goodSimHigh_ = (l1 & l2 & l3) | (l1 & h2 & h3) | (h1 & l2 & h3) | (h1 & h2 & l3);
 				// end of TO-DO
 				break;
 			case Gate::TIE1:
-				cir_->gates_[i].gl_ = PARA_L;
-				cir_->gates_[i].gh_ = PARA_H;
+				cir_->gates_[i].goodSimLow_ = PARA_L;
+				cir_->gates_[i].goodSimHigh_ = PARA_H;
 				break;
 			case Gate::TIE0:
-				cir_->gates_[i].gl_ = PARA_H;
-				cir_->gates_[i].gh_ = PARA_L;
+				cir_->gates_[i].goodSimLow_ = PARA_H;
+				cir_->gates_[i].goodSimHigh_ = PARA_L;
 				break;
 			case Gate::PPI:
 				if (cir_->connType_ == Circuit::CAPTURE && cir_->gates_[i].frame_ > 0)
 				{
-					cir_->gates_[i].gl_ = l1;
-					cir_->gates_[i].gh_ = h1;
+					cir_->gates_[i].goodSimLow_ = l1;
+					cir_->gates_[i].goodSimHigh_ = h1;
 				}
 				break;
 			default:
@@ -435,124 +435,124 @@ namespace CoreNs
 	inline void Simulator::faultEval(const int &i)
 	{
 		// find number of fanin
-		const int fi1 = cir_->gates_[i].nfi_ > 0 ? cir_->gates_[i].fis_[0] : 0;
-		const int fi2 = cir_->gates_[i].nfi_ > 1 ? cir_->gates_[i].fis_[1] : 0;
-		const int fi3 = cir_->gates_[i].nfi_ > 2 ? cir_->gates_[i].fis_[2] : 0;
-		const int fi4 = cir_->gates_[i].nfi_ > 3 ? cir_->gates_[i].fis_[3] : 0;
+		const int fi1 = cir_->gates_[i].numFI_ > 0 ? cir_->gates_[i].faninVector_[0] : 0;
+		const int fi2 = cir_->gates_[i].numFI_ > 1 ? cir_->gates_[i].faninVector_[1] : 0;
+		const int fi3 = cir_->gates_[i].numFI_ > 2 ? cir_->gates_[i].faninVector_[2] : 0;
+		const int fi4 = cir_->gates_[i].numFI_ > 3 ? cir_->gates_[i].faninVector_[3] : 0;
 		// read value of fanin with fault masking
-		const ParaValue l1 = (cir_->gates_[fi1].fl_ & ~faultInjectH_[i][1]) | faultInjectL_[i][1];
-		const ParaValue h1 = (cir_->gates_[fi1].fh_ & ~faultInjectL_[i][1]) | faultInjectH_[i][1];
-		const ParaValue l2 = (cir_->gates_[fi2].fl_ & ~faultInjectH_[i][2]) | faultInjectL_[i][2];
-		const ParaValue h2 = (cir_->gates_[fi2].fh_ & ~faultInjectL_[i][2]) | faultInjectH_[i][2];
-		const ParaValue l3 = (cir_->gates_[fi3].fl_ & ~faultInjectH_[i][3]) | faultInjectL_[i][3];
-		const ParaValue h3 = (cir_->gates_[fi3].fh_ & ~faultInjectL_[i][3]) | faultInjectH_[i][3];
-		const ParaValue l4 = (cir_->gates_[fi4].fl_ & ~faultInjectH_[i][4]) | faultInjectL_[i][4];
-		const ParaValue h4 = (cir_->gates_[fi4].fh_ & ~faultInjectL_[i][4]) | faultInjectH_[i][4];
+		const ParaValue l1 = (cir_->gates_[fi1].faultSimLow_ & ~faultInjectH_[i][1]) | faultInjectL_[i][1];
+		const ParaValue h1 = (cir_->gates_[fi1].faultSimHigh_ & ~faultInjectL_[i][1]) | faultInjectH_[i][1];
+		const ParaValue l2 = (cir_->gates_[fi2].faultSimLow_ & ~faultInjectH_[i][2]) | faultInjectL_[i][2];
+		const ParaValue h2 = (cir_->gates_[fi2].faultSimHigh_ & ~faultInjectL_[i][2]) | faultInjectH_[i][2];
+		const ParaValue l3 = (cir_->gates_[fi3].faultSimLow_ & ~faultInjectH_[i][3]) | faultInjectL_[i][3];
+		const ParaValue h3 = (cir_->gates_[fi3].faultSimHigh_ & ~faultInjectL_[i][3]) | faultInjectH_[i][3];
+		const ParaValue l4 = (cir_->gates_[fi4].faultSimLow_ & ~faultInjectH_[i][4]) | faultInjectL_[i][4];
+		const ParaValue h4 = (cir_->gates_[fi4].faultSimHigh_ & ~faultInjectL_[i][4]) | faultInjectH_[i][4];
 		// evaluate faulty value of gate's output
-		switch (cir_->gates_[i].type_)
+		switch (cir_->gates_[i].gateType_)
 		{
 			case Gate::INV:
-				cir_->gates_[i].fl_ = h1;
-				cir_->gates_[i].fh_ = l1;
+				cir_->gates_[i].faultSimLow_ = h1;
+				cir_->gates_[i].faultSimHigh_ = l1;
 				break;
 			case Gate::PO:
 			case Gate::PPO:
 			case Gate::BUF:
-				cir_->gates_[i].fl_ = l1;
-				cir_->gates_[i].fh_ = h1;
+				cir_->gates_[i].faultSimLow_ = l1;
+				cir_->gates_[i].faultSimHigh_ = h1;
 				break;
 			case Gate::AND2:
-				cir_->gates_[i].fl_ = l1 | l2;
-				cir_->gates_[i].fh_ = h1 & h2;
+				cir_->gates_[i].faultSimLow_ = l1 | l2;
+				cir_->gates_[i].faultSimHigh_ = h1 & h2;
 				break;
 			case Gate::AND3:
-				cir_->gates_[i].fl_ = l1 | l2 | l3;
-				cir_->gates_[i].fh_ = h1 & h2 & h3;
+				cir_->gates_[i].faultSimLow_ = l1 | l2 | l3;
+				cir_->gates_[i].faultSimHigh_ = h1 & h2 & h3;
 				break;
 			case Gate::AND4:
-				cir_->gates_[i].fl_ = l1 | l2 | l3 | l4;
-				cir_->gates_[i].fh_ = h1 & h2 & h3 & h4;
+				cir_->gates_[i].faultSimLow_ = l1 | l2 | l3 | l4;
+				cir_->gates_[i].faultSimHigh_ = h1 & h2 & h3 & h4;
 				break;
 			case Gate::NAND2:
-				cir_->gates_[i].fl_ = h1 & h2;
-				cir_->gates_[i].fh_ = l1 | l2;
+				cir_->gates_[i].faultSimLow_ = h1 & h2;
+				cir_->gates_[i].faultSimHigh_ = l1 | l2;
 				break;
 			case Gate::NAND3:
-				cir_->gates_[i].fl_ = h1 & h2 & h3;
-				cir_->gates_[i].fh_ = l1 | l2 | l3;
+				cir_->gates_[i].faultSimLow_ = h1 & h2 & h3;
+				cir_->gates_[i].faultSimHigh_ = l1 | l2 | l3;
 				break;
 			case Gate::NAND4:
-				cir_->gates_[i].fl_ = h1 & h2 & h3 & h4;
-				cir_->gates_[i].fh_ = l1 | l2 | l3 | l4;
+				cir_->gates_[i].faultSimLow_ = h1 & h2 & h3 & h4;
+				cir_->gates_[i].faultSimHigh_ = l1 | l2 | l3 | l4;
 				break;
 			case Gate::OR2:
-				cir_->gates_[i].fl_ = l1 & l2;
-				cir_->gates_[i].fh_ = h1 | h2;
+				cir_->gates_[i].faultSimLow_ = l1 & l2;
+				cir_->gates_[i].faultSimHigh_ = h1 | h2;
 				break;
 			case Gate::OR3:
-				cir_->gates_[i].fl_ = l1 & l2 & l3;
-				cir_->gates_[i].fh_ = h1 | h2 | h3;
+				cir_->gates_[i].faultSimLow_ = l1 & l2 & l3;
+				cir_->gates_[i].faultSimHigh_ = h1 | h2 | h3;
 				break;
 			case Gate::OR4:
-				cir_->gates_[i].fl_ = l1 & l2 & l3 & l4;
-				cir_->gates_[i].fh_ = h1 | h2 | h3 | h4;
+				cir_->gates_[i].faultSimLow_ = l1 & l2 & l3 & l4;
+				cir_->gates_[i].faultSimHigh_ = h1 | h2 | h3 | h4;
 				break;
 			case Gate::NOR2:
-				cir_->gates_[i].fl_ = h1 | h2;
-				cir_->gates_[i].fh_ = l1 & l2;
+				cir_->gates_[i].faultSimLow_ = h1 | h2;
+				cir_->gates_[i].faultSimHigh_ = l1 & l2;
 				break;
 			case Gate::NOR3:
-				cir_->gates_[i].fl_ = h1 | h2 | h3;
-				cir_->gates_[i].fh_ = l1 & l2 & l3;
+				cir_->gates_[i].faultSimLow_ = h1 | h2 | h3;
+				cir_->gates_[i].faultSimHigh_ = l1 & l2 & l3;
 				break;
 			case Gate::NOR4:
-				cir_->gates_[i].fl_ = h1 | h2 | h3 | h4;
-				cir_->gates_[i].fh_ = l1 & l2 & l3 & l4;
+				cir_->gates_[i].faultSimLow_ = h1 | h2 | h3 | h4;
+				cir_->gates_[i].faultSimHigh_ = l1 & l2 & l3 & l4;
 				break;
 			case Gate::XOR2:
 				// TO-DO homework 02
-				cir_->gates_[i].fl_ = (l1 & l2) | (h1 & h2);
-				cir_->gates_[i].fh_ = (l1 & h2) | (l2 & h1);
+				cir_->gates_[i].faultSimLow_ = (l1 & l2) | (h1 & h2);
+				cir_->gates_[i].faultSimHigh_ = (l1 & h2) | (l2 & h1);
 				// end of TO-DO
 				break;
 			case Gate::XOR3:
 				// TO-DO homework 02
-				cir_->gates_[i].fl_ = (l1 & l2 & l3) | (l1 & h2 & h3) | (h1 & l2 & h3) | (h1 & h2 & l3);
-				cir_->gates_[i].fh_ = (h1 & l2 & l3) | (l1 & h2 & l3) | (l1 & l2 & h3) | (h1 & h2 & h3);
+				cir_->gates_[i].faultSimLow_ = (l1 & l2 & l3) | (l1 & h2 & h3) | (h1 & l2 & h3) | (h1 & h2 & l3);
+				cir_->gates_[i].faultSimHigh_ = (h1 & l2 & l3) | (l1 & h2 & l3) | (l1 & l2 & h3) | (h1 & h2 & h3);
 				// end of TO-DO
 				break;
 			case Gate::XNOR2:
 				// TO-DO homework 02
-				cir_->gates_[i].fl_ = (l1 & h2) | (l2 & h1);
-				cir_->gates_[i].fh_ = (l1 & l2) | (h1 & h2);
+				cir_->gates_[i].faultSimLow_ = (l1 & h2) | (l2 & h1);
+				cir_->gates_[i].faultSimHigh_ = (l1 & l2) | (h1 & h2);
 				// end of TO-DO
 				break;
 			case Gate::XNOR3:
 				// TO-DO homework 02
-				cir_->gates_[i].fl_ = (h1 & l2 & l3) | (l1 & h2 & l3) | (l1 & l2 & h3) | (h1 & h2 & h3);
-				cir_->gates_[i].fh_ = (l1 & l2 & l3) | (l1 & h2 & h3) | (h1 & l2 & h3) | (h1 & h2 & l3);
+				cir_->gates_[i].faultSimLow_ = (h1 & l2 & l3) | (l1 & h2 & l3) | (l1 & l2 & h3) | (h1 & h2 & h3);
+				cir_->gates_[i].faultSimHigh_ = (l1 & l2 & l3) | (l1 & h2 & h3) | (h1 & l2 & h3) | (h1 & h2 & l3);
 				// end of TO-DO
 				break;
 			case Gate::TIE1:
-				cir_->gates_[i].fl_ = PARA_L;
-				cir_->gates_[i].fh_ = PARA_H;
+				cir_->gates_[i].faultSimLow_ = PARA_L;
+				cir_->gates_[i].faultSimHigh_ = PARA_H;
 				break;
 			case Gate::TIE0:
-				cir_->gates_[i].fl_ = PARA_H;
-				cir_->gates_[i].fh_ = PARA_L;
+				cir_->gates_[i].faultSimLow_ = PARA_H;
+				cir_->gates_[i].faultSimHigh_ = PARA_L;
 				break;
 			case Gate::PPI:
 				if (cir_->connType_ == Circuit::CAPTURE && cir_->gates_[i].frame_ > 0)
 				{
-					cir_->gates_[i].fl_ = l1;
-					cir_->gates_[i].fh_ = h1;
+					cir_->gates_[i].faultSimLow_ = l1;
+					cir_->gates_[i].faultSimHigh_ = h1;
 				}
 				break;
 			default:
 				break;
 		}
-		cir_->gates_[i].fl_ = (cir_->gates_[i].fl_ & ~faultInjectH_[i][0]) | faultInjectL_[i][0];
-		cir_->gates_[i].fh_ = (cir_->gates_[i].fh_ & ~faultInjectL_[i][0]) | faultInjectH_[i][0];
+		cir_->gates_[i].faultSimLow_ = (cir_->gates_[i].faultSimLow_ & ~faultInjectH_[i][0]) | faultInjectL_[i][0];
+		cir_->gates_[i].faultSimHigh_ = (cir_->gates_[i].faultSimHigh_ & ~faultInjectL_[i][0]) | faultInjectH_[i][0];
 	}
 };
 
