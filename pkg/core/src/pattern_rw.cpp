@@ -155,19 +155,22 @@ void PatternReader::setPatternType(const PatType &type)
 			pcoll_->numSI_ = 1;
 			break;
 	}
-} //}}}
-//{{{ void PatternReader::setPatternNum(const int &)
+}
+
 void PatternReader::setPatternNum(const int &num)
 {
 	if (!success_)
+	{
 		return;
-	pcoll_->patternVector_.resize((size_t)num);
-	Pattern *pats = new Pattern[pcoll_->patternVector_.size()];
+	}
+	pcoll_->patternVector_.resize(num);
 	for (size_t i = 0; i < pcoll_->patternVector_.size(); ++i)
-		pcoll_->patternVector_[i] = &pats[i];
+	{
+		pcoll_->patternVector_[i] = Pattern();
+	}
 	curPat_ = 0;
-} //}}}
-//{{{ void PatternReader::addPattern()
+}
+
 // read in a pattern
 void PatternReader::addPattern(const char *const pi1,
 															 const char *const pi2,
@@ -178,41 +181,43 @@ void PatternReader::addPattern(const char *const pi1,
 															 const char *const ppo)
 {
 	if (!success_)
+	{
 		return;
+	}
 	if (pi1 && curPat_ < (int)pcoll_->patternVector_.size())
 	{
-		pcoll_->patternVector_[curPat_]->pPI1_.resize(pcoll_->numPI_); 
-		assignValue(pcoll_->patternVector_[curPat_]->pPI1_, pi1, pcoll_->numPI_);
+		pcoll_->patternVector_[curPat_].primaryInputs1st_.resize(pcoll_->numPI_);
+		assignValue(pcoll_->patternVector_[curPat_].primaryInputs1st_, pi1, pcoll_->numPI_);
 	}
 	if (pi2 && curPat_ < (int)pcoll_->patternVector_.size())
 	{
-		pcoll_->patternVector_[curPat_]->pPI2_.resize(pcoll_->numPI_);
-		assignValue(pcoll_->patternVector_[curPat_]->pPI2_, pi2, pcoll_->numPI_);
+		pcoll_->patternVector_[curPat_].primaryInputs2nd_.resize(pcoll_->numPI_);
+		assignValue(pcoll_->patternVector_[curPat_].primaryInputs2nd_, pi2, pcoll_->numPI_);
 	}
 	if (ppi && curPat_ < (int)pcoll_->patternVector_.size())
 	{
-		pcoll_->patternVector_[curPat_]->pPPI_.resize(pcoll_->numPPI_);
-		assignValue(pcoll_->patternVector_[curPat_]->pPPI_, ppi, pcoll_->numPPI_);
+		pcoll_->patternVector_[curPat_].pseudoPrimaryInputs_.resize(pcoll_->numPPI_);
+		assignValue(pcoll_->patternVector_[curPat_].pseudoPrimaryInputs_, ppi, pcoll_->numPPI_);
 	}
 	if (si && curPat_ < (int)pcoll_->patternVector_.size())
 	{
-		pcoll_->patternVector_[curPat_]->pSI_.resize(pcoll_->numSI_);
-		assignValue(pcoll_->patternVector_[curPat_]->pSI_, si, pcoll_->numSI_);
+		pcoll_->patternVector_[curPat_].shiftIn_.resize(pcoll_->numSI_);
+		assignValue(pcoll_->patternVector_[curPat_].shiftIn_, si, pcoll_->numSI_);
 	}
 	if (po1 && curPat_ < (int)pcoll_->patternVector_.size())
 	{
-		pcoll_->patternVector_[curPat_]->pPO1_.resize(pcoll_->numPO_);
-		assignValue(pcoll_->patternVector_[curPat_]->pPO1_, po1, pcoll_->numPO_);
+		pcoll_->patternVector_[curPat_].primaryOutputs1st_.resize(pcoll_->numPO_);
+		assignValue(pcoll_->patternVector_[curPat_].primaryOutputs1st_, po1, pcoll_->numPO_);
 	}
 	if (po2 && curPat_ < (int)pcoll_->patternVector_.size())
 	{
-		pcoll_->patternVector_[curPat_]->pPO2_.resize(pcoll_->numPO_);
-		assignValue(pcoll_->patternVector_[curPat_]->pPO2_, po2, pcoll_->numPO_);
+		pcoll_->patternVector_[curPat_].primaryOutputs2nd_.resize(pcoll_->numPO_);
+		assignValue(pcoll_->patternVector_[curPat_].primaryOutputs2nd_, po2, pcoll_->numPO_);
 	}
 	if (ppo && curPat_ < (int)pcoll_->patternVector_.size())
 	{
-		pcoll_->patternVector_[curPat_]->pPPO_.resize(pcoll_->numPPI_);
-		assignValue(pcoll_->patternVector_[curPat_]->pPPO_, ppo, pcoll_->numPPI_);
+		pcoll_->patternVector_[curPat_].pseudoPrimaryOutputs_.resize(pcoll_->numPPI_);
+		assignValue(pcoll_->patternVector_[curPat_].pseudoPrimaryOutputs_, ppo, pcoll_->numPPI_);
 	}
 	curPat_++;
 } //}}}
@@ -287,91 +292,91 @@ bool PatternWriter::writePat(const char *const fname)
 	for (int i = 0; i < (int)pcoll_->patternVector_.size(); ++i)
 	{
 		fprintf(fout, "_pattern_%d ", i + 1);
-		if (!pcoll_->patternVector_[i]->pPI1_.empty())
+		if (!pcoll_->patternVector_[i].primaryInputs1st_.empty())
 		{
 			for (int j = 0; j < pcoll_->numPI_; ++j)
 			{
-				if (pcoll_->patternVector_[i]->pPI1_[j] == L)
+				if (pcoll_->patternVector_[i].primaryInputs1st_[j] == L)
 					fprintf(fout, "0");
-				else if (pcoll_->patternVector_[i]->pPI1_[j] == H)
+				else if (pcoll_->patternVector_[i].primaryInputs1st_[j] == H)
 					fprintf(fout, "1");
 				else
 					fprintf(fout, "X");
 			}
 		}
 		fprintf(fout, " | ");
-		if (!pcoll_->patternVector_[i]->pPI2_.empty())
+		if (!pcoll_->patternVector_[i].primaryInputs2nd_.empty())
 		{
 			for (int j = 0; j < pcoll_->numPI_; ++j)
 			{
-				if (pcoll_->patternVector_[i]->pPI2_[j] == L)
+				if (pcoll_->patternVector_[i].primaryInputs2nd_[j] == L)
 					fprintf(fout, "0");
-				else if (pcoll_->patternVector_[i]->pPI2_[j] == H)
+				else if (pcoll_->patternVector_[i].primaryInputs2nd_[j] == H)
 					fprintf(fout, "1");
 				else
 					fprintf(fout, "X");
 			}
 		}
 		fprintf(fout, " | ");
-		if (!pcoll_->patternVector_[i]->pPPI_.empty())
+		if (!pcoll_->patternVector_[i].pseudoPrimaryInputs_.empty())
 		{
 			for (int j = 0; j < pcoll_->numPPI_; ++j)
 			{
-				if (pcoll_->patternVector_[i]->pPPI_[j] == L)
+				if (pcoll_->patternVector_[i].pseudoPrimaryInputs_[j] == L)
 					fprintf(fout, "0");
-				else if (pcoll_->patternVector_[i]->pPPI_[j] == H)
+				else if (pcoll_->patternVector_[i].pseudoPrimaryInputs_[j] == H)
 					fprintf(fout, "1");
 				else
 					fprintf(fout, "X");
 			}
 		}
 		fprintf(fout, " | ");
-		if (!pcoll_->patternVector_[i]->pSI_.empty())
+		if (!pcoll_->patternVector_[i].shiftIn_.empty())
 		{
 			for (int j = 0; j < pcoll_->numSI_; ++j)
 			{
-				if (pcoll_->patternVector_[i]->pSI_[j] == L)
+				if (pcoll_->patternVector_[i].shiftIn_[j] == L)
 					fprintf(fout, "0");
-				else if (pcoll_->patternVector_[i]->pSI_[j] == H)
+				else if (pcoll_->patternVector_[i].shiftIn_[j] == H)
 					fprintf(fout, "1");
 				else
 					fprintf(fout, "X");
 			}
 		}
 		fprintf(fout, " | ");
-		if (!pcoll_->patternVector_[i]->pPO1_.empty())
+		if (!pcoll_->patternVector_[i].primaryOutputs1st_.empty())
 		{
 			for (int j = 0; j < pcoll_->numPO_; ++j)
 			{
-				if (pcoll_->patternVector_[i]->pPO1_[j] == L)
+				if (pcoll_->patternVector_[i].primaryOutputs1st_[j] == L)
 					fprintf(fout, "0");
-				else if (pcoll_->patternVector_[i]->pPO1_[j] == H)
+				else if (pcoll_->patternVector_[i].primaryOutputs1st_[j] == H)
 					fprintf(fout, "1");
 				else
 					fprintf(fout, "X");
 			}
 		}
 		fprintf(fout, " | ");
-		if (!pcoll_->patternVector_[i]->pPO2_.empty())
+		if (!pcoll_->patternVector_[i].primaryOutputs2nd_.empty())
 		{
 			for (int j = 0; j < pcoll_->numPO_; ++j)
 			{
-				if (pcoll_->patternVector_[i]->pPO2_[j] == L)
+				if (pcoll_->patternVector_[i].primaryOutputs2nd_[j] == L)
 					fprintf(fout, "0");
-				else if (pcoll_->patternVector_[i]->pPO2_[j] == H)
+				else if (pcoll_->patternVector_[i].primaryOutputs2nd_[j] == H)
 					fprintf(fout, "1");
 				else
 					fprintf(fout, "X");
 			}
 		}
 		fprintf(fout, " | ");
-		if (!pcoll_->patternVector_[i]->pPPI_.empty())
+		if (!pcoll_->patternVector_[i].pseudoPrimaryInputs_.empty())
 		{
 			for (int j = 0; j < pcoll_->numPPI_; ++j)
 			{
-				if (pcoll_->patternVector_[i]->pPPO_[j] == L)
+				if (pcoll_->patternVector_[i].pseudoPrimaryOutputs_[j] == L)
 					fprintf(fout, "0");
-				else if (pcoll_->patternVector_[i]->pPPO_[j] == H)
+				else if (pcoll_->patternVector_[i].pseudoPrimaryOutputs_[j] == H)
 					fprintf(fout, "1");
 				else
 					fprintf(fout, "X");
@@ -403,53 +408,53 @@ bool PatternWriter::writeLht(const char *const fname)
 	for (size_t i = 0; i < pcoll_->patternVector_.size(); ++i)
 	{
 		fprintf(fout, "%d: ", (int)i + 1);
-		if (!pcoll_->patternVector_[i]->pPI1_.empty())
+		if (!pcoll_->patternVector_[i].primaryInputs1st_.empty())
 		{
 			for (int j = 0; j < pcoll_->numPI_; ++j)
 			{
-				if (pcoll_->patternVector_[i]->pPI1_[j] == L)
+				if (pcoll_->patternVector_[i].primaryInputs1st_[j] == L)
 					fprintf(fout, "0");
-				else if (pcoll_->patternVector_[i]->pPI1_[j] == H)
+				else if (pcoll_->patternVector_[i].primaryInputs1st_[j] == H)
 					fprintf(fout, "1");
 				else
 					fprintf(fout, "X");
 			}
 		}
-		if (!pcoll_->patternVector_[i]->pPI2_.empty())
+		if (!pcoll_->patternVector_[i].primaryInputs2nd_.empty())
 		{
 			fprintf(fout, "->");
 			for (int j = 0; j < pcoll_->numPI_; ++j)
 			{
-				if (pcoll_->patternVector_[i]->pPI2_[j] == L)
+				if (pcoll_->patternVector_[i].primaryInputs2nd_[j] == L)
 					fprintf(fout, "0");
-				else if (pcoll_->patternVector_[i]->pPI2_[j] == H)
+				else if (pcoll_->patternVector_[i].primaryInputs2nd_[j] == H)
 					fprintf(fout, "1");
 				else
 					fprintf(fout, "X");
 			}
 		}
 		fprintf(fout, "_");
-		if (!pcoll_->patternVector_[i]->pPPI_.empty())
+		if (!pcoll_->patternVector_[i].pseudoPrimaryInputs_.empty())
 		{
 			fprintf(fout, "->");
 			for (int j = 0; j < pcoll_->numPPI_; ++j)
 			{
-				if (pcoll_->patternVector_[i]->pPPI_[j] == L)
+				if (pcoll_->patternVector_[i].pseudoPrimaryInputs_[j] == L)
 					fprintf(fout, "0");
-				else if (pcoll_->patternVector_[i]->pPPI_[j] == H)
+				else if (pcoll_->patternVector_[i].pseudoPrimaryInputs_[j] == H)
 					fprintf(fout, "1");
 				else
 					fprintf(fout, "X");
 			}
 		}
-		if (!pcoll_->patternVector_[i]->pSI_.empty())
+		if (!pcoll_->patternVector_[i].shiftIn_.empty())
 		{
 			fprintf(fout, "@");
 			for (int j = 0; j < pcoll_->numSI_; ++j)
 			{
-				if (pcoll_->patternVector_[i]->pSI_[j] == L)
+				if (pcoll_->patternVector_[i].shiftIn_[j] == L)
 					fprintf(fout, "0");
-				else if (pcoll_->patternVector_[i]->pSI_[j] == H)
+				else if (pcoll_->patternVector_[i].shiftIn_[j] == H)
 					fprintf(fout, "1");
 				else
 					fprintf(fout, "X");
@@ -457,40 +462,40 @@ bool PatternWriter::writeLht(const char *const fname)
 		}
 		fprintf(fout, " | ");
 
-		if (!pcoll_->patternVector_[i]->pPO1_.empty() && pcoll_->type_ == PatternProcessor::BASIC_SCAN)
+		if (!pcoll_->patternVector_[i].primaryOutputs1st_.empty() && pcoll_->type_ == PatternProcessor::BASIC_SCAN)
 		{
 			for (int j = 0; j < pcoll_->numPO_; ++j)
 			{
-				if (pcoll_->patternVector_[i]->pPO1_[j] == L)
+				if (pcoll_->patternVector_[i].primaryOutputs1st_[j] == L)
 					fprintf(fout, "0");
-				else if (pcoll_->patternVector_[i]->pPO1_[j] == H)
+				else if (pcoll_->patternVector_[i].primaryOutputs1st_[j] == H)
 					fprintf(fout, "1");
 				else
 					fprintf(fout, "X");
 			}
 		}
 
-		if (!pcoll_->patternVector_[i]->pPO2_.empty() && (pcoll_->type_ == PatternProcessor::LAUNCH_CAPTURE || pcoll_->type_ == PatternProcessor::LAUNCH_SHIFT))
+		if (!pcoll_->patternVector_[i].primaryOutputs2nd_.empty() && (pcoll_->type_ == PatternProcessor::LAUNCH_CAPTURE || pcoll_->type_ == PatternProcessor::LAUNCH_SHIFT))
 		{
 			for (int j = 0; j < pcoll_->numPO_; ++j)
 			{
-				if (pcoll_->patternVector_[i]->pPO2_[j] == L)
+				if (pcoll_->patternVector_[i].primaryOutputs2nd_[j] == L)
 					fprintf(fout, "0");
-				else if (pcoll_->patternVector_[i]->pPO2_[j] == H)
+				else if (pcoll_->patternVector_[i].primaryOutputs2nd_[j] == H)
 					fprintf(fout, "1");
 				else
 					fprintf(fout, "X");
 			}
 		}
 		fprintf(fout, "_");
-		if (!pcoll_->patternVector_[i]->pPPO_.empty())
+		if (!pcoll_->patternVector_[i].pseudoPrimaryOutputs_.empty())
 		{
 			fprintf(fout, "->");
 			for (int j = 0; j < pcoll_->numPPI_; ++j)
 			{
-				if (pcoll_->patternVector_[i]->pPPO_[j] == L)
+				if (pcoll_->patternVector_[i].pseudoPrimaryOutputs_[j] == L)
 					fprintf(fout, "0");
-				else if (pcoll_->patternVector_[i]->pPPO_[j] == H)
+				else if (pcoll_->patternVector_[i].pseudoPrimaryOutputs_[j] == H)
 					fprintf(fout, "1");
 				else
 					fprintf(fout, "X");
@@ -627,7 +632,7 @@ bool PatternWriter::writeAscii(const char *const fname)
 	for (int i = 0; i < (int)pcoll_->patternVector_.size(); ++i)
 	{
 		fprintf(fout, "pattern = %d", i);
-		if (!pcoll_->patternVector_[i]->pPI2_.empty())
+		if (!pcoll_->patternVector_[i].primaryInputs2nd_.empty())
 			fprintf(fout, " clock_sequential;\n");
 		else
 			fprintf(fout, ";\n");
@@ -638,9 +643,9 @@ bool PatternWriter::writeAscii(const char *const fname)
 			fprintf(fout, "chain \"chain1\" = \"");
 			for (int j = pcoll_->numPPI_ - 1; j >= 0; --j)
 			{
-				if (pcoll_->patternVector_[i]->pPPI_[j] == L)
+				if (pcoll_->patternVector_[i].pseudoPrimaryInputs_[j] == L)
 					fprintf(fout, "0");
-				else if (pcoll_->patternVector_[i]->pPPI_[j] == H)
+				else if (pcoll_->patternVector_[i].pseudoPrimaryInputs_[j] == H)
 					fprintf(fout, "1");
 				else
 					fprintf(fout, "X");
@@ -648,16 +653,16 @@ bool PatternWriter::writeAscii(const char *const fname)
 			fprintf(fout, "\";\n");
 			fprintf(fout, "end;\n");
 		}
-		if (!pcoll_->patternVector_[i]->pPI1_.empty())
+		if (!pcoll_->patternVector_[i].primaryInputs1st_.empty())
 		{
 			fprintf(fout, "force \"PI\" \"");
 			if (seqCircuitCheck)
 				fprintf(fout, "000");
 			for (int j = 0; j < pcoll_->numPI_; ++j)
 			{
-				if (pcoll_->patternVector_[i]->pPI1_[j] == L)
+				if (pcoll_->patternVector_[i].primaryInputs1st_[j] == L)
 					fprintf(fout, "0");
-				else if (pcoll_->patternVector_[i]->pPI1_[j] == H)
+				else if (pcoll_->patternVector_[i].primaryInputs1st_[j] == H)
 					fprintf(fout, "1");
 				else
 					fprintf(fout, "X");
@@ -665,7 +670,7 @@ bool PatternWriter::writeAscii(const char *const fname)
 			fprintf(fout, "\" 1;\n");
 		}
 		// fprintf(fout, "pulse \"/CK\" 2;\n");
-		if (!pcoll_->patternVector_[i]->pPI2_.empty())
+		if (!pcoll_->patternVector_[i].primaryInputs2nd_.empty())
 		{
 			if (seqCircuitCheck)
 				fprintf(fout, "pulse \"/CK\" 2;\n");
@@ -674,56 +679,56 @@ bool PatternWriter::writeAscii(const char *const fname)
 				fprintf(fout, "000");
 			for (int j = 0; j < pcoll_->numPI_; ++j)
 			{
-				if (pcoll_->patternVector_[i]->pPI2_[j] == L)
+				if (pcoll_->patternVector_[i].primaryInputs2nd_[j] == L)
 					fprintf(fout, "0");
-				else if (pcoll_->patternVector_[i]->pPI2_[j] == H)
+				else if (pcoll_->patternVector_[i].primaryInputs2nd_[j] == H)
 					fprintf(fout, "1");
 				else
 					fprintf(fout, "X");
 			}
 			fprintf(fout, "\" 3;\n");
 		}
-		if (!pcoll_->patternVector_[i]->pPO2_.empty())
+		if (!pcoll_->patternVector_[i].primaryOutputs2nd_.empty())
 		{
 			fprintf(fout, "measure \"PO\" \"");
 			if (seqCircuitCheck)
 				fprintf(fout, "X");
 			for (int j = 0; j < pcoll_->numPO_; ++j)
 			{
-				if (pcoll_->patternVector_[i]->pPO2_[j] == L)
+				if (pcoll_->patternVector_[i].primaryOutputs2nd_[j] == L)
 					fprintf(fout, "0");
-				else if (pcoll_->patternVector_[i]->pPO2_[j] == H)
+				else if (pcoll_->patternVector_[i].primaryOutputs2nd_[j] == H)
 					fprintf(fout, "1");
 				else
 					fprintf(fout, "X");
 			}
 			fprintf(fout, "\" 4;\n");
 		}
-		else if (!pcoll_->patternVector_[i]->pPO1_.empty())
+		else if (!pcoll_->patternVector_[i].primaryOutputs1st_.empty())
 		{
 			fprintf(fout, "measure \"PO\" \"");
 			if (seqCircuitCheck)
 				fprintf(fout, "X");
 			for (int j = 0; j < pcoll_->numPO_; ++j)
 			{
-				if (pcoll_->patternVector_[i]->pPO1_[j] == L)
+				if (pcoll_->patternVector_[i].primaryOutputs1st_[j] == L)
 					fprintf(fout, "0");
-				else if (pcoll_->patternVector_[i]->pPO1_[j] == H)
+				else if (pcoll_->patternVector_[i].primaryOutputs1st_[j] == H)
 					fprintf(fout, "1");
 				else
 					fprintf(fout, "X");
 			}
 			fprintf(fout, "\" 4;\n");
 		}
-		/*if (pcoll_->patternVector_[i]->pPO2_) {
+		/*if (pcoll_->patternVector_[i].primaryOutputs2nd_) {
 				fprintf(fout, "pulse \"/CK\" 5;\n");
 				fprintf(fout, "measure \"PO\" \"");
 				if (seqCircuitCheck)
 						fprintf(fout, "X");
 				for (int j = 0; j < pcoll_->numPO_; ++j) {
-						if (pcoll_->patternVector_[i]->pPO2_[j] == L)
+						if (pcoll_->patternVector_[i].primaryOutputs2nd_[j] == L)
 								fprintf(fout, "0");
-						else if (pcoll_->patternVector_[i]->pPO2_[j] == H)
+						else if (pcoll_->patternVector_[i].primaryOutputs2nd_[j] == H)
 								fprintf(fout, "1");
 						else
 								fprintf(fout, "X");
@@ -738,9 +743,9 @@ bool PatternWriter::writeAscii(const char *const fname)
 			fprintf(fout, "chain \"chain1\" = \"");
 			for (int j = pcoll_->numPPI_ - 1; j >= 0; --j)
 			{
-				if (pcoll_->patternVector_[i]->pPPO_[j] == L)
+				if (pcoll_->patternVector_[i].pseudoPrimaryOutputs_[j] == L)
 					fprintf(fout, "0");
-				else if (pcoll_->patternVector_[i]->pPPO_[j] == H)
+				else if (pcoll_->patternVector_[i].pseudoPrimaryOutputs_[j] == H)
 					fprintf(fout, "1");
 				else
 					fprintf(fout, "X");
@@ -851,56 +856,56 @@ bool PatternWriter::writeSTIL(const char *const fname)
 	{
 		map<string, string> map_pattern;
 
-		if (!pcoll_->patternVector_[i]->pPI1_.empty())
+		if (!pcoll_->patternVector_[i].primaryInputs1st_.empty())
 		{
 			map_pattern["pi1"] = "";
 			for (int j = 0; j < pcoll_->numPI_; ++j)
 			{
-				if (pcoll_->patternVector_[i]->pPI1_[j] == L)
+				if (pcoll_->patternVector_[i].primaryInputs1st_[j] == L)
 					map_pattern["pi1"] += "0";
-				else if (pcoll_->patternVector_[i]->pPI1_[j] == H)
+				else if (pcoll_->patternVector_[i].primaryInputs1st_[j] == H)
 					map_pattern["pi1"] += "1";
 				else
 					map_pattern["pi1"] += "N";
 			}
 		}
 
-		if (!pcoll_->patternVector_[i]->pPPI_.empty())
+		if (!pcoll_->patternVector_[i].pseudoPrimaryInputs_.empty())
 		{
 			map_pattern["ppi1"] = "";
 			for (int j = 0; j < pcoll_->numPPI_; ++j)
 			{
-				if (pcoll_->patternVector_[i]->pPPI_[j] == L)
+				if (pcoll_->patternVector_[i].pseudoPrimaryInputs_[j] == L)
 					map_pattern["ppi1"] += "0";
-				else if (pcoll_->patternVector_[i]->pPPI_[j] == H)
+				else if (pcoll_->patternVector_[i].pseudoPrimaryInputs_[j] == H)
 					map_pattern["ppi1"] += "1";
 				else
 					map_pattern["ppi1"] += "N";
 			}
 			reverse(map_pattern["ppi1"].begin(), map_pattern["ppi1"].end());
 		}
-		if (!pcoll_->patternVector_[i]->pPO1_.empty())
+		if (!pcoll_->patternVector_[i].primaryOutputs1st_.empty())
 		{
 			map_pattern["po1"] = "";
 			for (int j = 0; j < pcoll_->numPO_; ++j)
 			{
-				if (pcoll_->patternVector_[i]->pPO1_[j] == L)
+				if (pcoll_->patternVector_[i].primaryOutputs1st_[j] == L)
 					map_pattern["po1"] += "L";
-				else if (pcoll_->patternVector_[i]->pPO1_[j] == H)
+				else if (pcoll_->patternVector_[i].primaryOutputs1st_[j] == H)
 					map_pattern["po1"] += "H";
 				else
 					map_pattern["po1"] += "N";
 			}
 		}
 
-		if (!pcoll_->patternVector_[i]->pPPI_.empty())
+		if (!pcoll_->patternVector_[i].pseudoPrimaryInputs_.empty())
 		{
 			map_pattern["ppo"] = "";
 			for (int j = 0; j < pcoll_->numPPI_; ++j)
 			{
-				if (pcoll_->patternVector_[i]->pPPO_[j] == L)
+				if (pcoll_->patternVector_[i].pseudoPrimaryOutputs_[j] == L)
 					map_pattern["ppo"] += "L";
-				else if (pcoll_->patternVector_[i]->pPPO_[j] == H)
+				else if (pcoll_->patternVector_[i].pseudoPrimaryOutputs_[j] == H)
 					map_pattern["ppo"] += "H";
 				else
 					map_pattern["ppo"] += "N";

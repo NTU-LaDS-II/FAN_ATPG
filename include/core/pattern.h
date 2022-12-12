@@ -17,37 +17,43 @@
 namespace CoreNs
 {
 
-	class Pattern;
-
-	typedef std::vector<Pattern *> PatternVec;
-
 	//  Not used now
 	// class Vertex;
 	// typedef std::vector<Vertex *> VertexVec;
 	//  end of compatibility graph
-
 	class Pattern
 	{
 	public:
-		Pattern();
-		std::vector<Value> pPI1_;
-		std::vector<Value> pPI2_;
-		std::vector<Value> pPPI_;
-		std::vector<Value> pSI_;
-		std::vector<Value> pPO1_;
-		std::vector<Value> pPO2_;
-		std::vector<Value> pPPO_;
+		inline Pattern() {}
+		inline Pattern(Circuit *pCircuit);
+		std::vector<Value> primaryInputs1st_;
+		std::vector<Value> primaryInputs2nd_;
+		std::vector<Value> pseudoPrimaryInputs_;
+		std::vector<Value> shiftIn_;
+		std::vector<Value> primaryOutputs1st_;
+		std::vector<Value> primaryOutputs2nd_;
+		std::vector<Value> pseudoPrimaryOutputs_;
+		inline void initForTransitionDelayFault(Circuit *pCircuit);
 	};
+	inline Pattern::Pattern(Circuit *pCircuit)
+			: primaryInputs1st_(pCircuit->npi_),
+				pseudoPrimaryInputs_(pCircuit->nppi_),
+				primaryOutputs1st_(pCircuit->npo_),
+				pseudoPrimaryOutputs_(pCircuit->nppi_){};
+	inline void Pattern::initForTransitionDelayFault(Circuit *pCircuit)
+	{
+		primaryInputs2nd_.resize(pCircuit->npi_);
+		primaryOutputs2nd_.reserve(pCircuit->npo_);
+		shiftIn_.resize(1);
+	}
 
 	// This class process the test pattern set
-	//
 	// it supports :
 	//  X-filling
 	//  static compression
 	class PatternProcessor
 	{
 	public:
-		// Three types of patterns
 		// BASIC_SCAN is for single time frame, stuck-at fault
 		// LAUNCH_CAPTURE is for 2-pattern test , launch-on-capture
 		// LAUNCH_SHIFT is for 2-pattern test, launch-on-shift
@@ -58,13 +64,12 @@ namespace CoreNs
 			LAUNCH_SHIFT
 		};
 
-		PatternProcessor();
+		inline PatternProcessor();
 		// ~PatternProcessor();
 
 		//  pattern set attribute
 		//  dynamic compression should be moved to ATPG  (E.4)
 		//  static compression and x fill should be rewritten as two independent methods (A.1)
-		//
 		enum State
 		{
 			OFF = 0,
@@ -72,14 +77,14 @@ namespace CoreNs
 		};
 		State staticCompression_;	 // Flag; ON = need static compression
 		State dynamicCompression_; // Flag; ON = need dynamic compression
-		State XFill_;							 //  Flag;  On = need X-Filling
+		State XFill_;							 // Flag; ON = need X-Filling
 
 		Type type_;
 		int numPI_;
 		int numPPI_;
 		int numSI_;
 		int numPO_;
-		PatternVec patternVector_;
+		std::vector<Pattern> patternVector_;
 		std::vector<int> pPIorder_;
 		std::vector<int> pPPIorder_;
 		std::vector<int> pPOorder_;
@@ -91,27 +96,11 @@ namespace CoreNs
 		// bool updateTable2(std::vector<bool> mergeRecord, std::vector<bool> patternTable); not used, hence removed
 	};
 
-	inline Pattern::Pattern()
-	{
-	}
-
-	// inline Pattern::~Pattern()
-	// {
-	// 	pPI1_.clear();
-	// 	pPI2_.clear();
-	// 	pPPI_.clear();
-	// 	pSI_.clear();
-	// 	pPO1_.clear();
-	// 	pPO2_.clear();
-	// 	pPPO_.clear();
-	// }
-
 	inline PatternProcessor::PatternProcessor()
 	{
-
-		staticCompression_ = OFF;	 
+		staticCompression_ = OFF;
 		dynamicCompression_ = OFF; // dynamic compression should be moved to ATPG
-		XFill_ = OFF;							
+		XFill_ = OFF;
 
 		type_ = BASIC_SCAN;
 		numPI_ = 0;
@@ -194,49 +183,53 @@ namespace CoreNs
 		for (int i = 0; i < size - 1; ++i)
 		{
 			if (mergeRecord[i] == true)
+			{
 				continue; // If the pattern has been merged before, no need to merge again
+			}
 			for (int j = i + 1; j < size; ++j)
 			{
 				if (mergeRecord[j] == true)
+				{
 					continue;
+				}
 
 				bool compatible = true; // Can be merged into one
 				for (int k = 0; k < numPI_; ++k)
 				{ // If any bit of the patterns has different values(one is high and one is low), the patterns are not compatible
-					if (((patternVector_[i]->pPI1_[k] == L) && (patternVector_[j]->pPI1_[k] == H)) || ((patternVector_[i]->pPI1_[k] == H) && (patternVector_[j]->pPI1_[k] == L)))
+					if (((patternVector_[i].primaryInputs1st_[k] == L) && (patternVector_[j].primaryInputs1st_[k] == H)) || ((patternVector_[i].primaryInputs1st_[k] == H) && (patternVector_[j].primaryInputs1st_[k] == L)))
 					{
 						compatible = false;
 						break;
 					}
 				}
-				if (!(patternVector_[i]->pPI2_.empty()) && (compatible == true))
+				if (!(patternVector_[i].primaryInputs2nd_.empty()) && (compatible == true))
 				{ // If the pattern has second primary input, we have to check it too
 					for (int k = 0; k < numPI_; ++k)
 					{
-						if (((patternVector_[i]->pPI2_[k] == L) && (patternVector_[j]->pPI2_[k] == H)) || ((patternVector_[i]->pPI2_[k] == H) && (patternVector_[j]->pPI2_[k] == L)))
+						if (((patternVector_[i].primaryInputs2nd_[k] == L) && (patternVector_[j].primaryInputs2nd_[k] == H)) || ((patternVector_[i].primaryInputs2nd_[k] == H) && (patternVector_[j].primaryInputs2nd_[k] == L)))
 						{
 							compatible = false;
 							break;
 						}
 					}
 				}
-				if (!(patternVector_[i]->pPPI_.empty()) && (compatible == true))
+				if (!(patternVector_[i].pseudoPrimaryInputs_.empty()) && (compatible == true))
 				{ // Check ppi
 					for (int k = 0; k < numPPI_; ++k)
 					{
-						if (((patternVector_[i]->pPPI_[k] == L) && (patternVector_[j]->pPPI_[k] == H)) || ((patternVector_[i]->pPPI_[k] == H) && (patternVector_[j]->pPPI_[k] == L)))
+						if (((patternVector_[i].pseudoPrimaryInputs_[k] == L) && (patternVector_[j].pseudoPrimaryInputs_[k] == H)) || ((patternVector_[i].pseudoPrimaryInputs_[k] == H) && (patternVector_[j].pseudoPrimaryInputs_[k] == L)))
 						{
 							compatible = false;
 							break;
 						}
 					}
 				}
-				// if ((patternVector_[i]->pSI_ != NULL) && (compatible == true))
-				if (!(patternVector_[i]->pSI_.empty()) && (compatible == true))
+				// if ((patternVector_[i].shiftIn_ != NULL) && (compatible == true))
+				if (!(patternVector_[i].shiftIn_.empty()) && (compatible == true))
 				{ // Check si
 					for (int k = 0; k < numSI_; ++k)
 					{
-						if (((patternVector_[i]->pSI_[k] == L) && (patternVector_[j]->pSI_[k] == H)) || ((patternVector_[i]->pSI_[k] == H) && (patternVector_[j]->pSI_[k] == L)))
+						if (((patternVector_[i].shiftIn_[k] == L) && (patternVector_[j].shiftIn_[k] == H)) || ((patternVector_[i].shiftIn_[k] == H) && (patternVector_[j].shiftIn_[k] == L)))
 						{
 							compatible = false;
 							break;
@@ -270,7 +263,7 @@ namespace CoreNs
 		// for each pair of patterns, try to merge them
 		updateTable(mergeRecord, patternTable);
 		// replace Pattern
-		PatternVec compPattern;
+		std::vector<Pattern> compPattern;
 		for (int i = 0; i < (int)patternVector_.size(); ++i)
 		{
 			if (mergeRecord[i] == false)
@@ -384,10 +377,12 @@ namespace CoreNs
 				{
 					continue;
 				}
+
 				if (similarityPattern_second == i)
 				{
 					continue;
 				}
+
 				if (patternTable[similarityPattern_second * size + i])
 				{
 					del_second_pattern.push_back(i);
@@ -415,46 +410,46 @@ namespace CoreNs
 				int j = similarityPattern_second;
 				for (int k = 0; k < numPI_; ++k)
 				{
-					patternVector_[i]->pPI1_[k] = (patternVector_[i]->pPI1_[k] < patternVector_[j]->pPI1_[k]) ? patternVector_[i]->pPI1_[k] : patternVector_[j]->pPI1_[k];
+					patternVector_[i].primaryInputs1st_[k] = (patternVector_[i].primaryInputs1st_[k] < patternVector_[j].primaryInputs1st_[k]) ? patternVector_[i].primaryInputs1st_[k] : patternVector_[j].primaryInputs1st_[k];
 				}
-				if (!patternVector_[i]->pPI2_.empty())
+				if (!patternVector_[i].primaryInputs2nd_.empty())
 				{
 					for (int k = 0; k < numPI_; ++k)
 					{
-						patternVector_[i]->pPI2_[k] = (patternVector_[i]->pPI2_[k] < patternVector_[j]->pPI2_[k]) ? patternVector_[i]->pPI2_[k] : patternVector_[j]->pPI2_[k];
+						patternVector_[i].primaryInputs2nd_[k] = (patternVector_[i].primaryInputs2nd_[k] < patternVector_[j].primaryInputs2nd_[k]) ? patternVector_[i].primaryInputs2nd_[k] : patternVector_[j].primaryInputs2nd_[k];
 					}
 				}
-				if (!patternVector_[i]->pPPI_.empty())
+				if (!patternVector_[i].pseudoPrimaryInputs_.empty())
 				{
 					for (int k = 0; k < numPPI_; ++k)
 					{
-						patternVector_[i]->pPPI_[k] = (patternVector_[i]->pPPI_[k] < patternVector_[j]->pPPI_[k]) ? patternVector_[i]->pPPI_[k] : patternVector_[j]->pPPI_[k];
+						patternVector_[i].pseudoPrimaryInputs_[k] = (patternVector_[i].pseudoPrimaryInputs_[k] < patternVector_[j].pseudoPrimaryInputs_[k]) ? patternVector_[i].pseudoPrimaryInputs_[k] : patternVector_[j].pseudoPrimaryInputs_[k];
 					}
 				}
-				if (!patternVector_[i]->pSI_.empty())
+				if (!patternVector_[i].shiftIn_.empty())
 				{
 					for (int k = 0; k < numSI_; ++k)
 					{
-						patternVector_[i]->pSI_[k] = (patternVector_[i]->pSI_[k] < patternVector_[j]->pSI_[k]) ? patternVector_[i]->pSI_[k] : patternVector_[j]->pSI_[k];
+						patternVector_[i].shiftIn_[k] = (patternVector_[i].shiftIn_[k] < patternVector_[j].shiftIn_[k]) ? patternVector_[i].shiftIn_[k] : patternVector_[j].shiftIn_[k];
 					}
 				}
 
 				for (int k = 0; k < numPO_; ++k)
 				{
-					patternVector_[i]->pPO1_[k] = (patternVector_[i]->pPO1_[k] < patternVector_[j]->pPO1_[k]) ? patternVector_[i]->pPO1_[k] : patternVector_[j]->pPO1_[k];
+					patternVector_[i].primaryOutputs1st_[k] = (patternVector_[i].primaryOutputs1st_[k] < patternVector_[j].primaryOutputs1st_[k]) ? patternVector_[i].primaryOutputs1st_[k] : patternVector_[j].primaryOutputs1st_[k];
 				}
-				if (!patternVector_[i]->pPO2_.empty())
+				if (!patternVector_[i].primaryOutputs2nd_.empty())
 				{
 					for (int k = 0; k < numPO_; ++k)
 					{
-						patternVector_[i]->pPO2_[k] = (patternVector_[i]->pPO2_[k] < patternVector_[j]->pPO2_[k]) ? patternVector_[i]->pPO2_[k] : patternVector_[j]->pPO2_[k];
+						patternVector_[i].primaryOutputs2nd_[k] = (patternVector_[i].primaryOutputs2nd_[k] < patternVector_[j].primaryOutputs2nd_[k]) ? patternVector_[i].primaryOutputs2nd_[k] : patternVector_[j].primaryOutputs2nd_[k];
 					}
 				}
-				if (!patternVector_[i]->pPPO_.empty())
+				if (!patternVector_[i].pseudoPrimaryOutputs_.empty())
 				{
 					for (int k = 0; k < numPPI_; ++k)
 					{
-						patternVector_[i]->pPPO_[k] = (patternVector_[i]->pPPO_[k] < patternVector_[j]->pPPO_[k]) ? patternVector_[i]->pPPO_[k] : patternVector_[j]->pPPO_[k];
+						patternVector_[i].pseudoPrimaryOutputs_[k] = (patternVector_[i].pseudoPrimaryOutputs_[k] < patternVector_[j].pseudoPrimaryOutputs_[k]) ? patternVector_[i].pseudoPrimaryOutputs_[k] : patternVector_[j].pseudoPrimaryOutputs_[k];
 					}
 				}
 				mergeRecord[j] = true;
@@ -528,7 +523,6 @@ namespace CoreNs
 				}
 			}
 		}
-
 		return true;
 	}
 	// This is for static compression using compatibility graph
@@ -704,46 +698,46 @@ namespace CoreNs
 	// 			int j = similarityPattern_second;
 	// 			for (int k = 0; k < numPI_; ++k)
 	// 			{
-	// 				patternVector_[i]->pPI1_[k] = (patternVector_[i]->pPI1_[k] < patternVector_[j]->pPI1_[k]) ? patternVector_[i]->pPI1_[k] : patternVector_[j]->pPI1_[k];
+	// 				patternVector_[i].primaryInputs1st_[k] = (patternVector_[i].primaryInputs1st_[k] < patternVector_[j].primaryInputs1st_[k]) ? patternVector_[i].primaryInputs1st_[k] : patternVector_[j].primaryInputs1st_[k];
 	// 			}
-	// 			if (patternVector_[i]->pPI2_ != NULL)
+	// 			if (patternVector_[i].primaryInputs2nd_ != NULL)
 	// 			{
 	// 				for (int k = 0; k < numPI_; ++k)
 	// 				{
-	// 					patternVector_[i]->pPI2_[k] = (patternVector_[i]->pPI2_[k] < patternVector_[j]->pPI2_[k]) ? patternVector_[i]->pPI2_[k] : patternVector_[j]->pPI2_[k];
+	// 					patternVector_[i].primaryInputs2nd_[k] = (patternVector_[i].primaryInputs2nd_[k] < patternVector_[j].primaryInputs2nd_[k]) ? patternVector_[i].primaryInputs2nd_[k] : patternVector_[j].primaryInputs2nd_[k];
 	// 				}
 	// 			}
-	// 			if (patternVector_[i]->pPPI_ != NULL)
+	// 			if (patternVector_[i].pseudoPrimaryInputs_ != NULL)
 	// 			{
 	// 				for (int k = 0; k < numPPI_; ++k)
 	// 				{
-	// 					patternVector_[i]->pPPI_[k] = (patternVector_[i]->pPPI_[k] < patternVector_[j]->pPPI_[k]) ? patternVector_[i]->pPPI_[k] : patternVector_[j]->pPPI_[k];
+	// 					patternVector_[i].pseudoPrimaryInputs_[k] = (patternVector_[i].pseudoPrimaryInputs_[k] < patternVector_[j].pseudoPrimaryInputs_[k]) ? patternVector_[i].pseudoPrimaryInputs_[k] : patternVector_[j].pseudoPrimaryInputs_[k];
 	// 				}
 	// 			}
-	// 			if (patternVector_[i]->pSI_ != NULL)
+	// 			if (patternVector_[i].shiftIn_ != NULL)
 	// 			{
 	// 				for (int k = 0; k < numSI_; ++k)
 	// 				{
-	// 					patternVector_[i]->pSI_[k] = (patternVector_[i]->pSI_[k] < patternVector_[j]->pSI_[k]) ? patternVector_[i]->pSI_[k] : patternVector_[j]->pSI_[k];
+	// 					patternVector_[i].shiftIn_[k] = (patternVector_[i].shiftIn_[k] < patternVector_[j].shiftIn_[k]) ? patternVector_[i].shiftIn_[k] : patternVector_[j].shiftIn_[k];
 	// 				}
 	// 			}
 
 	// 			for (int k = 0; k < numPO_; ++k)
 	// 			{
-	// 				patternVector_[i]->pPO1_[k] = (patternVector_[i]->pPO1_[k] < patternVector_[j]->pPO1_[k]) ? patternVector_[i]->pPO1_[k] : patternVector_[j]->pPO1_[k];
+	// 				patternVector_[i].primaryOutputs1st_[k] = (patternVector_[i].primaryOutputs1st_[k] < patternVector_[j].primaryOutputs1st_[k]) ? patternVector_[i].primaryOutputs1st_[k] : patternVector_[j].primaryOutputs1st_[k];
 	// 			}
-	// 			if (patternVector_[i]->pPO2_ != NULL)
+	// 			if (patternVector_[i].primaryOutputs2nd_ != NULL)
 	// 			{
 	// 				for (int k = 0; k < numPO_; ++k)
 	// 				{
-	// 					patternVector_[i]->pPO2_[k] = (patternVector_[i]->pPO2_[k] < patternVector_[j]->pPO2_[k]) ? patternVector_[i]->pPO2_[k] : patternVector_[j]->pPO2_[k];
+	// 					patternVector_[i].primaryOutputs2nd_[k] = (patternVector_[i].primaryOutputs2nd_[k] < patternVector_[j].primaryOutputs2nd_[k]) ? patternVector_[i].primaryOutputs2nd_[k] : patternVector_[j].primaryOutputs2nd_[k];
 	// 				}
 	// 			}
-	// 			if (patternVector_[i]->pPPO_ != NULL)
+	// 			if (patternVector_[i].pseudoPrimaryOutputs_ != NULL)
 	// 			{
 	// 				for (int k = 0; k < numPPI_; ++k)
 	// 				{
-	// 					patternVector_[i]->pPPO_[k] = (patternVector_[i]->pPPO_[k] < patternVector_[j]->pPPO_[k]) ? patternVector_[i]->pPPO_[k] : patternVector_[j]->pPPO_[k];
+	// 					patternVector_[i].pseudoPrimaryOutputs_[k] = (patternVector_[i].pseudoPrimaryOutputs_[k] < patternVector_[j].pseudoPrimaryOutputs_[k]) ? patternVector_[i].pseudoPrimaryOutputs_[k] : patternVector_[j].pseudoPrimaryOutputs_[k];
 	// 				}
 	// 			}
 	// 			mergeRecord[j] = true;

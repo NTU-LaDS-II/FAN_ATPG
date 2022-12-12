@@ -145,34 +145,34 @@ bool ReportPatCmd::exec(const std::vector<std::string> &argv)
 	{
 		std::cout << "#    pattern " << i << "\n";
 		std::cout << "#      pi1: ";
-		if (!fanMgr_->pcoll->patternVector_[i]->pPI1_.empty())
+		if (!fanMgr_->pcoll->patternVector_[i].primaryInputs1st_.empty())
 			for (int j = 0; j < fanMgr_->pcoll->numPI_; ++j)
-				printValue(fanMgr_->pcoll->patternVector_[i]->pPI1_[j]);
+				printValue(fanMgr_->pcoll->patternVector_[i].primaryInputs1st_[j]);
 		std::cout << "\n";
 		std::cout << "#      pi2: ";
-		if (!fanMgr_->pcoll->patternVector_[i]->pPI2_.empty())
+		if (!fanMgr_->pcoll->patternVector_[i].primaryInputs2nd_.empty())
 			for (int j = 0; j < fanMgr_->pcoll->numPI_; ++j)
-				printValue(fanMgr_->pcoll->patternVector_[i]->pPI2_[j]);
+				printValue(fanMgr_->pcoll->patternVector_[i].primaryInputs2nd_[j]);
 		std::cout << "\n";
 		std::cout << "#      ppi: ";
-		if (!fanMgr_->pcoll->patternVector_[i]->pPPI_.empty())
+		if (!fanMgr_->pcoll->patternVector_[i].pseudoPrimaryInputs_.empty())
 			for (int j = 0; j < fanMgr_->pcoll->numPPI_; ++j)
-				printValue(fanMgr_->pcoll->patternVector_[i]->pPPI_[j]);
+				printValue(fanMgr_->pcoll->patternVector_[i].pseudoPrimaryInputs_[j]);
 		std::cout << "\n";
 		std::cout << "#      po1: ";
-		if (!fanMgr_->pcoll->patternVector_[i]->pPO1_.empty())
+		if (!fanMgr_->pcoll->patternVector_[i].primaryOutputs1st_.empty())
 			for (int j = 0; j < fanMgr_->pcoll->numPO_; ++j)
-				printValue(fanMgr_->pcoll->patternVector_[i]->pPO1_[j]);
+				printValue(fanMgr_->pcoll->patternVector_[i].primaryOutputs1st_[j]);
 		std::cout << "\n";
 		std::cout << "#      po2: ";
-		if (!fanMgr_->pcoll->patternVector_[i]->pPO2_.empty())
+		if (!fanMgr_->pcoll->patternVector_[i].primaryOutputs2nd_.empty())
 			for (int j = 0; j < fanMgr_->pcoll->numPO_; ++j)
-				printValue(fanMgr_->pcoll->patternVector_[i]->pPO2_[j]);
+				printValue(fanMgr_->pcoll->patternVector_[i].primaryOutputs2nd_[j]);
 		std::cout << "\n";
 		std::cout << "#      ppo: ";
-		if (!fanMgr_->pcoll->patternVector_[i]->pPPO_.empty())
+		if (!fanMgr_->pcoll->patternVector_[i].pseudoPrimaryOutputs_.empty())
 			for (int j = 0; j < fanMgr_->pcoll->numPPI_; ++j)
-				printValue(fanMgr_->pcoll->patternVector_[i]->pPPO_[j]);
+				printValue(fanMgr_->pcoll->patternVector_[i].pseudoPrimaryOutputs_[j]);
 		std::cout << "\n"
 							<< "#\n";
 	}

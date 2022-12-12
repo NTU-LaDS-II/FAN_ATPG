@@ -1,8 +1,9 @@
-Refactor - 29th modification
+Refactor - 31th modification
 
   readability related changes:
+    change all the new of pattern to vector or object,
+    and change the pattern's attributes name for readability
   performance related changes:
-    Atpg::calGateDepthFromPO(): remove unimportant check (if) of whether depth = 100
   bug fixed:
   note:
   function added:

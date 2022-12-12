@@ -71,7 +71,7 @@ namespace CoreNs
 		// enum MAIN_STATUS{ IMPLY_AND_CHECK = 0, DECISION, BACKTRACK, JUSTIFY_FREE }; removed by wang
 
 		// class Atpg main method
-		// void generation(PatternProcessor *pcoll, FaultListExtract *fListExtract); =>
+		// void generation(PatternProcessor *pPatternProcessor, FaultListExtract *fListExtract); =>
 		// void generatePatternSet(PatternProcessor *pPatternProcessor, FaultListExtract *pFaultListExtracter); by wang
 		void generatePatternSet(PatternProcessor *pPatternProcessor, FaultListExtract *pFaultListExtracter);
 
@@ -178,8 +178,8 @@ namespace CoreNs
 
 		inline void setGaten0n1(const int &gateID, const int &n0, const int &n1); // void setn0n1(int gate, int n0, int n1) => void setGaten0n1(int gateID, int n0, int n1) by wang
 
-		inline void assignPatternPI_fromGateVal(Pattern *pPattern);		 // write PI values to pattern
-		inline void assignPatternPO_fromGoodSimVal(Pattern *pPattern); // write PO values to pattern
+		inline void assignPatternPI_fromGateVal(Pattern &pattern);		// write PI values to pattern
+		inline void assignPatternPO_fromGoodSimVal(Pattern &pattern); // write PO values to pattern
 
 		inline void pushGateToEventStack(const int &gateID); // push events to the event list of corresponding level
 		inline int popEventStack(const int &level);
@@ -210,8 +210,8 @@ namespace CoreNs
 		inline Value cXNOR3(const Value &i1, const Value &i2, const Value &i3);
 
 		// should be moved to pattern.h
-		inline void randomFill(Pattern *pPattern);
-		inline void adjacentFill(Pattern *pPattern); // added by wang, currently not used
+		inline void randomFill(Pattern &pattern);
+		inline void adjacentFill(Pattern &pattern); // added by wang, currently not used
 
 		// function not used or removed
 		void checkLevelInfo();																 // for debug use
@@ -737,28 +737,28 @@ namespace CoreNs
 	//            ]
 	// Date       [ Ver. 1.0 started 2013/08/13 ]
 	// **************************************************************************
-	inline void Atpg::assignPatternPI_fromGateVal(Pattern *pPattern)
+	inline void Atpg::assignPatternPI_fromGateVal(Pattern &pattern)
 	{
 		for (int i = 0; i < pCircuit_->npi_; ++i)
 		{
-			pPattern->pPI1_[i] = pCircuit_->gates_[i].v_;
+			pattern.primaryInputs1st_[i] = pCircuit_->gates_[i].v_;
 		}
-		// if (pPattern->pPI2_ != NULL && pCircuit_->nframe_ > 1)
-		if (!(pPattern->pPI2_.empty()) && pCircuit_->nframe_ > 1)
+		// if (pattern.primaryInputs2nd_ != NULL && pCircuit_->nframe_ > 1)
+		if (!(pattern.primaryInputs2nd_.empty()) && pCircuit_->nframe_ > 1)
 		{
 			for (int i = 0; i < pCircuit_->npi_; ++i)
 			{
-				pPattern->pPI2_[i] = pCircuit_->gates_[i + pCircuit_->ngate_].v_;
+				pattern.primaryInputs2nd_[i] = pCircuit_->gates_[i + pCircuit_->ngate_].v_;
 			}
 		}
 		for (int i = 0; i < pCircuit_->nppi_; ++i)
 		{
-			pPattern->pPPI_[i] = pCircuit_->gates_[pCircuit_->npi_ + i].v_;
+			pattern.pseudoPrimaryInputs_[i] = pCircuit_->gates_[pCircuit_->npi_ + i].v_;
 		}
-		// if (pPattern->pSI_ != NULL && pCircuit_->nframe_ > 1)
-		if (!(pPattern->pSI_.empty()) && pCircuit_->nframe_ > 1)
+		// if (pattern.shiftIn_ != NULL && pCircuit_->nframe_ > 1)
+		if (!(pattern.shiftIn_.empty()) && pCircuit_->nframe_ > 1)
 		{
-			pPattern->pSI_[0] = (pCircuit_->connType_ == Circuit::SHIFT) ? pCircuit_->gates_[pCircuit_->ngate_ + pCircuit_->npi_].v_ : X;
+			pattern.shiftIn_[0] = (pCircuit_->connType_ == Circuit::SHIFT) ? pCircuit_->gates_[pCircuit_->ngate_ + pCircuit_->npi_].v_ : X;
 		}
 	}
 
@@ -772,7 +772,7 @@ namespace CoreNs
 	//            ]
 	// Date       [ Ver. 1.0 started 2013/08/13 ]
 	// **************************************************************************
-	inline void Atpg::assignPatternPO_fromGoodSimVal(Pattern *pPattern)
+	inline void Atpg::assignPatternPO_fromGoodSimVal(Pattern &pattern)
 	{
 		// pSimulator_->goodSim();call externally instead, removed by wang
 		int offset = pCircuit_->ngate_ - pCircuit_->npo_ - pCircuit_->nppi_;
@@ -780,33 +780,33 @@ namespace CoreNs
 		{
 			if (pCircuit_->gates_[offset + i].gl_ == PARA_H)
 			{
-				pPattern->pPO1_[i] = L;
+				pattern.primaryOutputs1st_[i] = L;
 			}
 			else if (pCircuit_->gates_[offset + i].gh_ == PARA_H)
 			{
-				pPattern->pPO1_[i] = H;
+				pattern.primaryOutputs1st_[i] = H;
 			}
 			else
 			{
-				pPattern->pPO1_[i] = X;
+				pattern.primaryOutputs1st_[i] = X;
 			}
 		}
-		// if (pPattern->pPO2_ != NULL && pCircuit_->nframe_ > 1)
-		if (!(pPattern->pPO2_.empty()) && pCircuit_->nframe_ > 1)
+		// if (pattern.primaryOutputs2nd_ != NULL && pCircuit_->nframe_ > 1)
+		if (!(pattern.primaryOutputs2nd_.empty()) && pCircuit_->nframe_ > 1)
 		{
 			for (int i = 0; i < pCircuit_->npo_; ++i)
 			{
 				if (pCircuit_->gates_[offset + i + pCircuit_->ngate_].gl_ == PARA_H)
 				{
-					pPattern->pPO2_[i] = L;
+					pattern.primaryOutputs2nd_[i] = L;
 				}
 				else if (pCircuit_->gates_[offset + i + pCircuit_->ngate_].gh_ == PARA_H)
 				{
-					pPattern->pPO2_[i] = H;
+					pattern.primaryOutputs2nd_[i] = H;
 				}
 				else
 				{
-					pPattern->pPO2_[i] = X;
+					pattern.primaryOutputs2nd_[i] = X;
 				}
 			}
 		}
@@ -820,15 +820,15 @@ namespace CoreNs
 		{
 			if (pCircuit_->gates_[offset + i].gl_ == PARA_H)
 			{
-				pPattern->pPPO_[i] = L;
+				pattern.pseudoPrimaryOutputs_[i] = L;
 			}
 			else if (pCircuit_->gates_[offset + i].gh_ == PARA_H)
 			{
-				pPattern->pPPO_[i] = H;
+				pattern.pseudoPrimaryOutputs_[i] = H;
 			}
 			else
 			{
-				pPattern->pPPO_[i] = X;
+				pattern.pseudoPrimaryOutputs_[i] = X;
 			}
 		}
 	}
@@ -1011,82 +1011,82 @@ namespace CoreNs
 	//            ]
 	// Date       [ Ver. 1.0 started 2013/08/13 ]
 	// **************************************************************************
-	inline void Atpg::randomFill(Pattern *pPattern)
+	inline void Atpg::randomFill(Pattern &pattern)
 	{
 		srand(0);
 		for (int i = 0; i < pCircuit_->npi_; ++i)
 		{
-			if (pPattern->pPI1_[i] == X)
+			if (pattern.primaryInputs1st_[i] == X)
 			{
-				pPattern->pPI1_[i] = rand() % 2;
+				pattern.primaryInputs1st_[i] = rand() % 2;
 			}
 		}
 		for (int i = 0; i < pCircuit_->nppi_; ++i)
 		{
-			if (pPattern->pPPI_[i] == X)
+			if (pattern.pseudoPrimaryInputs_[i] == X)
 			{
-				pPattern->pPPI_[i] = rand() % 2;
+				pattern.pseudoPrimaryInputs_[i] = rand() % 2;
 			}
 		}
-		if (!pPattern->pPI2_.empty())
+		if (!pattern.primaryInputs2nd_.empty())
 		{
 			for (int i = 0; i < pCircuit_->npi_; ++i)
 			{
-				if (pPattern->pPI2_[i] == X)
+				if (pattern.primaryInputs2nd_[i] == X)
 				{
-					pPattern->pPI2_[i] = rand() % 2;
+					pattern.primaryInputs2nd_[i] = rand() % 2;
 				}
 			}
 		}
-		if (!pPattern->pSI_.empty())
+		if (!pattern.shiftIn_.empty())
 		{
-			if (pPattern->pSI_[0] == X)
+			if (pattern.shiftIn_[0] == X)
 			{
-				pPattern->pSI_[0] = rand() % 2;
+				pattern.shiftIn_[0] = rand() % 2;
 			}
 		}
 	}
-	inline void Atpg::adjacentFill(Pattern *pPattern)
+	inline void Atpg::adjacentFill(Pattern &pattern)
 	{
-		if (pPattern->pPI1_[0] == X)
+		if (pattern.primaryInputs1st_[0] == X)
 		{
-			pPattern->pPI1_[0] = L;
+			pattern.primaryInputs1st_[0] = L;
 		}
 		for (int i = 1; i < pCircuit_->npi_; ++i)
 		{
-			if (pPattern->pPI1_[i] == X)
+			if (pattern.primaryInputs1st_[i] == X)
 			{
-				pPattern->pPI1_[i] = pPattern->pPI1_[i - 1];
+				pattern.primaryInputs1st_[i] = pattern.primaryInputs1st_[i - 1];
 			}
 		}
 
-		if (pPattern->pPPI_[0] == X)
+		if (pattern.pseudoPrimaryInputs_[0] == X)
 		{
-			pPattern->pPPI_[0] = pPattern->pPI1_[pCircuit_->npi_ - 1];
+			pattern.pseudoPrimaryInputs_[0] = pattern.primaryInputs1st_[pCircuit_->npi_ - 1];
 		}
 		for (int i = 1; i < pCircuit_->nppi_; ++i)
 		{
-			if (pPattern->pPPI_[i] == X)
+			if (pattern.pseudoPrimaryInputs_[i] == X)
 			{
-				pPattern->pPPI_[i] = pPattern->pPPI_[i - 1];
+				pattern.pseudoPrimaryInputs_[i] = pattern.pseudoPrimaryInputs_[i - 1];
 			}
 		}
 
-		if (!pPattern->pPI2_.empty())
+		if (!pattern.primaryInputs2nd_.empty())
 		{
 			for (int i = 0; i < pCircuit_->npi_; ++i)
 			{
-				if (pPattern->pPI2_[i] == X)
+				if (pattern.primaryInputs2nd_[i] == X)
 				{
-					pPattern->pPI2_[i] = pPattern->pPI1_[i];
+					pattern.primaryInputs2nd_[i] = pattern.primaryInputs1st_[i];
 				}
 			}
 		}
-		if (!pPattern->pSI_.empty())
+		if (!pattern.shiftIn_.empty())
 		{
-			if (pPattern->pSI_[0] == X)
+			if (pattern.shiftIn_[0] == X)
 			{
-				pPattern->pSI_[0] = L;
+				pattern.shiftIn_[0] = L;
 			}
 		}
 	}

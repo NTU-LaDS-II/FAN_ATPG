@@ -94,13 +94,13 @@ void Simulator::pfFaultSim(PatternProcessor *pcoll, FaultListExtract *fListExtra
 			remain.push_back(pFault);
 
 	// simulate all patterns for all faults
-	for (Pattern *const &pPattern : pcoll->patternVector_)
+	for (Pattern const &pattern : pcoll->patternVector_)
 	{
 		if (remain.size() == 0)
 			break;
 
 		// Assign pattern to circuit PI & PPI for further fault sim
-		assignPatternToPi(pPattern);
+		assignPatternToPi(pattern);
 		pfFaultSim(remain);
 	}
 }
@@ -115,7 +115,7 @@ void Simulator::pfFaultSim(PatternProcessor *pcoll, FaultListExtract *fListExtra
 //            ]
 // Date       [ CJY Ver. 1.0 started 2013/08/14 ]
 // **************************************************************************
-void Simulator::pfFaultSim(const Pattern *const p, FaultList &remain)
+void Simulator::pfFaultSim(const Pattern &p, FaultList &remain)
 {
 
 	// Assign pattern to circuit PI & PPI for further fault sim
@@ -135,10 +135,11 @@ void Simulator::pfFaultSim(const Pattern *const p, FaultList &remain)
 void Simulator::pfFaultSim(FaultList &remain)
 {
 	if (remain.size() == 0)
+	{
 		return;
+	}
 
-	// run good simulation first
-	goodSimCopyToFault();
+	goodSimCopyToFault(); // run good simulation first
 
 	// inject number of WORD_SIZE activated faults
 	// pfReset();
@@ -172,7 +173,6 @@ void Simulator::pfFaultSim(FaultList &remain)
 //            ]
 // Date       [ CBH Ver. 1.0 started 2013/08/18 ]
 // **************************************************************************
-//{{{ bool Simulator::pfCheckActivation(const Fault * const)
 bool Simulator::pfCheckActivation(const Fault *const f)
 {
 	const int &fg = f->faultyLine_ == 0 ? f->gateID_ : cir_->gates_[f->gateID_].fis_[f->faultyLine_ - 1];
@@ -201,7 +201,7 @@ bool Simulator::pfCheckActivation(const Fault *const f)
 			break;
 	}
 	return false;
-} //}}}
+}
 
 // **************************************************************************
 // Function   [ simulator::pfInject ]
@@ -212,7 +212,6 @@ bool Simulator::pfCheckActivation(const Fault *const f)
 //            ]
 // Date       [ CBH Ver. 1.0 started 2031/08/18 ]
 // **************************************************************************
-//{{{ void Simulator::pfInject(const Fault * const , const size_t &)
 void Simulator::pfInject(const Fault *const f, const size_t &i)
 {
 	int fg = f->gateID_;
@@ -242,7 +241,7 @@ void Simulator::pfInject(const Fault *const f, const size_t &i)
 		events_[cir_->gates_[fg].lvl_].push(fg);
 		processed_[fg] = true;
 	}
-} //}}}
+}
 
 // **************************************************************************
 // Function   [ simulator::pfCheckDetection ]
@@ -265,8 +264,10 @@ void Simulator::pfCheckDetection(FaultList &remain)
 	for (int i = 0; i < ninjected_; ++i)
 	{
 		if (getBitValue(detected, (size_t)i) == L)
+		{
 			continue;
-		(*injected_[i])->detection_++;
+		}
+		++((*injected_[i])->detection_);
 		if ((*injected_[i])->detection_ >= ndet_)
 		{
 			(*injected_[i])->faultState_ = Fault::DT;
@@ -290,8 +291,12 @@ void Simulator::ppFaultSim(PatternProcessor *pcoll, FaultListExtract *fListExtra
 	FaultList remain;
 	FaultListIter it = fListExtract->faultsInCircuit_.begin();
 	for (; it != fListExtract->faultsInCircuit_.end(); ++it)
+	{
 		if ((*it)->faultState_ != Fault::DT && (*it)->faultState_ != Fault::RE && (*it)->faultyLine_ >= 0)
+		{
 			remain.push_back(*it);
+		}
+	}
 
 	// simulate all patterns for all faults
 	for (int i = 0; i < (int)pcoll->patternVector_.size(); i += WORD_SIZE)
@@ -299,7 +304,7 @@ void Simulator::ppFaultSim(PatternProcessor *pcoll, FaultListExtract *fListExtra
 		ppSetPattern(pcoll, i);
 		ppFaultSim(remain);
 	}
-} //}}}
+}
 
 // **************************************************************************
 // Function   [ Simulator::ppFaultSim ]
@@ -310,11 +315,12 @@ void Simulator::ppFaultSim(PatternProcessor *pcoll, FaultListExtract *fListExtra
 //            ]
 // Date       [ Bill Ver. 1.0 started 20130811 ]
 // **************************************************************************
-//{{{ void Simulator::ppFaultSim(FaultList &)
 void Simulator::ppFaultSim(FaultList &remain)
 {
 	if (remain.size() == 0)
+	{
 		return;
+	}
 
 	// run good simulation first
 	goodSimCopyToFault();
@@ -330,11 +336,15 @@ void Simulator::ppFaultSim(FaultList &remain)
 			ppReset();
 		}
 		if ((*it)->faultState_ == Fault::DT)
+		{
 			it = remain.erase(it);
+		}
 		else
+		{
 			it++;
+		}
 	} while (it != remain.end());
-} //}}}
+}
 
 // **************************************************************************
 // Function   [ ppCheckActivation ]
@@ -345,7 +355,6 @@ void Simulator::ppFaultSim(FaultList &remain)
 //            ]
 // Date       [ Bill Ver. 1.0 started 20130811 ]
 // **************************************************************************
-//{{{ bool Simulator::ppCheckActivation(const Fault * const)
 bool Simulator::ppCheckActivation(const Fault *const f)
 {
 	const int &fg = f->faultyLine_ == 0 ? f->gateID_ : /// if output fault,fg=ID of the faulty gate,else if input fault,fg=ID of the faulty gate's fanin array
@@ -379,7 +388,7 @@ bool Simulator::ppCheckActivation(const Fault *const f)
 			break;
 	}
 	return false;
-} //}}}
+}
 
 // **************************************************************************
 // Function   [ ppInject ]
@@ -420,7 +429,7 @@ void Simulator::ppInject(const Fault *const f)
 		events_[cir_->gates_[fg].lvl_].push(fg);
 		processed_[fg] = true;
 	}
-} //}}}
+}
 
 // **************************************************************************
 // Function   [ ppCheckDetection ]
@@ -432,7 +441,6 @@ void Simulator::ppInject(const Fault *const f)
 //            ]
 // Date       [ Bill Ver. 1.0 started 20130811 ]
 // **************************************************************************
-//{{{ void Simulator::ppCheckDetection(Fault * const)
 void Simulator::ppCheckDetection(Fault *const f)
 {
 	ParaValue detected = PARA_L;
@@ -449,15 +457,17 @@ void Simulator::ppCheckDetection(Fault *const f)
 	for (size_t i = 0; i < WORD_SIZE; ++i)
 	{
 		if (getBitValue(detected, i) == L)
+		{
 			continue;
-		f->detection_++;
+		}
+		++(f->detection_);
 		if (f->detection_ >= ndet_)
 		{
 			f->faultState_ = Fault::DT;
 			break;
 		}
 	}
-} //}}}
+}
 
 // **************************************************************************
 // Function   [ ppSetPattern ]
@@ -469,8 +479,7 @@ void Simulator::ppCheckDetection(Fault *const f)
 //            ]
 // Date       [ Bill Ver. 1.0 started 20130811 ]
 // **************************************************************************
-//{{{ void Simulator::ppSetPattern(PatternProcessor *, const int &)
-void Simulator::ppSetPattern(PatternProcessor *pcoll, const int &i)
+void Simulator::ppSetPattern(PatternProcessor *pPatternProcessor, const int &i)
 { // TODO LOS not yet supported
 	// reset PI and PPI values to unknowns
 	for (int j = 0; j < cir_->npi_ + cir_->nppi_; ++j)
@@ -481,56 +490,55 @@ void Simulator::ppSetPattern(PatternProcessor *pcoll, const int &i)
 			cir_->gates_[j + k * cir_->ngate_].gh_ = PARA_L;
 		}
 	}
-
 	// assign up to WORD_SIZE number of pattern values
-	int endpat = (int)pcoll->patternVector_.size();
-	if (i + (int)WORD_SIZE <= (int)pcoll->patternVector_.size())
+	int endpat = (int)pPatternProcessor->patternVector_.size();
+	if (i + (int)WORD_SIZE <= (int)pPatternProcessor->patternVector_.size())
 		endpat = i + WORD_SIZE;
 	for (int j = i; j < endpat; ++j)
 	{
 		// assign PI
-		if (!pcoll->patternVector_[j]->pPI1_.empty())
+		if (!pPatternProcessor->patternVector_[j].primaryInputs1st_.empty())
 		{
-			for (int k = 0; k < pcoll->numPI_; ++k)
+			for (int k = 0; k < pPatternProcessor->numPI_; ++k)
 			{
-				if (pcoll->patternVector_[j]->pPI1_[k] == L)
+				if (pPatternProcessor->patternVector_[j].primaryInputs1st_[k] == L)
 					setBitValue(cir_->gates_[k].gl_, j - i, H);
-				else if (pcoll->patternVector_[j]->pPI1_[k] == H)
+				else if (pPatternProcessor->patternVector_[j].primaryInputs1st_[k] == H)
 					setBitValue(cir_->gates_[k].gh_, j - i, H);
 			}
 		}
-		// if (pcoll->patternVector_[j]->pPI2_ && cir_->nframe_ > 1)
-		if (!pcoll->patternVector_[j]->pPI2_.empty() && cir_->nframe_ > 1)
+		// if (pcoll->patternVector_[j].primaryInputs2nd_ && cir_->nframe_ > 1)
+		if (!pPatternProcessor->patternVector_[j].primaryInputs2nd_.empty() && cir_->nframe_ > 1)
 		{
-			for (int k = 0; k < pcoll->numPI_; ++k)
+			for (int k = 0; k < pPatternProcessor->numPI_; ++k)
 			{
 				int index = k + cir_->ngate_;
-				if (pcoll->patternVector_[j]->pPI2_[k] == L)
+				if (pPatternProcessor->patternVector_[j].primaryInputs2nd_[k] == L)
 					setBitValue(cir_->gates_[index].gl_, j - i, H);
-				else if (pcoll->patternVector_[j]->pPI2_[k] == H)
+				else if (pPatternProcessor->patternVector_[j].primaryInputs2nd_[k] == H)
 					setBitValue(cir_->gates_[index].gh_, j - i, H);
 			}
 		}
 		// assign PPI
-		if (!pcoll->patternVector_[j]->pPPI_.empty())
+		if (!pPatternProcessor->patternVector_[j].pseudoPrimaryInputs_.empty())
 		{
-			for (int k = 0; k < pcoll->numPPI_; ++k)
+			for (int k = 0; k < pPatternProcessor->numPPI_; ++k)
 			{
 				int index = k + cir_->npi_;
-				if (pcoll->patternVector_[j]->pPPI_[k] == L)
+				if (pPatternProcessor->patternVector_[j].pseudoPrimaryInputs_[k] == L)
 					setBitValue(cir_->gates_[index].gl_, j - i, H);
-				else if (pcoll->patternVector_[j]->pPPI_[k] == H)
+				else if (pPatternProcessor->patternVector_[j].pseudoPrimaryInputs_[k] == H)
 					setBitValue(cir_->gates_[index].gh_, j - i, H);
 			}
 		}
 
-		// if (pcoll->patternVector_[j]->pSI_ && cir_->nframe_ > 1 && cir_->connType_ == Circuit::SHIFT)
-		if (!pcoll->patternVector_[j]->pSI_.empty() && cir_->nframe_ > 1 && cir_->connType_ == Circuit::SHIFT)
+		// if (pcoll->patternVector_[j].shiftIn_ && cir_->nframe_ > 1 && cir_->connType_ == Circuit::SHIFT)
+		if (!pPatternProcessor->patternVector_[j].shiftIn_.empty() && cir_->nframe_ > 1 && cir_->connType_ == Circuit::SHIFT)
 		{
 			int index = cir_->ngate_ + cir_->npi_;
-			if (pcoll->patternVector_[j]->pSI_[0] == L)
+			if (pPatternProcessor->patternVector_[j].shiftIn_[0] == L)
 				setBitValue(cir_->gates_[index].gl_, j - i, H);
-			else if (pcoll->patternVector_[j]->pSI_[0] == H)
+			else if (pPatternProcessor->patternVector_[j].shiftIn_[0] == H)
 				setBitValue(cir_->gates_[index].gh_, j - i, H);
 		}
 	}

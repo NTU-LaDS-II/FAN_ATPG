@@ -31,11 +31,11 @@ namespace CoreNs
 		void goodSimCopyToFault();
 		void goodEval(const int &i);
 		void faultEval(const int &i);
-		void assignPatternToPi(const Pattern *const p);
+		void assignPatternToPi(const Pattern &p);
 
 		// parallel fault
 		void pfFaultSim(PatternProcessor *pcoll, FaultListExtract *fListExtract);
-		void pfFaultSim(const Pattern *const p, FaultList &remain);
+		void pfFaultSim(const Pattern &p, FaultList &remain);
 		void pfFaultSim(FaultList &remain);
 
 		// parallel pattern
@@ -115,29 +115,29 @@ namespace CoreNs
 	//            ]
 	// Date       [ HKY Ver. 1.1 started 2014/09/01 ]
 	// **************************************************************************
-	inline void Simulator::assignPatternToPi(const Pattern *const pat)
+	inline void Simulator::assignPatternToPi(const Pattern &pattern)
 	{
 		// set pattern; apply pattern to PI
 		for (int j = 0; j < cir_->npi_; ++j)
 		{
 			cir_->gates_[j].gl_ = PARA_L;
 			cir_->gates_[j].gh_ = PARA_L;
-			if (!pat->pPI1_.empty()) 
+			if (!pattern.primaryInputs1st_.empty())
 			{
-				if (pat->pPI1_[j] == L)
+				if (pattern.primaryInputs1st_[j] == L)
 					cir_->gates_[j].gl_ = PARA_H;
-				else if (pat->pPI1_[j] == H)
+				else if (pattern.primaryInputs1st_[j] == H)
 					cir_->gates_[j].gh_ = PARA_H;
 			}
 			if (cir_->nframe_ > 1)
 			{
 				cir_->gates_[j + cir_->ngate_].gl_ = PARA_L;
 				cir_->gates_[j + cir_->ngate_].gh_ = PARA_L;
-				if (!pat->pPI2_.empty())
+				if (!pattern.primaryInputs2nd_.empty())
 				{
-					if (pat->pPI2_[j] == L)
+					if (pattern.primaryInputs2nd_[j] == L)
 						cir_->gates_[j + cir_->ngate_].gl_ = PARA_H;
-					else if (pat->pPI2_[j] == H)
+					else if (pattern.primaryInputs2nd_[j] == H)
 						cir_->gates_[j + cir_->ngate_].gh_ = PARA_H;
 				}
 			}
@@ -148,12 +148,16 @@ namespace CoreNs
 		{
 			cir_->gates_[j].gl_ = PARA_L;
 			cir_->gates_[j].gh_ = PARA_L;
-			if (!pat->pPPI_.empty())
+			if (!pattern.pseudoPrimaryInputs_.empty())
 			{
-				if (pat->pPPI_[j - cir_->npi_] == L)
+				if (pattern.pseudoPrimaryInputs_[j - cir_->npi_] == L)
+				{
 					cir_->gates_[j].gl_ = PARA_H;
-				else if (pat->pPPI_[j - cir_->npi_] == H)
+				}
+				else if (pattern.pseudoPrimaryInputs_[j - cir_->npi_] == H)
+				{
 					cir_->gates_[j].gh_ = PARA_H;
+				}
 			}
 			if (cir_->connType_ == Circuit::SHIFT && cir_->nframe_ > 1)
 			{
@@ -163,12 +167,16 @@ namespace CoreNs
 					cir_->gates_[j + cir_->ngate_ * k].gh_ = PARA_L;
 					if (j == cir_->npi_)
 					{
-						if (!pat->pSI_.empty())
+						if (!pattern.shiftIn_.empty())
 						{
-							if (pat->pSI_[k - 1] == L)
+							if (pattern.shiftIn_[k - 1] == L)
+							{
 								cir_->gates_[j + cir_->ngate_ * k].gl_ = PARA_H;
-							else if (pat->pSI_[k - 1] == H)
+							}
+							else if (pattern.shiftIn_[k - 1] == H)
+							{
 								cir_->gates_[j + cir_->ngate_ * k].gh_ = PARA_H;
+							}
 						}
 					}
 					else
@@ -206,7 +214,9 @@ namespace CoreNs
 	inline void Simulator::goodSim()
 	{
 		for (int i = 0; i < cir_->tgate_; ++i)
+		{
 			goodEval(i);
+		}
 	}
 
 	// **************************************************************************
@@ -274,7 +284,6 @@ namespace CoreNs
 		memset(processed_, 0, cir_->tgate_ * sizeof(bool));
 		memset(faultInjectL_, 0, cir_->tgate_ * 5 * sizeof(ParaValue));
 		memset(faultInjectH_, 0, cir_->tgate_ * 5 * sizeof(ParaValue));
-
 		activated_ = PARA_L;
 	}
 
@@ -411,7 +420,7 @@ namespace CoreNs
 			default:
 				break;
 		}
-	} //}}}
+	}
 
 	// **************************************************************************
 	// Function   [ Simulator::faultEval ]
@@ -423,7 +432,6 @@ namespace CoreNs
 	//            ]
 	// Date       [ CJY Ver. 1.0 started 2013/08/14 ]
 	// **************************************************************************
-	//{{{ inline void Simulator::faultEval(const int &)
 	inline void Simulator::faultEval(const int &i)
 	{
 		// find number of fanin
@@ -545,8 +553,7 @@ namespace CoreNs
 		}
 		cir_->gates_[i].fl_ = (cir_->gates_[i].fl_ & ~faultInjectH_[i][0]) | faultInjectL_[i][0];
 		cir_->gates_[i].fh_ = (cir_->gates_[i].fh_ & ~faultInjectL_[i][0]) | faultInjectH_[i][0];
-	} //}}}
-
+	}
 };
 
 #endif
