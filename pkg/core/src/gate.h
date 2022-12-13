@@ -59,8 +59,7 @@ namespace CoreNs
 		// inline Gate &operator=(const Gate &g);
 		inline Gate(int gateId, int cellId, int primitiveId, int numLevel, Type gateType, int numFO);
 
-		inline
-		~Gate();
+		// inline ~Gate();
 
 		// basic info
 		int gateId_;			// position in circuit gate array
@@ -226,7 +225,7 @@ namespace CoreNs
 		preValue_ = X;
 	}
 
-	inline Gate::~Gate() {}
+	// inline Gate::~Gate() {}
 
 	inline Value Gate::isUnary() const
 	{

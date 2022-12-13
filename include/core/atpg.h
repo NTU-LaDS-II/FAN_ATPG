@@ -234,7 +234,7 @@ namespace CoreNs
 				gateID_to_n1_(pCircuit->tgate_, 0),
 				gateID_to_valModified_(pCircuit->tgate_, 0),
 				gateID_to_reachableByTargetFault_(pCircuit->tgate_),
-				gateID_to_lineType_(pCircuit->tgate_),
+				gateID_to_lineType_(pCircuit->tgate_, FREE_LINE),
 				gateID_to_xPathStatus_(pCircuit->tgate_),
 				gateID_to_uniquePath_(pCircuit->tgate_, std::vector<int>()),
 				circuitLevel_to_EventStack_(pCircuit->lvl_)

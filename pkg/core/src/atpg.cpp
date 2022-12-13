@@ -140,42 +140,28 @@ void Atpg::calGateDepthFromPO()
 	// 	}
 	// }
 
-	int circuitLevelPlus100 = pCircuit_->tlvl_ + 100;
-
 	for (int gateID = pCircuit_->tgate_ - 1; gateID >= 0; --gateID)
 	{
 		Gate &gate = pCircuit_->gates_[gateID];
 		gateID_to_valModified_[gateID] = 0; // sneak the initialization assignment in here
 
+		gate.depthFromPo_ = INFINITE;
 		if ((gate.gateType_ == Gate::PO) || (gate.gateType_ == Gate::PPO))
 		{
 			gate.depthFromPo_ = 0;
 		}
 		else if (gate.numFO_ > 0)
 		{
-			// This output gate does not exist a path to PO/PPO
-			// if (pCircuit_->gates_[gate.fanoutVector_[0]].depthFromPo_ == circuitLevelPlus100)
-			// {
-			// 	gate.depthFromPo_ = circuitLevelPlus100;
-			// }
-			// else
-			// {
-			gate.depthFromPo_ = pCircuit_->gates_[gate.fanoutVector_[0]].depthFromPo_ + 1;
-			// previous if removed by wang, no need to check if the output exist a path to PO/PPO as 100+1 is still larger
-
-			for (int index = 1; index < gate.numFO_; ++index)
+			for (const int &fanOutGateID : gate.fanoutVector_)
 			{
-				const Gate &fanOutGate = pCircuit_->gates_[gate.fanoutVector_[index]];
+				const Gate &fanOutGate = pCircuit_->gates_[fanOutGateID];
 				if (fanOutGate.depthFromPo_ < gate.depthFromPo_)
 				{
 					gate.depthFromPo_ = fanOutGate.depthFromPo_ + 1;
 				}
 			} // can be change to std::min_element, once changed to vector
 		}
-		else
-		{
-			gate.depthFromPo_ = circuitLevelPlus100; // Assign a great value as infinite
-		}
+		// else exist no path to output, so default assignment large number
 	}
 }
 
@@ -190,21 +176,21 @@ void Atpg::calGateDepthFromPO()
 // **************************************************************************
 void Atpg::identifyLineParameter()
 {
-	int count = 0;
+	bool isBoundLine, isHeadLine;
+
 	numberOfHeadLine_ = 0; // number of head line
 
-	for (int gateID = 0; gateID < pCircuit_->tgate_; ++gateID)
+	for (const Gate &gate : pCircuit_->gates_)
 	{
-		const Gate &gate = pCircuit_->gates_[gateID];
+		const int &gateID = gate.gateId_;
 
-		gateID_to_lineType_[gateID] = FREE_LINE; // assign as FREE_LINE first
+		gateID_to_lineType_[gateID] = FREE_LINE; // initialize to freeline
 
-		// check if the gate is BOUND_LINE
 		if (gate.gateType_ != Gate::PI && gate.gateType_ != Gate::PPI)
 		{
-			for (int index = 0; index < gate.numFI_; ++index)
+			for (const int &fanInGateID : gate.faninVector_)
 			{
-				if (gateID_to_lineType_[gate.faninVector_[index]] != FREE_LINE)
+				if (gateID_to_lineType_[fanInGateID] != FREE_LINE)
 				{
 					gateID_to_lineType_[gateID] = BOUND_LINE;
 					break;
@@ -212,7 +198,7 @@ void Atpg::identifyLineParameter()
 			}
 		}
 
-		// check if the gate is HEAD_LINE (rule 1)
+		// check it is HEAD_LINE or not(rule 1)
 		if ((gateID_to_lineType_[gateID] == FREE_LINE) && (gate.numFO_ != 1))
 		{
 			gateID_to_lineType_[gateID] = HEAD_LINE;
@@ -222,11 +208,11 @@ void Atpg::identifyLineParameter()
 		// check it is HEAD_LINE or not(rule 2)
 		if (gateID_to_lineType_[gate.gateId_] == BOUND_LINE)
 		{
-			for (int index = 0; index < gate.numFI_; ++index) // gate.numFI_  number of fanin
+			for (const int &fanInGateID : gate.faninVector_) // gate.numFI_  number of fanin
 			{
-				if (gateID_to_lineType_[gate.faninVector_[index]] == FREE_LINE)
+				if (gateID_to_lineType_[fanInGateID] == FREE_LINE)
 				{
-					gateID_to_lineType_[gate.faninVector_[index]] = HEAD_LINE;
+					gateID_to_lineType_[fanInGateID] = HEAD_LINE;
 					++numberOfHeadLine_;
 				}
 			}
@@ -234,17 +220,20 @@ void Atpg::identifyLineParameter()
 	}
 
 	// store all head lines to array headLineGateIDs_
-	headLineGateIDs_.resize(numberOfHeadLine_); // resize instead of new, by wang
+	headLineGateIDs_.reserve(numberOfHeadLine_); // resize instead of new, by wang
 	// remeber to improve to reserve
-	for (int gateID = 0; gateID < pCircuit_->tgate_; ++gateID)
+
+	int count = 0;
+	for (const Gate &gate : pCircuit_->gates_)
 	{
-		if (gateID_to_lineType_[gateID] == HEAD_LINE)
+		if (gateID_to_lineType_[gate.gateId_] == HEAD_LINE)
 		{
-			headLineGateIDs_[count++] = gateID;
-			if (count == numberOfHeadLine_)
-			{
-				break;
-			}
+			headLineGateIDs_.push_back(gate.gateId_);
+			++count;
+		}
+		if (count == numberOfHeadLine_)
+		{
+			break;
 		}
 	}
 }
@@ -1564,7 +1553,7 @@ bool Atpg::backtrack(int &BackImpLevel)
 
 bool Atpg::continuationMeaningful(Gate *pLastDFrontier)
 {
-	bool fDFrontierChanged; // fDFrontierChanged is true when D-frontier must to change
+	bool fDFrontierChanged; // fDFrontierChanged is true when D-frontier must change
 	// update unjustified lines
 	updateUnjustifiedLines();
 

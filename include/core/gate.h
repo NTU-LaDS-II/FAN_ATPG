@@ -54,10 +54,12 @@ namespace CoreNs
 			TIEZ
 		};
 		inline Gate();
+		// inline Gate(int gateId, int cellId, int primitiveId, int numLevel, Type gateType);
 		// inline Gate(const Gate &g);
 		// inline Gate &operator=(const Gate &g);
 		inline Gate(int gateId, int cellId, int primitiveId, int numLevel, Type gateType, int numFO);
-		~Gate();
+
+		// inline ~Gate();
 
 		// basic info
 		int gateId_;			// position in circuit gate array
@@ -132,9 +134,14 @@ namespace CoreNs
 		depthFromPo_ = -1;
 		fiMinLvl_ = -1;
 
-		/* Added by Shi-Tang Liu */
+		// /* Added by Shi-Tang Liu */
 		preValue_ = X;
 	}
+
+	// inline Gate::Gate(int gateId, int cellId, int primitiveId, int numLevel, Type gateType)
+	// : gateId_(gateId_), cellId_(cellId), primitiveId_(primitiveId), numLevel_(numLevel), gateType_(gateType)
+	// {
+	// }
 
 	// inline Gate::Gate(const Gate &g)
 	// {
@@ -218,7 +225,7 @@ namespace CoreNs
 		preValue_ = X;
 	}
 
-	inline Gate::~Gate() {}
+	// inline Gate::~Gate() {}
 
 	inline Value Gate::isUnary() const
 	{
