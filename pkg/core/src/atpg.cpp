@@ -159,7 +159,7 @@ void Atpg::calGateDepthFromPO()
 				{
 					gate.depthFromPo_ = fanOutGate.depthFromPo_ + 1;
 				}
-			} // can be change to std::min_element, once changed to vector
+			}
 		}
 		// else exist no path to output, so default assignment large number
 	}
