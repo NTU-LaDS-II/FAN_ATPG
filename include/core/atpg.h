@@ -882,17 +882,17 @@ namespace CoreNs
 		}
 	}
 
-	inline void Atpg::vecDelete(std::vector<int> &list, const int &index)
-	{
-		list[index] = list.back();
-		list.pop_back();
-	}
-
 	inline int Atpg::vecPop(std::vector<int> &vec) // listPop => vecPop by wang
 	{
 		int lastElement = vec.back();
 		vec.pop_back();
 		return lastElement;
+	}
+
+	inline void Atpg::vecDelete(std::vector<int> &list, const int &index)
+	{
+		list[index] = list.back();
+		list.pop_back();
 	}
 
 	// 5-value logic evaluation functions

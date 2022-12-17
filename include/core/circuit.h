@@ -20,8 +20,8 @@ namespace CoreNs
 	class Circuit
 	{
 	public:
-		Circuit();
-		~Circuit();
+		inline Circuit();
+		// ~Circuit();
 
 		// specify how to connect multiple time frames of circuits
 		// CAPTURE means Launch-on-capture;  SHIFT means launch-on-shift
@@ -64,8 +64,8 @@ namespace CoreNs
 		// int             *fos_;        // fanout net array
 		// std::vector<int> fis_;
 		// std::vector<int> fos_;
-		int *cellToGate_; // map cells in netlist to gates
-		int *portToGate_; // map ports in netlist to gates
+		std::vector<int> cellToGate_; // map cells in netlist to gates
+		std::vector<int> portToGate_; // map ports in netlist to gates
 
 	protected:
 		// for circuit building
@@ -99,18 +99,18 @@ namespace CoreNs
 		nframe_ = 1;
 		connType_ = CAPTURE;
 		// gates_ = NULL;
-		cellToGate_ = NULL;
-		portToGate_ = NULL;
+		// cellToGate_ = NULL;
+		// portToGate_ = NULL;
 	}
 
-	inline Circuit::~Circuit()
-	{
-		// delete[] gates_;
-		// delete[] fis_;
-		// delete[] fos_;
-		delete[] cellToGate_;
-		delete[] portToGate_;
-	}
+	// inline Circuit::~Circuit()
+	// {
+	// 	// delete[] gates_;
+	// 	// delete[] fis_;
+	// 	// delete[] fos_;
+	// 	// delete[] cellToGate_;
+	// 	// delete[] portToGate_;
+	// }
 
 };
 

@@ -1,5 +1,9 @@
-lex and yacc now compatible with bison 3.5.1 (on ladryzen( working station in lads ))
+Refactor - 32nd modification
 
-I AM SO HAPPY
-
-I SPENT 7 HOURS on THIS!
+  readability related changes:
+    circuit.h/cpp change all new dynamic allocated array to vector
+  performance related changes:
+  bug fixed:
+  note:
+  function added:
+  function removed:

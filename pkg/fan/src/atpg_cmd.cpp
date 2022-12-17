@@ -780,13 +780,16 @@ void ReportGateCmd::reportGate(const int &i) const
 	std::cout << "\n";
 	std::cout << "#    fi[" << g->numFI_ << "]";
 	for (int j = 0; j < g->numFI_; ++j)
+	{
 		std::cout << " " << g->faninVector_[j];
+	}
 	std::cout << "\n";
 	std::cout << "#    fo[" << g->numFO_ << "]";
 	for (int j = 0; j < g->numFO_; ++j)
+	{
 		std::cout << " " << g->fanoutVector_[j];
-	std::cout << "\n"
-						<< "\n";
+	}
+	std::cout << "\n\n";
 }
 
 ReportValueCmd::ReportValueCmd(const std::string &name, FanMgr *fanMgr) : Cmd(name)
