@@ -9,20 +9,22 @@
 #ifndef _CORE_SIMULATOR_H_
 #define _CORE_SIMULATOR_H_
 
+#include <array>
 #include <stack>
+#include <vector>
 
 #include "pattern.h"
 #include "fault.h"
+#include "logic.h"
 // TODO comment for each attribute
 
 namespace CoreNs
 {
-
 	class Simulator
 	{
 	public:
 		Simulator(Circuit *cir);
-		~Simulator();
+		// ~Simulator();
 
 		// used by both parallel pattern and parallel fault
 		void setNdet(const int &ndet); // this for n-detect
@@ -43,26 +45,27 @@ namespace CoreNs
 		void ppFaultSim(PatternProcessor *pcoll, FaultListExtract *fListExtract);
 		void ppFaultSim(FaultList &remain);
 
-	protected:
+	private:
 		// used by both parallel pattern and parallel fault
 		Circuit *cir_;
-		int ndet_; // for n-detect
-		std::stack<int> *events_;
-		bool *processed_; // array of processed flags.  TRUE means this gate is processed
-		int *recover_;		// array of gates to be recovered from the last fault injection
-		int nrecover_;		// number of recovers needed
-											//  this is to inject fault into the circuit
-											//  faultInjectL_ =1 faultInjectH_ =0 inject a stuck-at zero fault
-		ParaValue (*faultInjectL_)[5];
-		ParaValue (*faultInjectH_)[5];
+		int ndet_;		 // for n-detect
+		int nrecover_; // number of recovers needed
+		FaultListIter injected_[WORD_SIZE];
+		int ninjected_;
+		ParaValue activated_;
+		std::vector<std::stack<int>> events_;
+		std::vector<bool> processed_; // array of processed flags.  TRUE means this gate is processed
+		std::vector<int> recover_;								// array of gates to be recovered from the last fault injection
+																	//  this is to inject fault into the circuit
+																	//  faultInjectL_ =1 faultInjectH_ =0 inject a stuck-at zero fault
+		std::vector<std::array<ParaValue, 5>> faultInjectL_;
+		std::vector<std::array<ParaValue, 5>>faultInjectH_;
 
 		// parallel fault
 		void pfReset();
 		bool pfCheckActivation(const Fault *const f);
 		void pfInject(const Fault *const f, const size_t &i);
 		void pfCheckDetection(FaultList &remain);
-		FaultListIter injected_[WORD_SIZE];
-		int ninjected_;
 
 		// parallel pattern
 		void ppReset();
@@ -70,40 +73,49 @@ namespace CoreNs
 		void ppInject(const Fault *const f);
 		void ppCheckDetection(Fault *const f);
 		void ppSetPattern(PatternProcessor *pcoll, const int &i);
-		ParaValue activated_;
 	};
 
 	inline Simulator::Simulator(Circuit *cir)
+			: cir_(cir),
+				ndet_(1),
+				nrecover_(0),
+				ninjected_(0),
+				activated_(PARA_L),
+				events_(cir->tlvl_),
+				processed_(cir->tgate_, false),
+				recover_(cir->tgate_),
+				faultInjectL_(cir->tgate_, std::array<ParaValue, 5>({0, 0, 0, 0, 0})),
+				faultInjectH_(cir->tgate_, std::array<ParaValue, 5>({0, 0, 0, 0, 0}))
 	{
 		// used by both parallel pattern and parallel fault
-		cir_ = cir;
-		ndet_ = 1;
-		events_ = new std::stack<int>[cir_->tlvl_];
-		processed_ = new bool[cir_->tgate_];
-		recover_ = new int[cir_->tgate_];
-		nrecover_ = 0;
-		faultInjectL_ = new ParaValue[cir_->tgate_][5];
-		faultInjectH_ = new ParaValue[cir_->tgate_][5];
+		// cir_ = cir;
+		// ndet_ = 1;
+		// events_ = new std::stack<int>[cir_->tlvl_];
+		// processed_ = new bool[cir_->tgate_];
+		// recover_ = new int[cir_->tgate_];
+		// nrecover_ = 0;
+		// faultInjectL_ = new ParaValue[cir_->tgate_][5];
+		// faultInjectH_ = new ParaValue[cir_->tgate_][5];
 
-		memset(processed_, 0, cir_->tgate_ * sizeof(bool));
-		memset(faultInjectL_, 0, cir_->tgate_ * 5 * sizeof(ParaValue));
-		memset(faultInjectH_, 0, cir_->tgate_ * 5 * sizeof(ParaValue));
+		// memset(processed_, 0, cir_->tgate_ * sizeof(bool));
+		// memset(faultInjectL_, 0, cir_->tgate_ * 5 * sizeof(ParaValue));
+		// memset(faultInjectH_, 0, cir_->tgate_ * 5 * sizeof(ParaValue));
 
 		// parallel fault
-		ninjected_ = 0;
+		// ninjected_ = 0;
 
 		// parallel pattern
-		activated_ = PARA_L;
+		// activated_ = PARA_L;
 	}
 
-	inline Simulator::~Simulator()
-	{
-		delete[] events_;
-		delete[] processed_;
-		delete[] recover_;
-		delete[] faultInjectL_;
-		delete[] faultInjectH_;
-	}
+	// inline Simulator::~Simulator()
+	// {
+	// 	// delete[] events_;
+	// 	// delete[] processed_;
+	// 	// delete[] recover_;
+	// 	// delete[] faultInjectL_;
+	// 	// delete[] faultInjectH_;
+	// }
 
 	// **************************************************************************
 	// Function   [ Simulator::assignPatternToPi ]
@@ -125,9 +137,13 @@ namespace CoreNs
 			if (!pattern.primaryInputs1st_.empty())
 			{
 				if (pattern.primaryInputs1st_[j] == L)
+				{
 					cir_->gates_[j].goodSimLow_ = PARA_H;
+				}
 				else if (pattern.primaryInputs1st_[j] == H)
+				{
 					cir_->gates_[j].goodSimHigh_ = PARA_H;
+				}
 			}
 			if (cir_->nframe_ > 1)
 			{
@@ -136,9 +152,13 @@ namespace CoreNs
 				if (!pattern.primaryInputs2nd_.empty())
 				{
 					if (pattern.primaryInputs2nd_[j] == L)
+					{
 						cir_->gates_[j + cir_->ngate_].goodSimLow_ = PARA_H;
+					}
 					else if (pattern.primaryInputs2nd_[j] == H)
+					{
 						cir_->gates_[j + cir_->ngate_].goodSimHigh_ = PARA_H;
+					}
 				}
 			}
 		}
@@ -257,9 +277,12 @@ namespace CoreNs
 			cir_->gates_[recover_[i]].faultSimHigh_ = cir_->gates_[recover_[i]].goodSimHigh_;
 		}
 		nrecover_ = 0;
-		memset(processed_, 0, cir_->tgate_ * sizeof(bool));
-		memset(faultInjectL_, 0, cir_->tgate_ * 5 * sizeof(ParaValue));
-		memset(faultInjectH_, 0, cir_->tgate_ * 5 * sizeof(ParaValue));
+		// memset(processed_, 0, cir_->tgate_ * sizeof(bool));
+		// memset(faultInjectL_, 0, cir_->tgate_ * 5 * sizeof(ParaValue));
+		// memset(faultInjectH_, 0, cir_->tgate_ * 5 * sizeof(ParaValue));
+		std::fill(processed_.begin(), processed_.end(), false);
+		std::fill(faultInjectL_.begin(), faultInjectL_.end(), std::array<ParaValue, 5>({0, 0, 0, 0, 0}));
+		std::fill(faultInjectH_.begin(), faultInjectH_.end(), std::array<ParaValue, 5>({0, 0, 0, 0, 0}));
 
 		ninjected_ = 0;
 	}
@@ -281,9 +304,12 @@ namespace CoreNs
 			cir_->gates_[recover_[i]].faultSimHigh_ = cir_->gates_[recover_[i]].goodSimHigh_;
 		}
 		nrecover_ = 0;
-		memset(processed_, 0, cir_->tgate_ * sizeof(bool));
-		memset(faultInjectL_, 0, cir_->tgate_ * 5 * sizeof(ParaValue));
-		memset(faultInjectH_, 0, cir_->tgate_ * 5 * sizeof(ParaValue));
+		// memset(processed_, 0, cir_->tgate_ * sizeof(bool));
+		// memset(faultInjectL_, 0, cir_->tgate_ * 5 * sizeof(ParaValue));
+		// memset(faultInjectH_, 0, cir_->tgate_ * 5 * sizeof(ParaValue));
+		std::fill(processed_.begin(), processed_.end(), false);
+		std::fill(faultInjectL_.begin(), faultInjectL_.end(), std::array<ParaValue, 5>({0, 0, 0, 0, 0}));
+		std::fill(faultInjectH_.begin(), faultInjectH_.end(), std::array<ParaValue, 5>({0, 0, 0, 0, 0}));
 		activated_ = PARA_L;
 	}
 
@@ -300,7 +326,6 @@ namespace CoreNs
 	//            ]
 	// Date       [ CJY Ver. 1.0 started 2013/08/18 ]
 	// **************************************************************************
-	//{{{ inline void Simulator::goodEval(const int &)
 	inline void Simulator::goodEval(const int &i)
 	{
 		// find number of fanin

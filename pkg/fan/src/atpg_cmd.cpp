@@ -1094,11 +1094,14 @@ bool AddPinConsCmd::exec(const std::vector<std::string> &argv)
 		}
 		fanMgr_->cir->gates_[gid].hasConstraint_ = true;
 		if (cons)
+		{
 			fanMgr_->cir->gates_[gid].constraint_ = PARA_H;
+		}
 		else
+		{
 			fanMgr_->cir->gates_[gid].constraint_ = PARA_L;
+		}
 	}
-
 	return true;
 }
 
@@ -1113,6 +1116,7 @@ RunLogicSimCmd::RunLogicSimCmd(const std::string &name, FanMgr *fanMgr) : Cmd(na
 	opt->addFlag("help");
 	optMgr_.regOpt(opt);
 }
+
 RunLogicSimCmd::~RunLogicSimCmd() {}
 
 bool RunLogicSimCmd::exec(const std::vector<std::string> &argv)
@@ -1198,15 +1202,21 @@ bool RunFaultSimCmd::exec(const std::vector<std::string> &argv)
 	}
 
 	if (!fanMgr_->sim)
+	{
 		fanMgr_->sim = new Simulator(fanMgr_->cir);
+	}
 
 	std::cout << "#  Performing fault simulation ...\n";
 	fanMgr_->tmusg.periodStart();
 
 	if (optMgr_.isFlagSet("m") && optMgr_.getFlagVar("m") == "pf")
+	{
 		fanMgr_->sim->pfFaultSim(fanMgr_->pcoll, fanMgr_->fListExtract);
+	}
 	else
+	{
 		fanMgr_->sim->ppFaultSim(fanMgr_->pcoll, fanMgr_->fListExtract);
+	}
 
 	TmStat stat;
 	fanMgr_->tmusg.getPeriodUsage(stat);
@@ -1216,9 +1226,8 @@ bool RunFaultSimCmd::exec(const std::vector<std::string> &argv)
 	rtime = (double)stat.rTime / 1000000.0;
 
 	return true;
-} //}}}
+}
 
-//{{{ RunAtpgCmd::RunAtpgCmd()
 RunAtpgCmd::RunAtpgCmd(const std::string &name, FanMgr *fanMgr) : Cmd(name)
 {
 	fanMgr_ = fanMgr;
@@ -1230,6 +1239,7 @@ RunAtpgCmd::RunAtpgCmd(const std::string &name, FanMgr *fanMgr) : Cmd(name)
 	opt->addFlag("help");
 	optMgr_.regOpt(opt);
 }
+
 RunAtpgCmd::~RunAtpgCmd() {}
 
 bool RunAtpgCmd::exec(const std::vector<std::string> &argv)
@@ -1260,7 +1270,9 @@ bool RunAtpgCmd::exec(const std::vector<std::string> &argv)
 	}
 
 	if (!fanMgr_->sim)
+	{
 		fanMgr_->sim = new Simulator(fanMgr_->cir);
+	}
 
 	delete fanMgr_->atpg;
 	fanMgr_->atpg = new Atpg(fanMgr_->cir, fanMgr_->sim);
@@ -1297,6 +1309,7 @@ WritePatCmd::WritePatCmd(const std::string &name, FanMgr *fanMgr) : Cmd(name)
 	opt->addFlag("format");
 	optMgr_.regOpt(opt);
 }
+
 WritePatCmd::~WritePatCmd() {}
 
 bool WritePatCmd::exec(const std::vector<std::string> &argv)
@@ -1375,6 +1388,7 @@ AddScanChainsCmd::AddScanChainsCmd(const std::string &name, FanMgr *fanMgr) : Cm
 	opt->addFlag("help");
 	optMgr_.regOpt(opt);
 }
+
 AddScanChainsCmd::~AddScanChainsCmd() {}
 
 bool AddScanChainsCmd::exec(const std::vector<std::string> &argv)
@@ -1412,6 +1426,7 @@ WriteProcCmd::WriteProcCmd(const std::string &name, FanMgr *fanMgr) : Cmd(name)
 	opt->addFlag("help");
 	optMgr_.regOpt(opt);
 }
+
 WriteProcCmd::~WriteProcCmd() {}
 
 bool WriteProcCmd::exec(const std::vector<std::string> &argv)
@@ -1437,8 +1452,7 @@ bool WriteProcCmd::exec(const std::vector<std::string> &argv)
 		return false;
 	}
 
-	std::cout << "#  Writing test procedure file ...";
-	std::cout << "\n";
+	std::cout << "#  Writing test procedure file ...\n";
 	ProcedureWriter writer(fanMgr_->cir);
 	if (!writer.writeProc(optMgr_.getParsedArg(0).c_str()))
 	{
@@ -1466,6 +1480,7 @@ WriteStilCmd::WriteStilCmd(const std::string &name, FanMgr *fanMgr) : Cmd(name)
 	opt->addFlag("format");
 	optMgr_.regOpt(opt);
 }
+
 WriteStilCmd::~WriteStilCmd() {}
 
 bool WriteStilCmd::exec(const std::vector<std::string> &argv)
@@ -1497,8 +1512,7 @@ bool WriteStilCmd::exec(const std::vector<std::string> &argv)
 		return false;
 	}
 
-	std::cout << "#  Writing pattern to STIL...";
-	std::cout << "\n";
+	std::cout << "#  Writing pattern to STIL...\n";
 	PatternWriter writer(fanMgr_->pcoll, fanMgr_->cir);
 
 	if (!writer.writeSTIL(optMgr_.getParsedArg(0).c_str()))

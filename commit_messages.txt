@@ -1,7 +1,10 @@
-Refactor - 32nd modification
+Refactor - 33rd modification
 
   readability related changes:
-    circuit.h/cpp change all new dynamic allocated array to vector
+    simulator.h/cpp:
+      change all new dynamic allocated array to vector
+      change built in array to std::array
+      change memset to std::fill
   performance related changes:
   bug fixed:
   note:

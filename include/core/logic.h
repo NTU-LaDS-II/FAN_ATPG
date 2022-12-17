@@ -45,8 +45,7 @@ inline Value getBitValue(const ParaValue &pv, const size_t &i) {
 
 void printValue(const Value &v, std::ostream &out = std::cout);
 void printValue(const ParaValue &v, std::ostream &out = std::cout);
-void printValue(const ParaValue &l, const ParaValue &h,
-                std::ostream &out = std::cout);
+void printValue(const ParaValue &l, const ParaValue &h, std::ostream &out = std::cout);
 
 };
 

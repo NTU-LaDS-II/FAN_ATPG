@@ -251,8 +251,8 @@ namespace CoreNs
 		finalObject_.reserve(MAX_LIST_SIZE);
 		unjustified_.reserve(MAX_LIST_SIZE);
 		currentObject_.reserve(MAX_LIST_SIZE);
-		isInEventStack_.resize(pCircuit->tgate_);
-		std::fill(isInEventStack_.begin(), isInEventStack_.end(), false);
+		isInEventStack_.resize(pCircuit->tgate_, false);
+		// std::fill(isInEventStack_.begin(), isInEventStack_.end(), false);
 		// gateID_to_n0_.resize(pCircuit->tgate_); removed by wang
 		// gateID_to_n1_.resize(pCircuit->tgate_); removed by wang
 		// gateID_to_lineType_ = new GATE_LINE_TYPE[pCircuit->tgate_];
@@ -278,10 +278,14 @@ namespace CoreNs
 	inline Value Atpg::evaluateGoodVal(Gate &gate)
 	{
 		if (gate.gateType_ == Gate::PI || gate.gateType_ == Gate::PPI)
+		{
 			return gate.atpgVal_;
+		}
 		Value v[4];
 		for (int i = 0; i < gate.numFI_; ++i)
+		{
 			v[i] = pCircuit_->gates_[gate.faninVector_[i]].atpgVal_;
+		}
 
 		switch (gate.gateType_)
 		{
@@ -477,7 +481,6 @@ namespace CoreNs
 			case Gate::OR2:
 			case Gate::OR3:
 			case Gate::OR4:
-
 				if (faultyLine == 0)
 				{
 					val = pCircuit_->gates_[gate.faninVector_[0]].atpgVal_;
@@ -1046,6 +1049,7 @@ namespace CoreNs
 			}
 		}
 	}
+	
 	inline void Atpg::adjacentFill(Pattern &pattern)
 	{
 		if (pattern.primaryInputs1st_[0] == X)
