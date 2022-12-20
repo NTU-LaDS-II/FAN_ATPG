@@ -9,8 +9,6 @@
 #include "sdf_file.h"
 #include "sdf_file.tab.hpp"
 
-using namespace std;
-
 int sdf_fileline = 1;
 
 %}
@@ -32,7 +30,7 @@ PATH           {ID}([./]{ID})+
 "//".*                      ;
 "/*" BEGIN COMMENT          ;
 <COMMENT>"*/" BEGIN INITIAL ;
-<COMMENT>\n                 { sdf_fileline++;          }
+<COMMENT>\n                 { ++sdf_fileline;          }
 <COMMENT>.
 
 "DELAYFILE"                 { return DELAYFILE;        }
@@ -166,7 +164,7 @@ PATH           {ID}([./]{ID})+
 ":"                          { return sdf_filetext[0]; }
 ","                          { return sdf_filetext[0]; }
 
-\n                           { sdf_fileline++;         }
+\n                           { ++sdf_fileline;         }
 [ \t\v\f]                    ;
 .                            ;
 

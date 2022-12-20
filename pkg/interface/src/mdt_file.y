@@ -13,7 +13,6 @@
 
 #include "mdt_file.h"
 
-using namespace std;
 using namespace IntfNs;
 
 extern char *mdt_filetext;

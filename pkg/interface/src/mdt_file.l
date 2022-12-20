@@ -9,7 +9,6 @@
 #include "mdt_file.h"
 #include "mdt_file.tab.hpp"
 
-using namespace std;
 
 int  mdt_fileline    = 1;
 bool mdt_filewarning = 1;
@@ -74,229 +73,229 @@ WHT [ \t\v\f\n]
 
 "//".*                                         ;
 
-"scan_definition"{WHT}*"("                     { mdt_fileparen++;
+"scan_definition"{WHT}*"("                     { ++mdt_fileparen;
                                                  BEGIN SCAN_DEF;          }
-<SCAN_DEF>")"                                  { mdt_fileparen--;
+<SCAN_DEF>")"                                  { --mdt_fileparen;
                                                  if (mdt_fileparen == 0) {
                                                      mdt_fileskipScanDef();
                                                      BEGIN(INITIAL);
                                                  }
                                                }
-<SCAN_DEF>"("                                  { mdt_fileparen++;         }
-<SCAN_DEF>\n                                   { mdt_fileline++;          }
+<SCAN_DEF>"("                                  { ++mdt_fileparen;         }
+<SCAN_DEF>\n                                   { ++mdt_fileline;          }
 <SCAN_DEF>.
 
 
 "cell_type"{WHT}*"=" BEGIN CELL_TYPE           ;
 <CELL_TYPE>";"                                 { mdt_fileskipCellType();
                                                  BEGIN(INITIAL);          }
-<CELL_TYPE>\n                                  { mdt_fileline++;          }
+<CELL_TYPE>\n                                  { ++mdt_fileline;          }
 <CELL_TYPE>.
 
 
 "used"{WHT}*"=" BEGIN USED                     ;
 <USED>";"                                      { mdt_fileskipUsed();
                                                  BEGIN(INITIAL);          }
-<USED>\n                                       { mdt_fileline++;          }
+<USED>\n                                       { ++mdt_fileline;          }
 <USED>.
 
 
 "clock"{WHT}*"=" BEGIN CLOCK                   ;
 <CLOCK>";"                                     { mdt_fileskipClock();
                                                  BEGIN(INITIAL);          }
-<CLOCK>\n                                      { mdt_fileline++;          }
+<CLOCK>\n                                      { ++mdt_fileline;          }
 <CLOCK>.
 
 
 "no_fault"{WHT}*"=" BEGIN NO_FAULT             ;
 <NO_FAULT>";"                                  { mdt_fileskipNoFault();
                                                  BEGIN(INITIAL);          }
-<NO_FAULT>\n                                   { mdt_fileline++;          }
+<NO_FAULT>\n                                   { ++mdt_fileline;          }
 <NO_FAULT>.
 
 
 "function"{WHT}*"=" BEGIN FUNCTION             ;
 <FUNCTION>";"                                  { mdt_fileskipFunction();
                                                  BEGIN(INITIAL);          }
-<FUNCTION>\n                                   { mdt_fileline++;          }
+<FUNCTION>\n                                   { ++mdt_fileline;          }
 <FUNCTION>.
 
 
 "fault"{WHT}*"=" BEGIN FAULT                   ;
 <FAULT>";"                                     { mdt_fileskipFault();
                                                  BEGIN(INITIAL);          }
-<FAULT>\n                                      { mdt_fileline++;          }
+<FAULT>\n                                      { ++mdt_fileline;          }
 <FAULT>.
 
 
 "set_clock_conflict"{WHT}*"=" BEGIN SET_CLK    ;
 <SET_CLK>";"                                   { mdt_fileskipSetClk();
                                                  BEGIN(INITIAL);          }
-<SET_CLK>\n                                    { mdt_fileline++;          }
+<SET_CLK>\n                                    { ++mdt_fileline;          }
 <SET_CLK>.
 
 
 "reset_clock_conflict"{WHT}*"=" BEGIN RESET_CLK;
 <RESET_CLK>";"                                 { mdt_fileskipResetClk();
                                                  BEGIN(INITIAL);          }
-<RESET_CLK>\n                                  { mdt_fileline++;          }
+<RESET_CLK>\n                                  { ++mdt_fileline;          }
 <RESET_CLK>.
 
 
 "bus_keeper"{WHT}*"=" BEGIN BUS_KEEPER         ;
 <BUS_KEEPER>";"                                { mdt_fileskipBusKeeper();
                                                  BEGIN(INITIAL);          }
-<BUS_KEEPER>\n                                 { mdt_fileline++;          }
+<BUS_KEEPER>\n                                 { ++mdt_fileline;          }
 <BUS_KEEPER>.
 
 
 "array_delimiter"{WHT}*"=" BEGIN ARRAY_DEL     ;
 <ARRAY_DEL>";"                                 { mdt_fileskipArrayDel();
                                                  BEGIN(INITIAL);          }
-<ARRAY_DEL>\n                                  { mdt_fileline++;          }
+<ARRAY_DEL>\n                                  { ++mdt_fileline;          }
 <ARRAY_DEL>.
 
 
 "array"{WHT}*"=" BEGIN ARRAY                   ;
 <ARRAY>";"                                     { mdt_fileskipArray();
                                                  BEGIN(INITIAL);          }
-<ARRAY>\n                                      { mdt_fileline++;          }
+<ARRAY>\n                                      { ++mdt_fileline;          }
 <ARRAY>.
 
 
 "primitive"{WHT}*"="{WHT}*"_pulse_generator"   BEGIN PULSE;
 <PULSE>";"                                     { mdt_fileskipPulse();
                                                  BEGIN(INITIAL);          }
-<PULSE>\n                                      { mdt_fileline++;          }
+<PULSE>\n                                      { ++mdt_fileline;          }
 <PULSE>.
 
 
 "primitive"{WHT}*"="{WHT}*"_rom" BEGIN ROM     ;
 <ROM>";"                                       { mdt_fileskipRom();
                                                  BEGIN(INITIAL);          }
-<ROM>\n                                        { mdt_fileline++;          }
+<ROM>\n                                        { ++mdt_fileline;          }
 <ROM>.
 
 
 "primitive"{WHT}*"="{WHT}*"_ram" BEGIN RAM     ;
 <RAM>";"                                       { mdt_fileskipRam();
                                                  BEGIN(INITIAL);          }
-<RAM>\n                                        { mdt_fileline++;          }
+<RAM>\n                                        { ++mdt_fileline;          }
 <RAM>.
 
 
 "primitive"{WHT}*"="{WHT}*"_cram" BEGIN CRAM   ;
 <CRAM>";"                                      { mdt_fileskipCram();
                                                  BEGIN(INITIAL);          }
-<CRAM>\n                                       { mdt_fileline++;          }
+<CRAM>\n                                       { ++mdt_fileline;          }
 <CRAM>.
 
 
 "data_size"{WHT}*"=" BEGIN DATA_SIZE           ;
 <DATA_SIZE>";"                                 { mdt_fileskipDataSize();
                                                  BEGIN(INITIAL);          }
-<DATA_SIZE>\n                                  { mdt_fileline++;          }
+<DATA_SIZE>\n                                  { ++mdt_fileline;          }
 <DATA_SIZE>.
 
 
 "address_size"{WHT}*"=" BEGIN ADDR_SIZE        ;
 <ADDR_SIZE>";"                                 { mdt_fileskipAddrSize();
                                                  BEGIN(INITIAL);          }
-<ADDR_SIZE>\n                                  { mdt_fileline++;          }
+<ADDR_SIZE>\n                                  { ++mdt_fileline;          }
 <ADDR_SIZE>.
 
 
 "min_address"{WHT}*"=" BEGIN MIN_ADDR          ;
 <MIN_ADDR>";"                                  { mdt_fileskipMinAddr();
                                                  BEGIN(INITIAL);          }
-<MIN_ADDR>\n                                   { mdt_fileline++;          }
+<MIN_ADDR>\n                                   { ++mdt_fileline;          }
 <MIN_ADDR>.
 
 
 "max_address"{WHT}*"=" BEGIN MAX_ADDR          ;
 <MAX_ADDR>";"                                  { mdt_fileskipMaxAddr();
                                                  BEGIN(INITIAL);          }
-<MAX_ADDR>\n                                   { mdt_fileline++;          }
+<MAX_ADDR>\n                                   { ++mdt_fileline;          }
 <MAX_ADDR>.
 
 
 "read_off"{WHT}*"=" BEGIN READ_OFF             ;
 <READ_OFF>";"                                  { mdt_fileskipReadOff();
                                                  BEGIN(INITIAL);          }
-<READ_OFF>\n                                   { mdt_fileline++;          }
+<READ_OFF>\n                                   { ++mdt_fileline;          }
 <READ_OFF>.
 
 
 "init_file"{WHT}*"=" BEGIN INIT_FILE           ;
 <INIT_FILE>";"                                 { mdt_fileskipInitFile();
                                                  BEGIN(INITIAL);          }
-<INIT_FILE>\n                                  { mdt_fileline++;          }
+<INIT_FILE>\n                                  { ++mdt_fileline;          }
 <INIT_FILE>.
 
 
 "edge_trigger"{WHT}*"=" BEGIN EDGE_TRIGGER     ;
 <EDGE_TRIGGER>";"                              { mdt_fileskipEdgeTrigger();
                                                  BEGIN(INITIAL);          }
-<EDGE_TRIGGER>\n                               { mdt_fileline++;          }
+<EDGE_TRIGGER>\n                               { ++mdt_fileline;          }
 <EDGE_TRIGGER>.
 
 
 "address_type"{WHT}*"=" BEGIN ADDR_TYPE        ;
 <ADDR_TYPE>";"                                 { mdt_fileskipAddrType();
                                                  BEGIN(INITIAL);          }
-<ADDR_TYPE>\n                                  { mdt_fileline++;          }
+<ADDR_TYPE>\n                                  { ++mdt_fileline;          }
 <ADDR_TYPE>.
 
 
 "read_read_conflict"{WHT}*"=" BEGIN RR_CONFLICT;
 <RR_CONFLICT>";"                               { mdt_fileskipRrConflict();
                                                  BEGIN(INITIAL);          }
-<RR_CONFLICT>\n                                { mdt_fileline++;          }
+<RR_CONFLICT>\n                                { ++mdt_fileline;          }
 <RR_CONFLICT>.
 
 
 "read_write_conflict"{WHT}*"="                 BEGIN RW_CONFLICT;
 <RW_CONFLICT>";"                               { mdt_fileskipRwConflict();
                                                  BEGIN(INITIAL);          }
-<RW_CONFLICT>\n                                { mdt_fileline++;          }
+<RW_CONFLICT>\n                                { ++mdt_fileline;          }
 <RW_CONFLICT>.
 
 
 "write_contention"{WHT}*"="                    BEGIN WRT_CONTENTION;
 <WRT_CONTENTION>";"                            { mdt_fileskipWriteContention();
                                                  BEGIN(INITIAL);          }
-<WRT_CONTENTION>\n                             { mdt_fileline++;          }
+<WRT_CONTENTION>\n                             { ++mdt_fileline;          }
 <WRT_CONTENTION>.
 
 
 "overwrite"{WHT}*"=" BEGIN OVERWRITE;
 <OVERWRITE>";"                                 { mdt_fileskipOverwrite();
                                                  BEGIN(INITIAL);          }
-<OVERWRITE>\n                                  { mdt_fileline++;          }
+<OVERWRITE>\n                                  { ++mdt_fileline;          }
 <OVERWRITE>.
 
 
 "macro"{WHT} BEGIN MACRO                       ;
-<MACRO>")"                                     { mdt_fileparen--;
+<MACRO>")"                                     { --mdt_fileparen;
                                                  if (mdt_fileparen == 0) {
                                                      mdt_fileskipMacro();
                                                      BEGIN(INITIAL);
                                                  }
                                                }
-<MACRO>"("                                     { mdt_fileparen++;         }
-<MACRO>\n                                      { mdt_fileline++;          }
+<MACRO>"("                                     { ++mdt_fileparen;         }
+<MACRO>\n                                      { ++mdt_fileline;          }
 <MACRO>.
 
 
 "alias"{WHT} BEGIN ALIAS                       ;
-<ALIAS>\n                                      { mdt_fileline++;
+<ALIAS>\n                                      { ++mdt_fileline;
                                                  mdt_fileskipAlias();
                                                  BEGIN(INITIAL);          }
 <ALIAS>.
 
 
 "#include"{WHT} BEGIN INCLUDE                  ;
-<INCLUDE>\n                                    { mdt_fileline++;
+<INCLUDE>\n                                    { ++mdt_fileline;
                                                  mdt_fileskipInclude();
                                                  BEGIN(INITIAL);          }
 <INCLUDE>.
@@ -331,7 +330,7 @@ WHT [ \t\v\f\n]
 ","                                            { return mdt_filetext[0]; }
 ";"                                            { return mdt_filetext[0]; }
 
-\n                                             { mdt_fileline++;       }
+\n                                             { ++mdt_fileline;       }
 [ \t\v\f]                                      ;
 .                                              ;
 

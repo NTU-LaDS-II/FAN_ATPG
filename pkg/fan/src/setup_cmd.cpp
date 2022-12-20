@@ -10,13 +10,11 @@
 
 #include "setup_cmd.h"
 
-using namespace std;
 using namespace CommonNs;
 using namespace IntfNs;
 using namespace CoreNs;
 using namespace FanNs;
 
-//{{{ ReadLibCmd::ReadLibCmd()
 ReadLibCmd::ReadLibCmd(const std::string &name, FanMgr *fanMgr) : Cmd(name)
 {
 	fanMgr_ = fanMgr;
@@ -36,9 +34,8 @@ ReadLibCmd::ReadLibCmd(const std::string &name, FanMgr *fanMgr) : Cmd(name)
 }
 
 ReadLibCmd::~ReadLibCmd() {}
-//}}}
-//{{{ bool ReadLibCmd::exec()
-bool ReadLibCmd::exec(const vector<string> &argv)
+
+bool ReadLibCmd::exec(const std::vector<std::string> &argv)
 {
 	optMgr_.parse(argv);
 
@@ -50,8 +47,8 @@ bool ReadLibCmd::exec(const vector<string> &argv)
 
 	if (optMgr_.getNParsedArg() < 1)
 	{
-		cerr << "**ERROR ReadLibCmd::exec(): library file needed";
-		cerr << endl;
+		std::cerr << "**ERROR ReadLibCmd::exec(): library file needed";
+		std::cerr << "\n";
 		return false;
 	}
 
@@ -62,11 +59,13 @@ bool ReadLibCmd::exec(const vector<string> &argv)
 
 	// read library
 	fanMgr_->tmusg.periodStart();
-	cout << "#  Reading technology library ..." << endl;
+	std::cout << "#  Reading technology library ..."
+						<< "\n";
 	bool verbose = optMgr_.isFlagSet("v");
 	if (!libBlder->read(optMgr_.getParsedArg(0).c_str(), verbose))
 	{
-		cerr << "**ERROR ReadLibCmd::exec(): MDT lib builder error" << endl;
+		std::cerr << "**ERROR ReadLibCmd::exec(): MDT lib builder error"
+							<< "\n";
 		delete libBlder;
 		delete fanMgr_->lib;
 		fanMgr_->lib = NULL;
@@ -76,7 +75,8 @@ bool ReadLibCmd::exec(const vector<string> &argv)
 	// check library
 	if (!fanMgr_->lib->check(verbose))
 	{
-		cerr << "**ERROR ReadLibCmd::exec(): MDT lib error" << endl;
+		std::cerr << "**ERROR ReadLibCmd::exec(): MDT lib error"
+							<< "\n";
 		delete libBlder;
 		delete fanMgr_->lib;
 		fanMgr_->lib = NULL;
@@ -85,17 +85,19 @@ bool ReadLibCmd::exec(const vector<string> &argv)
 
 	TmStat stat;
 	if (!fanMgr_->tmusg.getPeriodUsage(stat))
-		cout << "fishy ..." << endl;
-	cout << "#  Finished reading library `" << optMgr_.getParsedArg(0) << "'";
-	cout << "    " << (double)stat.rTime / 1000000.0 << " s";
-	cout << "    " << (double)stat.vmSize / 1024.0 << " MB" << endl;
+	{
+		std::cout << "fishy ..."
+							<< "\n";
+	}
+	std::cout << "#  Finished reading library `" << optMgr_.getParsedArg(0) << "'";
+	std::cout << "    " << (double)stat.rTime / 1000000.0 << " s";
+	std::cout << "    " << (double)stat.vmSize / 1024.0 << " MB"
+						<< "\n";
 
 	delete libBlder;
 	return true;
 }
-//}}}
 
-//{{{ ReadNlCmd::ReadNlCmd()
 ReadNlCmd::ReadNlCmd(const std::string &name, FanMgr *fanMgr) : Cmd(name)
 {
 	fanMgr_ = fanMgr;
@@ -114,9 +116,8 @@ ReadNlCmd::ReadNlCmd(const std::string &name, FanMgr *fanMgr) : Cmd(name)
 	optMgr_.regOpt(opt);
 }
 ReadNlCmd::~ReadNlCmd() {}
-//}}}
-//{{{ bool ReadNlCmd::exec()
-bool ReadNlCmd::exec(const vector<string> &argv)
+
+bool ReadNlCmd::exec(const std::vector<std::string> &argv)
 {
 	optMgr_.parse(argv);
 
@@ -128,15 +129,15 @@ bool ReadNlCmd::exec(const vector<string> &argv)
 
 	if (!fanMgr_->lib)
 	{
-		cerr << "**ERROR ReadNlCmd::exec(): technology library needed";
-		cerr << endl;
+		std::cerr << "**ERROR ReadNlCmd::exec(): technology library needed";
+		std::cerr << "\n";
 		return false;
 	}
 
 	if (optMgr_.getNParsedArg() < 1)
 	{
-		cerr << "**ERROR ReadNlCmd::exec(): netlist file needed";
-		cerr << endl;
+		std::cerr << "**ERROR ReadNlCmd::exec(): netlist file needed";
+		std::cerr << "\n";
 		return false;
 	}
 
@@ -148,11 +149,13 @@ bool ReadNlCmd::exec(const vector<string> &argv)
 
 	// read netlist
 	fanMgr_->tmusg.periodStart();
-	cout << "#  Reading netlist ..." << endl;
+	std::cout << "#  Reading netlist ..."
+						<< "\n";
 	bool verbose = optMgr_.isFlagSet("v");
 	if (!nlBlder->read(optMgr_.getParsedArg(0).c_str(), verbose))
 	{
-		cerr << "**ERROR ReadNlCmd()::exec(): verilog builder error" << endl;
+		std::cerr << "**ERROR ReadNlCmd()::exec(): verilog builder error"
+							<< "\n";
 		delete fanMgr_->nl;
 		delete nlBlder;
 		fanMgr_->nl = NULL;
@@ -162,7 +165,8 @@ bool ReadNlCmd::exec(const vector<string> &argv)
 	// check netlist
 	if (!fanMgr_->nl->check(verbose))
 	{
-		cerr << "**ERROR ReadNlCmd()::exec(): netlist error" << endl;
+		std::cerr << "**ERROR ReadNlCmd()::exec(): netlist error"
+							<< "\n";
 		delete fanMgr_->nl;
 		delete nlBlder;
 		fanMgr_->nl = NULL;
@@ -171,15 +175,15 @@ bool ReadNlCmd::exec(const vector<string> &argv)
 
 	TmStat stat;
 	fanMgr_->tmusg.getPeriodUsage(stat);
-	cout << "#  Finished reading netlist `" << optMgr_.getParsedArg(0) << "'";
-	cout << "    " << (double)stat.rTime / 1000000.0 << " s";
-	cout << "    " << (double)stat.vmSize / 1024.0 << " MB" << endl;
+	std::cout << "#  Finished reading netlist `" << optMgr_.getParsedArg(0) << "'";
+	std::cout << "    " << (double)stat.rTime / 1000000.0 << " s";
+	std::cout << "    " << (double)stat.vmSize / 1024.0 << " MB"
+						<< "\n";
 
 	delete nlBlder;
 	return true;
-} //}}}
+}
 
-//{{{ SetFaultTypeCmd::SetFaultTypeCmd()
 SetFaultTypeCmd::SetFaultTypeCmd(const std::string &name, FanMgr *fanMgr) : Cmd(name)
 {
 	fanMgr_ = fanMgr;
@@ -194,9 +198,8 @@ SetFaultTypeCmd::SetFaultTypeCmd(const std::string &name, FanMgr *fanMgr) : Cmd(
 	optMgr_.regOpt(opt);
 }
 SetFaultTypeCmd::~SetFaultTypeCmd() {}
-//}}}
-//{{{ bool SetFaultTypeCmd::exec()
-bool SetFaultTypeCmd::exec(const vector<string> &argv)
+
+bool SetFaultTypeCmd::exec(const std::vector<std::string> &argv)
 {
 	optMgr_.parse(argv);
 
@@ -208,35 +211,39 @@ bool SetFaultTypeCmd::exec(const vector<string> &argv)
 
 	if (optMgr_.getNParsedArg() < 1)
 	{
-		cerr << "**ERROR SetFaultTypeCmd::exec(): fault type needed";
-		cerr << endl;
+		std::cerr << "**ERROR SetFaultTypeCmd::exec(): fault type needed";
+		std::cerr << "\n";
 		return false;
 	}
 
 	if (!fanMgr_->fListExtract)
+	{
 		fanMgr_->fListExtract = new FaultListExtract;
+	}
 
 	if (optMgr_.getParsedArg(0) == "saf")
 	{
-		cout << "#  fault type set to stuck-at fault" << endl;
+		std::cout << "#  fault type set to stuck-at fault"
+							<< "\n";
 		fanMgr_->fListExtract->faultListType_ = FaultListExtract::SAF;
 	}
 	else if (optMgr_.getParsedArg(0) == "tdf")
 	{
-		cout << "#  fault type set to transition delay fault" << endl;
+		std::cout << "#  fault type set to transition delay fault"
+							<< "\n";
 		fanMgr_->fListExtract->faultListType_ = FaultListExtract::TDF;
 	}
 	else
 	{
-		cerr << "**ERROR SetFaultTypeCmd::exec(): unknown fault type `";
-		cerr << optMgr_.getParsedArg(0) << "'" << endl;
+		std::cerr << "**ERROR SetFaultTypeCmd::exec(): unknown fault type `";
+		std::cerr << optMgr_.getParsedArg(0) << "'"
+							<< "\n";
 		return false;
 	}
 
 	return true;
-} //}}}
+}
 
-//{{{ ReportNetlistCmd::ReportNetlistCmd()
 ReportNetlistCmd::ReportNetlistCmd(const std::string &name, FanMgr *fanMgr) : Cmd(name)
 {
 	fanMgr_ = fanMgr;
@@ -252,9 +259,8 @@ ReportNetlistCmd::ReportNetlistCmd(const std::string &name, FanMgr *fanMgr) : Cm
 	optMgr_.regOpt(opt);
 }
 ReportNetlistCmd::~ReportNetlistCmd() {}
-//}}}
-//{{{ bool ReportNetlistCmd::exec()
-bool ReportNetlistCmd::exec(const vector<string> &argv)
+
+bool ReportNetlistCmd::exec(const std::vector<std::string> &argv)
 {
 	optMgr_.parse(argv);
 
@@ -266,40 +272,51 @@ bool ReportNetlistCmd::exec(const vector<string> &argv)
 
 	if (!fanMgr_->nl)
 	{
-		cerr << "**ERROR ReportNetlistCmd::exec(): netlist needed" << endl;
+		std::cerr << "**ERROR ReportNetlistCmd::exec(): netlist needed"
+							<< "\n";
 		return false;
 	}
 
-	cout << "#  netlist information" << endl;
-	cout << "#    number of modules: " << fanMgr_->nl->getNModule() << endl;
-	cout << "#    modules:          ";
+	std::cout << "#  netlist information"
+						<< "\n";
+	std::cout << "#    number of modules: " << fanMgr_->nl->getNModule() << "\n";
+	std::cout << "#    modules:          ";
 	for (size_t i = 0; i < fanMgr_->nl->getNModule(); ++i)
-		cout << " " << fanMgr_->nl->getModule(i)->name_;
-	cout << endl;
+	{
+		std::cout << " " << fanMgr_->nl->getModule(i)->name_;
+	}
+	std::cout << "\n";
 	Cell *top = fanMgr_->nl->getTop();
-	cout << "#    current module:    " << top->name_ << endl;
-	cout << "#    number of ports:   " << top->getNPort() << endl;
-	cout << "#    number of cells:   " << top->getNCell() << endl;
-	cout << "#    number of nets:    " << top->getNNet() << endl;
+	std::cout << "#    current module:    " << top->name_ << "\n";
+	std::cout << "#    number of ports:   " << top->getNPort() << "\n";
+	std::cout << "#    number of cells:   " << top->getNCell() << "\n";
+	std::cout << "#    number of nets:    " << top->getNNet() << "\n";
 	if (!optMgr_.isFlagSet("more"))
+	{
 		return true;
-	cout << "#    ports:            ";
+	}
+	std::cout << "#    ports:            ";
 	for (size_t i = 0; i < top->getNPort(); ++i)
-		cout << " " << top->getPort(i)->name_;
-	cout << endl;
-	cout << "#    cells:            ";
+	{
+		std::cout << " " << top->getPort(i)->name_;
+	}
+	std::cout << "\n";
+	std::cout << "#    cells:            ";
 	for (size_t i = 0; i < top->getNCell(); ++i)
-		cout << " " << top->getCell(i)->name_;
-	cout << endl;
-	cout << "#    nets:             ";
+	{
+		std::cout << " " << top->getCell(i)->name_;
+	}
+	std::cout << "\n";
+	std::cout << "#    nets:             ";
 	for (size_t i = 0; i < top->getNNet(); ++i)
-		cout << " " << top->getNet(i)->name_;
-	cout << endl;
+	{
+		std::cout << " " << top->getNet(i)->name_;
+	}
+	std::cout << "\n";
 
 	return true;
-} //}}}
+}
 
-//{{{ ReportCellCmd::ReportCellCmd()
 ReportCellCmd::ReportCellCmd(const std::string &name, FanMgr *fanMgr) : Cmd(name)
 {
 	fanMgr_ = fanMgr;
@@ -315,10 +332,10 @@ ReportCellCmd::ReportCellCmd(const std::string &name, FanMgr *fanMgr) : Cmd(name
 	opt->addFlag("help");
 	optMgr_.regOpt(opt);
 }
+
 ReportCellCmd::~ReportCellCmd() {}
-//}}}
-//{{{ bool ReportCellCmd::exec()
-bool ReportCellCmd::exec(const vector<string> &argv)
+
+bool ReportCellCmd::exec(const std::vector<std::string> &argv)
 {
 	optMgr_.parse(argv);
 
@@ -330,23 +347,29 @@ bool ReportCellCmd::exec(const vector<string> &argv)
 
 	if (!fanMgr_->nl)
 	{
-		cerr << "**ERROR ReportCellCmd::exec(): netlist needed" << endl;
+		std::cerr << "**ERROR ReportCellCmd::exec(): netlist needed"
+							<< "\n";
 		return false;
 	}
 
 	if (optMgr_.getNParsedArg() == 0)
+	{
 		for (size_t i = 0; i < fanMgr_->nl->getTop()->getNCell(); ++i)
+		{
 			reportCell(i);
+		}
+	}
 	else
 	{
 		for (size_t i = 0; i < optMgr_.getNParsedArg(); ++i)
 		{
-			string name = optMgr_.getParsedArg(i);
+			std::string name = optMgr_.getParsedArg(i);
 			Cell *c = fanMgr_->nl->getTop()->getCell(name.c_str());
 			if (!c)
 			{
-				cerr << "**ERROR ReportCellCmd::exec(): cell `";
-				cerr << name << "' does not exist" << endl;
+				std::cerr << "**ERROR ReportCellCmd::exec(): cell `";
+				std::cerr << name << "' does not exist"
+									<< "\n";
 				continue;
 			}
 			reportCell(c->id_);
@@ -354,30 +377,29 @@ bool ReportCellCmd::exec(const vector<string> &argv)
 	}
 
 	return true;
-} //}}}
-//{{{ void ReportCellCmd::reportCell()
+}
+
 void ReportCellCmd::reportCell(const size_t &i) const
 {
 	Cell *c = fanMgr_->nl->getTop()->getCell(i);
-	cout << "#  Cell " << c->name_ << " " << c->typeName_ << endl;
+	std::cout << "#  Cell " << c->name_ << " " << c->typeName_ << "\n";
 	CellSet fis = fanMgr_->nl->getTop()->getFanin(i);
-	cout << "#    fi[" << fis.size() << "]";
+	std::cout << "#    fi[" << fis.size() << "]";
 	for (CellSet::iterator it = fis.begin(); it != fis.end(); ++it)
 	{
-		cout << " " << (*it)->name_;
+		std::cout << " " << (*it)->name_;
 	}
-	cout << endl;
+	std::cout << "\n";
 	CellSet fos = fanMgr_->nl->getTop()->getFanout(i);
-	cout << "#    fo[" << fos.size() << "]";
+	std::cout << "#    fo[" << fos.size() << "]";
 	for (CellSet::iterator it = fos.begin(); it != fos.end(); ++it)
 	{
-		cout << " " << (*it)->name_;
+		std::cout << " " << (*it)->name_;
 	}
-	cout << endl
-			 << endl;
-} //}}}
+	std::cout << "\n"
+						<< "\n";
+}
 
-//{{{ ReportLibCmd::ReportLibCmd()
 ReportLibCmd::ReportLibCmd(const std::string &name, FanMgr *fanMgr) : Cmd(name)
 {
 	fanMgr_ = fanMgr;
@@ -389,10 +411,10 @@ ReportLibCmd::ReportLibCmd(const std::string &name, FanMgr *fanMgr) : Cmd(name)
 	opt->addFlag("help");
 	optMgr_.regOpt(opt);
 }
+
 ReportLibCmd::~ReportLibCmd() {}
-//}}}
-//{{{ bool ReportLibCmd::exec()
-bool ReportLibCmd::exec(const vector<string> &argv)
+
+bool ReportLibCmd::exec(const std::vector<std::string> &argv)
 {
 	optMgr_.parse(argv);
 
@@ -404,21 +426,22 @@ bool ReportLibCmd::exec(const vector<string> &argv)
 
 	if (!fanMgr_->lib)
 	{
-		cerr << "**ERROR ReportLibraryCmd::exec(): library needed" << endl;
+		std::cerr << "**ERROR ReportLibraryCmd::exec(): library needed"
+							<< "\n";
 		return false;
 	}
 
-	cout << "#  library information" << endl;
-	cout << "#    number of models: " << fanMgr_->lib->getNCell() << endl;
-	cout << "#    models:          ";
+	std::cout << "#  library information"
+						<< "\n";
+	std::cout << "#    number of models: " << fanMgr_->lib->getNCell() << "\n";
+	std::cout << "#    models:          ";
 	for (size_t i = 0; i < fanMgr_->lib->getNCell(); ++i)
-		cout << " " << fanMgr_->lib->getCell(i)->name_;
-	cout << endl;
+		std::cout << " " << fanMgr_->lib->getCell(i)->name_;
+	std::cout << "\n";
 
 	return true;
-} //}}}
+}
 
-//{{{ BuildCircuitCmd::BuildCircuitCmd()
 BuildCircuitCmd::BuildCircuitCmd(const std::string &name, FanMgr *fanMgr) : Cmd(name)
 {
 	fanMgr_ = fanMgr;
@@ -434,10 +457,10 @@ BuildCircuitCmd::BuildCircuitCmd(const std::string &name, FanMgr *fanMgr) : Cmd(
 	opt->addFlag("frame");
 	optMgr_.regOpt(opt);
 }
+
 BuildCircuitCmd::~BuildCircuitCmd() {}
-//}}}
-//{{{ bool BuildCircuitCmd::exec()
-bool BuildCircuitCmd::exec(const vector<string> &argv)
+
+bool BuildCircuitCmd::exec(const std::vector<std::string> &argv)
 {
 	optMgr_.parse(argv);
 
@@ -449,7 +472,8 @@ bool BuildCircuitCmd::exec(const vector<string> &argv)
 
 	if (!fanMgr_->nl)
 	{
-		cerr << "**ERROR BuildCirucitCmd::exec(): netlist needed" << endl;
+		std::cerr << "**ERROR BuildCirucitCmd::exec(): netlist needed"
+							<< "\n";
 		return false;
 	}
 
@@ -463,22 +487,27 @@ bool BuildCircuitCmd::exec(const vector<string> &argv)
 	fanMgr_->cir = new Circuit;
 	// build circuit
 	fanMgr_->tmusg.periodStart();
-	cout << "#  Building circuit ..." << endl;
+	std::cout << "#  Building circuit ..."
+						<< "\n";
 	if (fanMgr_->pcoll && fanMgr_->pcoll->type_ == PatternProcessor::LAUNCH_SHIFT) // launch on shift pattern
+	{
 		fanMgr_->cir->build(fanMgr_->nl, nframe, Circuit::SHIFT);
+	}
 	else
+	{
 		fanMgr_->cir->build(fanMgr_->nl, nframe);
+	}
 
 	TmStat stat;
 	fanMgr_->tmusg.getPeriodUsage(stat);
-	cout << "#  Finished building circuit";
-	cout << "    " << (double)stat.rTime / 1000000.0 << " s";
-	cout << "    " << (double)stat.vmSize / 1024.0 << " MB" << endl;
+	std::cout << "#  Finished building circuit";
+	std::cout << "    " << (double)stat.rTime / 1000000.0 << " s";
+	std::cout << "    " << (double)stat.vmSize / 1024.0 << " MB"
+						<< "\n";
 
 	return true;
-} //}}}
+}
 
-//{{{ SetPatternTypeCmd::SetPatternTypeCmd()
 SetPatternTypeCmd::SetPatternTypeCmd(const std::string &name, FanMgr *fanMgr) : Cmd(name)
 {
 	fanMgr_ = fanMgr;
@@ -492,10 +521,10 @@ SetPatternTypeCmd::SetPatternTypeCmd(const std::string &name, FanMgr *fanMgr) : 
 	opt->addFlag("help");
 	optMgr_.regOpt(opt);
 }
+
 SetPatternTypeCmd::~SetPatternTypeCmd() {}
-//}}}
-//{{{ bool SetPatternTypeCmd::exec()
-bool SetPatternTypeCmd::exec(const vector<string> &argv)
+
+bool SetPatternTypeCmd::exec(const std::vector<std::string> &argv)
 {
 	optMgr_.parse(argv);
 
@@ -507,41 +536,46 @@ bool SetPatternTypeCmd::exec(const vector<string> &argv)
 
 	if (optMgr_.getNParsedArg() < 1)
 	{
-		cerr << "**ERROR SetPatternTypeCmd::exec(): pattern type needed";
-		cerr << endl;
+		std::cerr << "**ERROR SetPatternTypeCmd::exec(): pattern type needed";
+		std::cerr << "\n";
 		return false;
 	}
 
 	if (!fanMgr_->pcoll)
+	{
 		fanMgr_->pcoll = new PatternProcessor;
+	}
 
 	if (optMgr_.getParsedArg(0) == "BASIC")
 	{
-		cout << "#  pattern type set to basic scan" << endl;
+		std::cout << "#  pattern type set to basic scan"
+							<< "\n";
 		fanMgr_->pcoll->type_ = PatternProcessor::BASIC_SCAN;
 	}
 	else if (optMgr_.getParsedArg(0) == "LOC")
 	{
-		cout << "#  pattern type set to launch on capture" << endl;
+		std::cout << "#  pattern type set to launch on capture"
+							<< "\n";
 		fanMgr_->pcoll->type_ = PatternProcessor::LAUNCH_CAPTURE;
 	}
 	else if (optMgr_.getParsedArg(0) == "LOS")
 	{
-		cout << "#  pattern type set to launch on shift" << endl;
+		std::cout << "#  pattern type set to launch on shift"
+							<< "\n";
 		fanMgr_->pcoll->type_ = PatternProcessor::LAUNCH_SHIFT;
 		fanMgr_->pcoll->numSI_ = 1;
 	}
 	else
 	{
-		cerr << "**ERROR SetPatternTypeCmd::exec(): unknown pattern type `";
-		cerr << optMgr_.getParsedArg(0) << "'" << endl;
+		std::cerr << "**ERROR SetPatternTypeCmd::exec(): unknown pattern type `";
+		std::cerr << optMgr_.getParsedArg(0) << "'"
+							<< "\n";
 		return false;
 	}
 
 	return true;
-} //}}}
+}
 
-//{{{ SetStaticCompressionCmd::SetStaticCompressionCmd()
 SetStaticCompressionCmd::SetStaticCompressionCmd(const std::string &name, FanMgr *fanMgr) : Cmd(name)
 {
 	fanMgr_ = fanMgr;
@@ -555,10 +589,10 @@ SetStaticCompressionCmd::SetStaticCompressionCmd(const std::string &name, FanMgr
 	opt->addFlag("help");
 	optMgr_.regOpt(opt);
 }
+
 SetStaticCompressionCmd::~SetStaticCompressionCmd() {}
-//}}}
-//{{{ bool SetStaticCompressionCmd::exec()
-bool SetStaticCompressionCmd::exec(const vector<string> &argv)
+
+bool SetStaticCompressionCmd::exec(const std::vector<std::string> &argv)
 {
 	optMgr_.parse(argv);
 
@@ -570,37 +604,41 @@ bool SetStaticCompressionCmd::exec(const vector<string> &argv)
 
 	if (optMgr_.getNParsedArg() < 1)
 	{
-		cerr << "**ERROR SetStaticCompressionCmd::exec(): on/off needed";
-		cerr << endl;
+		std::cerr << "**ERROR SetStaticCompressionCmd::exec(): on/off needed";
+		std::cerr << "\n";
 		return false;
 	}
 
 	if (!fanMgr_->pcoll)
+	{
 		fanMgr_->pcoll = new PatternProcessor;
+	}
 
 	if (optMgr_.getParsedArg(0) == "on")
 	{
-		cout << "#  static compression set to on" << endl;
+		std::cout << "#  static compression set to on"
+							<< "\n";
 
 		fanMgr_->pcoll->staticCompression_ = PatternProcessor::ON;
 	}
 	else if (optMgr_.getParsedArg(0) == "off")
 	{
-		cout << "#  static compression set to off" << endl;
+		std::cout << "#  static compression set to off"
+							<< "\n";
 
 		fanMgr_->pcoll->staticCompression_ = PatternProcessor::OFF;
 	}
 	else
 	{
-		cerr << "**ERROR SetStaticCompressionCmd::exec(): unknown argument `";
-		cerr << optMgr_.getParsedArg(0) << "'" << endl;
+		std::cerr << "**ERROR SetStaticCompressionCmd::exec(): unknown argument `";
+		std::cerr << optMgr_.getParsedArg(0) << "'"
+							<< "\n";
 		return false;
 	}
 
 	return true;
-} //}}}
+}
 
-//{{{ SetDynamicCompressionCmd::SetDynamicCompressionCmd()
 SetDynamicCompressionCmd::SetDynamicCompressionCmd(const std::string &name, FanMgr *fanMgr) : Cmd(name)
 {
 	fanMgr_ = fanMgr;
@@ -614,10 +652,10 @@ SetDynamicCompressionCmd::SetDynamicCompressionCmd(const std::string &name, FanM
 	opt->addFlag("help");
 	optMgr_.regOpt(opt);
 }
+
 SetDynamicCompressionCmd::~SetDynamicCompressionCmd() {}
-//}}}
-//{{{ bool SetDynamicCompressionCmd::exec()
-bool SetDynamicCompressionCmd::exec(const vector<string> &argv)
+
+bool SetDynamicCompressionCmd::exec(const std::vector<std::string> &argv)
 {
 	optMgr_.parse(argv);
 
@@ -629,37 +667,41 @@ bool SetDynamicCompressionCmd::exec(const vector<string> &argv)
 
 	if (optMgr_.getNParsedArg() < 1)
 	{
-		cerr << "**ERROR SetDynamicCompressionCmd::exec(): on/off needed";
-		cerr << endl;
+		std::cerr << "**ERROR SetDynamicCompressionCmd::exec(): on/off needed";
+		std::cerr << "\n";
 		return false;
 	}
 
 	if (!fanMgr_->pcoll)
+	{
 		fanMgr_->pcoll = new PatternProcessor;
+	}
 
 	if (optMgr_.getParsedArg(0) == "on")
 	{
-		cout << "#  dynamic compression set to on" << endl;
+		std::cout << "#  dynamic compression set to on"
+							<< "\n";
 
 		fanMgr_->pcoll->dynamicCompression_ = PatternProcessor::ON;
 	}
 	else if (optMgr_.getParsedArg(0) == "off")
 	{
-		cout << "#  dynamic compression set to off" << endl;
+		std::cout << "#  dynamic compression set to off"
+							<< "\n";
 
 		fanMgr_->pcoll->dynamicCompression_ = PatternProcessor::OFF;
 	}
 	else
 	{
-		cerr << "**ERROR SetDynamicCompressionCmd::exec(): unknown argument `";
-		cerr << optMgr_.getParsedArg(0) << "'" << endl;
+		std::cerr << "**ERROR SetDynamicCompressionCmd::exec(): unknown argument `";
+		std::cerr << optMgr_.getParsedArg(0) << "'"
+							<< "\n";
 		return false;
 	}
 
 	return true;
-} //}}}
+}
 
-//{{{ SetXFillCmd::SetXFillCmd()
 SetXFillCmd::SetXFillCmd(const std::string &name, FanMgr *fanMgr) : Cmd(name)
 {
 	fanMgr_ = fanMgr;
@@ -673,10 +715,10 @@ SetXFillCmd::SetXFillCmd(const std::string &name, FanMgr *fanMgr) : Cmd(name)
 	opt->addFlag("help");
 	optMgr_.regOpt(opt);
 }
+
 SetXFillCmd::~SetXFillCmd() {}
-//}}}
-//{{{ bool SetXFillCmd::exec()
-bool SetXFillCmd::exec(const vector<string> &argv)
+
+bool SetXFillCmd::exec(const std::vector<std::string> &argv)
 {
 	optMgr_.parse(argv);
 
@@ -688,33 +730,37 @@ bool SetXFillCmd::exec(const vector<string> &argv)
 
 	if (optMgr_.getNParsedArg() < 1)
 	{
-		cerr << "**ERROR SetXFillCmd::exec(): on/off needed";
-		cerr << endl;
+		std::cerr << "**ERROR SetXFillCmd::exec(): on/off needed";
+		std::cerr << "\n";
 		return false;
 	}
 
 	if (!fanMgr_->pcoll)
+	{
 		fanMgr_->pcoll = new PatternProcessor;
+	}
 
 	if (optMgr_.getParsedArg(0) == "on")
 	{
-		cout << "#  X-Fill set to on" << endl;
+		std::cout << "#  X-Fill set to on"
+							<< "\n";
 
 		fanMgr_->pcoll->XFill_ = PatternProcessor::ON;
 	}
 	else if (optMgr_.getParsedArg(0) == "off")
 	{
-		cout << "#  X-Fill set to off" << endl;
+		std::cout << "#  X-Fill set to off\n";
 
 		fanMgr_->pcoll->XFill_ = PatternProcessor::OFF;
 	}
 	else
 	{
-		cerr << "**ERROR SetXFillCmd::exec(): unknown argument `";
-		cerr << optMgr_.getParsedArg(0) << "'" << endl;
+		std::cerr << "**ERROR SetXFillCmd::exec(): unknown argument `";
+		std::cerr << optMgr_.getParsedArg(0) << "'"
+							<< "\n";
 		return false;
 	}
 
 	return true;
-} //}}}
+}
 // Ne

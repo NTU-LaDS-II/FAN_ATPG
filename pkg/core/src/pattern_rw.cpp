@@ -10,28 +10,29 @@
 #include <map>
 #include <algorithm>
 
-using namespace std;
 using namespace IntfNs;
 using namespace CoreNs;
 
 // PatternReader
-//{{{ void PatternReader::setPiOrder(const PatNames * const)
 // this method map the PI order to the circuit order
-//
 void PatternReader::setPiOrder(const PatNames *const pis)
 {
 	if (!success_)
+	{
 		return;
+	}
+
 	if (!cir_ || !cir_->nl_)
 	{
 		success_ = false;
 		return;
 	}
+
 	pcoll_->numPI_ = 0;
 	PatNames *pi = pis->head;
 	while (pi)
 	{
-		pcoll_->numPI_++;
+		++pcoll_->numPI_;
 		pi = pi->next;
 	}
 	// delete [] pcoll_->piOrder_;
@@ -53,25 +54,29 @@ void PatternReader::setPiOrder(const PatNames *const pis)
 			return;
 		}
 		pcoll_->pPIorder_[i] = cir_->portToGate_[p->id_];
-		i++;
+		++i;
 		pi = pi->next;
 	}
-} //}}}
-//{{{ void PatternReader::setPpiOrder(const PatNames * const)
+}
+
 void PatternReader::setPpiOrder(const PatNames *const ppis)
 {
 	if (!success_)
+	{
 		return;
+	}
+
 	if (!cir_ || !cir_->nl_)
 	{
 		success_ = false;
 		return;
 	}
+
 	pcoll_->numPPI_ = 0;
 	PatNames *ppi = ppis->head;
 	while (ppi)
 	{
-		pcoll_->numPPI_++;
+		++pcoll_->numPPI_;
 		ppi = ppi->next;
 	}
 	// delete[] pcoll_->ppiOrder_;
@@ -93,15 +98,18 @@ void PatternReader::setPpiOrder(const PatNames *const ppis)
 			return;
 		}
 		pcoll_->pPPIorder_[i] = cir_->cellToGate_[c->id_];
-		i++;
+		++i;
 		ppi = ppi->next;
 	}
-} //}}}
-//{{{ void PatternReader::setPoOrder(const PatNames * const)
+}
+
 void PatternReader::setPoOrder(const PatNames *const pos)
 {
 	if (!success_)
+	{
 		return;
+	}
+
 	if (!cir_ || !cir_->nl_)
 	{
 		success_ = false;
@@ -111,7 +119,7 @@ void PatternReader::setPoOrder(const PatNames *const pos)
 	PatNames *po = pos->head;
 	while (po)
 	{
-		pcoll_->numPO_++;
+		++pcoll_->numPO_;
 		po = po->next;
 	}
 	// delete[] pcoll_->poOrder_;
@@ -133,15 +141,18 @@ void PatternReader::setPoOrder(const PatNames *const pos)
 			return;
 		}
 		pcoll_->pPOorder_[i] = cir_->portToGate_[p->id_];
-		i++;
+		++i;
 		po = po->next;
 	}
-} //}}}
-//{{{ void PatternReader::setPatternType(const PatType &)
+}
+
 void PatternReader::setPatternType(const PatType &type)
 {
 	if (!success_)
+	{
 		return;
+	}
+
 	switch (type)
 	{
 		case IntfNs::BASIC_SCAN:
@@ -219,29 +230,39 @@ void PatternReader::addPattern(const char *const pi1,
 		pcoll_->patternVector_[curPat_].pseudoPrimaryOutputs_.resize(pcoll_->numPPI_);
 		assignValue(pcoll_->patternVector_[curPat_].pseudoPrimaryOutputs_, ppo, pcoll_->numPPI_);
 	}
-	curPat_++;
-} //}}}
-//{{{ void PatternReader::assignValue()
+	++curPat_;
+}
+
 void PatternReader::assignValue(std::vector<Value> &v, const char *const pat,
 																const int &size)
 {
 	for (int i = 0; i < size; ++i)
 	{
-		if (pat[i] == '0')
-			v[i] = L;
-		else if (pat[i] == '1')
-			v[i] = H;
-		else
-			v[i] = X;
+		switch (pat[i])
+		{
+			case '0':
+				v[i] = L;
+				break;
+			case '1':
+				v[i] = H;
+				break;
+			default:
+				v[i] = X;
+				break;
+		}
+		// if (pat[i] == '0')
+		// 	v[i] = L;
+		// else if (pat[i] == '1')
+		// 	v[i] = H;
+		// else
+		// 	v[i] = X;
 	}
-} //}}}
+}
 
 // PatternWriter
-//{{{ bool PatternWriter::writePat(const char * const)
 
 // write to LaDS's own *.pat  pattern format
 // support 2 time frames, but no more than 2 time frames
-//
 bool PatternWriter::writePat(const char *const fname)
 {
 	FILE *fout = fopen(fname, "w");
@@ -788,11 +809,11 @@ bool PatternWriter::writeSTIL(const char *const fname)
 	// TODO
 
 	//
-	vector<string> PI_Order;
-	vector<string> SCAN_Order;
-	vector<string> PO_Order;
+	std::vector<std::string> PI_Order;
+	std::vector<std::string> SCAN_Order;
+	std::vector<std::string> PO_Order;
 
-	cout << "==========" << endl; //
+	std::cout << "==========\n"; //
 
 	PI_Order.push_back("CK");
 	PI_Order.push_back("test_si");
@@ -815,24 +836,24 @@ bool PatternWriter::writeSTIL(const char *const fname)
 		PO_Order.push_back(cir_->nl_->getTop()->getPort(cir_->gates_[i].cellId_)->name_);
 	}
 
-	//
-	cout << "PI_ORDER ";
-	for (unsigned i = 0; i < PI_Order.size(); i++)
-		cout << PI_Order[i] << " ";
-	cout << endl;
+	std::cout << "PI_ORDER ";
+	for (size_t i = 0; i < PI_Order.size(); ++i)
+	{
+		std::cout << PI_Order[i] << " ";
+	}
+	std::cout << "\n";
 
-	cout << "SCAN_ORDER ";
-	for (unsigned i = 0; i < SCAN_Order.size(); i++)
-		cout << SCAN_Order[i] << " ";
-	cout << endl;
+	std::cout << "SCAN_ORDER ";
+	for (size_t i = 0; i < SCAN_Order.size(); ++i)
+		std::cout << SCAN_Order[i] << " ";
+	std::cout << "\n";
 
-	cout << "PO_ORDER ";
-	for (unsigned i = 0; i < PO_Order.size(); i++)
-		cout << PO_Order[i] << " ";
-	cout << endl;
-	//
+	std::cout << "PO_ORDER ";
+	for (size_t i = 0; i < PO_Order.size(); ++i)
+		std::cout << PO_Order[i] << " ";
+	std::cout << "\n";
 
-	string Processor_Mode = "";
+	std::string Processor_Mode = "";
 	int pattern_size = (int)pcoll_->patternVector_.size();
 
 	switch (pcoll_->type_)
@@ -848,13 +869,13 @@ bool PatternWriter::writeSTIL(const char *const fname)
 			break;
 	}
 
-	cout << Processor_Mode << " " << pattern_size << endl; //
+	std::cout << Processor_Mode << " " << pattern_size << "\n"; //
 
-	vector<map<string, string>> patternList;
+	std::vector<std::map<std::string, std::string>> patternList;
 
 	for (int i = 0; i < (int)pcoll_->patternVector_.size(); ++i)
 	{
-		map<string, string> map_pattern;
+		std::map<std::string, std::string> map_pattern;
 
 		if (!pcoll_->patternVector_[i].primaryInputs1st_.empty())
 		{
@@ -910,199 +931,209 @@ bool PatternWriter::writeSTIL(const char *const fname)
 				else
 					map_pattern["ppo"] += "N";
 			}
-			reverse(map_pattern["ppo"].begin(), map_pattern["ppo"].end());
+			std::reverse(map_pattern["ppo"].begin(), map_pattern["ppo"].end());
 		}
 		patternList.push_back(map_pattern);
 	}
 
-	for (unsigned i = 0; i < patternList.size(); i++)
-	{ //
-		cout << endl
-				 << "pattern_" << i + 1 << endl;
-		map<string, string>::iterator iter;
+	for (size_t i = 0; i < patternList.size(); ++i)
+	{
+		std::cout << "\npattern_" << i + 1 << "\n";
+		std::map<std::string, std::string>::iterator iter;
 		for (iter = patternList[i].begin(); iter != patternList[i].end(); iter++)
-			cout << iter->first << " " << iter->second << endl;
+			std::cout << iter->first << " " << iter->second << "\n";
 	} //
 
-	cout << "==========" << endl; //
+	std::cout << "==========\n";
 
-	ofstream os(fname);
-	os << "STIL 1.0;" << endl
-		 << endl;
+	std::ofstream os(fname);
+	os << "STIL 1.0;\n\n";
+
 	/////signals/////
-	os << "Signals {" << endl;
-	for (unsigned i = 0; i < PI_Order.size(); i++)
+	os << "Signals {\n";
+	for (size_t i = 0; i < PI_Order.size(); ++i)
 	{
 		os << "   \"" + PI_Order[i] + "\" " + "In";
 		if (PI_Order[i] == "test_si")
-			os << " { ScanIn; }" << endl;
+		{
+			os << " { ScanIn; }\n";
+		}
 		else
-			os << ";" << endl;
+		{
+			os << ";\n";
+		}
 	}
-	for (unsigned i = 0; i < PO_Order.size(); i++)
+	for (size_t i = 0; i < PO_Order.size(); ++i)
 	{
 		os << "   \"" + PO_Order[i] + "\" " + "Out";
 		if (PO_Order[i] == "test_so")
-			os << " { ScanOut; }" << endl;
+		{
+			os << " { ScanOut; }\n";
+		}
 		else
-			os << ";" << endl;
+		{
+			os << ";\n";
+		}
 	}
-	os << "}" << endl
-		 << endl;
+	os << "}\n\n";
 	/////SignalGroups/////
-	os << "SignalGroups {" << endl;
-	string _pi_in = "";
-	string _po_out = "";
-	string _in_timing = "";
-	for (unsigned i = 0; i < PI_Order.size(); i++)
+	os << "SignalGroups {\n";
+	std::string _pi_in = "";
+	std::string _po_out = "";
+	std::string _in_timing = "";
+	for (size_t i = 0; i < PI_Order.size(); ++i)
 	{
 		_pi_in = _pi_in + "\"" + PI_Order[i] + "\"";
 		if (i != PI_Order.size() - 1)
+		{
 			_pi_in += " + ";
+		}
+
 		if (PI_Order[i] != "CK")
 		{
 			_in_timing = _in_timing + "\"" + PI_Order[i] + "\"";
 			if (i != PI_Order.size() - 1)
+			{
 				_in_timing += " + ";
+			}
 		}
 	}
-	for (unsigned i = 0; i < PO_Order.size(); i++)
+	for (size_t i = 0; i < PO_Order.size(); ++i)
 	{
 		_po_out = _po_out + "\"" + PO_Order[i] + "\"";
 		if (i != PO_Order.size() - 1)
+		{
 			_po_out += " + ";
+		}
 	}
-	os << "   \"_pi\" = \'" + _pi_in + "\';" << endl;
-	os << "   \"_in\" = \'" + _pi_in + "\';" << endl;
-	os << "   \"_si\" = \'\"test_si\"\' { ScanIn; }" << endl;
-	os << "   \"_po\" = \'" + _po_out + "\';" << endl;
-	os << "   \"_out\" = \'" + _po_out + "\';" << endl;
-	os << "   \"_so\" = \'\"test_so\"\' { ScanOut; }" << endl;
-	os << "   \"_default_In_Timing_\" = \'" + _in_timing + "\';" << endl;
-	os << "   \"_default_Out_Timing_\" = \'" + _po_out + "\';" << endl;
-	os << "}" << endl
-		 << endl;
+	os << "   \"_pi\" = \'" + _pi_in + "\';\n";
+	os << "   \"_in\" = \'" + _pi_in + "\';\n";
+	os << "   \"_si\" = \'\"test_si\"\' { ScanIn; }\n";
+	os << "   \"_po\" = \'" + _po_out + "\';\n";
+	os << "   \"_out\" = \'" + _po_out + "\';\n";
+	os << "   \"_so\" = \'\"test_so\"\' { ScanOut; }\n";
+	os << "   \"_default_In_Timing_\" = \'" + _in_timing + "\';\n";
+	os << "   \"_default_Out_Timing_\" = \'" + _po_out + "\';\n";
+	os << "}\n\n";
 	/////Timing/////
-	os << "Timing {" << endl;
-	os << "   WaveformTable \"_default_WFT_\" {" << endl;
-	os << "       Period \'100ns\';" << endl;
-	os << "       Waveforms {" << endl;
-	os << "           \"CK\" { 0 { \'0ns\' D; } }" << endl;
-	os << "           \"CK\" { P { \'0ns\' D; \'50ns\' U; \'75ns\' D; } }" << endl;
-	os << "           \"CK\" { 1 { \'0ns\' U; } }" << endl;
-	os << "           \"CK\" { Z { \'0ns\' Z; } }" << endl;
-	os << "           \"_default_In_Timing_\" { 0 { \'0ns\' D; } }" << endl;
-	os << "           \"_default_In_Timing_\" { 1 { \'0ns\' U; } }" << endl;
-	os << "           \"_default_In_Timing_\" { Z { \'0ns\' Z; } }" << endl;
-	os << "           \"_default_In_Timing_\" { N { \'0ns\' N; } }" << endl;
-	os << "           \"_default_Out_Timing_\" { X { \'0ns\' X; } }" << endl;
-	os << "           \"_default_Out_Timing_\" { H { \'0ns\' X; \' 90 ns\' H; } }" << endl;
-	os << "           \"_default_Out_Timing_\" { T { \'0ns\' X; \' 90 ns\' T; } }" << endl;
-	os << "           \"_default_Out_Timing_\" { L { \'0ns\' X; \' 90 ns\' L; } }" << endl;
-	os << "       }" << endl;
-	os << "   }" << endl;
-	os << "}" << endl
-		 << endl;
+	os << "Timing {\n";
+	os << "   WaveformTable \"_default_WFT_\" {\n";
+	os << "       Period \'100ns\';\n";
+	os << "       Waveforms {\n";
+	os << "           \"CK\" { 0 { \'0ns\' D; } }\n";
+	os << "           \"CK\" { P { \'0ns\' D; \'50ns\' U; \'75ns\' D; } }\n";
+	os << "           \"CK\" { 1 { \'0ns\' U; } }\n";
+	os << "           \"CK\" { Z { \'0ns\' Z; } }\n";
+	os << "           \"_default_In_Timing_\" { 0 { \'0ns\' D; } }\n";
+	os << "           \"_default_In_Timing_\" { 1 { \'0ns\' U; } }\n";
+	os << "           \"_default_In_Timing_\" { Z { \'0ns\' Z; } }\n";
+	os << "           \"_default_In_Timing_\" { N { \'0ns\' N; } }\n";
+	os << "           \"_default_Out_Timing_\" { X { \'0ns\' X; } }\n";
+	os << "           \"_default_Out_Timing_\" { H { \'0ns\' X; \' 90 ns\' H; } }\n";
+	os << "           \"_default_Out_Timing_\" { T { \'0ns\' X; \' 90 ns\' T; } }\n";
+	os << "           \"_default_Out_Timing_\" { L { \'0ns\' X; \' 90 ns\' L; } }\n";
+	os << "       }\n";
+	os << "   }\n";
+	os << "}\n\n";
 
 	/////ScanStructures/////
-	os << "ScanStructures {" << endl;
-	os << "   ScanChain \"chain1\" {" << endl; //
-	os << "       ScanLength " << SCAN_Order.size() << ";" << endl;
-	os << "       ScanIn \"test_si\";" << endl;
-	os << "       ScanOut \"test_so\";" << endl;
-	os << "       ScanInversion 0;" << endl;
+	os << "ScanStructures {\n";
+	os << "   ScanChain \"chain1\" {\n"; //
+	os << "       ScanLength " << SCAN_Order.size() << ";\n";
+	os << "       ScanIn \"test_si\";\n";
+	os << "       ScanOut \"test_so\";\n";
+	os << "       ScanInversion 0;\n";
 	os << "       ScanCells";
-	for (unsigned i = 0; i < SCAN_Order.size(); i++)
+	for (size_t i = 0; i < SCAN_Order.size(); ++i)
+	{
 		os << " \"TOP." << SCAN_Order[i] << ".SI\"";
-	os << ";" << endl;
-	os << "       ScanMasterClock \"CK\" ;" << endl;
-	os << "   }" << endl;
-	os << "}" << endl
-		 << endl;
+	}
+	os << ";\n";
+	os << "       ScanMasterClock \"CK\" ;\n";
+	os << "   }\n";
+	os << "}\n\n";
 
 	/////PatternBurst PatternExec/////
-	os << "PatternBurst \"_burst_\" {" << endl;
-	os << "   PatList { \"_pattern_\" { } }" << endl;
-	os << "}" << endl
-		 << endl;
-	os << "PatternExec {" << endl;
-	os << "   PatternBurst \"_burst_\";" << endl;
-	os << "}" << endl
-		 << endl;
+	os << "PatternBurst \"_burst_\" {\n";
+	os << "   PatList { \"_pattern_\" { } }\n";
+	os << "}\n\n";
+	os << "PatternExec {\n";
+	os << "   PatternBurst \"_burst_\";\n";
+	os << "}\n\n";
 
 	/////Procedures/////
-	os << "Procedures {" << endl;
-	os << "   \"load_unload\" {" << endl;
-	os << "       W \"_default_WFT_\";" << endl;
-	os << "       C { \"test_si\"=0; \"CK\"=0; \"test_se\"=1; }" << endl;
-	os << "       V { \"_so\"=#; }" << endl;
-	os << "       Shift {" << endl;
-	os << "           W \"_default_WFT_\";" << endl;
-	os << "           V { \"_si\"=#; \"_so\"=#; \"CK\"=P; }" << endl;
-	os << "       }" << endl;
-	os << "   }" << endl;
-	os << "   \"capture_CK\" {" << endl;
-	os << "       W \"_default_WFT_\";" << endl;
-	os << "       F { \"test_se\"=0; }" << endl;
-	os << "       C { \"_po\"=\\r" << PO_Order.size() << " X ; }" << endl;
-	os << "       \"forcePI\": V { \"_pi\"=\\r" << PI_Order.size() << " # ; }" << endl;
-	os << "       \"measurePO\": V { \"_po\"=\\r" << PO_Order.size() << " # ; }" << endl;
-	os << "       C { \"_po\"=\\r" << PO_Order.size() << " X ; }" << endl;
-	os << "       \"pulse\": V { \"CK\"=P; }" << endl;
-	os << "   }" << endl;
-	os << "   \"capture\" {" << endl;
-	os << "       W \"_default_WFT_\";" << endl;
-	os << "       F { \"test_se\"=0; }" << endl;
-	os << "       C { \"_po\"=\\r" << PO_Order.size() << " X ; }" << endl;
-	os << "       \"forcePI\": V { \"_pi\"=\\r" << PI_Order.size() << " # ; }" << endl;
-	os << "       \"measurePO\": V { \"_po\"=\\r" << PO_Order.size() << " # ; }" << endl;
-	os << "   }" << endl;
-	os << "}" << endl
-		 << endl;
+	os << "Procedures {\n";
+	os << "   \"load_unload\" {\n";
+	os << "       W \"_default_WFT_\";\n";
+	os << "       C { \"test_si\"=0; \"CK\"=0; \"test_se\"=1; }\n";
+	os << "       V { \"_so\"=#; }\n";
+	os << "       Shift {\n";
+	os << "           W \"_default_WFT_\";\n";
+	os << "           V { \"_si\"=#; \"_so\"=#; \"CK\"=P; }\n";
+	os << "       }\n";
+	os << "   }\n";
+	os << "   \"capture_CK\" {\n";
+	os << "       W \"_default_WFT_\";\n";
+	os << "       F { \"test_se\"=0; }\n";
+	os << "       C { \"_po\"=\\r" << PO_Order.size() << " X ; }\n";
+	os << "       \"forcePI\": V { \"_pi\"=\\r" << PI_Order.size() << " # ; }\n";
+	os << "       \"measurePO\": V { \"_po\"=\\r" << PO_Order.size() << " # ; }\n";
+	os << "       C { \"_po\"=\\r" << PO_Order.size() << " X ; }\n";
+	os << "       \"pulse\": V { \"CK\"=P; }\n";
+	os << "   }\n";
+	os << "   \"capture\" {\n";
+	os << "       W \"_default_WFT_\";\n";
+	os << "       F { \"test_se\"=0; }\n";
+	os << "       C { \"_po\"=\\r" << PO_Order.size() << " X ; }\n";
+	os << "       \"forcePI\": V { \"_pi\"=\\r" << PI_Order.size() << " # ; }\n";
+	os << "       \"measurePO\": V { \"_po\"=\\r" << PO_Order.size() << " # ; }\n";
+	os << "   }\n";
+	os << "}\n\n";
 
 	/////MacroDefs/////
-	os << "MacroDefs {" << endl;
-	os << "   \"test_setup\" {" << endl;
-	os << "       W \"_default_WFT_\";" << endl;
-	os << "       V { \"test_se\"=0; \"CK\"=0; }" << endl;
-	os << "   }" << endl;
-	os << "}" << endl
-		 << endl;
+	os << "MacroDefs {\n";
+	os << "   \"test_setup\" {\n";
+	os << "       W \"_default_WFT_\";\n";
+	os << "       V { \"test_se\"=0; \"CK\"=0; }\n";
+	os << "   }\n";
+	os << "}\n\n";
 
 	/////Pattern/////
-	os << "Pattern \"_pattern_\" {" << endl;
-	os << "   W \"_default_WFT_\";" << endl;
-	os << "   \"precondition all Signals\": C { \"_pi\"=\\r" << PI_Order.size() << " 0 ; \"_po\"=\\r" << PO_Order.size() << " X ; }" << endl;
-	os << "   Macro \"test_setup\";" << endl;
+	os << "Pattern \"_pattern_\" {\n";
+	os << "   W \"_default_WFT_\";\n";
+	os << "   \"precondition all Signals\": C { \"_pi\"=\\r" << PI_Order.size() << " 0 ; \"_po\"=\\r" << PO_Order.size() << " X ; }\n";
+	os << "   Macro \"test_setup\";\n";
 
-	for (int i = 0; i < pattern_size; i++)
+	for (int i = 0; i < pattern_size; ++i)
 	{
-		os << "   \"pattern " << i << "\":" << endl;
-		os << "       Call \"load_unload\" {" << endl;
+		os << "   \"pattern " << i << "\":\n";
+		os << "       Call \"load_unload\" {\n";
 		if (i > 0)
-			os << "           \"test_so\"=" << patternList[i - 1]["ppo"] << ";" << endl;
-		os << "           \"test_si\"=" << patternList[i]["ppi1"] << ";" << endl;
-		os << "       }" << endl;
-		os << "       Call \"capture_CK\" {" << endl;
+		{
+			os << "           \"test_so\"=" << patternList[i - 1]["ppo"] << ";\n";
+		}
+		os << "           \"test_si\"=" << patternList[i]["ppi1"] << ";\n";
+		os << "       }\n";
+		os << "       Call \"capture_CK\" {\n";
 		os << "           \"_pi\"=";
-		for (unsigned j = patternList[i]["pi1"].length(); j < PI_Order.size(); j++)
+		for (size_t j = patternList[i]["pi1"].length(); j < PI_Order.size(); ++j)
 		{
 			os << "0";
 		}
-		os << patternList[i]["pi1"] << ";" << endl;
+		os << patternList[i]["pi1"] << ";\n";
 		os << "           \"_po\"=";
-		for (unsigned j = patternList[i]["po1"].length(); j < PO_Order.size(); j++)
+		for (size_t j = patternList[i]["po1"].length(); j < PO_Order.size(); ++j)
 		{
 			os << "L";
 		}
-		os << patternList[i]["po1"] << ";" << endl;
-		os << "       }" << endl;
+		os << patternList[i]["po1"] << ";\n";
+		os << "       }\n";
 	}
 
-	os << "   \"end " << pattern_size - 1 << " unload\":" << endl;
-	os << "       Call \"load_unload\" {" << endl;
-	os << "           \"test_so\"=" << patternList[pattern_size - 1]["ppo"] << ";" << endl;
-	os << "       }" << endl;
+	os << "   \"end " << pattern_size - 1 << " unload\":\n";
+	os << "       Call \"load_unload\" {\n";
+	os << "           \"test_so\"=" << patternList[pattern_size - 1]["ppo"] << ";\n";
+	os << "       }\n";
 	os << "}";
 
 	os.close();

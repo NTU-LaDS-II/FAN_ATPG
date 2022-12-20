@@ -9,7 +9,6 @@
 #include "vlog_file.h"
 #include "vlog_file.tab.hpp"
 
-using namespace std;
 // extern char *vlog_filetext;
 // extern int  vlog_fileline;
 bool vlog_filewarning = 1;
@@ -42,19 +41,19 @@ NAME     ({L}({LTRAIL}|("\\"{ESC}))*("["{NUMBER}(":"{NUMBER})?"]")?)|{VALUE}
 "//".*                              ;
 "/*" BEGIN COMMENT                  ;
 <COMMENT>"*/" BEGIN INITIAL         ;
-<COMMENT>\n                         { vlog_fileline++;           }
+<COMMENT>\n                         { ++vlog_fileline;           }
 <COMMENT>.
 
 "specify" BEGIN SPECIFY             ;
 <SPECIFY>"endspecify"               { vlog_fileskipSpecify();
                                       BEGIN(INITIAL);            }
-<SPECIFY>\n                         { vlog_fileline++;           }
+<SPECIFY>\n                         { ++vlog_fileline;           }
 <SPECIFY>.
 
 "table" BEGIN TABLE                 ;
 <TABLE>"endtable"                   { vlog_fileskipTable();
                                       BEGIN(INITIAL);            }
-<TABLE>\n                           { vlog_fileline++;           }
+<TABLE>\n                           { ++vlog_fileline;           }
 <TABLE>.
 
 "`timescale".*                      { vlog_fileskipTimeScale();  }
@@ -99,7 +98,7 @@ NAME     ({L}({LTRAIL}|("\\"{ESC}))*("["{NUMBER}(":"{NUMBER})?"]")?)|{VALUE}
 ":"                                 { return vlog_filetext[0];   }
 "="                                 { return vlog_filetext[0];   }
 
-\n                                  { vlog_fileline++;           }
+\n                                  { ++vlog_fileline;           }
 [ \t\v\f]                           ;
 .                                   ;
 
@@ -114,5 +113,3 @@ void vlog_fileskipTimeScale() { }
 void vlog_fileskipCellDef() { }
 
 void vlog_fileskipEndCellDef() { }
-
-

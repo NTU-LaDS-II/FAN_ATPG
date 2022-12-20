@@ -17,10 +17,10 @@
 namespace CoreNs
 {
 
-	//  Not used now
+	// Not used now
 	// class Vertex;
 	// typedef std::vector<Vertex *> VertexVec;
-	//  end of compatibility graph
+	// end of compatibility graph
 	class Pattern
 	{
 	public:
@@ -145,6 +145,7 @@ namespace CoreNs
 			pPPIorder_[i] = pCircuit->npi_ + i;
 		}
 	}
+
 	// **************************************************************************
 	// Function   [ PatternProcessor::StaticCompression ]
 	// Commentor  [ HKY CYW ]
@@ -167,26 +168,26 @@ namespace CoreNs
 	// **************************************************************************
 	inline void PatternProcessor::StaticCompression()
 	{
-		int size = (int)patternVector_.size();
+		const size_t &size = patternVector_.size();
 		std::vector<bool> mergeRecord(size);
-		for (int i = 0; i < size; ++i)
+		for (size_t i = 0; i < size; ++i)
 		{
 			mergeRecord[i] = false;
 		}
 		// bool *patternTable = new bool[size * size]();
 		std::vector<bool> patternTable(size * size);
-		for (int i = 0; i < size; ++i)
+		for (size_t i = 0; i < size; ++i)
 		{
 			patternTable[i * size + i] = true;
 		}
 		// for each pair of patterns, build pattern table
-		for (int i = 0; i < size - 1; ++i)
+		for (size_t i = 0; i < size - 1; ++i)
 		{
 			if (mergeRecord[i] == true)
 			{
 				continue; // If the pattern has been merged before, no need to merge again
 			}
-			for (int j = i + 1; j < size; ++j)
+			for (size_t j = i + 1; j < size; ++j)
 			{
 				if (mergeRecord[j] == true)
 				{
@@ -264,7 +265,7 @@ namespace CoreNs
 		updateTable(mergeRecord, patternTable);
 		// replace Pattern
 		std::vector<Pattern> compPattern;
-		for (int i = 0; i < (int)patternVector_.size(); ++i)
+		for (size_t i = 0; i < patternVector_.size(); ++i)
 		{
 			if (mergeRecord[i] == false)
 			{
@@ -276,14 +277,14 @@ namespace CoreNs
 
 	inline bool PatternProcessor::updateTable(std::vector<bool> mergeRecord, std::vector<bool> patternTable)
 	{
-		int size = (int)patternVector_.size();
+		const size_t &size = patternVector_.size();
 		typedef std::pair<int, int> Pattern_pair;
 		typedef std::map<Pattern_pair, int> Pattern_table;
 		Pattern_table patternCandidate;
 		// find pattern pair candidate
-		for (int i = 0; i < size - 1; ++i)
+		for (size_t i = 0; i < size - 1; ++i)
 		{
-			for (int j = i + 1; j < size; ++j)
+			for (size_t j = i + 1; j < size; ++j)
 			{
 				if (patternTable[i * size + j])
 				{
@@ -299,7 +300,7 @@ namespace CoreNs
 			int i = it->first.first;
 			int j = it->first.second;
 			int similararityCount = 0;
-			for (int k = 0; k < size; ++k)
+			for (size_t k = 0; k < size; ++k)
 			{
 				// if(mergeRecord[k]){continue;}
 				if (patternTable[i * size + k] && patternTable[i * size + k] == patternTable[j * size + k])
@@ -314,7 +315,7 @@ namespace CoreNs
 		{
 
 			std::vector<bool> updateSimilarityPattern(size);
-			for (int i = 0; i < size; ++i)
+			for (size_t i = 0; i < size; ++i)
 			{
 				updateSimilarityPattern[i] = false;
 			}
@@ -356,8 +357,8 @@ namespace CoreNs
 					patternTable[k * size + i] = patternTable[i * size + k];
 				}
 			}
-			int del_first_pattern_size = (int)del_first_pattern.size();
-			for (int i = 0; i < del_first_pattern_size; ++i)
+			const size_t &del_first_pattern_size = del_first_pattern.size();
+			for (size_t i = 0; i < del_first_pattern_size; ++i)
 			{
 				if (del_first_pattern[i] < similarityPattern_first)
 				{
@@ -371,7 +372,7 @@ namespace CoreNs
 				}
 			}
 			std::vector<int> del_second_pattern;
-			for (int i = 0; i < size; ++i)
+			for (size_t i = 0; i < size; ++i)
 			{
 				if (mergeRecord[i])
 				{
@@ -388,8 +389,8 @@ namespace CoreNs
 					del_second_pattern.push_back(i);
 				}
 			}
-			int del_second_pattern_size = (int)del_second_pattern.size();
-			for (int i = 0; i < del_second_pattern_size; ++i)
+			const size_t &del_second_pattern_size = del_second_pattern.size();
+			for (size_t i = 0; i < del_second_pattern_size; ++i)
 			{
 				// std::cout<<del_second_pattern[i]<<"-"<<similarityPattern_second<<std::endl;
 				if (del_second_pattern[i] < similarityPattern_second)
@@ -470,7 +471,7 @@ namespace CoreNs
 			}
 			*/
 			// update similarity pattern pair candidate
-			for (int i = 0; i < size; ++i)
+			for (size_t i = 0; i < size; ++i)
 			{
 				if (mergeRecord[i])
 				{
@@ -505,7 +506,7 @@ namespace CoreNs
 							if (it != patternCandidate.end())
 							{
 								int similararityCount = 0;
-								for (int b = 0; b < size; ++b)
+								for (size_t b = 0; b < size; ++b)
 								{
 									if (mergeRecord[b])
 									{

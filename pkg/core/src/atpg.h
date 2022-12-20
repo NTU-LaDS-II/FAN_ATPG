@@ -281,6 +281,7 @@ namespace CoreNs
 		{
 			return gate.atpgVal_;
 		}
+
 		Value v[4];
 		for (int i = 0; i < gate.numFI_; ++i)
 		{
@@ -405,10 +406,12 @@ namespace CoreNs
 					{
 						val = cAND2(val, pCircuit_->gates_[gate.faninVector_[i]].atpgVal_);
 					}
+
 					if (val == L && (currentTargetFault_.faultType_ == Fault::SA1 || currentTargetFault_.faultType_ == Fault::STF))
 					{
 						val = B;
 					}
+					
 					if (val == H && (currentTargetFault_.faultType_ == Fault::SA0 || currentTargetFault_.faultType_ == Fault::STR))
 					{
 						val = D;
@@ -421,10 +424,12 @@ namespace CoreNs
 					{
 						val = B;
 					}
+
 					if (val == H && (currentTargetFault_.faultType_ == Fault::SA0 || currentTargetFault_.faultType_ == Fault::STR))
 					{
 						val = D;
 					}
+
 					for (int i = 0; i < gate.numFI_; ++i)
 					{
 						if (i != faultyLine - 1)
@@ -446,7 +451,6 @@ namespace CoreNs
 					}
 
 					val = cINV(val);
-
 					if (val == L && (currentTargetFault_.faultType_ == Fault::SA1 || currentTargetFault_.faultType_ == Fault::STF))
 					{
 						val = B;
@@ -464,10 +468,12 @@ namespace CoreNs
 					{
 						val = B;
 					}
+
 					if (val == H && (currentTargetFault_.faultType_ == Fault::SA0 || currentTargetFault_.faultType_ == Fault::STR))
 					{
 						val = D;
 					}
+
 					for (int i = 0; i < gate.numFI_; ++i)
 					{
 						if (i != faultyLine - 1)
@@ -488,10 +494,12 @@ namespace CoreNs
 					{
 						val = cOR2(val, pCircuit_->gates_[gate.faninVector_[i]].atpgVal_);
 					}
+
 					if (val == L && (currentTargetFault_.faultType_ == Fault::SA1 || currentTargetFault_.faultType_ == Fault::STF))
 					{
 						val = B;
 					}
+
 					if (val == H && (currentTargetFault_.faultType_ == Fault::SA0 || currentTargetFault_.faultType_ == Fault::STR))
 					{
 						val = D;
@@ -504,10 +512,12 @@ namespace CoreNs
 					{
 						val = B;
 					}
+					
 					if (val == H && (currentTargetFault_.faultType_ == Fault::SA0 || currentTargetFault_.faultType_ == Fault::STR))
 					{
 						val = D;
 					}
+					
 					for (int i = 0; i < gate.numFI_; ++i)
 					{
 						if (i != faultyLine - 1)

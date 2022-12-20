@@ -12,7 +12,6 @@
 #include "atpg_cmd.h"
 #include "misc_cmd.h"
 
-using namespace std;
 using namespace CommonNs;
 using namespace IntfNs;
 using namespace CoreNs;
@@ -53,7 +52,7 @@ int main(int argc, char **argv)
 	// run startup commands
 	if (optMgr.isFlagSet("f"))
 	{
-		string cmd = "source " + optMgr.getFlagVar("f");
+		std::string cmd = "source " + optMgr.getFlagVar("f");
 		res = cmdMgr.exec(cmd);
 	}
 
@@ -63,8 +62,8 @@ int main(int argc, char **argv)
 		res = cmdMgr.read();
 		if (res == CmdMgr::NOT_EXIST)
 		{
-			cerr << "**ERROR main(): command `" << cmdMgr.getErrorStr();
-			cerr << "' not found" << endl;
+			std::cerr << "**ERROR main(): command `" << cmdMgr.getErrorStr();
+			std::cerr << "' not found" << "\n";
 			continue;
 		}
 	}
@@ -76,51 +75,51 @@ int main(int argc, char **argv)
 
 void printWelcome()
 {
-	cout << "#  LaDS FAN v1.0a                      ";
-	cout << "                               Oct 2011" << endl;
-	cout << "#                     Copyright(c) LaDS";
-	cout << "(II) GIEE NTU TAIWAN" << endl;
-	cout << "#" << endl;
-	cout << "#                              All Righ";
-	cout << "ts Reserved." << endl;
-	cout << "#" << endl;
+	std::cout << "#  LaDS FAN v1.0a                      ";
+	std::cout << "                               Oct 2011" << "\n";
+	std::cout << "#                     Copyright(c) LaDS";
+	std::cout << "(II) GIEE NTU TAIWAN" << "\n";
+	std::cout << "#" << "\n";
+	std::cout << "#                              All Righ";
+	std::cout << "ts Reserved." << "\n";
+	std::cout << "#" << "\n";
 
 	// system information
 	// OS kernel
 	FILE *sysout;
 	sysout = popen("uname -s 2> /dev/null", "r");
 	char buf[128];
-	cout << "#  Kernel:   ";
+	std::cout << "#  Kernel:   ";
 	if (!sysout)
-		cout << "UNKNOWN" << endl;
+		std::cout << "UNKNOWN" << "\n";
 	else
 	{
 		if (fgets(buf, sizeof(buf), sysout))
-			cout << buf;
+			std::cout << buf;
 		else
-			cout << "UNKNOWN" << endl;
+			std::cout << "UNKNOWN" << "\n";
 		pclose(sysout);
 	}
 
 	// platform
 	sysout = popen("uname -i 2> /dev/null", "r");
-	cout << "#  Platform: ";
+	std::cout << "#  Platform: ";
 	if (!sysout)
-		cout << "UNKNOWN" << endl;
+		std::cout << "UNKNOWN" << "\n";
 	else
 	{
 		if (fgets(buf, sizeof(buf), sysout))
-			cout << buf;
+			std::cout << buf;
 		else
-			cout << "UNKNOWN" << endl;
+			std::cout << "UNKNOWN" << "\n";
 		pclose(sysout);
 	}
 
 	// memory
 	FILE *meminfo = fopen("/proc/meminfo", "r");
-	cout << "#  Memory:   ";
+	std::cout << "#  Memory:   ";
 	if (!meminfo)
-		cout << "UNKNOWN" << endl;
+		std::cout << "UNKNOWN" << "\n";
 	else
 	{
 		while (fgets(buf, 128, meminfo))
@@ -128,27 +127,27 @@ void printWelcome()
 			char *ch;
 			if ((ch = strstr(buf, "MemTotal:")))
 			{
-				cout << (double)atol(ch + 9) / 1024.0 << " MB" << endl;
+				std::cout << (double)atol(ch + 9) / 1024.0 << " MB" << "\n";
 				break;
 			}
 		}
 		fclose(meminfo);
 	}
 
-	cout << "#" << endl;
+	std::cout << "#" << "\n";
 }
 
 void printGoodbye(TmUsage &tmusg)
 {
 	TmStat stat;
 	tmusg.getTotalUsage(stat);
-	cout << "#  Goodbye" << endl;
-	cout << "#  Runtime        ";
-	cout << "real " << (double)stat.rTime / 1000000.0 << " s        ";
-	cout << "user " << (double)stat.uTime / 1000000.0 << " s        ";
-	cout << "sys " << (double)stat.sTime / 1000000.0 << " s" << endl;
-	cout << "#  Memory         ";
-	cout << "peak " << (double)stat.vmPeak / 1024.0 << " MB" << endl;
+	std::cout << "#  Goodbye" << "\n";
+	std::cout << "#  Runtime        ";
+	std::cout << "real " << (double)stat.rTime / 1000000.0 << " s        ";
+	std::cout << "user " << (double)stat.uTime / 1000000.0 << " s        ";
+	std::cout << "sys " << (double)stat.sTime / 1000000.0 << " s" << "\n";
+	std::cout << "#  Memory         ";
+	std::cout << "peak " << (double)stat.vmPeak / 1024.0 << " MB" << "\n";
 }
 
 void initOpt(OptMgr &mgr)

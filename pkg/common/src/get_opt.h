@@ -5,7 +5,6 @@
 // Date       [ Ver 1.0 started 2010/03/30 ]
 // **************************************************************************
 
-
 #ifndef _COMMON_GET_OPT_H_
 #define _COMMON_GET_OPT_H_
 
@@ -15,205 +14,237 @@
 #include <map>
 #include <set>
 
-namespace CommonNs {
+namespace CommonNs
+{
 
-typedef std::set<std::string> FlagSet;
+	typedef std::set<std::string> FlagSet;
 
-//{{{ struct Arg
-struct Arg {
-    enum        Type { REQ = 0, OPT, REQ_INF, OPT_INF };
+	struct Arg
+	{
+		enum Type
+		{
+			REQ = 0,
+			OPT,
+			REQ_INF,
+			OPT_INF
+		};
 
-                Arg(const Type        &type,
-                    const std::string &des,
-                    const std::string &meta);
-                ~Arg();
+		Arg(const Type &type,
+				const std::string &des,
+				const std::string &meta);
+		~Arg();
 
-    Type        type_;
-    std::string des_;
-    std::string meta_;
-}; //}}}
-//{{{ struct Opt
-struct Opt {
-    enum        Type { BOOL = 0, STR_REQ, STR_OPT };
+		Type type_;
+		std::string des_;
+		std::string meta_;
+	};
 
-                Opt(const Type        &type,
-                    const std::string &des,
-                    const std::string &meta);
-                ~Opt();
+	struct Opt
+	{
+		enum Type
+		{
+			BOOL = 0,
+			STR_REQ,
+			STR_OPT
+		};
 
-    void        addFlag(const std::string &f);
+		Opt(const Type &type,
+				const std::string &des,
+				const std::string &meta);
+		~Opt();
 
-    Type        type_;
-    std::string des_;
-    std::string meta_;
-    FlagSet     flags_;
-}; //}}}
+		void addFlag(const std::string &f);
 
-//{{{ class OptMgr
-class OptMgr {
-public:
-    enum                     Error { E_EXIST = 0, E_NOT_REG, E_REQ };
+		Type type_;
+		std::string des_;
+		std::string meta_;
+		FlagSet flags_;
+	};
 
-                             OptMgr();
-                             ~OptMgr();
+	class OptMgr
+	{
+	public:
+		enum Error
+		{
+			E_EXIST = 0,
+			E_NOT_REG,
+			E_REQ
+		};
 
-    std::string              getName() const;
-    void                     setName(const std::string &name);
-    void                     setKeepFirstArg(const bool &keep);
-    void                     setShortDes(const std::string &shortDes);
-    void                     setDes(const std::string &des);
-    Error                    getError() const;
+		OptMgr();
+		~OptMgr();
 
-    size_t                   getNParsedArg() const;
-    std::string              getParsedArg(const size_t &i) const;
-    size_t                   getNFlag() const;
-    std::string              getFlag(const size_t &i) const;
-    bool                     isFlagSet(const std::string &f) const;
-    std::string              getFlagVar(const std::string &f) const;
+		std::string getName() const;
+		void setName(const std::string &name);
+		void setKeepFirstArg(const bool &keep);
+		void setShortDes(const std::string &shortDes);
+		void setDes(const std::string &des);
+		Error getError() const;
 
-    bool                     regArg(Arg * const arg);
-    bool                     regOpt(Opt * const opt);
-    bool                     parse(int argc, char **argv);
-    bool                     parse(std::vector<std::string> args);
+		size_t getNParsedArg() const;
+		std::string getParsedArg(const size_t &i) const;
+		size_t getNFlag() const;
+		std::string getFlag(const size_t &i) const;
+		bool isFlagSet(const std::string &f) const;
+		std::string getFlagVar(const std::string &f) const;
 
-    void                     usage(std::ostream &out = std::cout);
+		bool regArg(Arg *const arg);
+		bool regOpt(Opt *const opt);
+		bool parse(int argc, char **argv);
+		bool parse(std::vector<std::string> args);
 
-private:
-    std::vector<std::string> splitString(const std::string &input,
-                                         const size_t      &lineWidth,
-                                         const bool        &fitLine = true,
-                                         const std::string &sep = "- ");
-    std::string              fitLine(const std::string &input,
-                                     const size_t      &lineWidth);
-    bool                     setOpt(Opt * const opt,
-                                    const bool &isLong,
-                                    const bool &isConnected,
-                                    size_t &i,
-                                    std::vector<std::string> &args);
+		void usage(std::ostream &out = std::cout);
 
-    static const size_t          wsCol_ = 78;
-    static const size_t          tabSize_ = 8;
+	private:
+		std::vector<std::string> splitString(const std::string &input,
+																				 const size_t &lineWidth,
+																				 const bool &fitLine = true,
+																				 const std::string &sep = "- ");
+		std::string fitLine(const std::string &input,
+												const size_t &lineWidth);
+		bool setOpt(Opt *const opt,
+								const bool &isLong,
+								const bool &isConnected,
+								size_t &i,
+								std::vector<std::string> &args);
 
-    bool                         keepFirstArg_;
-    std::string                  name_;
-    std::string                  shortDes_;
-    std::string                  des_;
-    Error                        error_;
+		static const size_t wsCol_ = 78;
+		static const size_t tabSize_ = 8;
 
-    std::vector<std::string>     flags_;
-    std::vector<Arg *>           args_;
-    std::map<std::string, Opt *> flagToOpt_;
-    std::map<Opt *, bool>        optToSet_;
-    std::map<Opt *, std::string> optToVar_;
-    std::vector<std::string>     parsedArgs_;
-}; //}}}
+		bool keepFirstArg_;
+		std::string name_;
+		std::string shortDes_;
+		std::string des_;
+		Error error_;
 
-// inline methods
-//{{{ struct Arg
-inline Arg::Arg(const Type &type,
-                const std::string &des,
-                const std::string &meta) {
-    type_ = type;
-    des_  = des;
-    meta_ = meta;
-}
+		std::vector<std::string> flags_;
+		std::vector<Arg *> args_;
+		std::map<std::string, Opt *> flagToOpt_;
+		std::map<Opt *, bool> optToSet_;
+		std::map<Opt *, std::string> optToVar_;
+		std::vector<std::string> parsedArgs_;
+	};
 
-inline Arg::~Arg() {}
-//}}}
-//{{{ struct Opt
-inline Opt::Opt(const Type &type,
-                const std::string &des,
-                const std::string &meta) {
-    type_  = type;
-    des_   = des;
-    meta_  = meta;
-}
+	// inline methods
+	inline Arg::Arg(const Type &type,
+									const std::string &des,
+									const std::string &meta)
+	{
+		type_ = type;
+		des_ = des;
+		meta_ = meta;
+	}
 
-inline Opt::~Opt() {}
+	inline Arg::~Arg() {}
 
-inline void Opt::addFlag(const std::string &f) {
-    flags_.insert(f.substr(0, f.find_first_of(' ')));
-}
-//}}}
+	inline Opt::Opt(const Type &type,
+									const std::string &des,
+									const std::string &meta)
+	{
+		type_ = type;
+		des_ = des;
+		meta_ = meta;
+	}
 
-//{{{ class OptMgr
-inline OptMgr::OptMgr() {
-    keepFirstArg_ = false;
-    name_         = "PROG";
-    des_          = "NONE";
-    shortDes_     = "NONE";
-    error_        = E_EXIST;
-}
+	inline Opt::~Opt() {}
 
-inline OptMgr::~OptMgr() {}
+	inline void Opt::addFlag(const std::string &f)
+	{
+		flags_.insert(f.substr(0, f.find_first_of(' ')));
+	}
 
-inline std::string OptMgr::getName() const {
-    return name_;
-}
+	inline OptMgr::OptMgr()
+	{
+		keepFirstArg_ = false;
+		name_ = "PROG";
+		des_ = "NONE";
+		shortDes_ = "NONE";
+		error_ = E_EXIST;
+	}
 
-inline void OptMgr::setName(const std::string &name) {
-    name_ = name;
-}
+	inline OptMgr::~OptMgr() {}
 
-inline void OptMgr::setKeepFirstArg(const bool &keep) {
-    keepFirstArg_ = keep;
-}
+	inline std::string OptMgr::getName() const
+	{
+		return name_;
+	}
 
-inline void OptMgr::setShortDes(const std::string &shortDes) {
-    shortDes_ = shortDes;
-}
+	inline void OptMgr::setName(const std::string &name)
+	{
+		name_ = name;
+	}
 
-inline void OptMgr::setDes(const std::string &des) {
-    des_ = des;
-}
+	inline void OptMgr::setKeepFirstArg(const bool &keep)
+	{
+		keepFirstArg_ = keep;
+	}
 
-inline OptMgr::Error OptMgr::getError() const {
-    return error_;
-}
+	inline void OptMgr::setShortDes(const std::string &shortDes)
+	{
+		shortDes_ = shortDes;
+	}
 
-inline size_t OptMgr::getNParsedArg() const {
-    return parsedArgs_.size();
-}
+	inline void OptMgr::setDes(const std::string &des)
+	{
+		des_ = des;
+	}
 
-inline std::string OptMgr::getParsedArg(const size_t &i) const {
-    return parsedArgs_[i];
-}
+	inline OptMgr::Error OptMgr::getError() const
+	{
+		return error_;
+	}
 
-inline size_t OptMgr::getNFlag() const {
-    return flags_.size();
-}
+	inline size_t OptMgr::getNParsedArg() const
+	{
+		return parsedArgs_.size();
+	}
 
-inline std::string OptMgr::getFlag(const size_t &i) const {
-    return flags_[i];
-}
+	inline std::string OptMgr::getParsedArg(const size_t &i) const
+	{
+		return parsedArgs_[i];
+	}
 
-inline bool OptMgr::isFlagSet(const std::string &f) const {
-    std::map<std::string, Opt *>::const_iterator fIt = flagToOpt_.find(f);
-    if (fIt == flagToOpt_.end())
-        return false;
-    std::map<Opt *, bool>::const_iterator optIt;
-    optIt = optToSet_.find(fIt->second);
-    if (optIt == optToSet_.end())
-        return false;
-    else
-        return optIt->second;
-}
+	inline size_t OptMgr::getNFlag() const
+	{
+		return flags_.size();
+	}
 
-inline std::string OptMgr::getFlagVar(const std::string &f) const {
-    std::map<std::string, Opt *>::const_iterator fIt = flagToOpt_.find(f);
-    if (fIt == flagToOpt_.end())
-        return "";
-    std::map<Opt *, std::string>::const_iterator optIt;
-    optIt = optToVar_.find(fIt->second);
-    if (optIt == optToVar_.end())
-        return "";
-    else
-        return optIt->second;
-}
-//}}}
+	inline std::string OptMgr::getFlag(const size_t &i) const
+	{
+		return flags_[i];
+	}
 
+	inline bool OptMgr::isFlagSet(const std::string &f) const
+	{
+		std::map<std::string, Opt *>::const_iterator fIt = flagToOpt_.find(f);
+		if (fIt == flagToOpt_.end())
+		{
+			return false;
+		}
+		std::map<Opt *, bool>::const_iterator optIt;
+		optIt = optToSet_.find(fIt->second);
+		if (optIt == optToSet_.end())
+		{
+			return false;
+		}
+		else
+		{
+			return optIt->second;
+		}
+	}
+
+	inline std::string OptMgr::getFlagVar(const std::string &f) const
+	{
+		std::map<std::string, Opt *>::const_iterator fIt = flagToOpt_.find(f);
+		if (fIt == flagToOpt_.end())
+			return "";
+		std::map<Opt *, std::string>::const_iterator optIt;
+		optIt = optToVar_.find(fIt->second);
+		if (optIt == optToVar_.end())
+			return "";
+		else
+			return optIt->second;
+	}
 };
 
-
 #endif
-

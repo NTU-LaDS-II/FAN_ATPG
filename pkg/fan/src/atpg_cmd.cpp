@@ -128,15 +128,21 @@ bool ReportPatCmd::exec(const std::vector<std::string> &argv)
 	{
 		std::cout << "#    pi order: ";
 		for (int i = 0; i < fanMgr_->pcoll->numPI_; ++i)
+		{
 			std::cout << " " << fanMgr_->pcoll->pPIorder_[i];
+		}
 		std::cout << "\n";
 		std::cout << "#    ppi order:";
 		for (int i = 0; i < fanMgr_->pcoll->numPPI_; ++i)
+		{
 			std::cout << " " << fanMgr_->pcoll->pPPIorder_[i];
+		}
 		std::cout << "\n";
 		std::cout << "#    po order: ";
 		for (int i = 0; i < fanMgr_->pcoll->numPO_; ++i)
+		{
 			std::cout << " " << fanMgr_->pcoll->pPOorder_[i];
+		}
 		std::cout << "\n";
 	}
 	std::cout << "#\n";
@@ -146,37 +152,60 @@ bool ReportPatCmd::exec(const std::vector<std::string> &argv)
 		std::cout << "#    pattern " << i << "\n";
 		std::cout << "#      pi1: ";
 		if (!fanMgr_->pcoll->patternVector_[i].primaryInputs1st_.empty())
+		{
 			for (int j = 0; j < fanMgr_->pcoll->numPI_; ++j)
+			{
 				printValue(fanMgr_->pcoll->patternVector_[i].primaryInputs1st_[j]);
+			}
+		}
 		std::cout << "\n";
 		std::cout << "#      pi2: ";
 		if (!fanMgr_->pcoll->patternVector_[i].primaryInputs2nd_.empty())
+		{
 			for (int j = 0; j < fanMgr_->pcoll->numPI_; ++j)
+			{
 				printValue(fanMgr_->pcoll->patternVector_[i].primaryInputs2nd_[j]);
+			}
+		}
 		std::cout << "\n";
 		std::cout << "#      ppi: ";
 		if (!fanMgr_->pcoll->patternVector_[i].pseudoPrimaryInputs_.empty())
+		{
 			for (int j = 0; j < fanMgr_->pcoll->numPPI_; ++j)
+			{
 				printValue(fanMgr_->pcoll->patternVector_[i].pseudoPrimaryInputs_[j]);
+			}
+		}
 		std::cout << "\n";
 		std::cout << "#      po1: ";
 		if (!fanMgr_->pcoll->patternVector_[i].primaryOutputs1st_.empty())
+		{
 			for (int j = 0; j < fanMgr_->pcoll->numPO_; ++j)
+			{
 				printValue(fanMgr_->pcoll->patternVector_[i].primaryOutputs1st_[j]);
+			}
+		}
 		std::cout << "\n";
 		std::cout << "#      po2: ";
 		if (!fanMgr_->pcoll->patternVector_[i].primaryOutputs2nd_.empty())
+		{
 			for (int j = 0; j < fanMgr_->pcoll->numPO_; ++j)
+			{
 				printValue(fanMgr_->pcoll->patternVector_[i].primaryOutputs2nd_[j]);
+			}
+		}
 		std::cout << "\n";
 		std::cout << "#      ppo: ";
 		if (!fanMgr_->pcoll->patternVector_[i].pseudoPrimaryOutputs_.empty())
+		{
 			for (int j = 0; j < fanMgr_->pcoll->numPPI_; ++j)
+			{
 				printValue(fanMgr_->pcoll->patternVector_[i].pseudoPrimaryOutputs_[j]);
+			}
+		}
 		std::cout << "\n"
 							<< "#\n";
 	}
-
 	return true;
 }
 
@@ -203,6 +232,7 @@ AddFaultCmd::AddFaultCmd(const std::string &name, FanMgr *fanMgr) : Cmd(name)
 	opt->addFlag("all");
 	optMgr_.regOpt(opt);
 }
+
 AddFaultCmd::~AddFaultCmd() {}
 
 bool AddFaultCmd::exec(const std::vector<std::string> &argv)
@@ -281,7 +311,6 @@ bool AddFaultCmd::exec(const std::vector<std::string> &argv)
 			}
 		}
 	}
-
 	return true;
 }
 
@@ -386,6 +415,7 @@ ReportFaultCmd::ReportFaultCmd(const std::string &name, FanMgr *fanMgr) : Cmd(na
 	opt->addFlag("state");
 	optMgr_.regOpt(opt);
 }
+
 ReportFaultCmd::~ReportFaultCmd() {}
 
 bool ReportFaultCmd::exec(const std::vector<std::string> &argv)
@@ -1047,6 +1077,7 @@ AddPinConsCmd::AddPinConsCmd(const std::string &name, FanMgr *fanMgr) : Cmd(name
 	opt->addFlag("help");
 	optMgr_.regOpt(opt);
 }
+
 AddPinConsCmd::~AddPinConsCmd() {}
 
 bool AddPinConsCmd::exec(const std::vector<std::string> &argv)

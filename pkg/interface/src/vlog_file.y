@@ -13,7 +13,6 @@
 
 #include "vlog_file.h"
 
-using namespace std;
 using namespace IntfNs;
 
 extern char *vlog_filetext;
@@ -244,4 +243,3 @@ void vlog_filefreePortToNet(VlogPortToNet *p2ns) {
         delete prev;
     }
 }
-

@@ -91,6 +91,7 @@ void Circuit::calNgate()
 		{
 			continue;
 		}
+
 		if (!strcmp(p->name_, "CK") || !strcmp(p->name_, "test_si") || !strcmp(p->name_, "test_se"))
 		{
 			continue;
@@ -174,7 +175,9 @@ void Circuit::calNnet()
 	{
 		Cell *c = top->getCell(i);
 		if (!lib->hasPmt(c->typeName_, Pmt::DFF))
+		{
 			nnet_ += c->libc_->getNNet() - c->libc_->getNPort();
+		}
 	}
 }
 
@@ -288,7 +291,7 @@ void Circuit::createComb(int &nfi, int &nfo)
 }
 
 // primitive is from Mentor .mdt
-// cell --> primitive --> gate
+// cell => primitive => gate
 // but primitive is not actually in our data structure
 void Circuit::createPmt(const int &id, const Cell *const c,
 												const Pmt *const pmt, int &nfi, int &nfo)
@@ -535,7 +538,9 @@ void Circuit::createPo(int &nfi)
 	{
 		Port *p = top->getPort(i);
 		if (!strcmp(p->name_, "test_so"))
+		{
 			continue;
+		}
 		int id = portToGate_[i];
 		if (p->type_ != Port::OUTPUT || id < 0)
 		{
