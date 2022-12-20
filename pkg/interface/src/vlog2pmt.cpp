@@ -50,22 +50,20 @@ int main(int argc, char **argv)
 	Techlib lib;
 	MdtFile *libBlder = new MdtLibBuilder(&lib);
 
-	std::cout << "> Reading technology library..."
-						<< "\n";
+	std::cout << "> Reading technology library...\n";
 	if (!libBlder->read(argv[2], true))
 	{
-		std::cerr << "**ERROR main(): MDT lib builder error"
-							<< "\n";
+		std::cerr << "**ERROR main(): MDT lib builder error\n";
 		delete libBlder;
+		libBlder = NULL;
 		exit(0);
 	}
-	std::cout << "> Checking technology library..."
-						<< "\n";
+	std::cout << "> Checking technology library...\n";
 	if (!lib.check(true))
 	{
-		std::cerr << "**ERROR main(): MDT lib error"
-							<< "\n";
+		std::cerr << "**ERROR main(): MDT lib error\n";
 		delete libBlder;
+		libBlder = NULL;
 		exit(0);
 	}
 
@@ -74,27 +72,24 @@ int main(int argc, char **argv)
 	nl.setTechlib(&lib);
 	VlogFile *nlBlder = new VlogNlBuilder(&nl);
 
-	std::cout << "> Reading netlist..."
-						<< "\n";
+	std::cout << "> Reading netlist...\n";
 	if (!nlBlder->read(argv[1], true))
 	{
-		std::cerr << "**ERROR main(): verilog builder error"
-							<< "\n";
+		std::cerr << "**ERROR main(): verilog builder error\n";
 		delete nlBlder;
+		libBlder = NULL;
 		exit(0);
 	}
 
-	std::cout << "> Removing floating nets..."
-						<< "\n";
+	std::cout << "> Removing floating nets...\n";
 	nl.removeFloatingNets();
 
-	std::cout << "> Checking netlist..."
-						<< "\n";
+	std::cout << "> Checking netlist...\n";
 	if (!nl.check(true))
 	{
-		std::cerr << "**ERROR main(): netlist error"
-							<< "\n";
+		std::cerr << "**ERROR main(): netlist error\n";
 		delete nlBlder;
+		libBlder = NULL;
 		exit(0);
 	}
 
@@ -180,7 +175,8 @@ int main(int argc, char **argv)
 
 	delete nlBlder;
 	delete libBlder;
-
+	nlBlder = NULL;
+	libBlder = NULL;
 	return 0;
 }
 
@@ -288,7 +284,7 @@ std::string getPmtNetName(Port *p, Pmt *pmt, Cell *c)
 			break;
 		}
 	}
-	
+
 	if (intern)
 	{
 		netName = std::string(c->name_) + hier + std::string(n->name_);

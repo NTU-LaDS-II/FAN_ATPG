@@ -31,7 +31,7 @@ void Atpg::generatePatternSet(PatternProcessor *pPatternProcessor, FaultListExtr
 
 	// setting faults for running ATPG
 	bool faultIsQualified;
-	for (Fault *const &pFault : pFaultListExtracter->faultsInCircuit_)
+	for (Fault *pFault : pFaultListExtracter->faultsInCircuit_)
 	{
 		faultIsQualified = (pFault->faultState_ != Fault::DT && pFault->faultState_ != Fault::RE && pFault->faultyLine_ >= 0);
 		if (faultIsQualified)
@@ -260,7 +260,6 @@ void Atpg::identifyDominator()
 		}
 
 		int gateCount = pushGateFanoutsToEventStack(i);
-
 		for (int j = gate.numLevel_ + 1; j < pCircuit_->tlvl_; ++j)
 		{
 			// if next level's output isn't empty
@@ -269,10 +268,8 @@ void Atpg::identifyDominator()
 				Gate &gDom = pCircuit_->gates_[circuitLevel_to_EventStack_[j].top()];
 				circuitLevel_to_EventStack_[j].pop();
 				gateID_to_valModified_[gDom.gateId_] = 0; // set the gDom to not handle
-				/*
-				 * Because the gateCount is zero while the circuitLevel_to_EventStack_ is not zero, we
-				 * only need to pop without other operations. That is, continue operation.
-				 */
+				// Because the gateCount is zero while the circuitLevel_to_EventStack_ is not zero, we
+				// only need to pop without other operations. That is, continue operation.
 				if (gateCount <= 0)
 				{
 					continue;
@@ -290,14 +287,12 @@ void Atpg::identifyDominator()
 					gateID_to_uniquePath_[gate.gateId_].push_back(gDom.gateId_); // push the last calculate fanout gate into gateID_to_uniquePath_
 					break;
 				}
-				/*
-				 * If there is a gate without gates on its output, then we suppose that this
-				 * gate is PO/PPO.  Because there are other gates still inside the
-				 * event queue (gateCount larger than 1), it means that gate gate does
-				 * not have any dominator.  Hence, we will set gateCount to zero as a
-				 * signal to clear the gates left in circuitLevel_to_EventStack_.  While the circuitLevel_to_EventStack_ is
-				 * not empty but gateCount is zero, we will continue.
-				 */
+				// If there is a gate without gates on its output, then we suppose that this
+				// gate is PO/PPO.  Because there are other gates still inside the
+				// event queue (gateCount larger than 1), it means that gate gate does
+				// not have any dominator.  Hence, we will set gateCount to zero as a
+				// signal to clear the gates left in circuitLevel_to_EventStack_.  While the circuitLevel_to_EventStack_ is
+				// not empty but gateCount is zero, we will continue.
 				if (gDom.numFO_ == 0)
 				{
 					gateCount = 0;
@@ -310,11 +305,9 @@ void Atpg::identifyDominator()
 					}
 					else
 					{
-						/*
-						 * Because the first gate in gateID_to_uniquePath_ is the closest Dominator, we just
-						 * push it to the circuitLevel_to_EventStack_. Then, we can skip the operation we have done
-						 * for gates with higher lvl_ than gate gate.
-						 */
+						// Because the first gate in gateID_to_uniquePath_ is the closest Dominator, we just
+						// push it to the circuitLevel_to_EventStack_. Then, we can skip the operation we have done
+						// for gates with higher lvl_ than gate gate.
 						Gate &gTmp = pCircuit_->gates_[gateID_to_uniquePath_[gDom.gateId_][0]];
 						if (!gateID_to_valModified_[gTmp.gateId_])
 						{
@@ -364,20 +357,16 @@ void Atpg::identifyUniquePath()
 	for (int i = pCircuit_->tgate_ - 1; i >= 0; --i)
 	{
 		Gate &gate = pCircuit_->gates_[i];
-		int count;
-		/*
-		 * Because we will call identifyDominator before entering this function,
-		 * a gate with gateID_to_uniquePath_ will contain one Dominator.  Hence, we can
-		 * skip the gates while the sizes of their gateID_to_uniquePath_ is zero.
-		 * */
+		// Because we will call identifyDominator before entering this function,
+		// a gate with gateID_to_uniquePath_ will contain one Dominator.  Hence, we can
+		// skip the gates while the sizes of their gateID_to_uniquePath_ is zero.
 		if (gateID_to_uniquePath_[gate.gateId_].size() == 0)
 		{
 			continue;
 		}
 
 		reachableByDominator[gate.gateId_] = i;
-		count = pushGateFanoutsToEventStack(i);
-
+		int count = pushGateFanoutsToEventStack(i);
 		for (int j = gate.numLevel_ + 1; j < pCircuit_->tlvl_; ++j)
 		{
 			while (!circuitLevel_to_EventStack_[j].empty())
@@ -389,13 +378,12 @@ void Atpg::identifyUniquePath()
 				--count;
 				if (count == 0)
 				{
-					for (int k = 0; k < gTmp.numFI_; ++k)
+					for (int gReachID : gTmp.faninVector_)
 					{
-						Gate &gReach = pCircuit_->gates_[gTmp.faninVector_[k]];
-						if (reachableByDominator[gReach.gateId_] == i) // if it is UniquePath
+						if (reachableByDominator[gReachID] == i) // if it is UniquePath
 						{
-							// save gate in gateID_to_uniquePath_ list
-							gateID_to_uniquePath_[gate.gateId_].push_back(gReach.gateId_);
+							// save gate to gateID_to_uniquePath_ list
+							gateID_to_uniquePath_[gate.gateId_].push_back(gReachID);
 						}
 					}
 					break;
@@ -417,7 +405,7 @@ void Atpg::identifyUniquePath()
 // **************************************************************************
 void Atpg::TransitionDelayFaultATPG(FaultList &faultListToGen, PatternProcessor *pPatternProcessor, int &numOfAtpgUntestableFaults)
 {
-	Fault fTDF = *faultListToGen.front();
+	const Fault &fTDF = *faultListToGen.front();
 
 	SINGLE_PATTERN_GENERATION_STATUS result = generateSinglePatternOnTargetFault(Fault(fTDF.gateID_ + pCircuit_->ngate_, fTDF.faultType_, fTDF.faultyLine_, fTDF.equivalent_, fTDF.faultState_), false);
 	if (result == PATTERN_FOUND)
@@ -519,13 +507,12 @@ void Atpg::StuckAtFaultATPGWithDTC(FaultList &faultListToGen, PatternProcessor *
 
 		if (pPatternProcessor->dynamicCompression_ == PatternProcessor::ON)
 		{
-
 			FaultList faultListTemp = faultListToGen;
 			pSimulator_->pfFaultSim(pPatternProcessor->patternVector_.back(), faultListToGen);
 			pSimulator_->goodSim();
 			assignPatternPO_fromGoodSimVal(pPatternProcessor->patternVector_.back());
 
-			for (Fault *const &pFault : faultListTemp)
+			for (Fault *pFault : faultListTemp)
 			{
 				// skip detected faults
 				if (pFault->faultState_ == Fault::DT)
@@ -565,9 +552,8 @@ void Atpg::StuckAtFaultATPGWithDTC(FaultList &faultListToGen, PatternProcessor *
 					}
 					else
 					{
-						for (int i = 0; i < pCircuit_->tgate_; ++i)
+						for (Gate &gate : pCircuit_->gates_)
 						{
-							Gate &gate = pCircuit_->gates_[i];
 							gate.atpgVal_ = gate.preValue_;
 						}
 					}
@@ -586,21 +572,19 @@ void Atpg::StuckAtFaultATPGWithDTC(FaultList &faultListToGen, PatternProcessor *
 		if (pPatternProcessor->XFill_ == PatternProcessor::ON)
 		{
 			// Randomly fill the pats_.back().
-			// Please note that the v_, gh_, gl_, fh_ and fl_ do not be changed.
+			// Note that the v_, gh_, gl_, fh_ and fl_ do not be changed.
 			randomFill(pPatternProcessor->patternVector_.back());
 		}
 
-		/*
-		 * This function will assign pi/ppi stored in pats_.back() to
-		 * the gh_ and gl_ in each gate, and then it will run fault
-		 * simulation to drop fault.
-		 * */
+		//  This function will assign pi/ppi stored in pats_.back() to
+		//  the gh_ and gl_ in each gate, and then it will run fault
+		//  simulation to drop fault.
+
 		pSimulator_->pfFaultSim(pPatternProcessor->patternVector_.back(), faultListToGen);
-		/*
-		 * After pSimulator_->pfFaultSim(pPatternProcessor->patternVector_.back(),faultListToGen) , the pi/ppi
-		 * values have been passed to gh_ and gl_ of each gate.  Therefore, we can
-		 * directly use "assignPatternPO_fromGoodSimVal" to perform goodSim to get the PoValue.
-		 * */
+
+		// After pSimulator_->pfFaultSim(pPatternProcessor->patternVector_.back(),faultListToGen) , the pi/ppi
+		// values have been passed to gh_ and gl_ of each gate.  Therefore, we can
+		// directly use "assignPatternPO_fromGoodSimVal" to perform goodSim to get the PoValue.
 		pSimulator_->goodSim();
 		assignPatternPO_fromGoodSimVal(pPatternProcessor->patternVector_.back());
 	}
@@ -628,10 +612,10 @@ void Atpg::StuckAtFaultATPGWithDTC(FaultList &faultListToGen, PatternProcessor *
 //            ]
 // Date       [ started 2020/07/07    last modified 2020/07/07 ]
 // **************************************************************************
-Gate *Atpg::getWireForActivation(Fault &fault)
+Gate *Atpg::getWireForActivation(const Fault &fault)
 {
 	bool isOutputFault = (fault.faultyLine_ == 0);
-	Gate *pGateForAtivation;
+	Gate *pGateForAtivation = NULL;
 	Gate *pFaultyGate = &pCircuit_->gates_[fault.gateID_];
 	if (!isOutputFault)
 	{
@@ -655,14 +639,14 @@ Gate *Atpg::getWireForActivation(Fault &fault)
 //            ]
 // Date       [ started 2020/07/07    last modified 2020/07/07 ]
 // **************************************************************************
-void Atpg::setValueAndRunImp(Gate &gate, Value val)
+void Atpg::setValueAndRunImp(Gate &gate, const Value &val)
 {
 	clearEventStack(true);
 	gate.atpgVal_ = val;
-	for (int i = 0; i < gate.numFO_; ++i)
+	for (const int &fanoutID : gate.fanoutVector_)
 	{
-		Gate &og = pCircuit_->gates_[gate.fanoutVector_[i]];
-		if (isInEventStack_[og.gateId_] == false)
+		Gate &og = pCircuit_->gates_[fanoutID];
+		if (!isInEventStack_[og.gateId_])
 		{
 			circuitLevel_to_EventStack_[og.numLevel_].push(og.gateId_);
 			isInEventStack_[og.gateId_] = true;
@@ -677,16 +661,15 @@ void Atpg::setValueAndRunImp(Gate &gate, Value val)
 			int gateID = circuitLevel_to_EventStack_[i].top();
 			circuitLevel_to_EventStack_[i].pop();
 			isInEventStack_[gateID] = false;
-			// current gate
-			Gate &cg = pCircuit_->gates_[gateID];
-			Value newValue = evaluateGoodVal(cg);
-			if (cg.atpgVal_ != newValue)
+			Gate &currGate = pCircuit_->gates_[gateID];
+			Value newValue = evaluateGoodVal(currGate);
+			if (currGate.atpgVal_ != newValue)
 			{
-				cg.atpgVal_ = newValue;
-				for (int j = 0; j < cg.numFO_; ++j)
+				currGate.atpgVal_ = newValue;
+				for (int j = 0; j < currGate.numFO_; ++j)
 				{
-					Gate &og = pCircuit_->gates_[cg.fanoutVector_[j]];
-					if (isInEventStack_[og.gateId_] == false)
+					Gate &og = pCircuit_->gates_[currGate.fanoutVector_[j]];
+					if (!isInEventStack_[og.gateId_])
 					{
 						circuitLevel_to_EventStack_[og.numLevel_].push(og.gateId_);
 						isInEventStack_[og.gateId_] = true;
@@ -705,9 +688,8 @@ void Atpg::setValueAndRunImp(Gate &gate, Value val)
 // **************************************************************************
 void Atpg::resetPreValue()
 {
-	for (int i = 0; i < pCircuit_->tgate_; ++i)
+	for (Gate &gate : pCircuit_->gates_)
 	{
-		Gate &gate = pCircuit_->gates_[i];
 		gate.preValue_ = X;
 	}
 }
@@ -726,9 +708,8 @@ void Atpg::resetPreValue()
 int Atpg::storeCurrentGateValue()
 {
 	int numAssignedValueChanged = 0;
-	for (int i = 0; i < pCircuit_->tgate_; ++i)
+	for (Gate &gate : pCircuit_->gates_)
 	{
-		Gate &gate = pCircuit_->gates_[i];
 		if ((gate.preValue_ != X) && (gate.preValue_ != gate.atpgVal_))
 		{
 			++numAssignedValueChanged;
@@ -757,19 +738,33 @@ int Atpg::storeCurrentGateValue()
 // **************************************************************************
 void Atpg::clearAllFaultEffectBySimulation()
 {
-	// Remove fault effects in input gates
 	int numOfInputGate = pCircuit_->npi_ + pCircuit_->nppi_;
-	for (int i = 0; i < numOfInputGate; ++i)
+	for (Gate &gate : pCircuit_->gates_)
 	{
-		Gate &gate = pCircuit_->gates_[i];
-		clearOneGateFaultEffect(gate);
+		if (gate.gateId_ < numOfInputGate)
+		{
+			// Remove fault effects in input gates
+			clearOneGateFaultEffect(gate);
+		}
+		else
+		{
+			// Simulate the whole circuit ( gates were sorted by lvl_ in "pCircuit_->gates_" )
+			gate.atpgVal_ = evaluateGoodVal(gate);
+		}
 	}
-	// Simulate the whole circuit ( gates were sorted by lvl_ in "pCircuit_->gates_" )
-	for (int i = 0; i < pCircuit_->tgate_; ++i)
-	{
-		Gate &gate = pCircuit_->gates_[i];
-		gate.atpgVal_ = evaluateGoodVal(gate);
-	}
+
+	// Remove fault effects in input gates
+	// for (int i = 0; i < numOfInputGate; ++i)
+	// {
+	// 	Gate &gate = pCircuit_->gates_[i];
+	// 	clearOneGateFaultEffect(gate);
+	// }
+	// // Simulate the whole circuit ( gates were sorted by lvl_ in "pCircuit_->gates_" )
+	// for (int i = 0; i < pCircuit_->tgate_; ++i)
+	// {
+	// 	Gate &gate = pCircuit_->gates_[i];
+	// 	gate.atpgVal_ = evaluateGoodVal(gate);
+	// }
 }
 
 // **************************************************************************
@@ -840,7 +835,7 @@ Atpg::SINGLE_PATTERN_GENERATION_STATUS Atpg::generateSinglePatternOnTargetFault(
 		{
 			// implication INCONSISTENCY
 			// record the number of backtrack
-			if (decisionTree_.lastNodeMark())
+			if (decisionTree_.lastNodeMarked())
 			{
 				++numOfBacktrack;
 			}
@@ -913,7 +908,7 @@ Atpg::SINGLE_PATTERN_GENERATION_STATUS Atpg::generateSinglePatternOnTargetFault(
 			{
 				// no frontier can propagate to the PO
 				// record the number of backtrack
-				if (decisionTree_.lastNodeMark())
+				if (decisionTree_.lastNodeMarked())
 				{
 					++numOfBacktrack;
 				}
@@ -991,14 +986,13 @@ Atpg::SINGLE_PATTERN_GENERATION_STATUS Atpg::generateSinglePatternOnTargetFault(
 
 Gate *Atpg::initialize(Fault &fault, int &BackImpLevel, IMPLICATION_STATUS &implyStatus, bool isDTC)
 {
-	int line = fault.faultyLine_;
 	Gate *gFaultyLine = &pCircuit_->gates_[fault.gateID_];
 	currentTargetFault_ = fault;
 
 	// if fault at gate's input, change the gFaultyLine to the input gate
-	if (line)
+	if (fault.faultyLine_)
 	{
-		gFaultyLine = &pCircuit_->gates_[gFaultyLine->faninVector_[line - 1]];
+		gFaultyLine = &pCircuit_->gates_[gFaultyLine->faninVector_[fault.faultyLine_ - 1]];
 	}
 	initialList(true);
 	initialNetlist(*gFaultyLine, isDTC);
@@ -1084,10 +1078,8 @@ void Atpg::initialList(bool initFlag)
 
 void Atpg::initialNetlist(Gate &gFaultyLine, bool isDTC)
 {
-	for (int i = 0; i < pCircuit_->tgate_; ++i)
+	for (Gate &gate : pCircuit_->gates_)
 	{
-		Gate &gate = pCircuit_->gates_[i];
-
 		if (gateID_to_lineType_[gate.gateId_] == FREE_LINE)
 		{
 			gateID_to_valModified_[gate.gateId_] = 1;
@@ -1096,12 +1088,10 @@ void Atpg::initialNetlist(Gate &gFaultyLine, bool isDTC)
 		{
 			gateID_to_valModified_[gate.gateId_] = 0;
 		}
-
 		gateID_to_reachableByTargetFault_[gate.gateId_] = 0;
-		/*
-		 * I will assign value outside the generateSinglePatternOnTargetFault for DTC, so
-		 * I only need to initialize it for primary fault.
-		 * */
+
+		// assign value outside the generateSinglePatternOnTargetFault for DTC, so
+		// only need to initialize it for primary fault.
 		if (!isDTC)
 		{
 			gate.atpgVal_ = X;
@@ -1116,13 +1106,13 @@ void Atpg::initialNetlist(Gate &gFaultyLine, bool isDTC)
 		while (!circuitLevel_to_EventStack_[i].empty())
 		{
 			int gateID = popEventStack(i);
-			Gate &rCurrentGate = pCircuit_->gates_[gateID];
+			const Gate &rCurrentGate = pCircuit_->gates_[gateID];
 			gateID_to_valModified_[gateID] = 0;
 			gateID_to_reachableByTargetFault_[gateID] = 1;
 
-			for (int j = 0; j < rCurrentGate.numFO_; ++j)
+			for (int fanoutID : rCurrentGate.fanoutVector_)
 			{
-				pushGateToEventStack(rCurrentGate.fanoutVector_[j]);
+				pushGateToEventStack(fanoutID);
 			}
 		}
 	}
@@ -1142,26 +1132,24 @@ void Atpg::clearEventStack(bool isDebug)
 {
 
 	// pop and unmark
-	for (int i = 0; i < pCircuit_->tlvl_; ++i)
+	for (std::stack<int> &eventStack : circuitLevel_to_EventStack_)
 	{
-		while (!circuitLevel_to_EventStack_[i].empty())
+		while (!eventStack.empty())
 		{
-			int gateID = circuitLevel_to_EventStack_[i].top();
-			circuitLevel_to_EventStack_[i].pop();
+			int gateID = eventStack.top();
+			eventStack.pop();
 			gateID_to_valModified_[gateID] = 0;
 			isInEventStack_[gateID] = false;
 		}
 	}
 
-	/*
-	 * Because I expect that all gates in circuit must be unmark after the above
-	 * for-loop.
-	 * */
-	if (isDebug == true)
+	// expect all gates in circuit must be unmarked
+	// after the above for-loop.
+	if (isDebug)
 	{
 		for (int i = 0; i < pCircuit_->tgate_; ++i)
 		{
-			if (isInEventStack_[i] == true)
+			if (isInEventStack_[i])
 			{
 				std::cerr << "Warning clearEventStack found unexpected behavior\n";
 				isInEventStack_[i] = false;
@@ -1245,7 +1233,6 @@ bool Atpg::Implication(IMPLICATION_STATUS atpgStatus, int StartLevel)
 Atpg::IMPLICATION_STATUS Atpg::backwardImplication(Gate *pGate)
 {
 	IMPLICATION_STATUS implyStatus = FORWARD;
-	int i;
 	if (pGate->gateType_ == Gate::PI || pGate->gateType_ == Gate::PPI)
 	{
 		return FORWARD;
@@ -1275,9 +1262,13 @@ Atpg::IMPLICATION_STATUS Atpg::backwardImplication(Gate *pGate)
 		if (pInputGate0->atpgVal_ == X && pInputGate1->atpgVal_ != X)
 		{
 			if (pGate->gateType_ == Gate::XOR2)
+			{
 				pInputGate0->atpgVal_ = cXOR2(pGate->atpgVal_, pInputGate1->atpgVal_);
+			}
 			else
+			{
 				pInputGate0->atpgVal_ = cXNOR2(pGate->atpgVal_, pInputGate1->atpgVal_);
+			}
 			gateID_to_valModified_[pGate->gateId_] = 1;
 			backtrackList_.push_back(pInputGate0->gateId_);
 			// pushInputEvents(pGate->gateId_, 0); replaced by wang
@@ -1373,10 +1364,9 @@ Atpg::IMPLICATION_STATUS Atpg::backwardImplication(Gate *pGate)
 			gateID_to_valModified_[pGate->gateId_] = 1;
 			Value InputNonControlVal = pGate->getInputNonCtrlValue();
 
-			for (i = 0; i < pGate->numFI_; ++i)
+			for (int i = 0; i < pGate->numFI_; ++i)
 			{
 				Gate *pFaninGate = &pCircuit_->gates_[pGate->faninVector_[i]];
-
 				if (pFaninGate->atpgVal_ == X)
 				{
 					pFaninGate->atpgVal_ = InputNonControlVal;
@@ -1386,15 +1376,13 @@ Atpg::IMPLICATION_STATUS Atpg::backwardImplication(Gate *pGate)
 					pushGateFanoutsToEventStack(pGate->faninVector_[i]);
 				}
 			}
-
 			implyStatus = BACKWARD;
 		}
 		else
 		{
 			int NumOfX = 0;
 			int ImpPtr = 0;
-
-			for (i = 0; i < pGate->numFI_; ++i)
+			for (int i = 0; i < pGate->numFI_; ++i)
 			{
 				Gate *pFaninGate = &pCircuit_->gates_[pGate->faninVector_[i]];
 				if (pFaninGate->atpgVal_ == X)
@@ -1606,7 +1594,6 @@ void Atpg::updateUnjustifiedLines()
 	// scan all gates in unjustified_ List, if some gates were put into unjustified list but were implied afterwards by other gates, remove those gates from the unjustified list.
 	// if gateID_to_valModified_[mGate.gateId_]  == true, delete it from unjustified_ List
 	// else push mGate into finalObject_ List
-	int gateID;
 	for (int i = unjustified_.size() - 1; i >= 0; --i)
 	{
 		Gate &mGate = pCircuit_->gates_[unjustified_[i]];
@@ -1620,7 +1607,9 @@ void Atpg::updateUnjustifiedLines()
 			finalObject_.push_back(mGate.gateId_);
 		}
 	}
+
 	// pop all element from finalObject_ and set it's gateID_to_valModified_ to false till finalObject_ is empty
+	int gateID;
 	while (!finalObject_.empty())
 	{
 		gateID = vecPop(finalObject_);
@@ -1680,7 +1669,7 @@ bool Atpg::checkFaultPropToPO(bool &faultPropToPO)
 bool Atpg::checkUnjustifiedBoundLines()
 {
 	// Find if there exists any unjustified bound line
-	for (int i = 0; i < (int)unjustified_.size(); ++i)
+	for (size_t i = 0; i < unjustified_.size(); ++i)
 	{
 		Gate *pGate = &pCircuit_->gates_[unjustified_[i]];
 		if (pGate->atpgVal_ != X && !gateID_to_valModified_[pGate->gateId_] && gateID_to_lineType_[pGate->gateId_] == BOUND_LINE)
@@ -1723,7 +1712,7 @@ void Atpg::findFinalObjective(BACKTRACE_STATUS &flag, bool FaultPropPO, Gate *&p
 			flag = FAN_OBJ_DETERMINE;
 			// set the times of objective 0 and objective 1 of the gate to be zero
 			// AND LET ALL THE SETS OF OBJECTIVES BE EMPTY
-			for (int const &gateID : backtraceResetList_)
+			for (const int &gateID : backtraceResetList_)
 			{
 				setGaten0n1(gateID, 0, 0);
 			}
@@ -1856,8 +1845,8 @@ void Atpg::assignValueToFinalObject()
 void Atpg::justifyFreeLines(Fault &fOriginalFault)
 {
 	Gate *pHeadLineFaultGate = NULL;
-	int gateID = currentTargetHeadLineFault_.gateID_;
 
+	int gateID = currentTargetHeadLineFault_.gateID_;
 	if (gateID != -1)
 	{
 		pHeadLineFaultGate = &pCircuit_->gates_[gateID];
@@ -1926,6 +1915,7 @@ void Atpg::restoreFault(Fault &fOriginalFault)
 		{
 			pFaninGate->atpgVal_ = L;
 		}
+
 		if (pFaninGate->atpgVal_ == L || pFaninGate->atpgVal_ == H)
 		{
 			fanoutObjective_.push_back(pFaninGate->gateId_);
@@ -2121,7 +2111,7 @@ int Atpg::uniquePathSensitize(Gate &gate)
 					Gate *pFaninGate = &pCircuit_->gates_[pNextGate->faninVector_[i]];
 					DependOnCurrent = false;
 
-					for (size_t j = 1; j < (int)UniquePathList.size(); ++j)
+					for (int j = 1; j < UniquePathList.size(); ++j)
 					{
 						if (UniquePathList[j] == pFaninGate->gateId_)
 						{
@@ -2203,7 +2193,6 @@ bool Atpg::xPathTracing(Gate *pGate)
 
 	if (gateID_to_xPathStatus_[pGate->gateId_] == XPATH_EXIST)
 	{
-		// gateID_to_xPathStatus_[pGate->gateId_] = XPATH_EXIST;
 		return true;
 	}
 
@@ -2216,9 +2205,7 @@ bool Atpg::xPathTracing(Gate *pGate)
 	for (int i = 0; i < pGate->numFO_; ++i)
 	{
 		// TO-DO homework 03
-		xPathTracing(&(pCircuit_->gates_[pGate->fanoutVector_[i]]));
-		// Should use if( xPathTracing(&(pCircuit_->gates_[pGate->fanoutVector_[i]])) )
-		if (gateID_to_xPathStatus_[pGate->fanoutVector_[i]] == XPATH_EXIST)
+		if (xPathTracing(&(pCircuit_->gates_[pGate->fanoutVector_[i]])))
 		{
 			gateID_to_xPathStatus_[pGate->gateId_] = XPATH_EXIST;
 			return true;
@@ -2483,6 +2470,7 @@ Fault Atpg::setFreeFaultyGate(Gate &gate)
 				backtrackList_.push_back(gFanin.gateId_);
 			}
 		}
+
 		if (pCurrentGate->atpgVal_ == X)
 		{
 			// set the value of pCurrentGate by evaluateGoodVal
@@ -2514,6 +2502,7 @@ Fault Atpg::setFreeFaultyGate(Gate &gate)
 void Atpg::fanoutFreeBacktrace(Gate *pObjectGate)
 {
 	currentObject_.clear();
+	currentObject_.reserve(MAX_LIST_SIZE);
 	currentObject_.push_back(pObjectGate->gateId_);
 	// clear the currentObject_ list, push pObjectGate in currentObject_
 
@@ -2568,9 +2557,8 @@ void Atpg::fanoutFreeBacktrace(Gate *pObjectGate)
 			currentObject_.push_back(pGate->faninVector_[1]);
 			currentObject_.push_back(pGate->faninVector_[2]);
 		}
-		// if pGate only have one input gate
 		else if (pGate->isUnary())
-		{
+		{ // if pGate only have one input gate
 			if (&pCircuit_->gates_[pGate->faninVector_[0]] != firstTimeFrameHeadLine_)
 			{
 				pCircuit_->gates_[pGate->faninVector_[0]].atpgVal_ = cXOR2(pGate->atpgVal_, vinv);
@@ -2595,7 +2583,9 @@ void Atpg::fanoutFreeBacktrace(Gate *pObjectGate)
 					{
 						pFaninGate = &pCircuit_->gates_[pGate->faninVector_[i]];
 						if (pFaninGate != firstTimeFrameHeadLine_)
+						{
 							break;
+						}
 					}
 					pFaninGate->atpgVal_ = Val;
 					currentObject_.push_back(pFaninGate->gateId_);
@@ -2655,7 +2645,7 @@ Atpg::BACKTRACE_RESULT Atpg::multipleBacktrace(BACKTRACE_STATUS atpgStatus, int 
 
 	while (true)
 	{
-		Gate *pEasiestInput;
+		Gate *pEasiestInput = NULL;
 		switch (atpgStatus)
 		{
 			case CHECK_AND_SELECT:
@@ -2679,7 +2669,6 @@ Atpg::BACKTRACE_RESULT Atpg::multipleBacktrace(BACKTRACE_STATUS atpgStatus, int 
 					atpgStatus = CURRENT_OBJ_DETERMINE;
 				}
 				break; // switch break
-
 			case CURRENT_OBJ_DETERMINE:
 				// IS OBJECTIVE LINE A HEAD LINE?
 				if (gateID_to_lineType_[pCurrentObj->gateId_] == HEAD_LINE)
@@ -2997,7 +2986,7 @@ void Atpg::initialObjectives()
 	currentObject_ = initObject_; // vector assignment
 
 	// go through all current Object size
-	for (int const &currentObjectGateID : currentObject_)
+	for (const int &currentObjectGateID : currentObject_)
 	{
 		// get currentObject gate in pCircuit_ to pGate
 		Gate *pGate = &pCircuit_->gates_[currentObjectGateID];
@@ -3059,10 +3048,9 @@ Gate *Atpg::findEasiestInput(Gate *pGate, Value Val)
 	// declaration of the return gate pointer
 	Gate *pRetGate = NULL;
 	// easiest input gate's scope(non-select yet)
-	int easyControlVal = INFINITE; // unsigned -> int by wang
+	int easyControlVal = INFINITE;
 
 	// if the fanIn amount is 1, just return the only fanIn
-
 	if (pGate->gateType_ == Gate::PO || pGate->gateType_ == Gate::PPO ||
 			pGate->gateType_ == Gate::BUF || pGate->gateType_ == Gate::INV)
 	{
@@ -3198,10 +3186,9 @@ Atpg::IMPLICATION_STATUS Atpg::evaluation(Gate *pGate)
 		return FORWARD;
 	}
 	else if (Val != X)
-	{ ////Good value is different to the gate output, return CONFLICT
+	{ // Good value is different to the gate output, return CONFLICT
 		return CONFLICT;
 	}
-
 	return backwardImplication(pGate);
 }
 
@@ -3339,7 +3326,6 @@ Atpg::IMPLICATION_STATUS Atpg::faultyGateEvaluation(Gate *pGate)
 	{
 		return CONFLICT; // If the evaluated value is different from current value, return CONFLICT.
 	}
-
 	return FORWARD;
 }
 
@@ -3355,7 +3341,7 @@ Atpg::IMPLICATION_STATUS Atpg::faultyGateEvaluation(Gate *pGate)
 // **************************************************************************
 void Atpg::staticTestCompressionByReverseFaultSimulation(PatternProcessor *pPatternProcessor, FaultList &originalFaultList)
 {
-	for (Fault *const &pFault : originalFaultList)
+	for (Fault *pFault : originalFaultList)
 	{
 		pFault->detection_ = 0;
 		if (pFault->faultState_ == Fault::DT)
@@ -3871,7 +3857,7 @@ void Atpg::calSCOAP()
 // **************************************************************************
 void Atpg::testClearFaultEffect(FaultList &faultListToTest)
 {
-	for (Fault *const &pFault : faultListToTest)
+	for (Fault *pFault : faultListToTest)
 	{
 		generateSinglePatternOnTargetFault(*pFault, false);
 		clearAllFaultEffectBySimulation();

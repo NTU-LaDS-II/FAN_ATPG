@@ -134,7 +134,7 @@ namespace CoreNs
 		depthFromPo_ = -1;
 		fiMinLvl_ = -1;
 
-		// /* Added by Shi-Tang Liu */
+		/* Added by Shi-Tang Liu */
 		preValue_ = X;
 	}
 

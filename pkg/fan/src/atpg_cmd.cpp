@@ -75,6 +75,7 @@ bool ReadPatCmd::exec(const std::vector<std::string> &argv)
 		delete fanMgr_->pcoll;
 		delete patBlder;
 		fanMgr_->pcoll = NULL;
+		patBlder = NULL;
 		return false;
 	}
 
@@ -85,6 +86,7 @@ bool ReadPatCmd::exec(const std::vector<std::string> &argv)
 	std::cout << "    " << (double)stat.vmSize / 1024.0 << " MB\n";
 
 	delete patBlder;
+	patBlder = NULL;
 	return true;
 }
 

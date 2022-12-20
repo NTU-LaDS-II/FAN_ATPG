@@ -68,6 +68,7 @@ bool ReadLibCmd::exec(const std::vector<std::string> &argv)
 							<< "\n";
 		delete libBlder;
 		delete fanMgr_->lib;
+		libBlder = NULL;
 		fanMgr_->lib = NULL;
 		return false;
 	}
@@ -79,6 +80,7 @@ bool ReadLibCmd::exec(const std::vector<std::string> &argv)
 							<< "\n";
 		delete libBlder;
 		delete fanMgr_->lib;
+		libBlder = NULL;
 		fanMgr_->lib = NULL;
 		return false;
 	}
@@ -86,15 +88,14 @@ bool ReadLibCmd::exec(const std::vector<std::string> &argv)
 	TmStat stat;
 	if (!fanMgr_->tmusg.getPeriodUsage(stat))
 	{
-		std::cout << "fishy ..."
-							<< "\n";
+		std::cout << "fishy ...\n";
 	}
 	std::cout << "#  Finished reading library `" << optMgr_.getParsedArg(0) << "'";
 	std::cout << "    " << (double)stat.rTime / 1000000.0 << " s";
-	std::cout << "    " << (double)stat.vmSize / 1024.0 << " MB"
-						<< "\n";
+	std::cout << "    " << (double)stat.vmSize / 1024.0 << " MB\n";
 
 	delete libBlder;
+	libBlder = NULL;
 	return true;
 }
 
@@ -159,6 +160,7 @@ bool ReadNlCmd::exec(const std::vector<std::string> &argv)
 		delete fanMgr_->nl;
 		delete nlBlder;
 		fanMgr_->nl = NULL;
+		nlBlder = NULL;
 		return false;
 	}
 
@@ -170,6 +172,7 @@ bool ReadNlCmd::exec(const std::vector<std::string> &argv)
 		delete fanMgr_->nl;
 		delete nlBlder;
 		fanMgr_->nl = NULL;
+		nlBlder = NULL;
 		return false;
 	}
 
@@ -181,6 +184,7 @@ bool ReadNlCmd::exec(const std::vector<std::string> &argv)
 						<< "\n";
 
 	delete nlBlder;
+	nlBlder = NULL;
 	return true;
 }
 

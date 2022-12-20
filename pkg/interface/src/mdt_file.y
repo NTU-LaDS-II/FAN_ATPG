@@ -216,6 +216,7 @@ void mdt_filefreeNames(MdtNames *names) {
         MdtNames *prev = name;
         name = name->next;
         delete prev;
+        prev = NULL;
     }
 }
 
@@ -225,6 +226,7 @@ void mdt_filefreePortToNet(MdtPortToNet *p2ns) {
         MdtPortToNet *prev = p2n;
         p2n = p2n->next;
         delete prev;
+        prev = NULL;
     }
 }
 

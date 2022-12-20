@@ -34,7 +34,7 @@ namespace CoreNs
 		void put(const int &gid, const unsigned &startPoint);
 		bool get(int &gid, unsigned &startPoint);
 		bool empty() const;
-		bool lastNodeMark() const;
+		bool lastNodeMarked() const;
 
 	private:
 		std::vector<DecisionTreeNode> tree_;
@@ -88,7 +88,7 @@ namespace CoreNs
 		return tree_.empty();
 	}
 
-	inline bool DecisionTree::lastNodeMark() const
+	inline bool DecisionTree::lastNodeMarked() const
 	{
 		return tree_.empty() ? false : tree_.back().mark_;
 	}

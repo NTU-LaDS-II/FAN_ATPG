@@ -79,4 +79,3 @@ const char *const VT100_ERSS     = "\033[2J";  // erase screen
 };
 
 #endif
-

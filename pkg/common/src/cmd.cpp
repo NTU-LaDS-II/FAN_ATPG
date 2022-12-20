@@ -225,8 +225,8 @@ void CmdMgr::resetStdin() const
 std::vector<std::string> CmdMgr::getDirCts(const std::string &dirStr) const
 {
 	std::vector<std::string> cts;
-	DIR *dir;
-	dirent *dirCts;
+	DIR *dir = NULL;
+	dirent *dirCts = NULL;
 	if ((dir = opendir(dirStr.c_str())) != NULL)
 	{
 		while ((dirCts = readdir(dir)) != NULL)
@@ -431,7 +431,6 @@ CmdMgr::Result CmdMgr::read()
 // Author     [ littleshamoo ]
 // Synopsis   [ refresh the screen ]
 // **************************************************************************
-//{{{ void CmdMgr::refresh()
 void CmdMgr::refresh()
 {
 	// scroll screen on boundary condition
@@ -525,7 +524,9 @@ std::vector<std::string> CmdMgr::parse(const std::string &cmdStr) const
 		if (ch == comment_)
 		{
 			if (str != "")
+			{
 				argv.push_back(str);
+			}
 			return argv;
 		}
 

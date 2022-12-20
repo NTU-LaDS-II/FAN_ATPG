@@ -331,6 +331,7 @@ bool Netlist::removeFloatingNets()
 			}
 			top_->removeNet(i);
 			delete n;
+			n = NULL;
 			--i;
 		}
 	}

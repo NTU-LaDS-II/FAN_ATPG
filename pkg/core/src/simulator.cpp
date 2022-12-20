@@ -95,10 +95,12 @@ void Simulator::pfFaultSim(PatternProcessor *pcoll, FaultListExtract *fListExtra
 			remain.push_back(pFault);
 
 	// simulate all patterns for all faults
-	for (Pattern const &pattern : pcoll->patternVector_)
+	for (const Pattern &pattern : pcoll->patternVector_)
 	{
 		if (remain.size() == 0)
+		{
 			break;
+		}
 
 		// Assign pattern to circuit PI & PPI for further fault sim
 		assignPatternToPi(pattern);
@@ -516,7 +518,7 @@ void Simulator::ppSetPattern(PatternProcessor *pPatternProcessor, const int &i)
 				}
 			}
 		}
-		// if (pcoll->patternVector_[j].primaryInputs2nd_ && cir_->nframe_ > 1)
+
 		if (!pPatternProcessor->patternVector_[j].primaryInputs2nd_.empty() && cir_->nframe_ > 1)
 		{
 			for (int k = 0; k < pPatternProcessor->numPI_; ++k)

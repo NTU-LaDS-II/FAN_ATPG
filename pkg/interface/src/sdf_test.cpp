@@ -28,6 +28,6 @@ int main(int argc, char **argv)
 	}
 
 	delete sdf;
-
+	sdf = NULL;
 	return 0;
 }

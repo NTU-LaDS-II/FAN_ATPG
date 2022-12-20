@@ -43,7 +43,7 @@ namespace CoreNs
 	inline void Pattern::initForTransitionDelayFault(Circuit *pCircuit)
 	{
 		primaryInputs2nd_.resize(pCircuit->npi_);
-		primaryOutputs2nd_.reserve(pCircuit->npo_);
+		primaryOutputs2nd_.resize(pCircuit->npo_);
 		shiftIn_.resize(1);
 	}
 
@@ -340,9 +340,9 @@ namespace CoreNs
 			std::vector<int> del_first_pattern;
 			if (maxSimilarity != 0)
 			{
-				int i = similarityPattern_first;
-				int j = similarityPattern_second;
-				for (int k = 0; k < size; ++k)
+				size_t i = similarityPattern_first;
+				size_t j = similarityPattern_second;
+				for (size_t k = 0; k < size; ++k)
 				{
 					if (mergeRecord[k])
 					{
@@ -479,7 +479,7 @@ namespace CoreNs
 				}
 				if (updateSimilarityPattern[i])
 				{
-					for (int j = 0; j < size; ++j)
+					for (size_t j = 0; j < size; ++j)
 					{
 						if (i == j)
 						{

@@ -102,7 +102,7 @@ bool TmUsage::checkUsage(TmStat &st) const
 	char membuf[128];
 	while (fgets(membuf, 128, fmem))
 	{
-		char *ch;
+		char *ch = NULL;
 		if ((ch = strstr(membuf, "VmPeak:")))
 		{
 			st.vmPeak = atol(ch + 7);

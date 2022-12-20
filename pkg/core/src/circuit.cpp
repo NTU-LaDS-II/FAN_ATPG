@@ -150,14 +150,14 @@ void Circuit::calNnet()
 
 	nnet_ = 0;
 
-	for (size_t i = 0; i < top->getNNet(); ++i)
+	for (int i = 0; i < top->getNNet(); ++i)
 	{
 		NetSet eqvs = top->getEqvNets(i);
 		int nports = 0;
 		bool smallest = true;
 		for (NetSet::iterator it = eqvs.begin(); it != eqvs.end(); ++it)
 		{
-			if ((*it)->id_ < (int)i)
+			if ((*it)->id_ < i)
 			{
 				smallest = false;
 				break;
@@ -171,7 +171,7 @@ void Circuit::calNnet()
 	}
 
 	// add internal nets
-	for (size_t i = 0; i < top->getNCell(); ++i)
+	for (int i = 0; i < top->getNCell(); ++i)
 	{
 		Cell *c = top->getCell(i);
 		if (!lib->hasPmt(c->typeName_, Pmt::DFF))

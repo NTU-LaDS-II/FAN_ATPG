@@ -32,6 +32,6 @@ int main(int argc, char **argv)
 	}
 
 	delete mdt;
-
+	mdt = NULL;
 	return 0;
 }

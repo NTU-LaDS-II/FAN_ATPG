@@ -116,12 +116,12 @@ namespace CoreNs
 		void identifyDominator();
 		void identifyUniquePath();
 
-		void TransitionDelayFaultATPG(FaultList &faultListToGen, PatternProcessor *pPatternProcessor, int &untest);
-		// void StuckAtFaultATPG(FaultList &faultListToGen, PatternProcessor *pPatternProcessor, int &untest); // not used
-		void StuckAtFaultATPGWithDTC(FaultList &faultListToGen, PatternProcessor *pPatternProcessor, int &untest);
+		void TransitionDelayFaultATPG(FaultList &faultListToGen, PatternProcessor *pPatternProcessor, int &numOfAtpgUntestableFaults);
+		// void StuckAtFaultATPG(FaultList &faultListToGen, PatternProcessor *pPatternProcessor, int &numOfAtpgUntestableFaults); // not used
+		void StuckAtFaultATPGWithDTC(FaultList &faultListToGen, PatternProcessor *pPatternProcessor, int &numOfAtpgUntestableFaults);
 
-		Gate *getWireForActivation(Fault &fault);
-		void setValueAndRunImp(Gate &gate, Value val);
+		Gate *getWireForActivation(const Fault &fault);
+		void setValueAndRunImp(Gate &gate, const Value &val);
 
 		void resetPreValue();
 		int storeCurrentGateValue();
@@ -282,10 +282,11 @@ namespace CoreNs
 			return gate.atpgVal_;
 		}
 
-		Value v[4];
-		for (int i = 0; i < gate.numFI_; ++i)
+		static Value v[4];
+		int index = 0;
+		for (const int &faninID : gate.faninVector_)
 		{
-			v[i] = pCircuit_->gates_[gate.faninVector_[i]].atpgVal_;
+			v[index++] = pCircuit_->gates_[faninID].atpgVal_;
 		}
 
 		switch (gate.gateType_)
@@ -302,28 +303,24 @@ namespace CoreNs
 				return cAND3(v[0], v[1], v[2]);
 			case Gate::AND4:
 				return cAND4(v[0], v[1], v[2], v[3]);
-
 			case Gate::NAND2:
 				return cNAND2(v[0], v[1]);
 			case Gate::NAND3:
 				return cNAND3(v[0], v[1], v[2]);
 			case Gate::NAND4:
 				return cNAND4(v[0], v[1], v[2], v[3]);
-
 			case Gate::OR2:
 				return cOR2(v[0], v[1]);
 			case Gate::OR3:
 				return cOR3(v[0], v[1], v[2]);
 			case Gate::OR4:
 				return cOR4(v[0], v[1], v[2], v[3]);
-
 			case Gate::NOR2:
 				return cNOR2(v[0], v[1]);
 			case Gate::NOR3:
 				return cNOR3(v[0], v[1], v[2]);
 			case Gate::NOR4:
 				return cNOR4(v[0], v[1], v[2], v[3]);
-
 			case Gate::XOR2:
 				return cXOR2(v[0], v[1]);
 			case Gate::XOR3:
@@ -350,7 +347,7 @@ namespace CoreNs
 	inline Value Atpg::evaluateFaultyVal(Gate &gate)
 	{
 		Value val;
-		int &faultyLine = currentTargetFault_.faultyLine_;
+		const int &faultyLine = currentTargetFault_.faultyLine_;
 		switch (gate.gateType_)
 		{
 			case Gate::PI:
@@ -411,7 +408,7 @@ namespace CoreNs
 					{
 						val = B;
 					}
-					
+
 					if (val == H && (currentTargetFault_.faultType_ == Fault::SA0 || currentTargetFault_.faultType_ == Fault::STR))
 					{
 						val = D;
@@ -512,12 +509,12 @@ namespace CoreNs
 					{
 						val = B;
 					}
-					
+
 					if (val == H && (currentTargetFault_.faultType_ == Fault::SA0 || currentTargetFault_.faultType_ == Fault::STR))
 					{
 						val = D;
 					}
-					
+
 					for (int i = 0; i < gate.numFI_; ++i)
 					{
 						if (i != faultyLine - 1)
@@ -804,7 +801,7 @@ namespace CoreNs
 				pattern.primaryOutputs1st_[i] = X;
 			}
 		}
-		// if (pattern.primaryOutputs2nd_ != NULL && pCircuit_->nframe_ > 1)
+
 		if (!(pattern.primaryOutputs2nd_.empty()) && pCircuit_->nframe_ > 1)
 		{
 			for (int i = 0; i < pCircuit_->npo_; ++i)
@@ -829,6 +826,7 @@ namespace CoreNs
 		{
 			offset += pCircuit_->ngate_;
 		}
+
 		for (int i = 0; i < pCircuit_->nppi_; ++i)
 		{
 			if (pCircuit_->gates_[offset + i].goodSimLow_ == PARA_H)
@@ -848,7 +846,7 @@ namespace CoreNs
 
 	inline void Atpg::pushGateToEventStack(const int &gateID)
 	{
-		Gate &gate = pCircuit_->gates_[gateID];
+		const Gate &gate = pCircuit_->gates_[gateID];
 		if (!gateID_to_valModified_[gateID])
 		{
 			circuitLevel_to_EventStack_[gate.numLevel_].push(gateID);
@@ -858,7 +856,7 @@ namespace CoreNs
 
 	inline int Atpg::popEventStack(const int &level)
 	{
-		int gateID = circuitLevel_to_EventStack_[level].top();
+		const int &gateID = circuitLevel_to_EventStack_[level].top();
 		circuitLevel_to_EventStack_[level].pop();
 		return gateID;
 	}
@@ -866,14 +864,14 @@ namespace CoreNs
 	inline int Atpg::pushGateFanoutsToEventStack(const int &gateID)
 	{
 		int pushedGateCount = 0;
-		Gate &gate = pCircuit_->gates_[gateID];
-		for (int i = 0; i < gate.numFO_; ++i)
+		const Gate &gate = pCircuit_->gates_[gateID];
+		for (const int &fanoutID : gate.fanoutVector_)
 		{
-			int &outputGateLevel = pCircuit_->gates_[gate.fanoutVector_[i]].numLevel_;
-			if (!gateID_to_valModified_[gate.fanoutVector_[i]])
+			const int &outputGateLevel = pCircuit_->gates_[fanoutID].numLevel_;
+			if (!gateID_to_valModified_[fanoutID])
 			{
-				circuitLevel_to_EventStack_[outputGateLevel].push(gate.fanoutVector_[i]);
-				gateID_to_valModified_[gate.fanoutVector_[i]] = 1;
+				circuitLevel_to_EventStack_[outputGateLevel].push(fanoutID);
+				gateID_to_valModified_[fanoutID] = 1;
 				++pushedGateCount;
 			}
 		}
@@ -911,7 +909,7 @@ namespace CoreNs
 	// 5-value logic evaluation functions
 	inline Value Atpg::cINV(const Value &i1)
 	{
-		const static Value map[5] = {H, L, X, B, D};
+		constexpr Value map[5] = {H, L, X, B, D};
 		if (i1 >= Z)
 		{
 			return Z;
@@ -920,7 +918,7 @@ namespace CoreNs
 	}
 	inline Value Atpg::cAND2(const Value &i1, const Value &i2)
 	{
-		const static Value map[5][5] = {
+		constexpr Value map[5][5] = {
 				{L, L, L, L, L},
 				{L, H, X, D, B},
 				{L, X, X, X, X},
@@ -954,7 +952,7 @@ namespace CoreNs
 	}
 	inline Value Atpg::cOR2(const Value &i1, const Value &i2)
 	{
-		const static Value map[5][5] = {
+		constexpr Value map[5][5] = {
 				{L, H, X, D, B},
 				{H, H, H, H, H},
 				{X, H, X, X, X},
@@ -988,7 +986,7 @@ namespace CoreNs
 	}
 	inline Value Atpg::cXOR2(const Value &i1, const Value &i2)
 	{
-		const static Value map[5][5] = {
+		constexpr Value map[5][5] = {
 				{L, H, X, D, B},
 				{H, L, X, B, D},
 				{X, X, X, X, X},
@@ -1059,7 +1057,7 @@ namespace CoreNs
 			}
 		}
 	}
-	
+
 	inline void Atpg::adjacentFill(Pattern &pattern)
 	{
 		if (pattern.primaryInputs1st_[0] == X)

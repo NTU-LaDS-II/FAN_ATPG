@@ -28,6 +28,6 @@ int main(int argc, char **argv)
 	}
 
 	delete vlog;
-
+	vlog = NULL;
 	return 0;
 }

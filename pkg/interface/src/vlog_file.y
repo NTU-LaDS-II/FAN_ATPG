@@ -232,6 +232,7 @@ void vlog_filefreeNames(VlogNames *names) {
         VlogNames *prev = name;
         name = name->next;
         delete prev;
+        prev = NULL;
     }
 }
 
@@ -241,5 +242,6 @@ void vlog_filefreePortToNet(VlogPortToNet *p2ns) {
         VlogPortToNet *prev = p2n;
         p2n = p2n->next;
         delete prev;
+        prev = NULL;
     }
 }

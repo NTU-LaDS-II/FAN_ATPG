@@ -99,7 +99,7 @@ TestLargeLoopCmd::TestLargeLoopCmd(const std::string &name) : Cmd(name)
 	des = "Loop size. Default is 1500 if not set.";
 	optMgr_.regArg(new Arg(Arg::OPT, des, "size"));
 
-	Opt *opt;
+	Opt *opt = NULL;
 	des = "Test mode selection ('a' for stuck-at fault, 's' for";
 	des += " launch-off-shift transition fault and 'c' for";
 	des += " launch-off-capture.)";
@@ -116,14 +116,14 @@ TestLargeLoopCmd::~TestLargeLoopCmd() {}
 bool TestLargeLoopCmd::exec(const std::vector<std::string> &argv)
 {
 	optMgr_.parse(argv);
-	size_t size = optMgr_.getNParsedArg() > 0 ? atoi(optMgr_.getParsedArg(0).c_str()) : 1500;
+	int size = optMgr_.getNParsedArg() > 0 ? atoi(optMgr_.getParsedArg(0).c_str()) : 1500;
 
-	size_t res = 0;
-	for (size_t i = 0; i < size; ++i)
+	int res = 0;
+	for (int i = 0; i < size; ++i)
 	{
-		for (size_t j = 0; j < size; ++j)
+		for (int j = 0; j < size; ++j)
 		{
-			for (size_t k = 0; k < size; ++k)
+			for (int k = 0; k < size; ++k)
 			{
 				res += i + j * k;
 			}
@@ -149,7 +149,7 @@ void initOpts(OptMgr *mgr)
 	des = "Input circuit netlist.";
 	mgr->regArg(new Arg(Arg::REQ, des, "circuit_netlist"));
 
-	Opt *opt;
+	Opt *opt = NULL;
 	des = "Test mode selection ('a' for stuck-at fault, 's' for";
 	des += " launch-off-shift transition fault and 'c' for";
 	des += " launch-off-capture.)";

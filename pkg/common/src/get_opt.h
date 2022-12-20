@@ -237,13 +237,19 @@ namespace CommonNs
 	{
 		std::map<std::string, Opt *>::const_iterator fIt = flagToOpt_.find(f);
 		if (fIt == flagToOpt_.end())
+		{
 			return "";
+		}
 		std::map<Opt *, std::string>::const_iterator optIt;
 		optIt = optToVar_.find(fIt->second);
 		if (optIt == optToVar_.end())
+		{
 			return "";
+		}
 		else
+		{
 			return optIt->second;
+		}
 	}
 };
 
