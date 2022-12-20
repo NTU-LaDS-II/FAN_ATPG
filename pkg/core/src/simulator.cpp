@@ -459,7 +459,7 @@ void Simulator::ppCheckDetection(Fault *const f)
 	detected &= activated_;
 
 	// fault drop
-	for (size_t i = 0; i < WORD_SIZE; ++i)
+	for (int i = 0; i < WORD_SIZE; ++i)
 	{
 		if (getBitValue(detected, i) == L)
 		{

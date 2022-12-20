@@ -84,7 +84,7 @@ void Circuit::calNgate()
 	// map PI to pseudo gates
 	portToGate_.resize(top->getNPort());
 	npi_ = 0;
-	for (size_t i = 0; i < top->getNPort(); ++i)
+	for (int i = 0; i < top->getNPort(); ++i)
 	{
 		Port *p = top->getPort(i);
 		if (p->type_ != Port::INPUT)
@@ -105,7 +105,7 @@ void Circuit::calNgate()
 	// a single cell can have more than one gate in it
 	nppi_ = 0;
 	cellToGate_.resize(top->getNCell());
-	for (size_t i = 0; i < top->getNCell(); ++i)
+	for (int i = 0; i < top->getNCell(); ++i)
 	{
 		cellToGate_[i] = ngate_;
 		if (lib->hasPmt(top->getCell(i)->libc_->id_, Pmt::DFF))
@@ -124,7 +124,7 @@ void Circuit::calNgate()
 
 	// map PO to pseudo gates
 	npo_ = 0;
-	for (size_t i = 0; i < top->getNPort(); ++i)
+	for (int i = 0; i < top->getNPort(); ++i)
 	{
 		if (top->getPort(i)->type_ == Port::OUTPUT)
 		{
@@ -205,7 +205,7 @@ void Circuit::createPi(int &nfo)
 {
 	Cell *top = nl_->getTop();
 
-	for (size_t i = 0; i < top->getNPort(); ++i)
+	for (int i = 0; i < top->getNPort(); ++i)
 	{
 		Port *p = top->getPort(i);
 		if (!strcmp(p->name_, "CK") || !strcmp(p->name_, "test_si") || !strcmp(p->name_, "test_se"))
@@ -302,7 +302,7 @@ void Circuit::createPmt(const int &id, const Cell *const c,
 	// determine fanin and level
 	// gates_[id].faninVector_ = &fis_[nfi]; // resize later!
 	int maxLvl = -1;
-	for (size_t i = 0; i < pmt->getNPort(); ++i)
+	for (int i = 0; i < pmt->getNPort(); ++i)
 	{
 		if (pmt->getPort(i)->type_ != Port::INPUT)
 		{
@@ -311,7 +311,7 @@ void Circuit::createPmt(const int &id, const Cell *const c,
 		Net *nin = pmt->getPort(i)->exNet_;
 		gates_[id].faninVector_.reserve(nin->getNPort());
 		// gates_[id].fanoutVector_.reserve(nin->getNPort());
-		for (size_t j = 0; j < nin->getNPort(); ++j)
+		for (int j = 0; j < nin->getNPort(); ++j)
 		{
 			Port *p = nin->getPort(j);
 			if (p == pmt->getPort(i))
@@ -372,7 +372,7 @@ void Circuit::createPmt(const int &id, const Cell *const c,
 	// gates_[id].fanoutVector_ = &fos_[nfo]; // resize later
 	Port *outp = NULL;
 	int foSize = 0;
-	for (size_t i = 0; i < pmt->getNPort() && !outp; ++i)
+	for (int i = 0; i < pmt->getNPort() && !outp; ++i)
 	{
 		if (pmt->getPort(i)->type_ == Port::OUTPUT)
 		{
@@ -534,7 +534,7 @@ void Circuit::createPo(int &nfi)
 {
 	Cell *top = nl_->getTop();
 
-	for (size_t i = 0; i < top->getNPort(); ++i)
+	for (int i = 0; i < top->getNPort(); ++i)
 	{
 		Port *p = top->getPort(i);
 		if (!strcmp(p->name_, "test_so"))

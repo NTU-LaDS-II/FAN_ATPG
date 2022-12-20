@@ -188,7 +188,7 @@ void FaultListExtract::extractFaultFromCircuit(Circuit *circuit)
 		}
 
 		// HYH try to fix the fault number @20141121
-		for (size_t i = 0; i < circuit->nl_->getTop()->getNPort(); ++i)
+		for (int i = 0; i < circuit->nl_->getTop()->getNPort(); ++i)
 		{
 			IntfNs::Port *p = circuit->nl_->getTop()->getPort(i);
 			if (!strcmp(p->name_, "CK")) // sequential circuit
@@ -264,7 +264,7 @@ void FaultListExtract::extractFaultFromCircuit(Circuit *circuit)
 		extractedFaults_.assign(uncollapsedFaults_.begin(), uncollapsedFaults_.end());
 
 		// HYH try to fix the fault number @20141121
-		for (size_t i = 0; i < circuit->nl_->getTop()->getNPort(); ++i)
+		for (int i = 0; i < circuit->nl_->getTop()->getNPort(); ++i)
 		{
 			IntfNs::Port *p = circuit->nl_->getTop()->getPort(i);
 			if (!strcmp(p->name_, "CK")) // sequential circuit

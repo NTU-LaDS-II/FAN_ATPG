@@ -1669,7 +1669,7 @@ bool Atpg::checkFaultPropToPO(bool &faultPropToPO)
 bool Atpg::checkUnjustifiedBoundLines()
 {
 	// Find if there exists any unjustified bound line
-	for (size_t i = 0; i < unjustified_.size(); ++i)
+	for (int i = 0; i < unjustified_.size(); ++i)
 	{
 		Gate *pGate = &pCircuit_->gates_[unjustified_[i]];
 		if (pGate->atpgVal_ != X && !gateID_to_valModified_[pGate->gateId_] && gateID_to_lineType_[pGate->gateId_] == BOUND_LINE)
@@ -3310,7 +3310,7 @@ Atpg::IMPLICATION_STATUS Atpg::faultyGateEvaluation(Gate *pGate)
 		}
 	}
 	else if (pGate->atpgVal_ == Val)
-	{ // The init. faulty objective has already been achieved
+	{ // The initial faulty objective has already been achieved
 		gateID_to_valModified_[pGate->gateId_] = 1;
 	}
 	else if (pGate->atpgVal_ == X)
@@ -3354,8 +3354,8 @@ void Atpg::staticTestCompressionByReverseFaultSimulation(PatternProcessor *pPatt
 	pPatternProcessor->patternVector_.clear();
 
 	// Perform reverse fault simulation
-	size_t leftFaultCount = originalFaultList.size();
-	for (auto rit = tmp.rbegin(); rit != tmp.rend(); ++rit)
+	int leftFaultCount = originalFaultList.size();
+	for (std::vector<Pattern>::reverse_iterator rit = tmp.rbegin(); rit != tmp.rend(); ++rit)
 	{
 		pSimulator_->pfFaultSim((*rit), originalFaultList);
 		if (leftFaultCount > originalFaultList.size())
@@ -3368,10 +3368,10 @@ void Atpg::staticTestCompressionByReverseFaultSimulation(PatternProcessor *pPatt
 			std::cerr << "staticTestCompressionByReverseFaultSimulation: unexpected behavior\n";
 			std::cin.get();
 		}
-		else
-		{
-			// delete (*rit);
-		}
+		// else
+		// {
+		// 	delete (*rit);
+		// }
 	}
 }
 

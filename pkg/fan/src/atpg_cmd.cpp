@@ -323,7 +323,7 @@ void AddFaultCmd::addAllFault()
 
 	fanMgr_->fListExtract->faultsInCircuit_.resize(fanMgr_->fListExtract->extractedFaults_.size());
 	FaultListIter it = fanMgr_->fListExtract->faultsInCircuit_.begin();
-	for (size_t i = 0; i < fanMgr_->fListExtract->extractedFaults_.size(); ++i, ++it)
+	for (int i = 0; i < fanMgr_->fListExtract->extractedFaults_.size(); ++i, ++it)
 	{
 		(*it) = &fanMgr_->fListExtract->extractedFaults_[i];
 	}
@@ -608,7 +608,7 @@ bool ReportFaultCmd::exec(const std::vector<std::string> &argv)
 				}
 				else
 				{
-					for (size_t i = 0; i < pmt->getNPort(); ++i)
+					for (int i = 0; i < pmt->getNPort(); ++i)
 					{
 						if (pmt->getPort(i)->type_ != Port::OUTPUT)
 						{
@@ -640,7 +640,7 @@ bool ReportFaultCmd::exec(const std::vector<std::string> &argv)
 			else
 			{ // input
 				int inCount = 0;
-				for (size_t i = 0; i < pmt->getNPort(); ++i)
+				for (int i = 0; i < pmt->getNPort(); ++i)
 				{
 					if (pmt->getPort(i)->type_ == Port::INPUT)
 					{
@@ -767,13 +767,13 @@ bool ReportGateCmd::exec(const std::vector<std::string> &argv)
 	}
 	else
 	{
-		for (size_t i = 0; i < optMgr_.getNParsedArg(); ++i)
+		for (int i = 0; i < optMgr_.getNParsedArg(); ++i)
 		{
 			std::string name = optMgr_.getParsedArg(i);
 			Cell *c = fanMgr_->nl->getTop()->getCell(name.c_str());
 			if (c)
 			{
-				for (size_t j = 0; j < c->libc_->getNCell(); ++j)
+				for (int j = 0; j < c->libc_->getNCell(); ++j)
 				{
 					reportGate(fanMgr_->cir->cellToGate_[c->id_] + j);
 				}
@@ -864,13 +864,13 @@ bool ReportValueCmd::exec(const std::vector<std::string> &argv)
 	}
 	else
 	{
-		for (size_t i = 0; i < optMgr_.getNParsedArg(); ++i)
+		for (int i = 0; i < optMgr_.getNParsedArg(); ++i)
 		{
 			std::string name = optMgr_.getParsedArg(i);
 			Cell *c = fanMgr_->nl->getTop()->getCell(name.c_str());
 			if (c)
 			{
-				for (size_t j = 0; j < c->libc_->getNCell(); ++j)
+				for (int j = 0; j < c->libc_->getNCell(); ++j)
 				{
 					reportValue(fanMgr_->cir->cellToGate_[c->id_] + j);
 				}
@@ -895,9 +895,13 @@ void ReportValueCmd::reportValue(const int &i) const
 	Gate *g = &fanMgr_->cir->gates_[i];
 	std::cout << "#  ";
 	if (g->gateType_ == Gate::PI || g->gateType_ == Gate::PO)
+	{
 		std::cout << fanMgr_->nl->getTop()->getPort((size_t)g->cellId_)->name_;
+	}
 	else
+	{
 		std::cout << fanMgr_->nl->getTop()->getCell((size_t)g->cellId_)->name_;
+	}
 	std::cout << " id(" << i << ") ";
 	std::cout << "lvl(" << g->numLevel_ << ") ";
 	std::cout << "type(" << g->gateType_ << ") ";
@@ -908,8 +912,7 @@ void ReportValueCmd::reportValue(const int &i) const
 	std::cout << "\n";
 	std::cout << "#    faulty: ";
 	printValue(g->faultSimLow_, g->faultSimHigh_);
-	std::cout << "\n"
-						<< "\n";
+	std::cout << "\n\n";
 }
 
 ReportStatsCmd::ReportStatsCmd(const std::string &name, FanMgr *fanMgr) : Cmd(name)
@@ -1108,7 +1111,7 @@ bool AddPinConsCmd::exec(const std::vector<std::string> &argv)
 
 	size_t npi = optMgr_.getNParsedArg() - 1;
 	int cons = atoi(optMgr_.getParsedArg(npi).c_str());
-	for (size_t i = 0; i < npi; ++i)
+	for (int i = 0; i < npi; ++i)
 	{
 		std::string piname = optMgr_.getParsedArg(i);
 		Port *p = fanMgr_->nl->getTop()->getPort(piname.c_str());
