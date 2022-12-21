@@ -41,11 +41,11 @@ void FaultListExtract::extractFaultFromCircuit(Circuit *circuit)
 			// extract faults of gate inputs
 			for (int j = 0; j < circuit->gates_[i].numFI_; ++j)
 			{
-				if (circuit->gates_[circuit->gates_[i].faninVector_[j]].numFO_ > 1) // fanout stem
-				{
+				// if (circuit->gates_[circuit->gates_[i].faninVector_[j]].numFO_ > 1) // fanout stem
+				// {
 					uncollapsedFaults_.push_back(Fault(i, Fault::SA0, j + 1));
 					uncollapsedFaults_.push_back(Fault(i, Fault::SA1, j + 1));
-				}
+				// }
 			}
 			// add additional faults for PPI
 			if (circuit->gates_[i].gateType_ == Gate::PPI)
@@ -78,11 +78,6 @@ void FaultListExtract::extractFaultFromCircuit(Circuit *circuit)
 			int SA0EquivalentOfInput, SA1EquivalentOfInput;																	 // SA0Equivalent, SA1Equivalent of the input gates
 			for (int i = 0; i < circuit->ngate_; ++i)
 			{
-				if (circuit->gates_[i].numFO_ > 0 && i < circuit->ngate_ - circuit->nppi_)
-				{
-					extractedFaults_.push_back(Fault(i, Fault::SA1, 0, 1));
-					extractedFaults_.push_back(Fault(i, Fault::SA0, 0, 1));
-				}
 				// initialize SA0Equivalent, SA1Equivalent
 				SA0Equivalent[i] = 1;
 				SA1Equivalent[i] = 1;
@@ -153,7 +148,8 @@ void FaultListExtract::extractFaultFromCircuit(Circuit *circuit)
 						SA1Equivalent[i] = SA1EquivalentOfInput + 1;
 						break;
 					// Other gates, including PO and PPO gates
-					default:
+					case Gate::PPO:
+					case Gate::PO:
 						for (int j = 0; j < circuit->gates_[i].numFI_; ++j)
 						{
 							SA0EquivalentOfInput = SA0Equivalent[circuit->gates_[i].faninVector_[j]];
@@ -165,7 +161,7 @@ void FaultListExtract::extractFaultFromCircuit(Circuit *circuit)
 				}
 				// add output faults
 				// Only for fanout stem, including PI,PPI with fanout stem
-				if (circuit->gates_[i].numFO_ > 1)
+				if (circuit->gates_[i].numFO_ >= 1)
 				{
 					// add faults with calculated SA0Equivalent, SA1Equivalent and reset them to 1
 					extractedFaults_.push_back(Fault(i, Fault::SA0, 0, SA0Equivalent[i]));
