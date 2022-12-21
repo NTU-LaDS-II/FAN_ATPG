@@ -78,6 +78,11 @@ void FaultListExtract::extractFaultFromCircuit(Circuit *circuit)
 			int SA0EquivalentOfInput, SA1EquivalentOfInput;																	 // SA0Equivalent, SA1Equivalent of the input gates
 			for (int i = 0; i < circuit->ngate_; ++i)
 			{
+				if (circuit->gates_[i].numFO_ > 0 && i < circuit->ngate_ - circuit->nppi_)
+				{
+					extractedFaults_.push_back(Fault(i, Fault::SA1, 0, 1));
+					extractedFaults_.push_back(Fault(i, Fault::SA0, 0, 1));
+				}
 				// initialize SA0Equivalent, SA1Equivalent
 				SA0Equivalent[i] = 1;
 				SA1Equivalent[i] = 1;

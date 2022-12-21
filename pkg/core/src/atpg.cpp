@@ -1,7 +1,7 @@
 // **************************************************************************
 // File       [ atpg.cpp ]
 // Author     [ littleshamoo ]
-// Synopsis   [ This files include most of the method of class Atpg]
+// Synopsis   [ This files include most of the method of class Atpg ]
 // Date       [ 2011/11/01 created ]
 // **************************************************************************
 
@@ -21,61 +21,120 @@ using namespace CoreNs;
 void Atpg::generatePatternSet(PatternProcessor *pPatternProcessor, FaultListExtract *pFaultListExtracter)
 {
 	Fault *pCurrentFault = NULL;
-	int numOfAtpgUntestableFaults = 0;
-	FaultList pFaultListForPatternGeneration;
-	FaultList pFaultListForStaticTestCompression;
-
+	FaultPtrList originalFaultPtrListForPatternGeneration, reorderedFaultPtrListForPatternGeneration;
 	setupCircuitParameter();
 	pPatternProcessor->init(pCircuit_);
 	// checkLevelInfo(); // for debug, not neccessary, removed by wang
 
 	// setting faults for running ATPG
-	bool faultIsQualified;
 	for (Fault *pFault : pFaultListExtracter->faultsInCircuit_)
 	{
-		faultIsQualified = (pFault->faultState_ != Fault::DT && pFault->faultState_ != Fault::RE && pFault->faultyLine_ >= 0);
+		const bool faultIsQualified = (pFault->faultState_ != Fault::DT && pFault->faultState_ != Fault::RE && pFault->faultyLine_ >= 0);
 		if (faultIsQualified)
 		{
-			pFaultListForPatternGeneration.push_back(pFault);
-			pFaultListForStaticTestCompression.push_back(pFault); // save a copy for static test compression
+			originalFaultPtrListForPatternGeneration.push_back(pFault);
+			reorderedFaultPtrListForPatternGeneration.push_back(pFault);
+			// faultPtrListForStaticTestCompression.push_back(pFault); // save a copy for static test compression
 		}
 	}
-	// pFaultListForStaticTestCompression = pFaultListForPatternGeneration; removed to avoid peforming looping twice (copying is O(n))
+	// faultPtrListForStaticTestCompression = originalFaultPtrListForPatternGeneration; removed to avoid peforming looping twice (copying is O(n))
 
 	// To test clearAllFaultEffectBySimulation
-	// testClearFaultEffect(pFaultListForPatternGeneration); // removed for now seems like debug usage, by wang
+	// testClearFaultEffect(originalFaultPtrListForPatternGeneration); // removed for now seems like debug usage, by wang
 
-	// start ATPG, take one undetected fault from the pFaultListForPatternGeneration
+	// start ATPG, take one undetected fault from the reorderedFaultPtrListForPatternGeneration
 	// if the fault is undetected, run ATPG on it
-	while (!pFaultListForPatternGeneration.empty())
+	const double faultPtrListSize = (double)(originalFaultPtrListForPatternGeneration.size());
+	const int halfListSize = faultPtrListSize / 2.0;
+	const int iterations = log2(faultPtrListSize) + 1;
+	int minNumOfFaultsLeft = INFINITE;
+	int numOfAtpgUntestableFaults = 0;
+	std::vector<Pattern> bestTestPatternSet;
+	for (int i = 0; i < iterations; ++i)
 	{
-		// if the pFaultListForPatternGeneration is already left with aborted fault
-		if (pFaultListForPatternGeneration.front()->faultState_ == Fault::AB)
+		std::cerr << i << "th reorder\n";
+		numOfAtpgUntestableFaults = 0;
+		if (i != 0)
 		{
-			break;
+			reorderedFaultPtrListForPatternGeneration.assign(originalFaultPtrListForPatternGeneration.begin(), originalFaultPtrListForPatternGeneration.end());
+			FaultPtrListIter it = reorderedFaultPtrListForPatternGeneration.begin();
+			for (int j = 0; j < halfListSize; ++j)
+			{
+				reorderedFaultPtrListForPatternGeneration.insert(it, reorderedFaultPtrListForPatternGeneration.back());
+				reorderedFaultPtrListForPatternGeneration.pop_back();
+				++it;
+			}
+			for (Fault *pFault : reorderedFaultPtrListForPatternGeneration)
+			{
+				pFault->detection_ = 0;
+				pFault->faultState_ = Fault::UD;
+			}
+			originalFaultPtrListForPatternGeneration.assign(reorderedFaultPtrListForPatternGeneration.begin(), reorderedFaultPtrListForPatternGeneration.end());
 		}
+		pPatternProcessor->patternVector_.clear();
+		// pPatternProcessor->patternVector_.reserve(MAX_LIST_SIZE);
+		while (!reorderedFaultPtrListForPatternGeneration.empty())
+		{
+			// if the reorderedFaultPtrListForPatternGeneration is already left with aborted fault
+			if (reorderedFaultPtrListForPatternGeneration.front()->faultState_ == Fault::AB)
+			{
+				break;
+			}
 
-		// this statement implies that the fault is not popped in previous call of StuckAtFaultATPGWithDTC()
-		// hence implying the fault is neither aborted or untestable => a pattern was found => detected fault
-		if (pCurrentFault == pFaultListForPatternGeneration.front())
-		{
-			pFaultListForPatternGeneration.front()->faultState_ = Fault::DT;
-			pFaultListForPatternGeneration.pop_front();
-			continue;
-		}
-		else
-		{
-			pCurrentFault = pFaultListForPatternGeneration.front();
-		}
+			// the fault is not popped in previous call of StuckAtFaultATPGWithDTC()
+			// => the fault is neither aborted or untestable => a pattern was found => detected fault
+			if (pCurrentFault == reorderedFaultPtrListForPatternGeneration.front())
+			{
+				reorderedFaultPtrListForPatternGeneration.front()->faultState_ = Fault::DT;
+				reorderedFaultPtrListForPatternGeneration.pop_front();
+				continue;
+			}
+			else
+			{
+				pCurrentFault = reorderedFaultPtrListForPatternGeneration.front();
+			}
 
-		bool isTransitionDelyFault = (pCurrentFault->faultType_ == Fault::STR || pCurrentFault->faultType_ == Fault::STF);
-		isTransitionDelyFault ? TransitionDelayFaultATPG(pFaultListForPatternGeneration, pPatternProcessor, numOfAtpgUntestableFaults)
-													: StuckAtFaultATPGWithDTC(pFaultListForPatternGeneration, pPatternProcessor, numOfAtpgUntestableFaults);
+			const bool isTransitionDelayFault = (pCurrentFault->faultType_ == Fault::STR || pCurrentFault->faultType_ == Fault::STF);
+			if (isTransitionDelayFault)
+			{
+				TransitionDelayFaultATPG(reorderedFaultPtrListForPatternGeneration, pPatternProcessor, numOfAtpgUntestableFaults);
+			}
+			else
+			{
+				StuckAtFaultATPGWithDTC(reorderedFaultPtrListForPatternGeneration, pPatternProcessor, numOfAtpgUntestableFaults);
+			}
+		}
+		int currNumOfFaultsLeft = numOfAtpgUntestableFaults;
+		for (Fault *pFault : reorderedFaultPtrListForPatternGeneration)
+		{
+			currNumOfFaultsLeft += pFault->equivalent_;
+		}
+		if (i == 0)
+		{
+			bestTestPatternSet = pPatternProcessor->patternVector_;
+			minNumOfFaultsLeft = currNumOfFaultsLeft;
+			std::cerr << "Undetected Fault Count: " << currNumOfFaultsLeft << "\n";
+			std::cerr << "Test Length: " << bestTestPatternSet.size() << "\n";
+		}
+		else if (currNumOfFaultsLeft < minNumOfFaultsLeft)
+		{
+			bestTestPatternSet = pPatternProcessor->patternVector_;
+			minNumOfFaultsLeft = currNumOfFaultsLeft;
+			std::cerr << "Undetected Fault Count: " << currNumOfFaultsLeft << "\n";
+		}
+		else if (currNumOfFaultsLeft == minNumOfFaultsLeft)
+		{
+			if (pPatternProcessor->patternVector_.size() < bestTestPatternSet.size())
+			{
+				bestTestPatternSet = pPatternProcessor->patternVector_;
+				std::cerr << "Test Length: " << bestTestPatternSet.size() << "\n";
+			}
+		}
 	}
-
+	pPatternProcessor->patternVector_ = bestTestPatternSet;
 	if (pPatternProcessor->staticCompression_ == PatternProcessor::ON)
 	{
-		staticTestCompressionByReverseFaultSimulation(pPatternProcessor, pFaultListForStaticTestCompression);
+		staticTestCompressionByReverseFaultSimulation(pPatternProcessor, originalFaultPtrListForPatternGeneration);
 	}
 
 	// if (pPatternProcessor->XFill_ == PatternProcessor::ON) XFill(pPatternProcessor);, unecessary, alread Xfilled in previsous functions, removed by wang
@@ -176,9 +235,7 @@ void Atpg::calGateDepthFromPO()
 // **************************************************************************
 void Atpg::identifyLineParameter()
 {
-	bool isBoundLine, isHeadLine;
-
-	numberOfHeadLine_ = 0; // number of head line
+	numberOfHeadLine_ = 0;
 
 	for (const Gate &gate : pCircuit_->gates_)
 	{
@@ -220,8 +277,7 @@ void Atpg::identifyLineParameter()
 	}
 
 	// store all head lines to array headLineGateIDs_
-	headLineGateIDs_.reserve(numberOfHeadLine_); // resize instead of new, by wang
-	// remeber to improve to reserve
+	headLineGateIDs_.reserve(numberOfHeadLine_);
 
 	int count = 0;
 	for (const Gate &gate : pCircuit_->gates_)
@@ -353,7 +409,7 @@ void Atpg::identifyDominator()
 // **************************************************************************
 void Atpg::identifyUniquePath()
 {
-	std::vector<int> reachableByDominator(pCircuit_->tgate_); // replace the original faultReach_ to avoid ambiguity, added by wang
+	static std::vector<int> reachableByDominator(pCircuit_->tgate_); // replace the original faultReach_ to avoid ambiguity, added by wang
 	for (int i = pCircuit_->tgate_ - 1; i >= 0; --i)
 	{
 		Gate &gate = pCircuit_->gates_[i];
@@ -403,7 +459,7 @@ void Atpg::identifyUniquePath()
 //            ]
 // Date       [ HKY Ver. 1.0 started 2014/09/01 ]
 // **************************************************************************
-void Atpg::TransitionDelayFaultATPG(FaultList &faultListToGen, PatternProcessor *pPatternProcessor, int &numOfAtpgUntestableFaults)
+void Atpg::TransitionDelayFaultATPG(FaultPtrList &faultListToGen, PatternProcessor *pPatternProcessor, int &numOfAtpgUntestableFaults)
 {
 	const Fault &fTDF = *faultListToGen.front();
 
@@ -427,8 +483,8 @@ void Atpg::TransitionDelayFaultATPG(FaultList &faultListToGen, PatternProcessor 
 	else if (result == FAULT_UNTESTABLE)
 	{
 		faultListToGen.front()->faultState_ = Fault::AU;
+		numOfAtpgUntestableFaults += faultListToGen.front()->equivalent_;
 		faultListToGen.pop_front();
-		++numOfAtpgUntestableFaults;
 	}
 	else
 	{
@@ -447,7 +503,7 @@ void Atpg::TransitionDelayFaultATPG(FaultList &faultListToGen, PatternProcessor 
 //            ]
 // Date       [ HKY Ver. 1.0 started 2014/09/01 ]
 // **************************************************************************
-// void Atpg::StuckAtFaultATPG(FaultList &faultListToGen, PatternProcessor *pPatternProcessor, int &numOfAtpgUntestableFaults)
+// void Atpg::StuckAtFaultATPG(FaultPtrList &faultListToGen, PatternProcessor *pPatternProcessor, int &numOfAtpgUntestableFaults)
 // {
 // 	SINGLE_PATTERN_GENERATION_STATUS result = generateSinglePatternOnTargetFault(*faultListToGen.front(), false);
 // 	if (result == PATTERN_FOUND)
@@ -472,8 +528,8 @@ void Atpg::TransitionDelayFaultATPG(FaultList &faultListToGen, PatternProcessor 
 // 	else if (result == FAULT_UNTESTABLE)
 // 	{
 // 		faultListToGen.front()->faultState_ = Fault::AU;
+// 		numOfAtpgUntestableFaults += faultListToGen.front()->equivalent_;
 // 		faultListToGen.pop_front();
-// 		++numOfAtpgUntestableFaults;
 // 	}
 // 	else
 // 	{
@@ -492,7 +548,7 @@ void Atpg::TransitionDelayFaultATPG(FaultList &faultListToGen, PatternProcessor 
 //            ]
 // Date       [ started 2020/07/07    last modified 2021/09/14 ]
 // **************************************************************************
-void Atpg::StuckAtFaultATPGWithDTC(FaultList &faultListToGen, PatternProcessor *pPatternProcessor, int &numOfAtpgUntestableFaults)
+void Atpg::StuckAtFaultATPGWithDTC(FaultPtrList &faultListToGen, PatternProcessor *pPatternProcessor, int &numOfAtpgUntestableFaults)
 {
 	SINGLE_PATTERN_GENERATION_STATUS result = generateSinglePatternOnTargetFault(*faultListToGen.front(), false);
 	if (result == PATTERN_FOUND)
@@ -507,7 +563,7 @@ void Atpg::StuckAtFaultATPGWithDTC(FaultList &faultListToGen, PatternProcessor *
 
 		if (pPatternProcessor->dynamicCompression_ == PatternProcessor::ON)
 		{
-			FaultList faultListTemp = faultListToGen;
+			FaultPtrList faultListTemp = faultListToGen;
 			pSimulator_->pfFaultSim(pPatternProcessor->patternVector_.back(), faultListToGen);
 			pSimulator_->goodSim();
 			assignPatternPO_fromGoodSimVal(pPatternProcessor->patternVector_.back());
@@ -591,8 +647,8 @@ void Atpg::StuckAtFaultATPGWithDTC(FaultList &faultListToGen, PatternProcessor *
 	else if (result == FAULT_UNTESTABLE)
 	{
 		faultListToGen.front()->faultState_ = Fault::AU;
+		numOfAtpgUntestableFaults += faultListToGen.front()->equivalent_;
 		faultListToGen.pop_front();
-		++numOfAtpgUntestableFaults;
 	}
 	else
 	{
@@ -3339,7 +3395,7 @@ Atpg::IMPLICATION_STATUS Atpg::faultyGateEvaluation(Gate *pGate)
 //            ]
 // Date       [ started 2020/07/08    last modified 2020/07/08 ]
 // **************************************************************************
-void Atpg::staticTestCompressionByReverseFaultSimulation(PatternProcessor *pPatternProcessor, FaultList &originalFaultList)
+void Atpg::staticTestCompressionByReverseFaultSimulation(PatternProcessor *pPatternProcessor, FaultPtrList &originalFaultList)
 {
 	for (Fault *pFault : originalFaultList)
 	{
@@ -3855,7 +3911,7 @@ void Atpg::calSCOAP()
 //            ]
 // Date       [ started 2020/07/04    last modified 2020/07/04 ]
 // **************************************************************************
-void Atpg::testClearFaultEffect(FaultList &faultListToTest)
+void Atpg::testClearFaultEffect(FaultPtrList &faultListToTest)
 {
 	for (Fault *pFault : faultListToTest)
 	{
