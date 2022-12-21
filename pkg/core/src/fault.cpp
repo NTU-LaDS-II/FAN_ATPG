@@ -74,13 +74,13 @@ void FaultListExtract::extractFaultFromCircuit(Circuit *circuit)
 		}
 		else // Simple Equivalent Fault Collapsing
 		{
-			std::vector<int> SA0Equivalent(circuit->ngate_), SA1Equivalent(circuit->ngate_); // used to count the number of equivalent faults
-			int SA0EquivalentOfInput, SA1EquivalentOfInput;																	 // SA0Equivalent, SA1Equivalent of the input gates
+			std::vector<int> SA0Equivalent(circuit->ngate_, 1), SA1Equivalent(circuit->ngate_, 1); // used to count the number of equivalent faults
+			int SA0EquivalentOfInput, SA1EquivalentOfInput;																				 // SA0Equivalent, SA1Equivalent of the input gates
 			for (int i = 0; i < circuit->ngate_; ++i)
 			{
 				// initialize SA0Equivalent, SA1Equivalent
-				SA0Equivalent[i] = 1;
-				SA1Equivalent[i] = 1;
+				// SA0Equivalent[i] = 1;
+				// SA1Equivalent[i] = 1;
 				// adding input faults
 				switch (circuit->gates_[i].gateType_)
 				{
@@ -148,8 +148,7 @@ void FaultListExtract::extractFaultFromCircuit(Circuit *circuit)
 						SA1Equivalent[i] = SA1EquivalentOfInput + 1;
 						break;
 					// Other gates, including PO and PPO gates
-					case Gate::PPO:
-					case Gate::PO:
+					default:
 						for (int j = 0; j < circuit->gates_[i].numFI_; ++j)
 						{
 							SA0EquivalentOfInput = SA0Equivalent[circuit->gates_[i].faninVector_[j]];
@@ -161,14 +160,15 @@ void FaultListExtract::extractFaultFromCircuit(Circuit *circuit)
 				}
 				// add output faults
 				// Only for fanout stem, including PI,PPI with fanout stem
-				if (circuit->gates_[i].numFO_ >= 1)
+				if (circuit->gates_[i].numFO_ > 0 && i < circuit->ngate_ - circuit->nppi_)
 				{
 					// add faults with calculated SA0Equivalent, SA1Equivalent and reset them to 1
 					extractedFaults_.push_back(Fault(i, Fault::SA0, 0, SA0Equivalent[i]));
 					extractedFaults_.push_back(Fault(i, Fault::SA1, 0, SA1Equivalent[i]));
-					SA0Equivalent[i] = 1;
-					SA1Equivalent[i] = 1;
 				}
+				SA0Equivalent[i] = 1;
+				SA1Equivalent[i] = 1;
+
 				// add additional faults for PPI
 				if (circuit->gates_[i].gateType_ == Gate::PPI)
 				{
