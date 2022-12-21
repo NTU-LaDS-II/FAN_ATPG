@@ -322,7 +322,7 @@ void AddFaultCmd::addAllFault()
 	fanMgr_->tmusg.periodStart();
 
 	fanMgr_->fListExtract->faultsInCircuit_.resize(fanMgr_->fListExtract->extractedFaults_.size());
-	FaultListIter it = fanMgr_->fListExtract->faultsInCircuit_.begin();
+	FaultPtrListIter it = fanMgr_->fListExtract->faultsInCircuit_.begin();
 	for (int i = 0; i < fanMgr_->fListExtract->extractedFaults_.size(); ++i, ++it)
 	{
 		(*it) = &fanMgr_->fListExtract->extractedFaults_[i];
@@ -495,7 +495,7 @@ bool ReportFaultCmd::exec(const std::vector<std::string> &argv)
 	std::cout << "\n";
 	std::cout << "#    type    code    pin (cell)\n";
 	std::cout << "#    ----    ----    ----------------------------------\n";
-	FaultListIter it = fanMgr_->fListExtract->faultsInCircuit_.begin();
+	FaultPtrListIter it = fanMgr_->fListExtract->faultsInCircuit_.begin();
 	for (; it != fanMgr_->fListExtract->faultsInCircuit_.end(); ++it)
 	{
 		if (!stateSet || (*it)->faultState_ != state)
@@ -993,7 +993,7 @@ bool ReportStatsCmd::exec(const std::vector<std::string> &argv)
 	size_t re = 0;
 	size_t ab = 0;
 
-	FaultListIter it = fanMgr_->fListExtract->faultsInCircuit_.begin();
+	FaultPtrListIter it = fanMgr_->fListExtract->faultsInCircuit_.begin();
 	for (; it != fanMgr_->fListExtract->faultsInCircuit_.end(); ++it)
 	{
 		int eq = (*it)->equivalent_;

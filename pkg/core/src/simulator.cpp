@@ -80,7 +80,7 @@ void Simulator::eventFaultSim()
 // Function   [ void Simulator::pfFaultSim(PatternProcessor *, FaultListExtract *) ]
 // Author     [ littleshamoo ]
 // Synopsis   [ usage: perform parallel fault simulation on all patterns.
-//					   call pfFaultSim(FaultList &remain) for each pattern
+//					   call pfFaultSim(FaultPtrList &remain) for each pattern
 //				in:	   a set of pattern
 //				out:   void //TODO not void
 //			  ]
@@ -89,7 +89,7 @@ void Simulator::eventFaultSim()
 void Simulator::pfFaultSim(PatternProcessor *pcoll, FaultListExtract *fListExtract)
 {
 	// undetected faults are remaining faults
-	FaultList remain;
+	FaultPtrList remain;
 	for (Fault *const &pFault : fListExtract->faultsInCircuit_)
 		if (pFault->faultState_ != Fault::DT && pFault->faultState_ != Fault::RE && pFault->faultyLine_ >= 0)
 			remain.push_back(pFault);
@@ -111,14 +111,14 @@ void Simulator::pfFaultSim(PatternProcessor *pcoll, FaultListExtract *fListExtra
 // **************************************************************************
 // Function   [ Simulator::pfFaultSim ]
 // Commentor  [ CJY CBH ]
-// Synopsis   [ usage: set pattern. call pfFaultSim(FaultList &remain)
+// Synopsis   [ usage: set pattern. call pfFaultSim(FaultPtrList &remain)
 //                     to do faultsim for this pattern
-//              in:    one pattern , FaultList contain undetected faults
+//              in:    one pattern , FaultPtrList contain undetected faults
 //              out:   void //TODO not void
 //            ]
 // Date       [ CJY Ver. 1.0 started 2013/08/14 ]
 // **************************************************************************
-void Simulator::pfFaultSim(const Pattern &p, FaultList &remain)
+void Simulator::pfFaultSim(const Pattern &p, FaultPtrList &remain)
 {
 
 	// Assign pattern to circuit PI & PPI for further fault sim
@@ -130,12 +130,12 @@ void Simulator::pfFaultSim(const Pattern &p, FaultList &remain)
 // Function   [ Simulator::pfFaultSim ]
 // Commentor  [ CJY CBH ]
 // Synopsis   [ usage: do faultsim for the fault in fault list
-//              in:    FaultList ( = list<Fault *> ) contains undetected faults
+//              in:    FaultPtrList ( = list<Fault *> ) contains undetected faults
 //              out:   void //TODO not void
 //            ]
 // Date       [ CJY Ver. 1.0 started 2013/08/14 ]
 // **************************************************************************
-void Simulator::pfFaultSim(FaultList &remain)
+void Simulator::pfFaultSim(FaultPtrList &remain)
 {
 	if (remain.size() == 0)
 	{
@@ -146,7 +146,7 @@ void Simulator::pfFaultSim(FaultList &remain)
 
 	// inject number of WORD_SIZE activated faults
 	// pfReset();
-	FaultListIter it = remain.begin();
+	FaultPtrListIter it = remain.begin();
 	while (it != remain.end()) // do while => while by wang
 	{
 		// if fault is activated, inject fault
@@ -256,7 +256,7 @@ void Simulator::pfInject(const Fault *const f, const size_t &i)
 //            ]
 // Date       [ CBH Ver. 1.0 started 2031/08/18 ]
 // **************************************************************************
-void Simulator::pfCheckDetection(FaultList &remain)
+void Simulator::pfCheckDetection(FaultPtrList &remain)
 {
 	ParaValue detected = PARA_L;
 	int start = cir_->tgate_ - cir_->npo_ - cir_->nppi_;
@@ -293,8 +293,8 @@ void Simulator::pfCheckDetection(FaultList &remain)
 void Simulator::ppFaultSim(PatternProcessor *pcoll, FaultListExtract *fListExtract)
 {
 	// undetected faults are remaining faults
-	FaultList remain;
-	FaultListIter it = fListExtract->faultsInCircuit_.begin();
+	FaultPtrList remain;
+	FaultPtrListIter it = fListExtract->faultsInCircuit_.begin();
 	for (; it != fListExtract->faultsInCircuit_.end(); ++it)
 	{
 		if ((*it)->faultState_ != Fault::DT && (*it)->faultState_ != Fault::RE && (*it)->faultyLine_ >= 0)
@@ -320,7 +320,7 @@ void Simulator::ppFaultSim(PatternProcessor *pcoll, FaultListExtract *fListExtra
 //            ]
 // Date       [ Bill Ver. 1.0 started 20130811 ]
 // **************************************************************************
-void Simulator::ppFaultSim(FaultList &remain)
+void Simulator::ppFaultSim(FaultPtrList &remain)
 {
 	if (remain.size() == 0)
 	{
@@ -330,7 +330,7 @@ void Simulator::ppFaultSim(FaultList &remain)
 	// run good simulation first
 	goodSimCopyToFault();
 
-	FaultListIter it = remain.begin();
+	FaultPtrListIter it = remain.begin();
 	do
 	{
 		if (ppCheckActivation((*it)))

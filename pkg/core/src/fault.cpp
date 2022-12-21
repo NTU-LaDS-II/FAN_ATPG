@@ -41,11 +41,11 @@ void FaultListExtract::extractFaultFromCircuit(Circuit *circuit)
 			// extract faults of gate inputs
 			for (int j = 0; j < circuit->gates_[i].numFI_; ++j)
 			{
-				// if (circuit->gates_[circuit->gates_[i].faninVector_[j]].numFO_ > 1) // fanout stem
-				// {
+				// // if (circuit->gates_[circuit->gates_[i].faninVector_[j]].numFO_ > 1) // fanout stem
+				// // {
 				uncollapsedFaults_.push_back(Fault(i, Fault::SA0, j + 1));
 				uncollapsedFaults_.push_back(Fault(i, Fault::SA1, j + 1));
-				// }
+				// // }
 			}
 			// add additional faults for PPI
 			if (circuit->gates_[i].gateType_ == Gate::PPI)

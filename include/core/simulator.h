@@ -37,20 +37,20 @@ namespace CoreNs
 
 		// parallel fault
 		void pfFaultSim(PatternProcessor *pcoll, FaultListExtract *fListExtract);
-		void pfFaultSim(const Pattern &p, FaultList &remain);
-		void pfFaultSim(FaultList &remain);
+		void pfFaultSim(const Pattern &p, FaultPtrList &remain);
+		void pfFaultSim(FaultPtrList &remain);
 
 		// parallel pattern
 		void ppGoodSim(PatternProcessor *pcoll);
 		void ppFaultSim(PatternProcessor *pcoll, FaultListExtract *fListExtract);
-		void ppFaultSim(FaultList &remain);
+		void ppFaultSim(FaultPtrList &remain);
 
 	private:
 		// used by both parallel pattern and parallel fault
 		Circuit *cir_;
 		int ndet_;		 // for n-detect
 		int nrecover_; // number of recovers needed
-		FaultListIter injected_[WORD_SIZE];
+		FaultPtrListIter injected_[WORD_SIZE];
 		int ninjected_;
 		ParaValue activated_;
 		std::vector<std::stack<int>> events_;
@@ -65,7 +65,7 @@ namespace CoreNs
 		void pfReset();
 		bool pfCheckActivation(const Fault *const f);
 		void pfInject(const Fault *const f, const size_t &i);
-		void pfCheckDetection(FaultList &remain);
+		void pfCheckDetection(FaultPtrList &remain);
 
 		// parallel pattern
 		void ppReset();
