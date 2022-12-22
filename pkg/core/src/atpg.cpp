@@ -697,7 +697,7 @@ Gate *Atpg::getWireForActivation(const Fault &fault)
 // **************************************************************************
 void Atpg::setValueAndRunImp(Gate &gate, const Value &val)
 {
-	clearEventStack(true);
+	clearEventStack(false);
 	gate.atpgVal_ = val;
 	for (const int &fanoutID : gate.fanoutVector_)
 	{
