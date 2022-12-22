@@ -160,14 +160,19 @@ void FaultListExtract::extractFaultFromCircuit(Circuit *circuit)
 				}
 				// add output faults
 				// Only for fanout stem, including PI,PPI with fanout stem
-				if (circuit->gates_[i].numFO_ > 0 && i < circuit->ngate_ - circuit->nppi_)
+				if (circuit->gates_[i].numFO_ > 1 && i < circuit->ngate_ - circuit->nppi_)
 				{
 					// add faults with calculated SA0Equivalent, SA1Equivalent and reset them to 1
 					extractedFaults_.push_back(Fault(i, Fault::SA0, 0, SA0Equivalent[i]));
 					extractedFaults_.push_back(Fault(i, Fault::SA1, 0, SA1Equivalent[i]));
+					SA0Equivalent[i] = 1;
+					SA1Equivalent[i] = 1;
 				}
-				SA0Equivalent[i] = 1;
-				SA1Equivalent[i] = 1;
+				else if (circuit->gates_[i].numFO_ == 1 && i < circuit->ngate_ - circuit->nppi_)
+				{
+					++SA0Equivalent[i];
+					++SA1Equivalent[i];
+				}
 
 				// add additional faults for PPI
 				if (circuit->gates_[i].gateType_ == Gate::PPI)
