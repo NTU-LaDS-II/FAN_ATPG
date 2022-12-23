@@ -89,11 +89,8 @@ void Atpg::generatePatternSet(PatternProcessor *pPatternProcessor, FaultListExtr
 				reorderedFaultPtrListForPatternGeneration.pop_front();
 				continue;
 			}
-			else
-			{
-				pCurrentFault = reorderedFaultPtrListForPatternGeneration.front();
-			}
 
+			pCurrentFault = reorderedFaultPtrListForPatternGeneration.front();
 			const bool isTransitionDelayFault = (pCurrentFault->faultType_ == Fault::STR || pCurrentFault->faultType_ == Fault::STF);
 			if (isTransitionDelayFault)
 			{
@@ -104,6 +101,7 @@ void Atpg::generatePatternSet(PatternProcessor *pPatternProcessor, FaultListExtr
 				StuckAtFaultATPGWithDTC(reorderedFaultPtrListForPatternGeneration, pPatternProcessor, numOfAtpgUntestableFaults);
 			}
 		}
+
 		int currNumOfFaultsLeft = numOfAtpgUntestableFaults;
 		for (Fault *pFault : reorderedFaultPtrListForPatternGeneration)
 		{
@@ -121,12 +119,14 @@ void Atpg::generatePatternSet(PatternProcessor *pPatternProcessor, FaultListExtr
 			bestTestPatternSet = pPatternProcessor->patternVector_;
 			minNumOfFaultsLeft = currNumOfFaultsLeft;
 			std::cerr << "Undetected Fault Count: " << currNumOfFaultsLeft << "\n";
+			std::cerr << "Test Length: " << bestTestPatternSet.size() << "\n";
 		}
 		else if (currNumOfFaultsLeft == minNumOfFaultsLeft)
 		{
 			if (pPatternProcessor->patternVector_.size() < bestTestPatternSet.size())
 			{
 				bestTestPatternSet = pPatternProcessor->patternVector_;
+				std::cerr << "Undetected Fault Count: " << currNumOfFaultsLeft << "\n";
 				std::cerr << "Test Length: " << bestTestPatternSet.size() << "\n";
 			}
 		}
