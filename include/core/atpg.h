@@ -8,6 +8,7 @@
 #ifndef _CORE_ATPG_H_
 #define _CORE_ATPG_H_
 
+#include <cmath>
 #include <cstdlib>
 #include <string>
 #include <vector> // added by wang
@@ -116,9 +117,9 @@ namespace CoreNs
 		void identifyDominator();
 		void identifyUniquePath();
 
-		void TransitionDelayFaultATPG(FaultList &faultListToGen, PatternProcessor *pPatternProcessor, int &numOfAtpgUntestableFaults);
-		// void StuckAtFaultATPG(FaultList &faultListToGen, PatternProcessor *pPatternProcessor, int &numOfAtpgUntestableFaults); // not used
-		void StuckAtFaultATPGWithDTC(FaultList &faultListToGen, PatternProcessor *pPatternProcessor, int &numOfAtpgUntestableFaults);
+		void TransitionDelayFaultATPG(FaultPtrList &faultListToGen, PatternProcessor *pPatternProcessor, int &numOfAtpgUntestableFaults);
+		// void StuckAtFaultATPG(FaultPtrList &faultListToGen, PatternProcessor *pPatternProcessor, int &numOfAtpgUntestableFaults); // not used
+		void StuckAtFaultATPGWithDTC(FaultPtrList &faultListToGen, PatternProcessor *pPatternProcessor, int &numOfAtpgUntestableFaults);
 
 		Gate *getWireForActivation(const Fault &fault);
 		void setValueAndRunImp(Gate &gate, const Value &val);
@@ -133,7 +134,7 @@ namespace CoreNs
 		// initialization at the start of single pattern generation
 		Gate *initialize(Fault &targetFault, int &BackImpLevel, IMPLICATION_STATUS &implyStatus, bool isDTC);
 		void initialList(bool initFlag);
-		void initialNetlist(Gate &gFaultyLine, const bool &isDTC);
+		void initialNetlist(Gate &gFaultyLine, bool isDTC);
 		void clearEventStack(bool isDebug);
 
 		bool Implication(IMPLICATION_STATUS atpgStatus, int StartLevel);
@@ -169,7 +170,7 @@ namespace CoreNs
 		IMPLICATION_STATUS faultyGateEvaluation(Gate *pGate);
 
 		// statuc test compression
-		void staticTestCompressionByReverseFaultSimulation(PatternProcessor *pPatternProcessor, FaultList &originalFaultList);
+		void staticTestCompressionByReverseFaultSimulation(PatternProcessor *pPatternProcessor, FaultPtrList &originalFaultList);
 
 		int firstTimeFrameSetUp(Fault &fault); // this function is for multiple time frame
 
@@ -217,7 +218,7 @@ namespace CoreNs
 		void checkLevelInfo();																 // for debug use
 		std::string getValStr(Value val);											 // for debug use
 		void calSCOAP();																			 // heuristic not effective, currently not used, added by Wei-Shen Wang
-		void testClearFaultEffect(FaultList &faultListToTest); // removed from generatePatternSet() for now seems like debug usage
+		void testClearFaultEffect(FaultPtrList &faultListToTest); // removed from generatePatternSet() for now seems like debug usage
 		void resetIsInEventStack();														 // not used
 		void XFill(PatternProcessor *pPatternProcessor);			 // redundant function, removed by wang
 

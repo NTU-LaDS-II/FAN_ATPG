@@ -8,6 +8,7 @@
 #ifndef _CORE_ATPG_H_
 #define _CORE_ATPG_H_
 
+#include <cmath>
 #include <cstdlib>
 #include <string>
 #include <vector> // added by wang
