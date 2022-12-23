@@ -9,7 +9,6 @@
 #define _CORE_ATPG_H_
 
 #include <cstdlib>
-#include <cmath>
 #include <string>
 #include <vector> // added by wang
 #include <stack>	// added by wang
@@ -215,12 +214,12 @@ namespace CoreNs
 		inline void adjacentFill(Pattern &pattern); // added by wang, currently not used
 
 		// function not used or removed
-		void checkLevelInfo();																		// for debug use
-		std::string getValStr(Value val);													// for debug use
-		void calSCOAP();																					// heuristic not effective, currently not used, added by Wei-Shen Wang
+		void checkLevelInfo();																 // for debug use
+		std::string getValStr(Value val);											 // for debug use
+		void calSCOAP();																			 // heuristic not effective, currently not used, added by Wei-Shen Wang
 		void testClearFaultEffect(FaultPtrList &faultListToTest); // removed from generatePatternSet() for now seems like debug usage
-		void resetIsInEventStack();																// not used
-		void XFill(PatternProcessor *pPatternProcessor);					// redundant function, removed by wang
+		void resetIsInEventStack();														 // not used
+		void XFill(PatternProcessor *pPatternProcessor);			 // redundant function, removed by wang
 
 		// considered unneccesary function
 		// void pushGateFanoutsToEventStack(const int &gateID); overloaded function without readability, removed by wang
@@ -908,160 +907,108 @@ namespace CoreNs
 	}
 
 	// 5-value logic evaluation functions
-	static constexpr Value invMap[5] = {H, L, X, B, D};
-	static constexpr Value andMap[5][5] = {
-			{L, L, L, L, L},
-			{L, H, X, D, B},
-			{L, X, X, X, X},
-			{L, D, X, D, L},
-			{L, B, X, L, B}};
-	static constexpr Value orMap[5][5] = {
-			{L, H, X, D, B},
-			{H, H, H, H, H},
-			{X, H, X, X, X},
-			{D, H, X, D, H},
-			{B, H, X, H, B}};
-	static constexpr Value xorMap[5][5] = {
-			{L, H, X, D, B},
-			{H, L, X, B, D},
-			{X, X, X, X, X},
-			{D, B, X, L, H},
-			{B, D, X, H, L}};
 	inline Value Atpg::cINV(const Value &i1)
 	{
+		constexpr Value map[5] = {H, L, X, B, D};
 		if (i1 >= Z)
 		{
 			return Z;
 		}
-		return invMap[i1];
+		return map[i1];
 	}
 	inline Value Atpg::cAND2(const Value &i1, const Value &i2)
 	{
+		constexpr Value map[5][5] = {
+				{L, L, L, L, L},
+				{L, H, X, D, B},
+				{L, X, X, X, X},
+				{L, D, X, D, L},
+				{L, B, X, L, B}};
 		if (i1 >= Z || i2 >= Z)
 		{
 			return Z;
 		}
-		return andMap[i1][i2];
+		return map[i1][i2];
 	}
 	inline Value Atpg::cAND3(const Value &i1, const Value &i2, const Value &i3)
 	{
-		if (i1 >= Z || i2 >= Z || i3 >= Z)
-		{
-			return Z;
-		}
-		return andMap[i1][andMap[i2][i3]];
+		return cAND2(i1, cAND2(i2, i3));
 	}
 	inline Value Atpg::cAND4(const Value &i1, const Value &i2, const Value &i3, const Value &i4)
 	{
-		if (i1 >= Z || i2 >= Z || i3 >= Z || i4 >= Z)
-		{
-			return Z;
-		}
-		return andMap[andMap[i1][i2]][andMap[i3][i4]];
+		return cAND2(cAND2(i1, i2), cAND2(i3, i4));
 	}
 	inline Value Atpg::cNAND2(const Value &i1, const Value &i2)
 	{
-		if (i1 >= Z || i2 >= Z)
-		{
-			return Z;
-		}
-		return invMap[andMap[i1][i2]];
+		return cINV(cAND2(i1, i2));
 	}
 	inline Value Atpg::cNAND3(const Value &i1, const Value &i2, const Value &i3)
 	{
-		if (i1 >= Z || i2 >= Z || i3 >= Z)
-		{
-			return Z;
-		}
-		return invMap[andMap[i1][andMap[i2][i3]]];
+		return cINV(cAND3(i1, i2, i3));
 	}
 	inline Value Atpg::cNAND4(const Value &i1, const Value &i2, const Value &i3, const Value &i4)
 	{
-		if (i1 >= Z || i2 >= Z || i3 >= Z || i4 >= Z)
-		{
-			return Z;
-		}
-		return invMap[andMap[andMap[i1][i2]][andMap[i3][i4]]];
+		return cINV(cAND4(i1, i2, i3, i4));
 	}
 	inline Value Atpg::cOR2(const Value &i1, const Value &i2)
 	{
+		constexpr Value map[5][5] = {
+				{L, H, X, D, B},
+				{H, H, H, H, H},
+				{X, H, X, X, X},
+				{D, H, X, D, H},
+				{B, H, X, H, B}};
 		if (i1 >= Z || i2 >= Z)
 		{
 			return Z;
 		}
-		return orMap[i1][i2];
+		return map[i1][i2];
 	}
 	inline Value Atpg::cOR3(const Value &i1, const Value &i2, const Value &i3)
 	{
-		if (i1 >= Z || i2 >= Z || i3 >= Z)
-		{
-			return Z;
-		}
-		return orMap[i1][orMap[i2][i3]];
+		return cOR2(i1, cOR2(i2, i3));
 	}
 	inline Value Atpg::cOR4(const Value &i1, const Value &i2, const Value &i3, const Value &i4)
 	{
-		if (i1 >= Z || i2 >= Z || i3 >= Z || i4 >= Z)
-		{
-			return Z;
-		}
-		return orMap[orMap[i1][i2]][orMap[i3][i4]];
+		return cOR2(cOR2(i1, i2), cOR2(i3, i4));
 	}
 	inline Value Atpg::cNOR2(const Value &i1, const Value &i2)
 	{
-		if (i1 >= Z || i2 >= Z)
-		{
-			return Z;
-		}
-		return invMap[orMap[i1][i2]];
+		return cINV(cOR2(i1, i2));
 	}
 	inline Value Atpg::cNOR3(const Value &i1, const Value &i2, const Value &i3)
 	{
-		if (i1 >= Z || i2 >= Z || i3 >= Z)
-		{
-			return Z;
-		}
-		return invMap[orMap[i1][orMap[i2][i3]]];
+		return cINV(cOR3(i1, i2, i3));
 	}
 	inline Value Atpg::cNOR4(const Value &i1, const Value &i2, const Value &i3, const Value &i4)
 	{
-		if (i1 >= Z || i2 >= Z || i3 >= Z || i4 >= Z)
-		{
-			return Z;
-		}
-		return invMap[orMap[orMap[i1][i2]][orMap[i3][i4]]];
+		return cINV(cOR4(i1, i2, i3, i4));
 	}
 	inline Value Atpg::cXOR2(const Value &i1, const Value &i2)
 	{
+		constexpr Value map[5][5] = {
+				{L, H, X, D, B},
+				{H, L, X, B, D},
+				{X, X, X, X, X},
+				{D, B, X, L, H},
+				{B, D, X, H, L}};
 		if (i1 >= Z || i2 >= Z)
 		{
 			return Z;
 		}
-		return xorMap[i1][i2];
+		return map[i1][i2];
 	}
 	inline Value Atpg::cXOR3(const Value &i1, const Value &i2, const Value &i3)
 	{
-		if (i1 >= Z || i2 >= Z || i3 >= Z)
-		{
-			return Z;
-		}
-		return xorMap[i1][xorMap[i2][i3]];
+		return cXOR2(i1, cXOR2(i2, i3));
 	}
 	inline Value Atpg::cXNOR2(const Value &i1, const Value &i2)
 	{
-		if (i1 >= Z || i2 >= Z)
-		{
-			return Z;
-		}
-		return invMap[xorMap[i1][i2]];
+		return cINV(cXOR2(i1, i2));
 	}
 	inline Value Atpg::cXNOR3(const Value &i1, const Value &i2, const Value &i3)
 	{
-		if (i1 >= Z || i2 >= Z || i3 >= Z)
-		{
-			return Z;
-		}
-		return invMap[xorMap[i1][xorMap[i2][i3]]];
+		return cINV(cXOR3(i1, i2, i3));
 	}
 
 	// should be moved to pattern.h
