@@ -1,7 +1,7 @@
 // **************************************************************************
 // File       [ fault.h ]
 // Author     [ littleshamoo ]
-// Synopsis   [ ]
+// Synopsis   [ this file defines the faults ]
 // Date       [ 2011/10/04 created ]
 // **************************************************************************
 
@@ -10,7 +10,6 @@
 
 #include <vector> //added by pan
 #include <list>
-
 #include "circuit.h"
 
 namespace CoreNs
@@ -87,7 +86,7 @@ namespace CoreNs
 		FaultListExtract();
 		~FaultListExtract();
 
-		void extractFaultFromCircuit(Circuit *circuit); // cir => circuit, modified by pan
+		void extractFaultFromCircuit(Circuit *pCircuit); // cir => circuit, modified by pan
 
 		std::vector<int> gateIndexToFaultIndex_; // map gate index to fault list index. int* => std::vector<int>, gateToFault => gateIndexToFaultIndex, modified by pan
 		std::vector<Fault> uncollapsedFaults_;	 // record faults without fault collapsing, used for adding part of faults in atpg_cmd.cpp
