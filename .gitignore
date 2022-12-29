@@ -1,6 +1,3 @@
 .vscode/*
-*bin*
-*lib*
-*pat*
 makefile_output.txt
 profiler.txt
