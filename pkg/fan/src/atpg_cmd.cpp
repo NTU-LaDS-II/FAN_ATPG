@@ -344,7 +344,7 @@ bool AddFaultCmd::addPinFault(const std::string &type, const std::string &pin)
 		std::cerr << pin << "' does not exist\n";
 		return false;
 	}
-	int gid = fanMgr_->cir->portToGate_[p->id_];
+	int gid = fanMgr_->cir->portIndexToGateIndex_[p->id_];
 	int offset = (type == "SA0" || type == "STR") ? 0 : 1;
 	int fid = fanMgr_->fListExtract->gateIndexToFaultIndex_[gid] + offset;
 	Fault *f = &fanMgr_->fListExtract->extractedFaults_[fid];
@@ -380,7 +380,7 @@ bool AddFaultCmd::addCellFault(const std::string &type, const std::string &cell,
 		}
 		Cell *pmt = (*it)->top_;
 		int pmtid = pmt->id_;
-		int gid = fanMgr_->cir->cellToGate_[c->id_] + pmtid;
+		int gid = fanMgr_->cir->cellIndexToGateIndex_[c->id_] + pmtid;
 		int pid = 0;
 		if ((*it)->type_ == Port::INPUT)
 		{
@@ -545,9 +545,9 @@ bool ReportFaultCmd::exec(const std::vector<std::string> &argv)
 				std::cout << " AB     ";
 				break;
 		}
-		int cid = fanMgr_->cir->gates_[(*it)->gateID_].cellId_;
+		int cid = fanMgr_->cir->circuitGates_[(*it)->gateID_].cellId_;
 		int pid = (*it)->faultyLine_;
-		int pmtid = fanMgr_->cir->gates_[(*it)->gateID_].primitiveId_;
+		int pmtid = fanMgr_->cir->circuitGates_[(*it)->gateID_].primitiveId_;
 		if ((*it)->gateID_ == -1)
 		{ // CK
 			std::cout << "CK";
@@ -564,12 +564,12 @@ bool ReportFaultCmd::exec(const std::vector<std::string> &argv)
 		{ // test_se
 			std::cout << "test_se";
 		}
-		else if (fanMgr_->cir->gates_[(*it)->gateID_].gateType_ == Gate::PI)
+		else if (fanMgr_->cir->circuitGates_[(*it)->gateID_].gateType_ == Gate::PI)
 		{
 			std::cout << fanMgr_->nl->getTop()->getPort(cid)->name_ << " ";
 			std::cout << "(primary input)";
 		}
-		else if (fanMgr_->cir->gates_[(*it)->gateID_].gateType_ == Gate::PO)
+		else if (fanMgr_->cir->circuitGates_[(*it)->gateID_].gateType_ == Gate::PO)
 		{
 			std::cout << fanMgr_->nl->getTop()->getPort(cid)->name_ << " ";
 			std::cout << "(primary output)";
@@ -714,15 +714,15 @@ bool ReportCircuitCmd::exec(const std::vector<std::string> &argv)
 		return false;
 	}
 
-	Cell *top = fanMgr_->cir->nl_->getTop();
+	Cell *top = fanMgr_->cir->pNetlist_->getTop();
 	std::cout << "#  circuit information\n";
 	std::cout << "#    netlist:         " << top->name_ << "\n";
-	std::cout << "#    number of PIs:   " << fanMgr_->cir->npi_ << "\n";
-	std::cout << "#    number of PPIs:  " << fanMgr_->cir->nppi_ << "\n";
-	std::cout << "#    number of POs:   " << fanMgr_->cir->npo_ << "\n";
-	std::cout << "#    number of combs: " << fanMgr_->cir->ncomb_ << "\n";
-	std::cout << "#    number of gates: " << fanMgr_->cir->ngate_ << "\n";
-	std::cout << "#    number of nets:  " << fanMgr_->cir->nnet_ << "\n";
+	std::cout << "#    number of PIs:   " << fanMgr_->cir->numPI_ << "\n";
+	std::cout << "#    number of PPIs:  " << fanMgr_->cir->numPPI_ << "\n";
+	std::cout << "#    number of POs:   " << fanMgr_->cir->numPO_ << "\n";
+	std::cout << "#    number of combs: " << fanMgr_->cir->numComb_ << "\n";
+	std::cout << "#    number of gates: " << fanMgr_->cir->numGate_ << "\n";
+	std::cout << "#    number of nets:  " << fanMgr_->cir->numNet_ << "\n";
 
 	return true;
 }
@@ -760,7 +760,7 @@ bool ReportGateCmd::exec(const std::vector<std::string> &argv)
 
 	if (optMgr_.getNParsedArg() == 0)
 	{
-		for (int i = 0; i < fanMgr_->cir->ngate_ * fanMgr_->cir->nframe_; ++i)
+		for (int i = 0; i < fanMgr_->cir->numGate_ * fanMgr_->cir->numFrame_; ++i)
 		{
 			reportGate(i);
 		}
@@ -775,13 +775,13 @@ bool ReportGateCmd::exec(const std::vector<std::string> &argv)
 			{
 				for (int j = 0; j < c->libc_->getNCell(); ++j)
 				{
-					reportGate(fanMgr_->cir->cellToGate_[c->id_] + j);
+					reportGate(fanMgr_->cir->cellIndexToGateIndex_[c->id_] + j);
 				}
 			}
 			Port *p = fanMgr_->nl->getTop()->getPort(name.c_str());
 			if (p)
 			{
-				reportGate(fanMgr_->cir->portToGate_[p->id_]);
+				reportGate(fanMgr_->cir->portIndexToGateIndex_[p->id_]);
 			}
 			if (!c && !p)
 			{
@@ -795,7 +795,7 @@ bool ReportGateCmd::exec(const std::vector<std::string> &argv)
 
 void ReportGateCmd::reportGate(const int &i) const
 {
-	Gate *g = &fanMgr_->cir->gates_[i];
+	Gate *g = &fanMgr_->cir->circuitGates_[i];
 	std::cout << "#  ";
 	if (g->gateType_ == Gate::PI || g->gateType_ == Gate::PO)
 	{
@@ -857,7 +857,7 @@ bool ReportValueCmd::exec(const std::vector<std::string> &argv)
 
 	if (optMgr_.getNParsedArg() == 0)
 	{
-		for (int i = 0; i < fanMgr_->cir->tgate_; ++i)
+		for (int i = 0; i < fanMgr_->cir->totalGate_; ++i)
 		{
 			reportValue(i);
 		}
@@ -872,13 +872,13 @@ bool ReportValueCmd::exec(const std::vector<std::string> &argv)
 			{
 				for (int j = 0; j < c->libc_->getNCell(); ++j)
 				{
-					reportValue(fanMgr_->cir->cellToGate_[c->id_] + j);
+					reportValue(fanMgr_->cir->cellIndexToGateIndex_[c->id_] + j);
 				}
 			}
 			Port *p = fanMgr_->nl->getTop()->getPort(name.c_str());
 			if (p)
 			{
-				reportValue(fanMgr_->cir->portToGate_[p->id_]);
+				reportValue(fanMgr_->cir->portIndexToGateIndex_[p->id_]);
 			}
 			if (!c && !p)
 			{
@@ -892,7 +892,7 @@ bool ReportValueCmd::exec(const std::vector<std::string> &argv)
 
 void ReportValueCmd::reportValue(const int &i) const
 {
-	Gate *g = &fanMgr_->cir->gates_[i];
+	Gate *g = &fanMgr_->cir->circuitGates_[i];
 	std::cout << "#  ";
 	if (g->gateType_ == Gate::PI || g->gateType_ == Gate::PO)
 	{
@@ -1121,21 +1121,21 @@ bool AddPinConsCmd::exec(const std::vector<std::string> &argv)
 			std::cerr << "' not found\n";
 			continue;
 		}
-		int gid = fanMgr_->cir->portToGate_[p->id_];
-		if (fanMgr_->cir->gates_[gid].gateType_ != Gate::PI)
+		int gid = fanMgr_->cir->portIndexToGateIndex_[p->id_];
+		if (fanMgr_->cir->circuitGates_[gid].gateType_ != Gate::PI)
 		{
 			std::cerr << "**ERROR AddPinConsCmd::exec(): Port `" << piname;
 			std::cerr << "' is not PI\n";
 			continue;
 		}
-		fanMgr_->cir->gates_[gid].hasConstraint_ = true;
+		fanMgr_->cir->circuitGates_[gid].hasConstraint_ = true;
 		if (cons)
 		{
-			fanMgr_->cir->gates_[gid].constraint_ = PARA_H;
+			fanMgr_->cir->circuitGates_[gid].constraint_ = PARA_H;
 		}
 		else
 		{
-			fanMgr_->cir->gates_[gid].constraint_ = PARA_L;
+			fanMgr_->cir->circuitGates_[gid].constraint_ = PARA_L;
 		}
 	}
 	return true;

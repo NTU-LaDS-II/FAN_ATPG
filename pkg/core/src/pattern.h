@@ -36,14 +36,14 @@ namespace CoreNs
 		inline void initForTransitionDelayFault(Circuit *pCircuit);
 	};
 	inline Pattern::Pattern(Circuit *pCircuit)
-			: primaryInputs1st_(pCircuit->npi_),
-				pseudoPrimaryInputs_(pCircuit->nppi_),
-				primaryOutputs1st_(pCircuit->npo_),
-				pseudoPrimaryOutputs_(pCircuit->nppi_){};
+			: primaryInputs1st_(pCircuit->numPI_),
+				pseudoPrimaryInputs_(pCircuit->numPPI_),
+				primaryOutputs1st_(pCircuit->numPO_),
+				pseudoPrimaryOutputs_(pCircuit->numPPI_){};
 	inline void Pattern::initForTransitionDelayFault(Circuit *pCircuit)
 	{
-		primaryInputs2nd_.resize(pCircuit->npi_);
-		primaryOutputs2nd_.resize(pCircuit->npo_);
+		primaryInputs2nd_.resize(pCircuit->numPI_);
+		primaryOutputs2nd_.resize(pCircuit->numPO_);
 		shiftIn_.resize(1);
 	}
 
@@ -123,9 +123,9 @@ namespace CoreNs
 		pPPIorder_.clear();
 		pPOorder_.clear();
 
-		numPI_ = pCircuit->npi_;
-		numPO_ = pCircuit->npo_;
-		numPPI_ = pCircuit->nppi_;
+		numPI_ = pCircuit->numPI_;
+		numPO_ = pCircuit->numPO_;
+		numPPI_ = pCircuit->numPPI_;
 
 		pPIorder_.resize(numPI_);
 		for (int i = 0; i < numPI_; ++i)
@@ -136,13 +136,13 @@ namespace CoreNs
 		pPOorder_.resize(numPO_);
 		for (int i = 0; i < numPO_; ++i)
 		{
-			pPOorder_[i] = pCircuit->ngate_ - pCircuit->npo_ - pCircuit->nppi_ + i;
+			pPOorder_[i] = pCircuit->numGate_ - pCircuit->numPO_ - pCircuit->numPPI_ + i;
 		}
 
 		pPPIorder_.resize(numPPI_);
 		for (int i = 0; i < numPPI_; ++i)
 		{
-			pPPIorder_[i] = pCircuit->npi_ + i;
+			pPPIorder_[i] = pCircuit->numPI_ + i;
 		}
 	}
 

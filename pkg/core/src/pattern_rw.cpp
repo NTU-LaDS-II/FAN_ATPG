@@ -22,7 +22,7 @@ void PatternReader::setPiOrder(const PatNames *const pis)
 		return;
 	}
 
-	if (!cir_ || !cir_->nl_)
+	if (!cir_ || !cir_->pNetlist_)
 	{
 		success_ = false;
 		return;
@@ -42,7 +42,7 @@ void PatternReader::setPiOrder(const PatNames *const pis)
 	int i = 0;
 	while (pi)
 	{
-		Port *p = cir_->nl_->getTop()->getPort(pi->name);
+		Port *p = cir_->pNetlist_->getTop()->getPort(pi->name);
 		if (!p)
 		{
 			fprintf(stderr, "**ERROR PatternReader::setPiOrder(): port ");
@@ -53,7 +53,7 @@ void PatternReader::setPiOrder(const PatNames *const pis)
 			pcoll_->pPIorder_.clear();
 			return;
 		}
-		pcoll_->pPIorder_[i] = cir_->portToGate_[p->id_];
+		pcoll_->pPIorder_[i] = cir_->portIndexToGateIndex_[p->id_];
 		++i;
 		pi = pi->next;
 	}
@@ -66,7 +66,7 @@ void PatternReader::setPpiOrder(const PatNames *const ppis)
 		return;
 	}
 
-	if (!cir_ || !cir_->nl_)
+	if (!cir_ || !cir_->pNetlist_)
 	{
 		success_ = false;
 		return;
@@ -86,7 +86,7 @@ void PatternReader::setPpiOrder(const PatNames *const ppis)
 	int i = 0;
 	while (ppi)
 	{
-		Cell *c = cir_->nl_->getTop()->getCell(ppi->name);
+		Cell *c = cir_->pNetlist_->getTop()->getCell(ppi->name);
 		if (!c)
 		{
 			fprintf(stderr, "**ERROR PatternReader::setPpiOrder(): gate ");
@@ -97,7 +97,7 @@ void PatternReader::setPpiOrder(const PatNames *const ppis)
 			pcoll_->pPPIorder_.clear();
 			return;
 		}
-		pcoll_->pPPIorder_[i] = cir_->cellToGate_[c->id_];
+		pcoll_->pPPIorder_[i] = cir_->cellIndexToGateIndex_[c->id_];
 		++i;
 		ppi = ppi->next;
 	}
@@ -110,7 +110,7 @@ void PatternReader::setPoOrder(const PatNames *const pos)
 		return;
 	}
 
-	if (!cir_ || !cir_->nl_)
+	if (!cir_ || !cir_->pNetlist_)
 	{
 		success_ = false;
 		return;
@@ -129,7 +129,7 @@ void PatternReader::setPoOrder(const PatNames *const pos)
 	int i = 0;
 	while (po)
 	{
-		Port *p = cir_->nl_->getTop()->getPort(po->name);
+		Port *p = cir_->pNetlist_->getTop()->getPort(po->name);
 		if (!p)
 		{
 			fprintf(stderr, "**ERROR PatternReader::setPoOrder(): port ");
@@ -140,7 +140,7 @@ void PatternReader::setPoOrder(const PatNames *const pos)
 			pcoll_->pPOorder_.clear();
 			return;
 		}
-		pcoll_->pPOorder_[i] = cir_->portToGate_[p->id_];
+		pcoll_->pPOorder_[i] = cir_->portIndexToGateIndex_[p->id_];
 		++i;
 		po = po->next;
 	}
@@ -273,25 +273,25 @@ bool PatternWriter::writePat(const char *const fname)
 		return false;
 	}
 
-	for (int i = 0; i < cir_->npi_; ++i)
+	for (int i = 0; i < cir_->numPI_; ++i)
 	{
 		fprintf(fout, "%s ",
-						cir_->nl_->getTop()->getPort(cir_->gates_[i].cellId_)->name_);
+						cir_->pNetlist_->getTop()->getPort(cir_->circuitGates_[i].cellId_)->name_);
 	}
 	fprintf(fout, " |\n");
 
-	for (int i = cir_->npi_; i < cir_->npi_ + cir_->nppi_; ++i)
+	for (int i = cir_->numPI_; i < cir_->numPI_ + cir_->numPPI_; ++i)
 	{
 		fprintf(fout, "%s ",
-						cir_->nl_->getTop()->getCell(cir_->gates_[i].cellId_)->name_);
+						cir_->pNetlist_->getTop()->getCell(cir_->circuitGates_[i].cellId_)->name_);
 	}
 	fprintf(fout, " |\n");
 
-	int start = cir_->npi_ + cir_->nppi_ + cir_->ncomb_;
-	for (int i = start; i < start + cir_->npo_; ++i)
+	int start = cir_->numPI_ + cir_->numPPI_ + cir_->numComb_;
+	for (int i = start; i < start + cir_->numPO_; ++i)
 	{
 		fprintf(fout, "%s ",
-						cir_->nl_->getTop()->getPort(cir_->gates_[i].cellId_)->name_);
+						cir_->pNetlist_->getTop()->getPort(cir_->circuitGates_[i].cellId_)->name_);
 	}
 	fprintf(fout, "\n");
 
@@ -550,21 +550,21 @@ bool PatternWriter::writeAscii(const char *const fname)
 	// input
 	fprintf(fout, "declare input bus \"PI\" = ");
 	// fprintf(fout, "\"/CK\", \"/test_si\", \"/test_se\"");
-	for (size_t i = 0; i < cir_->nl_->getTop()->getNPort(); ++i)
+	for (size_t i = 0; i < cir_->pNetlist_->getTop()->getNPort(); ++i)
 	{
-		Port *p = cir_->nl_->getTop()->getPort(i);
+		Port *p = cir_->pNetlist_->getTop()->getPort(i);
 		if (p->type_ != Port::INPUT)
 			continue;
 		if (first_flag)
 		{
 			fprintf(fout, "\"/%s\"",
-							cir_->nl_->getTop()->getPort(i)->name_);
+							cir_->pNetlist_->getTop()->getPort(i)->name_);
 			first_flag = 0;
 		}
 		else
 		{
 			fprintf(fout, ", \"/%s\"",
-							cir_->nl_->getTop()->getPort(i)->name_);
+							cir_->pNetlist_->getTop()->getPort(i)->name_);
 		}
 		if (!strcmp(p->name_, "CK"))
 			seqCircuitCheck = 1;
@@ -573,21 +573,21 @@ bool PatternWriter::writeAscii(const char *const fname)
 	first_flag = 1;
 	// output
 	fprintf(fout, "declare output bus \"PO\" = ");
-	for (size_t i = 0; i < cir_->nl_->getTop()->getNPort(); ++i)
+	for (size_t i = 0; i < cir_->pNetlist_->getTop()->getNPort(); ++i)
 	{
-		Port *p = cir_->nl_->getTop()->getPort(i);
+		Port *p = cir_->pNetlist_->getTop()->getPort(i);
 		if (p->type_ != Port::OUTPUT)
 			continue;
 		if (first_flag)
 		{
 			fprintf(fout, "\"/%s\"",
-							cir_->nl_->getTop()->getPort(i)->name_);
+							cir_->pNetlist_->getTop()->getPort(i)->name_);
 			first_flag = 0;
 		}
 		else
 		{
 			fprintf(fout, ", \"/%s\"",
-							cir_->nl_->getTop()->getPort(i)->name_);
+							cir_->pNetlist_->getTop()->getPort(i)->name_);
 		}
 	}
 	fprintf(fout, ";\n");
@@ -612,7 +612,7 @@ bool PatternWriter::writeAscii(const char *const fname)
 		fprintf(fout, "    scan_chain \"chain1\" =\n");
 		fprintf(fout, "    scan_in = \"/test_si\";\n");
 		fprintf(fout, "    scan_out = \"/test_so\";\n");
-		fprintf(fout, "    length = %d;\n", cir_->nppi_);
+		fprintf(fout, "    length = %d;\n", cir_->numPPI_);
 		fprintf(fout, "    end;\n");
 
 		fprintf(fout, "    procedure shift \"group1_load_shift\" =\n");
@@ -633,14 +633,14 @@ bool PatternWriter::writeAscii(const char *const fname)
 		fprintf(fout, "    force \"/CK\" 0 0;\n");
 		fprintf(fout, "    force \"/test_se\" 1 0;\n");
 		fprintf(fout, "    force \"/test_si\" 0 0;\n");
-		fprintf(fout, "    apply \"group1_load_shift\" %d 32;\n", cir_->nppi_);
+		fprintf(fout, "    apply \"group1_load_shift\" %d 32;\n", cir_->numPPI_);
 		fprintf(fout, "    end;\n");
 
 		fprintf(fout, "    procedure unload \"group1_unload\" =\n");
 		fprintf(fout, "    force \"/CK\" 0 0;\n");
 		fprintf(fout, "    force \"/test_se\" 1 0;\n");
 		fprintf(fout, "    force \"/test_si\" 0 0;\n");
-		fprintf(fout, "    apply \"group1_unload_shift\" %d 32;\n", cir_->nppi_);
+		fprintf(fout, "    apply \"group1_unload_shift\" %d 32;\n", cir_->numPPI_);
 		fprintf(fout, "    end;\n");
 
 		fprintf(fout, "end;\n");
@@ -783,11 +783,11 @@ bool PatternWriter::writeAscii(const char *const fname)
 		fprintf(fout, "SCAN_CELLS =\n");
 		fprintf(fout, "scan_group \"group1\" =\n");
 		fprintf(fout, "scan_chain \"chain1\" =\n");
-		for (int i = cir_->npi_ + cir_->nppi_ - 1; i >= cir_->npi_; --i)
+		for (int i = cir_->numPI_ + cir_->numPPI_ - 1; i >= cir_->numPI_; --i)
 		{
 			fprintf(fout,
 							"scan_cell = %d MASTER FFFF \"/%s\" \"I1\" \"SI\" \"Q\";\n",
-							cir_->npi_ + cir_->nppi_ - 1 - i, cir_->nl_->getTop()->getCell(cir_->gates_[i].cellId_)->name_);
+							cir_->numPI_ + cir_->numPPI_ - 1 - i, cir_->pNetlist_->getTop()->getCell(cir_->circuitGates_[i].cellId_)->name_);
 		}
 
 		fprintf(fout, "end;\n");
@@ -820,20 +820,20 @@ bool PatternWriter::writeSTIL(const char *const fname)
 	PI_Order.push_back("test_se");
 	PO_Order.push_back("test_so");
 
-	for (int i = 0; i < cir_->npi_; ++i)
+	for (int i = 0; i < cir_->numPI_; ++i)
 	{
-		PI_Order.push_back(cir_->nl_->getTop()->getPort(cir_->gates_[i].cellId_)->name_);
+		PI_Order.push_back(cir_->pNetlist_->getTop()->getPort(cir_->circuitGates_[i].cellId_)->name_);
 	}
 
-	for (int i = cir_->npi_; i < cir_->npi_ + cir_->nppi_; ++i)
+	for (int i = cir_->numPI_; i < cir_->numPI_ + cir_->numPPI_; ++i)
 	{
-		SCAN_Order.push_back(cir_->nl_->getTop()->getCell(cir_->gates_[i].cellId_)->name_);
+		SCAN_Order.push_back(cir_->pNetlist_->getTop()->getCell(cir_->circuitGates_[i].cellId_)->name_);
 	}
 
-	int start = cir_->npi_ + cir_->nppi_ + cir_->ncomb_;
-	for (int i = start; i < start + cir_->npo_; ++i)
+	int start = cir_->numPI_ + cir_->numPPI_ + cir_->numComb_;
+	for (int i = start; i < start + cir_->numPO_; ++i)
 	{
-		PO_Order.push_back(cir_->nl_->getTop()->getPort(cir_->gates_[i].cellId_)->name_);
+		PO_Order.push_back(cir_->pNetlist_->getTop()->getPort(cir_->circuitGates_[i].cellId_)->name_);
 	}
 
 	std::cout << "PI_ORDER ";
@@ -1177,7 +1177,7 @@ bool ProcedureWriter::writeProc(const char *const fname)
 	fprintf(fout, "force test_si 0 ;\n");
 	fprintf(fout, "measure_sco ;\n");
 	fprintf(fout, "end ;\n");
-	fprintf(fout, "apply shift %d;\n", cir_->nppi_);
+	fprintf(fout, "apply shift %d;\n", cir_->numPPI_);
 	fprintf(fout, "end;\n");
 	fprintf(fout, "procedure test_setup =\n");
 	fprintf(fout, "timeplate _default_WFT_ ;\n");

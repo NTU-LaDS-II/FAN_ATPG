@@ -1,7 +1,7 @@
 // **************************************************************************
 // File       [ circuit.h ]
 // Author     [ littleshamoo ]
-// Synopsis   [ ]
+// Synopsis   [ this file define the circuits ]
 // Date       [ 2010/12/29 created ]
 // **************************************************************************
 
@@ -9,9 +9,7 @@
 #define _CORE_CIRCUIT_H_
 
 #include <set>
-
 #include "interface/netlist.h"
-
 #include "gate.h"
 
 namespace CoreNs
@@ -20,36 +18,36 @@ namespace CoreNs
 	class Circuit
 	{
 	public:
-		inline Circuit();
-		// ~Circuit();
-
 		// specify how to connect multiple time frames of circuits
 		// CAPTURE means Launch-on-capture;  SHIFT means launch-on-shift
-		enum tfConnectType
+		enum TIME_FRAME_CONNECT_TYPE
 		{
 			CAPTURE = 0,
 			SHIFT
 		};
 
-		// build circuit from netlist
-		bool build(IntfNs::Netlist *const nl, const int &nframe = 1,
-							 const tfConnectType &type = CAPTURE);
+		inline Circuit();
+		// ~Circuit();
+
+		// buildCircuit circuit from netlist
+		bool buildCircuit(IntfNs::Netlist *const pNetlist, const int &numFrame = 1,
+											const TIME_FRAME_CONNECT_TYPE &timeFrameConnectType = CAPTURE);
 
 		// info for one time frame
-		IntfNs::Netlist *nl_; // corresponding netlist
-		int npi_;							// number of PIs
-		int nppi_;						// number of PPIs
-		int npo_;							// number of POs
-		int ncomb_;						// number of combinational gates
-		int ngate_;						// number of gates
-		int nnet_;						// number of nets
-		int lvl_;							// circuit level, starting from inputs
+		IntfNs::Netlist *pNetlist_; // corresponding netlist
+		int numPI_;									// number of PIs
+		int numPPI_;								// number of PPIs
+		int numPO_;									// number of POs
+		int numComb_;								// number of combinational gates
+		int numGate_;								// number of gates
+		int numNet_;								// number of nets
+		int circuitLvl_;						// circuit level, starting from inputs
 
 		// info for multiple time frames
-		int nframe_;						 // number of time frame
-		tfConnectType connType_; // time frame connection type
-		int tgate_;							 // number of total gates
-		int tlvl_;							 // total level
+		int numFrame_;																 // number of time frame
+		TIME_FRAME_CONNECT_TYPE timeFrameConnectType_; // time frame connection type
+		int totalGate_;																 // number of total gates
+		int totalLvl_;																 // total level
 
 		// structure
 		// **********************************************************************
@@ -59,13 +57,13 @@ namespace CoreNs
 		// |--- ---- ---- --- ----|--- ---- ---- --- ----|     |--- ---- ----
 		// **********************************************************************
 		// Gate *gates_; // gate array
-		std::vector<Gate> gates_;
+		std::vector<Gate> circuitGates_;
 		// int             *fis_;        // fanin net array
 		// int             *fos_;        // fanout net array
 		// std::vector<int> fis_;
 		// std::vector<int> fos_;
-		std::vector<int> cellToGate_; // map cells in netlist to gates
-		std::vector<int> portToGate_; // map ports in netlist to gates
+		std::vector<int> cellIndexToGateIndex_; // map cells in netlist to gates
+		std::vector<int> portIndexToGateIndex_; // map ports in netlist to gates
 
 	protected:
 		// for circuit building
@@ -88,28 +86,28 @@ namespace CoreNs
 
 	inline Circuit::Circuit()
 	{
-		nl_ = NULL;
-		npi_ = 0;
-		nppi_ = 0;
-		npo_ = 0;
-		ncomb_ = 0;
-		ngate_ = 0;
-		nnet_ = 0;
-		lvl_ = -1;
-		nframe_ = 1;
-		connType_ = CAPTURE;
-		// gates_ = NULL;
-		// cellToGate_ = NULL;
-		// portToGate_ = NULL;
+		pNetlist_ = NULL;
+		numPI_ = 0;
+		numPPI_ = 0;
+		numPO_ = 0;
+		numComb_ = 0;
+		numGate_ = 0;
+		numNet_ = 0;
+		circuitLvl_ = -1;
+		numFrame_ = 1;
+		timeFrameConnectType_ = CAPTURE;
+		// circuitGates_ = NULL;
+		// cellIndexToGateIndex_ = NULL;
+		// portIndexToGateIndex_ = NULL;
 	}
 
 	// inline Circuit::~Circuit()
 	// {
-	// 	// delete[] gates_;
+	// 	// delete[] circuitGates_;
 	// 	// delete[] fis_;
 	// 	// delete[] fos_;
-	// 	// delete[] cellToGate_;
-	// 	// delete[] portToGate_;
+	// 	// delete[] cellIndexToGateIndex_;
+	// 	// delete[] portIndexToGateIndex_;
 	// }
 
 };

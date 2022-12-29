@@ -11,42 +11,42 @@ using namespace IntfNs;
 using namespace CoreNs;
 
 // map the circuit to our data structure
-bool Circuit::build(Netlist *const nl, const int &nframe,
-										const tfConnectType &type)
+bool Circuit::buildCircuit(Netlist *const pNetlist, const int &numFrame,
+													 const TIME_FRAME_CONNECT_TYPE &timeFrameConnectType)
 {
-	nframe_ = nframe;
-	Cell *top = nl->getTop();
+	numFrame_ = numFrame;
+	Cell *top = pNetlist->getTop();
 	if (!top)
 	{
-		std::cerr << "**ERROR Circuit::build(): no top module set\n";
+		std::cerr << "**ERROR Circuit::buildCircuit(): no top module set\n";
 		return false;
 	}
-	Techlib *lib = nl->getTechlib();
+	Techlib *lib = pNetlist->getTechlib();
 	if (!lib)
 	{
-		std::cerr << "**ERROR Circuit::build(): no technology library\n";
+		std::cerr << "**ERROR Circuit::buildCircuit(): no technology library\n";
 		return false;
 	}
-	nl_ = nl;
-	nframe_ = nframe;
-	connType_ = type;
+	pNetlist_ = pNetlist;
+	numFrame_ = numFrame;
+	timeFrameConnectType_ = timeFrameConnectType;
 
 	// levelize
-	nl->levelize();
+	pNetlist->levelize();
 	lib->levelize();
 
 	// map netlist to circuit
 	createMap();
 
 	// allocate gate memory
-	// gates_ = new Gate[ngate_ * nframe];
-	// gates_.clear();
-	// gates_ = std::vector<Gate>(ngate_ * nframe);
-	gates_.resize(ngate_ * nframe);
-	// fis_ = new int[nnet_ * nframe + nppi_ * (nframe - 1)];
-	// fos_ = new int[nnet_ * nframe + nppi_ * (nframe - 1)];
-	// fis_.resize(nnet_ * nframe + nppi_ * (nframe - 1));
-	// fos_.resize(nnet_ * nframe + nppi_ * (nframe - 1));
+	// circuitGates_ = new Gate[numGate_ * numFrame];
+	// circuitGates_.clear();
+	// circuitGates_ = std::vector<Gate>(numGate_ * numFrame);
+	circuitGates_.resize(numGate_ * numFrame);
+	// fis_ = new int[numNet_ * numFrame + numPPI_ * (numFrame - 1)];
+	// fos_ = new int[numNet_ * numFrame + numPPI_ * (numFrame - 1)];
+	// fis_.resize(numNet_ * numFrame + numPPI_ * (numFrame - 1));
+	// fos_.resize(numNet_ * numFrame + numPPI_ * (numFrame - 1));
 	// create gates
 	createGate();
 	connectFrame(); // for multiple time frames
@@ -77,13 +77,13 @@ void Circuit::createMap()
 // calculate total number of gates
 void Circuit::calNgate()
 {
-	Cell *top = nl_->getTop();
-	Techlib *lib = nl_->getTechlib();
+	Cell *top = pNetlist_->getTop();
+	Techlib *lib = pNetlist_->getTechlib();
 
-	ngate_ = 0; // number of gates
+	numGate_ = 0; // number of gates
 	// map PI to pseudo gates
-	portToGate_.resize(top->getNPort());
-	npi_ = 0;
+	portIndexToGateIndex_.resize(top->getNPort());
+	numPI_ = 0;
 	for (int i = 0; i < top->getNPort(); ++i)
 	{
 		Port *p = top->getPort(i);
@@ -96,34 +96,34 @@ void Circuit::calNgate()
 		{
 			continue;
 		}
-		portToGate_[i] = npi_;
-		++ngate_;
-		++npi_;
+		portIndexToGateIndex_[i] = numPI_;
+		++numGate_;
+		++numPI_;
 	}
 
 	// map cell to gates
 	// a single cell can have more than one gate in it
-	nppi_ = 0;
-	cellToGate_.resize(top->getNCell());
+	numPPI_ = 0;
+	cellIndexToGateIndex_.resize(top->getNCell());
 	for (int i = 0; i < top->getNCell(); ++i)
 	{
-		cellToGate_[i] = ngate_;
+		cellIndexToGateIndex_[i] = numGate_;
 		if (lib->hasPmt(top->getCell(i)->libc_->id_, Pmt::DFF))
 		{
-			++nppi_;
-			++ngate_;
+			++numPPI_;
+			++numGate_;
 		}
 		else
 		{
-			ngate_ += top->getCell(i)->libc_->getNCell();
+			numGate_ += top->getCell(i)->libc_->getNCell();
 		}
 	}
 
 	// calculate combinational gates
-	ncomb_ = ngate_ - npi_ - nppi_;
+	numComb_ = numGate_ - numPI_ - numPPI_;
 
 	// map PO to pseudo gates
-	npo_ = 0;
+	numPO_ = 0;
 	for (int i = 0; i < top->getNPort(); ++i)
 	{
 		if (top->getPort(i)->type_ == Port::OUTPUT)
@@ -132,23 +132,23 @@ void Circuit::calNgate()
 			{
 				continue;
 			}
-			portToGate_[i] = ngate_;
-			++ngate_;
-			++npo_;
+			portIndexToGateIndex_[i] = numGate_;
+			++numGate_;
+			++numPO_;
 		}
 	}
 
 	// calculate PPO
-	ngate_ += nppi_;
+	numGate_ += numPPI_;
 }
 
 // calculate number of nets
 void Circuit::calNnet()
 {
-	Cell *top = nl_->getTop();
-	Techlib *lib = nl_->getTechlib();
+	Cell *top = pNetlist_->getTop();
+	Techlib *lib = pNetlist_->getTechlib();
 
-	nnet_ = 0;
+	numNet_ = 0;
 
 	for (int i = 0; i < top->getNNet(); ++i)
 	{
@@ -166,7 +166,7 @@ void Circuit::calNnet()
 		}
 		if (smallest)
 		{
-			nnet_ += nports - 1;
+			numNet_ += nports - 1;
 		}
 	}
 
@@ -176,7 +176,7 @@ void Circuit::calNnet()
 		Cell *c = top->getCell(i);
 		if (!lib->hasPmt(c->typeName_, Pmt::DFF))
 		{
-			nnet_ += c->libc_->getNNet() - c->libc_->getNPort();
+			numNet_ += c->libc_->getNNet() - c->libc_->getNPort();
 		}
 	}
 }
@@ -203,7 +203,7 @@ void Circuit::createGate()
 
 void Circuit::createPi(int &nfo)
 {
-	Cell *top = nl_->getTop();
+	Cell *top = pNetlist_->getTop();
 
 	for (int i = 0; i < top->getNPort(); ++i)
 	{
@@ -212,73 +212,73 @@ void Circuit::createPi(int &nfo)
 		{
 			continue;
 		}
-		int id = portToGate_[i];
+		int id = portIndexToGateIndex_[i];
 		if (p->type_ != Port::INPUT || id < 0)
 		{
 			continue;
 		}
-		gates_[id].gateId_ = id;
-		gates_[id].cellId_ = i;
-		gates_[id].primitiveId_ = 0;
-		gates_[id].numLevel_ = 0;
-		gates_[id].gateType_ = Gate::PI;
-		// gates_.emplace_back(id, i, 0, 0, Gate::PI);
-		gates_[id].fanoutVector_.reserve(top->getNetPorts(p->inNet_->id_).size() - 1);
-		// gates_[id].fanoutVector_ = &fos_[nfo];
+		circuitGates_[id].gateId_ = id;
+		circuitGates_[id].cellId_ = i;
+		circuitGates_[id].primitiveId_ = 0;
+		circuitGates_[id].numLevel_ = 0;
+		circuitGates_[id].gateType_ = Gate::PI;
+		// circuitGates_.emplace_back(id, i, 0, 0, Gate::PI);
+		circuitGates_[id].fanoutVector_.reserve(top->getNetPorts(p->inNet_->id_).size() - 1);
+		// circuitGates_[id].fanoutVector_ = &fos_[nfo];
 		nfo += top->getNetPorts(p->inNet_->id_).size() - 1;
 	}
 }
 
 void Circuit::createPpi(int &nfo)
 {
-	Cell *top = nl_->getTop();
-	for (int i = 0; i < nppi_; ++i)
+	Cell *top = pNetlist_->getTop();
+	for (int i = 0; i < numPPI_; ++i)
 	{
 		Cell *c = top->getCell(i);
-		int id = cellToGate_[i];
-		gates_[id].gateId_ = id;
-		gates_[id].cellId_ = i;
-		gates_[id].primitiveId_ = 0;
-		gates_[id].numLevel_ = 0;
-		gates_[id].gateType_ = Gate::PPI;
-		// gates_[id].fanoutVector_ = &fos_[nfo];
+		int id = cellIndexToGateIndex_[i];
+		circuitGates_[id].gateId_ = id;
+		circuitGates_[id].cellId_ = i;
+		circuitGates_[id].primitiveId_ = 0;
+		circuitGates_[id].numLevel_ = 0;
+		circuitGates_[id].gateType_ = Gate::PPI;
+		// circuitGates_[id].fanoutVector_ = &fos_[nfo];
 		// int qid = 0;
 		// while (strcmp(c->getPort(qid)->name_, "Q"))
 		// 	++qid;
 		// nfo += top->getNetPorts(c->getPort(qid)->exNet_->id_).size() - 2;
-		// if (nframe_ > 1 && connType_ == SHIFT && i < nppi_ - 1)
+		// if (numFrame_ > 1 && timeFrameConnectType_ == SHIFT && i < numPPI_ - 1)
 		// 	++nfo;
 		int qid = 0;
-		int size = 0; // calculate size of fanoutVector_ of gates_[id]!
+		int size = 0; // calculate size of fanoutVector_ of circuitGates_[id]!
 		while (strcmp(c->getPort(qid)->name_, "Q"))
 		{
 			++qid;
 		}
 		size += top->getNetPorts(c->getPort(qid)->exNet_->id_).size() - 2;
 		nfo += top->getNetPorts(c->getPort(qid)->exNet_->id_).size() - 2;
-		if (nframe_ > 1 && connType_ == SHIFT && i < nppi_ - 1)
+		if (numFrame_ > 1 && timeFrameConnectType_ == SHIFT && i < numPPI_ - 1)
 		{
 			++size;
 			++nfo;
 		}
-		gates_[id].fanoutVector_.reserve(size);
+		circuitGates_[id].fanoutVector_.reserve(size);
 	}
 }
 
 // create combinational logic gates
 void Circuit::createComb(int &nfi, int &nfo)
 {
-	Cell *top = nl_->getTop();
+	Cell *top = pNetlist_->getTop();
 
-	for (int i = nppi_; i < (int)top->getNCell(); ++i)
+	for (int i = numPPI_; i < (int)top->getNCell(); ++i)
 	{
 		Cell *c = top->getCell(i);
 		for (int j = 0; j < (int)c->libc_->getNCell(); ++j)
 		{
-			int id = cellToGate_[i] + j;
-			gates_[id].gateId_ = id;
-			gates_[id].cellId_ = c->id_;
-			gates_[id].primitiveId_ = j;
+			int id = cellIndexToGateIndex_[i] + j;
+			circuitGates_[id].gateId_ = id;
+			circuitGates_[id].cellId_ = c->id_;
+			circuitGates_[id].primitiveId_ = j;
 
 			Pmt *pmt = (Pmt *)c->libc_->getCell(j);
 			createPmt(id, c, pmt, nfi, nfo);
@@ -286,7 +286,7 @@ void Circuit::createComb(int &nfi, int &nfo)
 	}
 	if (top->getNCell() > 0)
 	{
-		lvl_ = gates_[cellToGate_[top->getNCell() - 1]].numLevel_ + 2;
+		circuitLvl_ = circuitGates_[cellIndexToGateIndex_[top->getNCell() - 1]].numLevel_ + 2;
 	}
 }
 
@@ -300,7 +300,7 @@ void Circuit::createPmt(const int &id, const Cell *const c,
 	detGateType(id, c, pmt);
 
 	// determine fanin and level
-	// gates_[id].faninVector_ = &fis_[nfi]; // resize later!
+	// circuitGates_[id].faninVector_ = &fis_[nfi]; // resize later!
 	int maxLvl = -1;
 	for (int i = 0; i < pmt->getNPort(); ++i)
 	{
@@ -309,8 +309,8 @@ void Circuit::createPmt(const int &id, const Cell *const c,
 			continue;
 		}
 		Net *nin = pmt->getPort(i)->exNet_;
-		gates_[id].faninVector_.reserve(nin->getNPort());
-		// gates_[id].fanoutVector_.reserve(nin->getNPort());
+		circuitGates_[id].faninVector_.reserve(nin->getNPort());
+		// circuitGates_[id].fanoutVector_.reserve(nin->getNPort());
 		for (int j = 0; j < nin->getNPort(); ++j)
 		{
 			Port *p = nin->getPort(j);
@@ -323,7 +323,7 @@ void Circuit::createPmt(const int &id, const Cell *const c,
 			// internal connection
 			if (p->type_ == Port::OUTPUT && p->top_ != c->libc_)
 			{
-				inId = cellToGate_[c->id_] + p->top_->id_;
+				inId = cellIndexToGateIndex_[c->id_] + p->top_->id_;
 			}
 			else if (p->type_ == Port::INPUT && p->top_ == c->libc_) // external connection
 			{
@@ -336,8 +336,8 @@ void Circuit::createPmt(const int &id, const Cell *const c,
 					if ((*it)->type_ == Port::OUTPUT && cin != c->top_)
 					{
 						CellSet cs = cin->libc_->getPortCells((*it)->id_);
-						inId = cellToGate_[cin->id_];
-						if (nl_->getTechlib()->hasPmt(cin->libc_->id_, Pmt::DFF)) // NE
+						inId = cellIndexToGateIndex_[cin->id_];
+						if (pNetlist_->getTechlib()->hasPmt(cin->libc_->id_, Pmt::DFF)) // NE
 						{
 							break;
 						}
@@ -346,30 +346,30 @@ void Circuit::createPmt(const int &id, const Cell *const c,
 					}
 					else if ((*it)->type_ == Port::INPUT && cin == c->top_)
 					{
-						inId = portToGate_[(*it)->id_];
+						inId = portIndexToGateIndex_[(*it)->id_];
 						break;
 					}
 				}
 			}
-			// gates_[id].faninVector_[gates_[id].numFI_] = inId;
-			gates_[id].faninVector_.push_back(inId);
-			++gates_[id].numFI_;
+			// circuitGates_[id].faninVector_[circuitGates_[id].numFI_] = inId;
+			circuitGates_[id].faninVector_.push_back(inId);
+			++circuitGates_[id].numFI_;
 			++nfi;
-			// gates_[inId].fanoutVector_[gates_[inId].numFO_] = id;
-			gates_[inId].fanoutVector_.push_back(id);
-			++gates_[inId].numFO_;
+			// circuitGates_[inId].fanoutVector_[circuitGates_[inId].numFO_] = id;
+			circuitGates_[inId].fanoutVector_.push_back(id);
+			++circuitGates_[inId].numFO_;
 
-			if (gates_[inId].numLevel_ > maxLvl)
+			if (circuitGates_[inId].numLevel_ > maxLvl)
 			{
-				maxLvl = gates_[inId].numLevel_;
+				maxLvl = circuitGates_[inId].numLevel_;
 			}
 		}
 	}
-	gates_[id].numLevel_ = maxLvl + 1;
+	circuitGates_[id].numLevel_ = maxLvl + 1;
 
 	// determine fanout
 
-	// gates_[id].fanoutVector_ = &fos_[nfo]; // resize later
+	// circuitGates_[id].fanoutVector_ = &fos_[nfo]; // resize later
 	Port *outp = NULL;
 	int foSize = 0;
 	for (int i = 0; i < pmt->getNPort() && !outp; ++i)
@@ -395,7 +395,7 @@ void Circuit::createPmt(const int &id, const Cell *const c,
 			foSize += c->top_->getNetPorts(nid).size() - 1;
 		}
 	}
-	gates_[id].fanoutVector_.reserve(foSize);
+	circuitGates_[id].fanoutVector_.reserve(foSize);
 }
 
 void Circuit::detGateType(const int &id, const Cell *const c,
@@ -404,135 +404,135 @@ void Circuit::detGateType(const int &id, const Cell *const c,
 	switch (pmt->type_)
 	{
 		case Pmt::BUF:
-			gates_[id].gateType_ = Gate::BUF;
+			circuitGates_[id].gateType_ = Gate::BUF;
 			break;
 		case Pmt::INV:
 		case Pmt::INVF:
-			gates_[id].gateType_ = Gate::INV;
+			circuitGates_[id].gateType_ = Gate::INV;
 			break;
 		case Pmt::MUX:
-			gates_[id].gateType_ = Gate::MUX;
+			circuitGates_[id].gateType_ = Gate::MUX;
 			break;
 		case Pmt::AND:
 			if (c->getNPort() == 3)
 			{
-				gates_[id].gateType_ = Gate::AND2;
+				circuitGates_[id].gateType_ = Gate::AND2;
 			}
 			else if (c->getNPort() == 4)
 			{
-				gates_[id].gateType_ = Gate::AND3;
+				circuitGates_[id].gateType_ = Gate::AND3;
 			}
 			else if (c->getNPort() == 5)
 			{
-				gates_[id].gateType_ = Gate::AND4;
+				circuitGates_[id].gateType_ = Gate::AND4;
 			}
 			else
 			{
-				gates_[id].gateType_ = Gate::NA;
+				circuitGates_[id].gateType_ = Gate::NA;
 			}
 			break;
 		case Pmt::NAND:
 			if (c->getNPort() == 3)
 			{
-				gates_[id].gateType_ = Gate::NAND2;
+				circuitGates_[id].gateType_ = Gate::NAND2;
 			}
 			else if (c->getNPort() == 4)
 			{
-				gates_[id].gateType_ = Gate::NAND3;
+				circuitGates_[id].gateType_ = Gate::NAND3;
 			}
 			else if (c->getNPort() == 5)
 			{
-				gates_[id].gateType_ = Gate::NAND4;
+				circuitGates_[id].gateType_ = Gate::NAND4;
 			}
 			else
 			{
-				gates_[id].gateType_ = Gate::NA;
+				circuitGates_[id].gateType_ = Gate::NA;
 			}
 			break;
 		case Pmt::OR:
 			if (c->getNPort() == 3)
 			{
-				gates_[id].gateType_ = Gate::OR2;
+				circuitGates_[id].gateType_ = Gate::OR2;
 			}
 			else if (c->getNPort() == 4)
 			{
-				gates_[id].gateType_ = Gate::OR3;
+				circuitGates_[id].gateType_ = Gate::OR3;
 			}
 			else if (c->getNPort() == 5)
 			{
-				gates_[id].gateType_ = Gate::OR4;
+				circuitGates_[id].gateType_ = Gate::OR4;
 			}
 			else
 			{
-				gates_[id].gateType_ = Gate::NA;
+				circuitGates_[id].gateType_ = Gate::NA;
 			}
 			break;
 		case Pmt::NOR:
 			if (c->getNPort() == 3)
 			{
-				gates_[id].gateType_ = Gate::NOR2;
+				circuitGates_[id].gateType_ = Gate::NOR2;
 			}
 			else if (c->getNPort() == 4)
 			{
-				gates_[id].gateType_ = Gate::NOR3;
+				circuitGates_[id].gateType_ = Gate::NOR3;
 			}
 			else if (c->getNPort() == 5)
 			{
-				gates_[id].gateType_ = Gate::NOR4;
+				circuitGates_[id].gateType_ = Gate::NOR4;
 			}
 			else
 			{
-				gates_[id].gateType_ = Gate::NA;
+				circuitGates_[id].gateType_ = Gate::NA;
 			}
 			break;
 		case Pmt::XOR:
 			if (c->getNPort() == 3)
 			{
-				gates_[id].gateType_ = Gate::XOR2;
+				circuitGates_[id].gateType_ = Gate::XOR2;
 			}
 			else if (c->getNPort() == 4)
 			{
-				gates_[id].gateType_ = Gate::XOR3;
+				circuitGates_[id].gateType_ = Gate::XOR3;
 			}
 			else
 			{
-				gates_[id].gateType_ = Gate::NA;
+				circuitGates_[id].gateType_ = Gate::NA;
 			}
 			break;
 		case Pmt::XNOR:
 			if (c->getNPort() == 3)
 			{
-				gates_[id].gateType_ = Gate::XNOR2;
+				circuitGates_[id].gateType_ = Gate::XNOR2;
 			}
 			else if (c->getNPort() == 4)
 			{
-				gates_[id].gateType_ = Gate::XNOR3;
+				circuitGates_[id].gateType_ = Gate::XNOR3;
 			}
 			else
 			{
-				gates_[id].gateType_ = Gate::NA;
+				circuitGates_[id].gateType_ = Gate::NA;
 			}
 			break;
 		case Pmt::TIE1:
-			gates_[id].gateType_ = Gate::TIE1;
+			circuitGates_[id].gateType_ = Gate::TIE1;
 			break;
 		case Pmt::TIE0:
-			gates_[id].gateType_ = Gate::TIE0;
+			circuitGates_[id].gateType_ = Gate::TIE0;
 			break;
 		case Pmt::TIEX:
-			gates_[id].gateType_ = Gate::TIE0;
+			circuitGates_[id].gateType_ = Gate::TIE0;
 			break;
 		case Pmt::TIEZ:
-			gates_[id].gateType_ = Gate::TIEZ;
+			circuitGates_[id].gateType_ = Gate::TIEZ;
 			break;
 		default:
-			gates_[id].gateType_ = Gate::NA;
+			circuitGates_[id].gateType_ = Gate::NA;
 	}
 }
 
 void Circuit::createPo(int &nfi)
 {
-	Cell *top = nl_->getTop();
+	Cell *top = pNetlist_->getTop();
 
 	for (int i = 0; i < top->getNPort(); ++i)
 	{
@@ -541,19 +541,19 @@ void Circuit::createPo(int &nfi)
 		{
 			continue;
 		}
-		int id = portToGate_[i];
+		int id = portIndexToGateIndex_[i];
 		if (p->type_ != Port::OUTPUT || id < 0)
 		{
 			continue;
 		}
-		gates_[id].gateId_ = id;
-		gates_[id].cellId_ = i;
-		gates_[id].primitiveId_ = 0;
-		gates_[id].numLevel_ = lvl_ - 1;
-		gates_[id].gateType_ = Gate::PO;
-		// gates_[id].faninVector_ = &fis_[nfi];
+		circuitGates_[id].gateId_ = id;
+		circuitGates_[id].cellId_ = i;
+		circuitGates_[id].primitiveId_ = 0;
+		circuitGates_[id].numLevel_ = circuitLvl_ - 1;
+		circuitGates_[id].gateType_ = Gate::PO;
+		// circuitGates_[id].faninVector_ = &fis_[nfi];
 		PortSet ps = top->getNetPorts(p->inNet_->id_);
-		// gates_[id].faninVector_.reserve(ps.size());
+		// circuitGates_[id].faninVector_.reserve(ps.size());
 		PortSet::iterator it = ps.begin();
 		for (; it != ps.end(); ++it)
 		{
@@ -564,13 +564,13 @@ void Circuit::createPo(int &nfi)
 			int inId = 0;
 			if ((*it)->top_ == top && (*it)->type_ == Port::INPUT)
 			{
-				inId = portToGate_[(*it)->id_];
+				inId = portIndexToGateIndex_[(*it)->id_];
 			}
 			else if ((*it)->top_ != top && (*it)->type_ == Port::OUTPUT)
 			{
-				inId = cellToGate_[(*it)->top_->id_];
+				inId = cellIndexToGateIndex_[(*it)->top_->id_];
 				Cell *libc = (*it)->top_->libc_;
-				if (!nl_->getTechlib()->hasPmt(libc->id_, Pmt::DFF)) // NE
+				if (!pNetlist_->getTechlib()->hasPmt(libc->id_, Pmt::DFF)) // NE
 				{
 					inId += (*libc->getPortCells((*it)->id_).begin())->id_;
 				}
@@ -579,14 +579,14 @@ void Circuit::createPo(int &nfi)
 			{
 				continue;
 			}
-			// gates_[inId].fanoutVector_.reserve(ps.size());
-			// gates_[id].faninVector_[gates_[id].numFI_] = inId;
-			gates_[id].faninVector_.push_back(inId);
-			++gates_[id].numFI_;
+			// circuitGates_[inId].fanoutVector_.reserve(ps.size());
+			// circuitGates_[id].faninVector_[circuitGates_[id].numFI_] = inId;
+			circuitGates_[id].faninVector_.push_back(inId);
+			++circuitGates_[id].numFI_;
 
-			// gates_[inId].fanoutVector_[gates_[inId].numFO_] = id;
-			gates_[inId].fanoutVector_.push_back(id);
-			++gates_[inId].numFO_;
+			// circuitGates_[inId].fanoutVector_[circuitGates_[inId].numFO_] = id;
+			circuitGates_[inId].fanoutVector_.push_back(id);
+			++circuitGates_[inId].numFO_;
 
 			++nfi;
 		}
@@ -595,17 +595,17 @@ void Circuit::createPo(int &nfi)
 
 void Circuit::createPpo(int &nfi)
 {
-	Cell *top = nl_->getTop();
-	for (int i = 0; i < nppi_; ++i)
+	Cell *top = pNetlist_->getTop();
+	for (int i = 0; i < numPPI_; ++i)
 	{
 		Cell *c = top->getCell(i);
-		int id = ngate_ - nppi_ + i;
-		gates_[id].gateId_ = id;
-		gates_[id].cellId_ = i;
-		gates_[id].primitiveId_ = 0;
-		gates_[id].numLevel_ = lvl_ - 1;
-		gates_[id].gateType_ = Gate::PPO;
-		// gates_[id].faninVector_ = &fis_[nfi];
+		int id = numGate_ - numPPI_ + i;
+		circuitGates_[id].gateId_ = id;
+		circuitGates_[id].cellId_ = i;
+		circuitGates_[id].primitiveId_ = 0;
+		circuitGates_[id].numLevel_ = circuitLvl_ - 1;
+		circuitGates_[id].gateType_ = Gate::PPO;
+		// circuitGates_[id].faninVector_ = &fis_[nfi];
 		int did = 0;
 		while (strcmp(c->getPort(did)->name_, "D"))
 		{
@@ -614,7 +614,7 @@ void Circuit::createPpo(int &nfi)
 		Port *inp = c->getPort(did);
 
 		PortSet ps = top->getNetPorts(c->getPort(inp->id_)->exNet_->id_);
-		// gates_[id].faninVector_.reserve(ps.size());
+		// circuitGates_[id].faninVector_.reserve(ps.size());
 		PortSet::iterator it = ps.begin();
 		for (; it != ps.end(); ++it)
 		{
@@ -625,13 +625,13 @@ void Circuit::createPpo(int &nfi)
 			int inId = 0;
 			if ((*it)->top_ == top && (*it)->type_ == Port::INPUT)
 			{
-				inId = portToGate_[(*it)->id_];
+				inId = portIndexToGateIndex_[(*it)->id_];
 			}
 			else if ((*it)->top_ != top && (*it)->type_ == Port::OUTPUT)
 			{
-				inId = cellToGate_[(*it)->top_->id_];
+				inId = cellIndexToGateIndex_[(*it)->top_->id_];
 				Cell *libc = (*it)->top_->libc_;
-				if (!nl_->getTechlib()->hasPmt(libc->id_, Pmt::DFF)) // NE
+				if (!pNetlist_->getTechlib()->hasPmt(libc->id_, Pmt::DFF)) // NE
 				{
 					inId += (*libc->getPortCells((*it)->id_).begin())->id_;
 				}
@@ -640,14 +640,14 @@ void Circuit::createPpo(int &nfi)
 			{
 				continue;
 			}
-			// gates_[inId].fanoutVector_.reserve(ps.size());
-			// gates_[id].faninVector_[gates_[id].numFI_] = inId;
-			gates_[id].faninVector_.push_back(inId);
-			++gates_[id].numFI_;
+			// circuitGates_[inId].fanoutVector_.reserve(ps.size());
+			// circuitGates_[id].faninVector_[circuitGates_[id].numFI_] = inId;
+			circuitGates_[id].faninVector_.push_back(inId);
+			++circuitGates_[id].numFI_;
 
-			// gates_[inId].fanoutVector_[gates_[inId].numFO_] = id;
-			gates_[inId].fanoutVector_.push_back(id);
-			++gates_[inId].numFO_;
+			// circuitGates_[inId].fanoutVector_[circuitGates_[inId].numFO_] = id;
+			circuitGates_[inId].fanoutVector_.push_back(id);
+			++circuitGates_[inId].numFO_;
 
 			++nfi;
 		}
@@ -666,111 +666,111 @@ void Circuit::createPpo(int &nfi)
 // **************************************************************************
 void Circuit::connectFrame()
 {
-	int nfo = nnet_;
-	int nfi = nnet_;
-	for (int i = 1; i < nframe_; ++i)
+	int nfo = numNet_;
+	int nfi = numNet_;
+	for (int i = 1; i < numFrame_; ++i)
 	{
-		int offset = ngate_ * i;
-		if (connType_ == CAPTURE)
+		int offset = numGate_ * i;
+		if (timeFrameConnectType_ == CAPTURE)
 		{
-			for (int j = 0; j < nppi_; ++j)
-			{ /// give nfo and fos before nppi_
-				int id = offset - nppi_ + j;
-				gates_[id].numFO_ = 1;
-				// gates_[id].fanoutVector_ = &fos_[nfo];
-				nfo += gates_[id].numFO_;
-				gates_[id].fanoutVector_.reserve(gates_[id].numFO_);
+			for (int j = 0; j < numPPI_; ++j)
+			{ /// give nfo and fos before numPPI_
+				int id = offset - numPPI_ + j;
+				circuitGates_[id].numFO_ = 1;
+				// circuitGates_[id].fanoutVector_ = &fos_[nfo];
+				nfo += circuitGates_[id].numFO_;
+				circuitGates_[id].fanoutVector_.reserve(circuitGates_[id].numFO_);
 			}
 		}
-		for (int j = 0; j < ngate_; ++j)
+		for (int j = 0; j < numGate_; ++j)
 		{ /// read pattern
 			int id = offset + j;
-			gates_[id].gateId_ = id;
-			gates_[id].cellId_ = gates_[j].cellId_;
-			gates_[id].numLevel_ = lvl_ * i + gates_[j].numLevel_;
-			gates_[id].gateType_ = gates_[j].gateType_;
-			gates_[id].frame_ = i; /// record id, cid, level, type and frame
-			if (gates_[id].gateType_ != Gate::PPI && gates_[id].gateType_ != Gate::PPO)
+			circuitGates_[id].gateId_ = id;
+			circuitGates_[id].cellId_ = circuitGates_[j].cellId_;
+			circuitGates_[id].numLevel_ = circuitLvl_ * i + circuitGates_[j].numLevel_;
+			circuitGates_[id].gateType_ = circuitGates_[j].gateType_;
+			circuitGates_[id].frame_ = i; /// record id, cid, level, type and frame
+			if (circuitGates_[id].gateType_ != Gate::PPI && circuitGates_[id].gateType_ != Gate::PPO)
 			{
-				gates_[id].numFO_ = gates_[j].numFO_;
+				circuitGates_[id].numFO_ = circuitGates_[j].numFO_;
 				// gates_[id].fanoutVector_ = &fos_[nfo];
-				gates_[id].fanoutVector_.resize(gates_[j].numFO_);
-				for (int k = 0; k < gates_[j].numFO_; ++k)
+				circuitGates_[id].fanoutVector_.resize(circuitGates_[j].numFO_);
+				for (int k = 0; k < circuitGates_[j].numFO_; ++k)
 				{
-					gates_[id].fanoutVector_[k] = gates_[j].fanoutVector_[k] + offset;
+					circuitGates_[id].fanoutVector_[k] = circuitGates_[j].fanoutVector_[k] + offset;
 				}
-				nfo += gates_[id].numFO_;
-				gates_[id].numFI_ = gates_[j].numFI_;
-				// gates_[id].faninVector_ = &fis_[nfi];
-				gates_[id].faninVector_.resize(gates_[j].numFI_);
-				for (int k = 0; k < gates_[j].numFI_; ++k)
+				nfo += circuitGates_[id].numFO_;
+				circuitGates_[id].numFI_ = circuitGates_[j].numFI_;
+				// circuitGates_[id].faninVector_ = &fis_[nfi];
+				circuitGates_[id].faninVector_.resize(circuitGates_[j].numFI_);
+				for (int k = 0; k < circuitGates_[j].numFI_; ++k)
 				{
-					gates_[id].faninVector_[k] = gates_[j].faninVector_[k] + offset;
+					circuitGates_[id].faninVector_[k] = circuitGates_[j].faninVector_[k] + offset;
 				}
-				nfi += gates_[id].numFI_;
+				nfi += circuitGates_[id].numFI_;
 			} /// if not ppi or ppo
-			else if (gates_[id].gateType_ == Gate::PPI)
+			else if (circuitGates_[id].gateType_ == Gate::PPI)
 			{
-				gates_[id].numFO_ = gates_[j].numFO_;
-				// if(connType_ == SHIFT && i == nframe_-1 && (j!= npi_+nppi_-1))--gates_[id].numFO_;
-				// gates_[id].fanoutVector_ = &fos_[nfo];
-				gates_[id].fanoutVector_.resize(gates_[j].numFO_);
-				for (int k = 0; k < gates_[j].numFO_; ++k)
+				circuitGates_[id].numFO_ = circuitGates_[j].numFO_;
+				// if(timeFrameConnectType_ == SHIFT && i == numFrame_-1 && (j!= numPI_+numPPI_-1))--circuitGates_[id].numFO_;
+				// circuitGates_[id].fanoutVector_ = &fos_[nfo];
+				circuitGates_[id].fanoutVector_.resize(circuitGates_[j].numFO_);
+				for (int k = 0; k < circuitGates_[j].numFO_; ++k)
 				{
-					gates_[id].fanoutVector_[k] = gates_[j].fanoutVector_[k] + offset;
+					circuitGates_[id].fanoutVector_[k] = circuitGates_[j].fanoutVector_[k] + offset;
 				}
-				nfo += gates_[id].numFO_;
-				gates_[id].numFI_ = 1;
-				// gates_[id].faninVector_ = &fis_[nfi];
-				gates_[id].faninVector_.resize(gates_[id].numFI_);
-				if (connType_ == CAPTURE)
+				nfo += circuitGates_[id].numFO_;
+				circuitGates_[id].numFI_ = 1;
+				// circuitGates_[id].faninVector_ = &fis_[nfi];
+				circuitGates_[id].faninVector_.resize(circuitGates_[id].numFI_);
+				if (timeFrameConnectType_ == CAPTURE)
 				{
-					// gates_[id].faninVector_[0] = id - npi_ - nppi_;
-					gates_[id].faninVector_.push_back(id - npi_ - nppi_);
-					gates_[id].gateType_ = Gate::BUF;
-					gates_[id - npi_ - nppi_].fanoutVector_[0] = id;
-					// gates_[id - npi_ - nppi_].gateType_ = Gate::BUF ;
+					// circuitGates_[id].faninVector_[0] = id - numPI_ - numPPI_;
+					circuitGates_[id].faninVector_.push_back(id - numPI_ - numPPI_);
+					circuitGates_[id].gateType_ = Gate::BUF;
+					circuitGates_[id - numPI_ - numPPI_].fanoutVector_[0] = id;
+					// circuitGates_[id - numPI_ - numPPI_].gateType_ = Gate::BUF ;
 				} /// do CAPTURE
-				else if (id != (offset + npi_))
+				else if (id != (offset + numPI_))
 				{
-					gates_[id].faninVector_[0] = id - ngate_ - 1;
-					// gates_[id].faninVector_ = {id - ngate_ - 1};
-					gates_[id].gateType_ = Gate::BUF;
-					gates_[id - ngate_ - 1].fanoutVector_[gates_[id - ngate_ - 1].numFO_] = id;
-					++gates_[id - ngate_ - 1].numFO_;
+					circuitGates_[id].faninVector_[0] = id - numGate_ - 1;
+					// circuitGates_[id].faninVector_ = {id - numGate_ - 1};
+					circuitGates_[id].gateType_ = Gate::BUF;
+					circuitGates_[id - numGate_ - 1].fanoutVector_[circuitGates_[id - numGate_ - 1].numFO_] = id;
+					++circuitGates_[id - numGate_ - 1].numFO_;
 				} /// do SHIFT
 				else
 				{
-					gates_[id].numFI_ = 0;
+					circuitGates_[id].numFI_ = 0;
 				}
-				// gates_[id - npi_ - nppi_].fanoutVector_[0] = id ;
-				nfi += gates_[id].numFI_;
+				// circuitGates_[id - numPI_ - numPPI_].fanoutVector_[0] = id ;
+				nfi += circuitGates_[id].numFI_;
 			} /// if ppi
 			else
 			{
-				gates_[id].numFO_ = 0;
-				// gates_[id].fanoutVector_ = &fos_[nfo];
-				gates_[id].numFI_ = gates_[j].numFI_;
-				// gates_[id].faninVector_ = &fis_[nfi];
-				// gates_[id].faninVector_.resize(gates_[j].numFI_);
-				for (int k = 0; k < gates_[j].numFI_; ++k)
+				circuitGates_[id].numFO_ = 0;
+				// circuitGates_[id].fanoutVector_ = &fos_[nfo];
+				circuitGates_[id].numFI_ = circuitGates_[j].numFI_;
+				// circuitGates_[id].faninVector_ = &fis_[nfi];
+				// circuitGates_[id].faninVector_.resize(circuitGates_[j].numFI_);
+				for (int k = 0; k < circuitGates_[j].numFI_; ++k)
 				{
-					gates_[id].faninVector_[k] = gates_[j].faninVector_[k] + offset;
+					circuitGates_[id].faninVector_[k] = circuitGates_[j].faninVector_[k] + offset;
 				}
-				nfi += gates_[id].numFI_;
+				nfi += circuitGates_[id].numFI_;
 			} /// if ppo
 		}
-		if (connType_ == CAPTURE)
+		if (timeFrameConnectType_ == CAPTURE)
 		{
-			for (int j = 0; j < nppi_; ++j)
+			for (int j = 0; j < numPPI_; ++j)
 			{
-				int id = offset - nppi_ + j;
-				gates_[id].gateType_ = Gate::BUF;
+				int id = offset - numPPI_ + j;
+				circuitGates_[id].gateType_ = Gate::BUF;
 			} // reset after for loop
 		}
 	}
-	tlvl_ = lvl_ * nframe_;
-	tgate_ = ngate_ * nframe_;
+	totalLvl_ = circuitLvl_ * numFrame_;
+	totalGate_ = numGate_ * numFrame_;
 }
 
 // **************************************************************************
@@ -786,15 +786,15 @@ void Circuit::connectFrame()
 // **************************************************************************
 void Circuit::assignFiMinLvl()
 {
-	for (int i = 0; i < tgate_; ++i)
+	for (int i = 0; i < totalGate_; ++i)
 	{
-		Gate *g = &gates_[i];
+		Gate *g = &circuitGates_[i];
 		int minLvl = g->numLevel_;
 		for (int j = 0; j < g->numFI_; ++j)
 		{
-			if (gates_[g->faninVector_[j]].numLevel_ < minLvl)
+			if (circuitGates_[g->faninVector_[j]].numLevel_ < minLvl)
 			{
-				minLvl = gates_[g->faninVector_[j]].numLevel_;
+				minLvl = circuitGates_[g->faninVector_[j]].numLevel_;
 				g->fiMinLvl_ = g->faninVector_[j];
 				//          find the minimum among g->fis_[j] and replace g->fiMinLvl with it.
 				//                                *********

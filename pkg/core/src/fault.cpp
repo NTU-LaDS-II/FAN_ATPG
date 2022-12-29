@@ -31,39 +31,39 @@ void FaultListExtract::extractFaultFromCircuit(Circuit *pCircuit)
 	bool useFC = true; // should be able to set on or off like test compression
 
 	// since the function only called once, we don't need to clear faults initially
-	// reserve enough space for faults push_back, 10 * circuit->ngate_ is maximum possible faults in a circuit
-	int reservedSize = 10 * pCircuit->ngate_;
+	// reserve enough space for faults push_back, 10 * circuit->numGate_ is maximum possible faults in a circuit
+	int reservedSize = 10 * pCircuit->numGate_;
 	uncollapsedFaults_.reserve(reservedSize);
 	extractedFaults_.reserve(reservedSize);
 
 	// resize gateIndexToFaultIndex to proper size
-	gateIndexToFaultIndex_.resize(pCircuit->ngate_);
+	gateIndexToFaultIndex_.resize(pCircuit->numGate_);
 
 	// add stuck-at faults
 	if (faultListType_ == SAF)
 	{
 		// extract uncollapsed faults
 		// doesn't extract faults between two time frames
-		for (int i = 0; i < pCircuit->ngate_; ++i)
+		for (int i = 0; i < pCircuit->numGate_; ++i)
 		{
 			gateIndexToFaultIndex_[i] = uncollapsedFaults_.size();
 			// extract faults of gate outputs
-			if (pCircuit->gates_[i].numFO_ > 0 && i < pCircuit->ngate_ - pCircuit->nppi_)
+			if (pCircuit->circuitGates_[i].numFO_ > 0 && i < pCircuit->numGate_ - pCircuit->numPPI_)
 			{
 				uncollapsedFaults_.push_back(Fault(i, Fault::SA0, 0));
 				uncollapsedFaults_.push_back(Fault(i, Fault::SA1, 0));
 			}
 			// extract faults of gate inputs
-			for (int j = 0; j < pCircuit->gates_[i].numFI_; ++j)
+			for (int j = 0; j < pCircuit->circuitGates_[i].numFI_; ++j)
 			{
-				// // if (circuit->gates_[circuit->gates_[i].faninVector_[j]].numFO_ > 1) // fanout stem
+				// // if (circuit->circuitGates_[circuit->circuitGates_[i].faninVector_[j]].numFO_ > 1) // fanout stem
 				// // {
 				uncollapsedFaults_.push_back(Fault(i, Fault::SA0, j + 1));
 				uncollapsedFaults_.push_back(Fault(i, Fault::SA1, j + 1));
 				// // }
 			}
 			// add additional faults for PPI
-			if (pCircuit->gates_[i].gateType_ == Gate::PPI)
+			if (pCircuit->circuitGates_[i].gateType_ == Gate::PPI)
 			{
 				// CK
 				uncollapsedFaults_.push_back(Fault(i, Fault::SA0, -1, 1, Fault::DT));
@@ -89,24 +89,24 @@ void FaultListExtract::extractFaultFromCircuit(Circuit *pCircuit)
 		}
 		else // Simple Equivalent Fault Collapsing
 		{
-			std::vector<int> SA0Equivalent(pCircuit->ngate_, 1), SA1Equivalent(pCircuit->ngate_, 1); // used to count the number of equivalent faults
-			int SA0EquivalentOfInput, SA1EquivalentOfInput;		// SA0Equivalent, SA1Equivalent of the input gates
-			for (int i = 0; i < pCircuit->ngate_; ++i)
+			std::vector<int> SA0Equivalent(pCircuit->numGate_, 1), SA1Equivalent(pCircuit->numGate_, 1); // used to count the number of equivalent faults
+			int SA0EquivalentOfInput, SA1EquivalentOfInput;																							 // SA0Equivalent, SA1Equivalent of the input gates
+			for (int i = 0; i < pCircuit->numGate_; ++i)
 			{
 				// initialize SA0Equivalent, SA1Equivalent
 				// SA0Equivalent[i] = 1;
 				// SA1Equivalent[i] = 1;
 				// adding input faults
-				switch (pCircuit->gates_[i].gateType_)
+				switch (pCircuit->circuitGates_[i].gateType_)
 				{
 					// AND gates
 					case Gate::AND2:
 					case Gate::AND3:
 					case Gate::AND4:
-						for (int j = 0; j < pCircuit->gates_[i].numFI_; ++j)
+						for (int j = 0; j < pCircuit->circuitGates_[i].numFI_; ++j)
 						{
-							SA0EquivalentOfInput = SA0Equivalent[pCircuit->gates_[i].faninVector_[j]];
-							SA1EquivalentOfInput = SA1Equivalent[pCircuit->gates_[i].faninVector_[j]];
+							SA0EquivalentOfInput = SA0Equivalent[pCircuit->circuitGates_[i].faninVector_[j]];
+							SA1EquivalentOfInput = SA1Equivalent[pCircuit->circuitGates_[i].faninVector_[j]];
 							extractedFaults_.push_back(Fault(i, Fault::SA1, j + 1, SA1EquivalentOfInput));
 							SA0Equivalent[i] += SA0EquivalentOfInput;
 						}
@@ -115,10 +115,10 @@ void FaultListExtract::extractFaultFromCircuit(Circuit *pCircuit)
 					case Gate::NAND2:
 					case Gate::NAND3:
 					case Gate::NAND4:
-						for (int j = 0; j < pCircuit->gates_[i].numFI_; ++j)
+						for (int j = 0; j < pCircuit->circuitGates_[i].numFI_; ++j)
 						{
-							SA0EquivalentOfInput = SA0Equivalent[pCircuit->gates_[i].faninVector_[j]];
-							SA1EquivalentOfInput = SA1Equivalent[pCircuit->gates_[i].faninVector_[j]];
+							SA0EquivalentOfInput = SA0Equivalent[pCircuit->circuitGates_[i].faninVector_[j]];
+							SA1EquivalentOfInput = SA1Equivalent[pCircuit->circuitGates_[i].faninVector_[j]];
 							extractedFaults_.push_back(Fault(i, Fault::SA1, j + 1, SA1EquivalentOfInput));
 							SA1Equivalent[i] += SA0EquivalentOfInput;
 						}
@@ -127,10 +127,10 @@ void FaultListExtract::extractFaultFromCircuit(Circuit *pCircuit)
 					case Gate::OR2:
 					case Gate::OR3:
 					case Gate::OR4:
-						for (int j = 0; j < pCircuit->gates_[i].numFI_; ++j)
+						for (int j = 0; j < pCircuit->circuitGates_[i].numFI_; ++j)
 						{
-							SA0EquivalentOfInput = SA0Equivalent[pCircuit->gates_[i].faninVector_[j]];
-							SA1EquivalentOfInput = SA1Equivalent[pCircuit->gates_[i].faninVector_[j]];
+							SA0EquivalentOfInput = SA0Equivalent[pCircuit->circuitGates_[i].faninVector_[j]];
+							SA1EquivalentOfInput = SA1Equivalent[pCircuit->circuitGates_[i].faninVector_[j]];
 							extractedFaults_.push_back(Fault(i, Fault::SA0, j + 1, SA0EquivalentOfInput));
 							SA1Equivalent[i] += SA1EquivalentOfInput;
 						}
@@ -139,10 +139,10 @@ void FaultListExtract::extractFaultFromCircuit(Circuit *pCircuit)
 					case Gate::NOR2:
 					case Gate::NOR3:
 					case Gate::NOR4:
-						for (int j = 0; j < pCircuit->gates_[i].numFI_; ++j)
+						for (int j = 0; j < pCircuit->circuitGates_[i].numFI_; ++j)
 						{
-							SA0EquivalentOfInput = SA0Equivalent[pCircuit->gates_[i].faninVector_[j]];
-							SA1EquivalentOfInput = SA1Equivalent[pCircuit->gates_[i].faninVector_[j]];
+							SA0EquivalentOfInput = SA0Equivalent[pCircuit->circuitGates_[i].faninVector_[j]];
+							SA1EquivalentOfInput = SA1Equivalent[pCircuit->circuitGates_[i].faninVector_[j]];
 							extractedFaults_.push_back(Fault(i, Fault::SA0, j + 1, SA0EquivalentOfInput));
 							SA0Equivalent[i] += SA1EquivalentOfInput;
 						}
@@ -151,23 +151,23 @@ void FaultListExtract::extractFaultFromCircuit(Circuit *pCircuit)
 					// We don't need to add fault at these two types
 					// But we need calculate the number of equivalent faults
 					case Gate::INV:
-						SA0EquivalentOfInput = SA0Equivalent[pCircuit->gates_[i].faninVector_[0]];
-						SA1EquivalentOfInput = SA1Equivalent[pCircuit->gates_[i].faninVector_[0]];
+						SA0EquivalentOfInput = SA0Equivalent[pCircuit->circuitGates_[i].faninVector_[0]];
+						SA1EquivalentOfInput = SA1Equivalent[pCircuit->circuitGates_[i].faninVector_[0]];
 						SA0Equivalent[i] = SA1EquivalentOfInput + 1;
 						SA1Equivalent[i] = SA0EquivalentOfInput + 1;
 						break;
 					case Gate::BUF:
-						SA0EquivalentOfInput = SA0Equivalent[pCircuit->gates_[i].faninVector_[0]];
-						SA1EquivalentOfInput = SA1Equivalent[pCircuit->gates_[i].faninVector_[0]];
+						SA0EquivalentOfInput = SA0Equivalent[pCircuit->circuitGates_[i].faninVector_[0]];
+						SA1EquivalentOfInput = SA1Equivalent[pCircuit->circuitGates_[i].faninVector_[0]];
 						SA0Equivalent[i] = SA0EquivalentOfInput + 1;
 						SA1Equivalent[i] = SA1EquivalentOfInput + 1;
 						break;
 					// Other gates, including PO and PPO gates
 					default:
-						for (int j = 0; j < pCircuit->gates_[i].numFI_; ++j)
+						for (int j = 0; j < pCircuit->circuitGates_[i].numFI_; ++j)
 						{
-							SA0EquivalentOfInput = SA0Equivalent[pCircuit->gates_[i].faninVector_[j]];
-							SA1EquivalentOfInput = SA1Equivalent[pCircuit->gates_[i].faninVector_[j]];
+							SA0EquivalentOfInput = SA0Equivalent[pCircuit->circuitGates_[i].faninVector_[j]];
+							SA1EquivalentOfInput = SA1Equivalent[pCircuit->circuitGates_[i].faninVector_[j]];
 							extractedFaults_.push_back(Fault(i, Fault::SA0, j + 1, SA0EquivalentOfInput));
 							extractedFaults_.push_back(Fault(i, Fault::SA1, j + 1, SA1EquivalentOfInput));
 						}
@@ -175,7 +175,7 @@ void FaultListExtract::extractFaultFromCircuit(Circuit *pCircuit)
 				}
 				// add output faults
 				// add faults with calculated SA0Equivalent, SA1Equivalent and reset them to 1
-				if (pCircuit->gates_[i].numFO_ > 0 && i < pCircuit->ngate_ - pCircuit->nppi_)
+				if (pCircuit->circuitGates_[i].numFO_ > 0 && i < pCircuit->numGate_ - pCircuit->numPPI_)
 				{
 					extractedFaults_.push_back(Fault(i, Fault::SA0, 0, SA0Equivalent[i]));
 					extractedFaults_.push_back(Fault(i, Fault::SA1, 0, SA1Equivalent[i]));
@@ -183,7 +183,7 @@ void FaultListExtract::extractFaultFromCircuit(Circuit *pCircuit)
 				SA0Equivalent[i] = 1;
 				SA1Equivalent[i] = 1;
 				// Only for fanout stem, including PI,PPI with fanout stem
-				// if (pCircuit->gates_[i].numFO_ > 1 && i < (pCircuit->ngate_ - pCircuit->nppi_))
+				// if (pCircuit->circuitGates_[i].numFO_ > 1 && i < (pCircuit->numGate_ - pCircuit->numPPI_))
 				// {
 				// 	// add faults with calculated SA0_eq, SA1_eq and reset them to 1
 				// 	extractedFaults_.push_back(Fault(i, Fault::SA0, 0, SA0Equivalent[i]));
@@ -191,14 +191,14 @@ void FaultListExtract::extractFaultFromCircuit(Circuit *pCircuit)
 				// 	SA0Equivalent[i] = 1;
 				// 	SA1Equivalent[i] = 1;
 				// }
-				// else if (pCircuit->gates_[i].numFO_ == 1 && i < (pCircuit->ngate_ - pCircuit->nppi_))
+				// else if (pCircuit->circuitGates_[i].numFO_ == 1 && i < (pCircuit->numGate_ - pCircuit->numPPI_))
 				// {
 				// 	++SA0Equivalent[i];
 				// 	++SA1Equivalent[i];
 				// }
 
 				// add additional faults for PPI
-				if (pCircuit->gates_[i].gateType_ == Gate::PPI)
+				if (pCircuit->circuitGates_[i].gateType_ == Gate::PPI)
 				{
 					// CK
 					extractedFaults_.push_back(Fault(i, Fault::SA0, -1, 1, Fault::DT));
@@ -217,9 +217,9 @@ void FaultListExtract::extractFaultFromCircuit(Circuit *pCircuit)
 		}
 
 		// HYH try to fix the fault number @20141121
-		for (int i = 0; i < pCircuit->nl_->getTop()->getNPort(); ++i)
+		for (int i = 0; i < pCircuit->pNetlist_->getTop()->getNPort(); ++i)
 		{
-			IntfNs::Port *p = pCircuit->nl_->getTop()->getPort(i);
+			IntfNs::Port *p = pCircuit->pNetlist_->getTop()->getPort(i);
 			if (!strcmp(p->name_, "CK")) // sequential circuit
 			{
 				// CK
@@ -243,14 +243,14 @@ void FaultListExtract::extractFaultFromCircuit(Circuit *pCircuit)
 	else
 	{
 		// extract uncollapsed faults
-		for (int i = 0; i < pCircuit->ngate_; ++i)
+		for (int i = 0; i < pCircuit->numGate_; ++i)
 		{
 			gateIndexToFaultIndex_[i] = uncollapsedFaults_.size();
 			// extract faults of gate outputs
 			// but do not extract faults between two time frames
-			if (pCircuit->gates_[i].numFO_ > 0 && i < pCircuit->ngate_ - pCircuit->nppi_)
+			if (pCircuit->circuitGates_[i].numFO_ > 0 && i < pCircuit->numGate_ - pCircuit->numPPI_)
 			{
-				if (pCircuit->gates_[i].gateType_ != Gate::PPI)
+				if (pCircuit->circuitGates_[i].gateType_ != Gate::PPI)
 				{
 					uncollapsedFaults_.push_back(Fault(i, Fault::STR, 0));
 					uncollapsedFaults_.push_back(Fault(i, Fault::STF, 0));
@@ -262,16 +262,16 @@ void FaultListExtract::extractFaultFromCircuit(Circuit *pCircuit)
 				}
 			}
 			// extract faults of gate inputs
-			for (int j = 0; j < pCircuit->gates_[i].numFI_; ++j)
+			for (int j = 0; j < pCircuit->circuitGates_[i].numFI_; ++j)
 			{
-				if (pCircuit->gates_[pCircuit->gates_[i].faninVector_[j]].numFO_ > 1) // fanout stem
+				if (pCircuit->circuitGates_[pCircuit->circuitGates_[i].faninVector_[j]].numFO_ > 1) // fanout stem
 				{
 					uncollapsedFaults_.push_back(Fault(i, Fault::STR, j + 1));
 					uncollapsedFaults_.push_back(Fault(i, Fault::STF, j + 1));
 				}
 			}
 			// add faults for PPI
-			if (pCircuit->gates_[i].gateType_ == Gate::PPI)
+			if (pCircuit->circuitGates_[i].gateType_ == Gate::PPI)
 			{
 				// CK
 				uncollapsedFaults_.push_back(Fault(i, Fault::STR, -1, 1, Fault::DT));
@@ -293,9 +293,9 @@ void FaultListExtract::extractFaultFromCircuit(Circuit *pCircuit)
 		extractedFaults_.assign(uncollapsedFaults_.begin(), uncollapsedFaults_.end());
 
 		// HYH try to fix the fault number @20141121
-		for (int i = 0; i < pCircuit->nl_->getTop()->getNPort(); ++i)
+		for (int i = 0; i < pCircuit->pNetlist_->getTop()->getNPort(); ++i)
 		{
-			IntfNs::Port *p = pCircuit->nl_->getTop()->getPort(i);
+			IntfNs::Port *p = pCircuit->pNetlist_->getTop()->getPort(i);
 			if (!strcmp(p->name_, "CK")) // sequential circuit
 			{
 				// CK

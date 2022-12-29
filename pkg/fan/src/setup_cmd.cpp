@@ -495,11 +495,11 @@ bool BuildCircuitCmd::exec(const std::vector<std::string> &argv)
 						<< "\n";
 	if (fanMgr_->pcoll && fanMgr_->pcoll->type_ == PatternProcessor::LAUNCH_SHIFT) // launch on shift pattern
 	{
-		fanMgr_->cir->build(fanMgr_->nl, nframe, Circuit::SHIFT);
+		fanMgr_->cir->buildCircuit(fanMgr_->nl, nframe, Circuit::SHIFT);
 	}
 	else
 	{
-		fanMgr_->cir->build(fanMgr_->nl, nframe);
+		fanMgr_->cir->buildCircuit(fanMgr_->nl, nframe);
 	}
 
 	TmStat stat;
