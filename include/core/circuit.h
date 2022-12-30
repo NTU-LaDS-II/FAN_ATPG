@@ -36,7 +36,7 @@ namespace CoreNs
 		// info for one time frame
 		IntfNs::Netlist *pNetlist_; // corresponding netlist
 		int numPI_;									// number of PIs
-		int numPPI_;								// number of PPIs
+		int numPPI_;								// number of PPIs (PPOs)
 		int numPO_;									// number of POs
 		int numComb_;								// number of combinational gates
 		int numGate_;								// number of gates
@@ -46,8 +46,8 @@ namespace CoreNs
 		// info for multiple time frames
 		int numFrame_;																 // number of time frame
 		TIME_FRAME_CONNECT_TYPE timeFrameConnectType_; // time frame connection type
-		int totalGate_;																 // number of total gates
-		int totalLvl_;																 // total level
+		int totalGate_;																 // number of total gates. Equal to numGate_ * numFrame_
+		int totalLvl_;																 // total level. Equal to circuitLvl_ * numFrame_
 
 		// structure
 		// **********************************************************************
@@ -67,20 +67,20 @@ namespace CoreNs
 
 	protected:
 		// for circuit building
-		void createMap();
-		void calNgate();
-		void calNnet();
-		void createGate();
-		void createPi(int &nfo);
-		void createPpi(int &nfo);
-		void createComb(int &nfi, int &nfo);
-		void createPmt(const int &id, const IntfNs::Cell *const c,
-									 const IntfNs::Pmt *const pmt, int &nfi, int &nfo);
-		void detGateType(const int &id, const IntfNs::Cell *const c,
-										 const IntfNs::Pmt *const pmt);
-		void createPo(int &nfi);
-		void createPpo(int &nfi);
-		void connectFrame();
+		void mapNetlistToCircuit();
+		void calculateNumGate();
+		void calculateNumNet();
+		void createCircuitGates();
+		void createCircuitPI(int &numFO);
+		void createCircuitPPI(int &numFO);
+		void createCircuitComb(int &numFI, int &numFO);
+		void createCircuitPmt(const int &gateID, const IntfNs::Cell *const c,
+													const IntfNs::Pmt *const pmt, int &numFI, int &numFO);
+		void determineGateType(const int &gateID, const IntfNs::Cell *const c,
+													 const IntfNs::Pmt *const pmt);
+		void createCircuitPO(int &numFI);
+		void createCircuitPPO(int &numFI);
+		void connectMultipleTimeFrame();
 		void assignFiMinLvl();
 	};
 
