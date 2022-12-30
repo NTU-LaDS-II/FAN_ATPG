@@ -56,9 +56,9 @@ namespace CoreNs
 		ParaValue activated_;
 		std::vector<std::stack<int>> events_;
 		std::vector<bool> processed_; // array of processed flags.  TRUE means this gate is processed
-		std::vector<int> recover_;		// array of gates to be recovered from the last fault injection
-																	//  this is to inject fault into the circuit
-																	//  faultInjectL_ =1 faultInjectH_ =0 inject a stuck-at zero fault
+		std::vector<int> recover_;    // array of gates to be recovered from the last fault injection
+		                              //  this is to inject fault into the circuit
+		                              //  faultInjectL_ =1 faultInjectH_ =0 inject a stuck-at zero fault
 		std::vector<std::array<ParaValue, 5>> faultInjectL_;
 		std::vector<std::array<ParaValue, 5>> faultInjectH_;
 

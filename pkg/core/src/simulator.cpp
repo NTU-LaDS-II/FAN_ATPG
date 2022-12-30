@@ -61,10 +61,10 @@ void Simulator::eventFaultSim()
 // Function   [ void Simulator::pfFaultSim(PatternProcessor *, FaultListExtract *) ]
 // Author     [ littleshamoo ]
 // Synopsis   [ usage: perform parallel fault simulation on all patterns.
-//					   call pfFaultSim(FaultPtrList &remain) for each pattern
-//				in:	   a set of pattern
-//				out:   void //TODO not void
-//			  ]
+//              call pfFaultSim(FaultPtrList &remain) for each pattern
+//              in:	   a set of pattern
+//              out:   void //TODO not void
+//            ]
 // Date       [ ]
 // **************************************************************************
 void Simulator::pfFaultSim(PatternProcessor *pcoll, FaultListExtract *fListExtract)
