@@ -23,16 +23,16 @@ namespace CoreNs
 	class Simulator
 	{
 	public:
-		Simulator(Circuit *cir);
+		inline Simulator(Circuit *cir);
 		// ~Simulator();
 
 		// used by both parallel pattern and parallel fault
-		void setNdet(const int &ndet); // this for n-detect
-		void goodSim();
-		void goodSimCopyToFault();
-		void goodEval(const int &i);
-		void faultEval(const int &i);
-		void assignPatternToPi(const Pattern &p);
+		inline void setNdet(const int &ndet); // this for n-detect
+		inline void goodSim();
+		inline void goodSimCopyToFault();
+		inline void goodEval(const int &i);
+		inline void faultEval(const int &i);
+		inline void assignPatternToPi(const Pattern &p);
 
 		void eventFaultSim();
 
@@ -117,11 +117,6 @@ namespace CoreNs
 	// 	// delete[] faultInjectL_;
 	// 	// delete[] faultInjectH_;
 	// }
-
-	// Make error if goodSim(), assignPatternToPi(const Pattern &p), (goodEval(const int &i))
-	// are defined in simulator.cpp. Looks like undefined reference to the function
-	// Another make error if eventFaultSim() is defined in simulator.h.
-	// Looks like multiple definition of function
 
 	// **************************************************************************
 	// Function   [ Simulator::setNdet ]
