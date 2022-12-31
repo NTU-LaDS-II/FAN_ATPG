@@ -16,9 +16,9 @@ namespace CoreNs
 	{
 	public:
 		DecisionTreeNode(const int &gateId, const int &startPoint);
-		int gateId_;										// the gate ID of the decision
-		int startPointInBacktrackList_; // starting point in backtrackList of gid_ ;
-		bool mark_;											// initially, mark=false;  when backtracked once, this is changed to true; when backtracked again, this decision is poped out.
+		int gateId_;																// the gate ID of the decision
+		int startPointInBacktrackImplicatedGateIDs; // starting point in backtrackList of gid_ ;
+		bool mark_;																	// initially mark_=false, when backtracked once, mark_ is changed to true, when backtracked again, this decision is popped out.
 	};
 
 	class DecisionTree
@@ -41,7 +41,7 @@ namespace CoreNs
 	inline DecisionTreeNode::DecisionTreeNode(const int &gateId, const int &startPoint)
 	{
 		gateId_ = gateId;
-		startPointInBacktrackList_ = startPoint;
+		startPointInBacktrackImplicatedGateIDs = startPoint;
 		mark_ = false;
 	}
 
@@ -64,7 +64,7 @@ namespace CoreNs
 	{
 		DecisionTreeNode &node = tree_.back();
 		gateId = node.gateId_;
-		startPoint = node.startPointInBacktrackList_;
+		startPoint = node.startPointInBacktrackImplicatedGateIDs;
 
 		if (node.mark_)
 		{

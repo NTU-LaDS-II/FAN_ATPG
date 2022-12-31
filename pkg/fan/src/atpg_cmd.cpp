@@ -1316,7 +1316,7 @@ bool RunAtpgCmd::exec(const std::vector<std::string> &argv)
 	std::cout << "#  Performing pattern generation ...\n";
 	fanMgr_->tmusg.periodStart();
 
-	fanMgr_->atpg->generatePatternSet(fanMgr_->pcoll, fanMgr_->fListExtract);
+	fanMgr_->atpg->generatePatternSet(fanMgr_->pcoll, fanMgr_->fListExtract, true);
 
 	fanMgr_->tmusg.getPeriodUsage(fanMgr_->atpgStat);
 	std::cout << "#  Finished pattern generation";

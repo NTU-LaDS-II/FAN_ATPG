@@ -30,10 +30,10 @@ namespace CoreNs
 	public:
 		inline Atpg(Circuit *pCircuit, Simulator *pSimulator);
 
-		enum SINGLE_PATTERN_GENERATION_STATUS 
+		enum SINGLE_PATTERN_GENERATION_STATUS
 		{
 			PATTERN_FOUND = 0,
-			FAULT_UNTESTABLE, 
+			FAULT_UNTESTABLE,
 			ABORT
 		};
 		enum GATE_LINE_TYPE
@@ -68,7 +68,7 @@ namespace CoreNs
 		};
 
 		// class Atpg main method
-		void generatePatternSet(PatternProcessor *pPatternProcessor, FaultListExtract *pFaultListExtracter);
+		void generatePatternSet(PatternProcessor *pPatternProcessor, FaultListExtract *pFaultListExtractor, bool MTODTC);
 
 	private:
 		int numberOfHeadLine_;																		// number of headlines
@@ -83,21 +83,20 @@ namespace CoreNs
 		std::vector<int> gateID_to_reachableByTargetFault_;				// TRUE means this fanout is in fanout cone of target fault;
 		std::vector<GATE_LINE_TYPE> gateID_to_lineType_;					// array of line types for all gates: FREE HEAD or BOUND
 		std::vector<XPATH_STATE> gateID_to_xPathStatus_;					// changed by wang
-		std::vector<std::vector<int>> gateID_to_uniquePath_;			// list of gates on the unique path associated with a D-forontier.  when there is only one gate in D-frontier, xPathTracing will update this information.
+		std::vector<std::vector<int>> gateID_to_uniquePath_;			// list of gates on the unique path associated with a D-frontier.  when there is only one gate in D-frontier, xPathTracing will update this information.
 		std::vector<std::stack<int>> circuitLevel_to_EventStack_; // std::stack<int> *circuitLevel_to_EventStack_ => std::stack<int> *circuitLevel_to_EventStack_
-		std::vector<int> backtrackList_;													// a vector for backtracking
-		std::vector<int> backtraceResetList_;											// the gate that need to have gate.n0_ and gate.n1_ reset after backtrace
-		std::vector<int> unjustified_;														// J-frontier list
-		std::vector<int> initObject_;															// Initial fault activation objectives or D-frontier propagation objectives.
-		std::vector<int> currentObject_;													// The objective that is selected from final objectives.
-		std::vector<int> fanoutObjective_;												// the fanout objectives recorded in atpg
-		std::vector<int> headObject_;															// objectives at the headlines
-		std::vector<int> finalObject_;														// final objectives include fanout objectives and headline objectives.
-		std::vector<int> dFrontier_;															// D-frontier list
-		DecisionTree decisionTree_;
-		std::vector<bool> isInEventStack_;
-
-		Gate *firstTimeFrameHeadLine_;
+		std::vector<int> backtrackImplicatedGateIDs_;							// vector[backTrackPoint] = start point of associated gateid
+		std::vector<int> gateIDsToResetAfterBackTrace_;						// the gate that need to have gate.n0_ and gate.n1_ reset after backtrace
+		std::vector<int> unjustifiedGateIDs_;											// J-frontier list
+		std::vector<int> initialObjectives_;											// Initial fault activation objectives or D-frontier propagation objectives.
+		std::vector<int> currentObjectives_;											// The objective that is selected from final objectives.
+		std::vector<int> fanoutObjectives_;												// the fanout objectives recorded in atpg
+		std::vector<int> headObjectives_;													// objectives at the headlines
+		std::vector<int> finalObjectives_;												// final objectives include fanout objectives and headline objectives.
+		std::vector<int> dFrontiers_;															// D-frontier list
+		DecisionTree backtrackDecisionTree_;
+		std::vector<int> isInEventStack_;
+		Gate *firstTimeFrameHeadLine_; // for multiple time frame
 
 		// ---------------private methods----------------- //
 
@@ -109,7 +108,7 @@ namespace CoreNs
 		void identifyUniquePath();
 
 		void TransitionDelayFaultATPG(FaultPtrList &faultListToGen, PatternProcessor *pPatternProcessor, int &numOfAtpgUntestableFaults);
-		void StuckAtFaultATPGWithDTC(FaultPtrList &faultListToGen, PatternProcessor *pPatternProcessor, int &numOfAtpgUntestableFaults);
+		void StuckAtFaultATPG(FaultPtrList &faultListToGen, PatternProcessor *pPatternProcessor, int &numOfAtpgUntestableFaults);
 
 		Gate *getWireForActivation(const Fault &fault);
 		void setValueAndRunImp(Gate &gate, const Value &val);
@@ -159,7 +158,7 @@ namespace CoreNs
 		IMPLICATION_STATUS evaluation(Gate *pGate);
 		IMPLICATION_STATUS faultyGateEvaluation(Gate *pGate);
 
-		// statuc test compression
+		// static test compression
 		void staticTestCompressionByReverseFaultSimulation(PatternProcessor *pPatternProcessor, FaultPtrList &originalFaultList);
 
 		int firstTimeFrameSetUp(Fault &fault); // this function is for multiple time frame
@@ -174,7 +173,7 @@ namespace CoreNs
 
 		inline void pushGateToEventStack(const int &gateID); // push events to the event list of corresponding level
 		inline int popEventStack(const int &level);
-		inline int pushGateFanoutsToEventStack(const int &gateID); // push all the gate's output to eventStack, return pushed gatecount
+		inline int pushGateFanoutsToEventStack(const int &gateID); // push all the gate's output to eventStack, return pushed gate count
 
 		inline void clearAllEvent();
 
@@ -212,7 +211,7 @@ namespace CoreNs
 		void resetIsInEventStack();																// not used
 		void XFill(PatternProcessor *pPatternProcessor);					// redundant function, removed by wang
 
-		// considered unneccesary function
+		// considered unnecessary function
 		// void pushGateFanoutsToEventStack(const int &gateID); overloaded function without readability, removed by wang
 		// void pushInputEvents(const int &gateID, int index);, bad readability and performance, removed by wang
 	};
@@ -233,22 +232,22 @@ namespace CoreNs
 
 		firstTimeFrameHeadLine_ = NULL;
 
-		backtrackList_.reserve(pCircuit->totalGate_);
+		backtrackImplicatedGateIDs_.reserve(pCircuit->totalGate_);
 
-		dFrontier_.reserve(MAX_LIST_SIZE);
-		fanoutObjective_.reserve(MAX_LIST_SIZE);
-		initObject_.reserve(MAX_LIST_SIZE);
-		headObject_.reserve(MAX_LIST_SIZE);
-		finalObject_.reserve(MAX_LIST_SIZE);
-		unjustified_.reserve(MAX_LIST_SIZE);
-		currentObject_.reserve(MAX_LIST_SIZE);
-		isInEventStack_.resize(pCircuit->totalGate_, false);
+		dFrontiers_.reserve(MAX_LIST_SIZE);
+		fanoutObjectives_.reserve(MAX_LIST_SIZE);
+		initialObjectives_.reserve(MAX_LIST_SIZE);
+		headObjectives_.reserve(MAX_LIST_SIZE);
+		finalObjectives_.reserve(MAX_LIST_SIZE);
+		unjustifiedGateIDs_.reserve(MAX_LIST_SIZE);
+		currentObjectives_.reserve(MAX_LIST_SIZE);
+		isInEventStack_.resize(pCircuit->totalGate_);
 	}
 
 	// **************************************************************************
 	// Function   [ Atpg::evaluateGoodVal ]
-	// Commentor  [ WYH ]
-	// Synopsis   [ usage: Given the gate without falut, and generate the output,
+	// Commenter  [ WYH ]
+	// Synopsis   [ usage: Given the gate without fault, and generate the output,
 	//                     and return.
 	//              in:    Gate& gate
 	//              out:   Value
@@ -317,7 +316,7 @@ namespace CoreNs
 
 	// **************************************************************************
 	// Function   [ Atpg::evaluateFaultyVal ]
-	// Commentor  [ CAL ]
+	// Commenter  [ CAL ]
 	// Synopsis   [ usage: deal with 2 frame PPI, check it's D or D' logic
 	//              in:    gate
 	//              out:   value
@@ -719,7 +718,7 @@ namespace CoreNs
 
 	// **************************************************************************
 	// Function   [ Atpg::writeGateValToPatternPI ]
-	// Commentor  [ CAL ]
+	// Commenter  [ CAL ]
 	// Synopsis   [ usage: assign primary input pattern value
 	//              in:    Pattern list
 	//              out:   void
@@ -754,7 +753,7 @@ namespace CoreNs
 
 	// **************************************************************************
 	// Function   [ Atpg::writeGoodSimValToPatternPO ]
-	// Commentor  [ CAL ]
+	// Commenter  [ CAL ]
 	// Synopsis   [ usage: assign primary output pattern value
 	//              in:    Pattern list
 	//              out:   void
@@ -994,7 +993,7 @@ namespace CoreNs
 	// should be moved to pattern.h
 	// **************************************************************************
 	// Function   [ Atpg::randomFill ]
-	// Commentor  [ CAL ]
+	// Commenter  [ CAL ]
 	// Synopsis   [ usage: random to set the don't care pattern 1 or 0
 	//              in:    Pattern
 	//              out:   void

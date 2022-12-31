@@ -12,14 +12,14 @@ using namespace CoreNs;
 
 // **************************************************************************
 // Function   [ Atpg::generatePatternSet ]
-// Commentor  [ CAL ]
+// Commenter  [ CAL ]
 // Synopsis   [ usage: the main function of atpg generate the complete test pattern set for faults
 //              in:    PatternProcessor, FaultListExtract
 //              out:   void //TODO not void
 //            ]
 // Date       [ Ver. 1.0 started 2013/08/13 ]
 // **************************************************************************
-void Atpg::generatePatternSet(PatternProcessor *pPatternProcessor, FaultListExtract *pFaultListExtracter)
+void Atpg::generatePatternSet(PatternProcessor *pPatternProcessor, FaultListExtract *pFaultListExtractor, bool MTODTC)
 {
 	Fault *pCurrentFault = NULL;
 	FaultPtrList originalFaultPtrListForPatternGeneration, reorderedFaultPtrListForPatternGeneration;
@@ -27,7 +27,7 @@ void Atpg::generatePatternSet(PatternProcessor *pPatternProcessor, FaultListExtr
 	pPatternProcessor->init(pCircuit_);
 
 	// setting faults for running ATPG
-	for (Fault *pFault : pFaultListExtracter->faultsInCircuit_)
+	for (Fault *pFault : pFaultListExtractor->faultsInCircuit_)
 	{
 		const bool faultIsQualified = (pFault->faultState_ != Fault::DT && pFault->faultState_ != Fault::RE && pFault->faultyLine_ >= 0);
 		if (faultIsQualified)
@@ -45,7 +45,7 @@ void Atpg::generatePatternSet(PatternProcessor *pPatternProcessor, FaultListExtr
 	// if the fault is undetected, run ATPG on it
 	const double faultPtrListSize = (double)(originalFaultPtrListForPatternGeneration.size());
 	const int halfListSize = faultPtrListSize / 2.0;
-	const int iterations = log2(faultPtrListSize) + 1;
+	const int iterations = MTODTC ? (log2(faultPtrListSize) + 1) : 1;
 	int minNumOfFaultsLeft = INFINITE;
 	int numOfAtpgUntestableFaults = 0;
 	std::vector<Pattern> bestTestPatternSet;
@@ -80,7 +80,7 @@ void Atpg::generatePatternSet(PatternProcessor *pPatternProcessor, FaultListExtr
 				break;
 			}
 
-			// the fault is not popped in previous call of StuckAtFaultATPGWithDTC()
+			// the fault is not popped in previous call of StuckAtFaultATPG()
 			// => the fault is neither aborted or untestable => a pattern was found => detected fault
 			if (pCurrentFault == reorderedFaultPtrListForPatternGeneration.front())
 			{
@@ -97,7 +97,7 @@ void Atpg::generatePatternSet(PatternProcessor *pPatternProcessor, FaultListExtr
 			}
 			else
 			{
-				StuckAtFaultATPGWithDTC(reorderedFaultPtrListForPatternGeneration, pPatternProcessor, numOfAtpgUntestableFaults);
+				StuckAtFaultATPG(reorderedFaultPtrListForPatternGeneration, pPatternProcessor, numOfAtpgUntestableFaults);
 			}
 		}
 
@@ -135,30 +135,18 @@ void Atpg::generatePatternSet(PatternProcessor *pPatternProcessor, FaultListExtr
 	{
 		staticTestCompressionByReverseFaultSimulation(pPatternProcessor, originalFaultPtrListForPatternGeneration);
 	}
-
-	// if (pPatternProcessor->XFill_ == PatternProcessor::ON) XFill(pPatternProcessor);, unecessary, alread Xfilled in previsous functions, removed by wang
 }
 
 // **************************************************************************
 // Function   [ Atpg::setupCircuitParameter ]
-// Commentor  [ KOREAL ]
+// Commenter  [ KOREAL ]
 // Synopsis   [ usage: initialize gate's data including
-//					    numOfZero = {0} numOfOne  = {0} // unneccesary by wang
-//							gateID_to_valModified_ // initialized in calGateDepthFromPO()
 //						circuitLevel_to_EventStack_
 //            ]
 // Date       [ KOREAL Ver. 1.0 started 2013/08/10 ]
 // **************************************************************************
 void Atpg::setupCircuitParameter()
 {
-	// vector is 0 at the start and can be initialized in constructor hence, removed by wang
-	// for (int i = 0; i < pCircuit_->totalGate_; ++i)
-	// {
-	// 	gateID_to_n0_[i] = 0;          // unneccesary
-	// 	gateID_to_n1_[i] = 0;          // unneccesary
-	// 	gateID_to_valModified_[i] = 0; // moved to calGateDepthFromPO() by wang
-	// }
-
 	// set depthFromPo_
 	calGateDepthFromPO();
 
@@ -174,7 +162,7 @@ void Atpg::setupCircuitParameter()
 
 // **************************************************************************
 // Function   [ Atpg::calGateDepthFromPO ]
-// Commentor  [ CAL ]
+// Commenter  [ CAL ]
 // Synopsis   [ usage: Calculate the depthFromPo_ of each gate.
 //              notes:
 //                If there is no path from a gate to PO/PPO,
@@ -213,7 +201,7 @@ void Atpg::calGateDepthFromPO()
 
 // **************************************************************************
 // Function   [ Atpg::identifyLineParameter ]
-// Commentor  [ CKY ]
+// Commenter  [ CKY ]
 // Synopsis   [ usage: fill in LineParameter(FREE or HEAD or BOUND)
 //              in:    void //TODO
 //              out:   void //TODO
@@ -228,7 +216,7 @@ void Atpg::identifyLineParameter()
 	{
 		const int &gateID = gate.gateId_;
 
-		gateID_to_lineType_[gateID] = FREE_LINE; // initialize to freeline
+		gateID_to_lineType_[gateID] = FREE_LINE; // initialize to free line
 
 		if (gate.gateType_ != Gate::PI && gate.gateType_ != Gate::PPI)
 		{
@@ -283,7 +271,7 @@ void Atpg::identifyLineParameter()
 
 // **************************************************************************
 // Function   [ Atpg::identifyDominator ]
-// Commentor  [ CAL ]
+// Commenter  [ CAL ]
 // Synopsis   [ usage: identify Dominator of the output gate
 //                     for unique sensitization. After this function, each
 //                     gate have one or zero Dominator in its gateID_to_uniquePath_ vector
@@ -374,9 +362,9 @@ void Atpg::identifyDominator()
 
 // **************************************************************************
 // Function   [ Atpg::identifyUniquePath ]
-// Commentor  [ CAL ]
+// Commenter  [ CAL ]
 // Synopsis   [ usage: compute the gateID_to_uniquePath_
-//                In unique path sensitizatoin phase, we will need to know
+//                In unique path sensitization phase, we will need to know
 //                if the inputs of a gate is fault reachable. Then, we can
 //                prevent to assign non-controlling value to them.
 //
@@ -439,7 +427,7 @@ void Atpg::identifyUniquePath()
 
 // **************************************************************************
 // Function   [ Atpg::TransitionDelayFaultATPG ]
-// Commentor  [ HKY CYW ]
+// Commenter  [ HKY CYW ]
 // Synopsis   [ usage: do transition delay fault model ATPG
 //              in:    Pattern list, Fault list, int numOfAtpgUntestableFaults
 //              out:   void//TODO
@@ -483,59 +471,14 @@ void Atpg::TransitionDelayFaultATPG(FaultPtrList &faultListToGen, PatternProcess
 
 // **************************************************************************
 // Function   [ Atpg::StuckAtFaultATPG ]
-// Commentor  [ HKY CYW ]
-// Synopsis   [ usage: do stuck at fault model ATPG
-//              in:    Pattern list, Fault list, int numOfAtpgUntestableFaults
-//              out:   void //TODO
-//            ]
-// Date       [ HKY Ver. 1.0 started 2014/09/01 ]
-// **************************************************************************
-// void Atpg::StuckAtFaultATPG(FaultPtrList &faultListToGen, PatternProcessor *pPatternProcessor, int &numOfAtpgUntestableFaults)
-// {
-// 	SINGLE_PATTERN_GENERATION_STATUS result = generateSinglePatternOnTargetFault(*faultListToGen.front(), false);
-// 	if (result == PATTERN_FOUND)
-// 	{
-// 		Pattern *p = new Pattern;
-// 		p->primaryInputs1st_ = new Value[pCircuit_->numPI_];
-// 		p->pseudoPrimaryInputs_ = new Value[pCircuit_->numPPI_];
-// 		p->primaryOutputs1st_ = new Value[pCircuit_->numPO_];
-// 		p->pseudoPrimaryOutputs_ = new Value[pCircuit_->numPPI_];
-// 		pPatternProcessor->patternVector_.push_back(p);
-// 		writeGateValToPatternPI(pPatternProcessor->patternVector_.back());
-// 		// if static compression is OFF and random fill in on
-// 		// do random x-fill
-// 		if ((pPatternProcessor->staticCompression_ == PatternProcessor::OFF) && (pPatternProcessor->XFill_ == PatternProcessor::ON))
-// 		{
-// 			randomFill(pPatternProcessor->patternVector_.back());
-// 		}
-// 		pSimulator_->pfFaultSim(pPatternProcessor->patternVector_.back(), faultListToGen);
-// 		pSimulator_->goodSim();
-// 		writeGoodSimValToPatternPO(pPatternProcessor->patternVector_.back());
-// 	}
-// 	else if (result == FAULT_UNTESTABLE)
-// 	{
-// 		faultListToGen.front()->faultState_ = Fault::AU;
-// 		numOfAtpgUntestableFaults += faultListToGen.front()->equivalent_;
-// 		faultListToGen.pop_front();
-// 	}
-// 	else
-// 	{
-// 		faultListToGen.front()->faultState_ = Fault::AB;
-// 		faultListToGen.push_back(faultListToGen.front());
-// 		faultListToGen.pop_front();
-// 	}
-// }
-
-// **************************************************************************
-// Function   [ Atpg::StuckAtFaultATPGWithDTC ]
-// Commentor  [ CAL ]
+// Commenter  [ CAL ]
 // Synopsis   [ usage: do stuck at fault model ATPG with dynamic test compression
 //              in:    Pattern list, Fault list, int numOfAtpgUntestableFaults
 //              out:   void //add pattern to PatternProcessor*
 //            ]
 // Date       [ started 2020/07/07    last modified 2021/09/14 ]
 // **************************************************************************
-void Atpg::StuckAtFaultATPGWithDTC(FaultPtrList &faultListToGen, PatternProcessor *pPatternProcessor, int &numOfAtpgUntestableFaults)
+void Atpg::StuckAtFaultATPG(FaultPtrList &faultListToGen, PatternProcessor *pPatternProcessor, int &numOfAtpgUntestableFaults)
 {
 	SINGLE_PATTERN_GENERATION_STATUS result = generateSinglePatternOnTargetFault(*faultListToGen.front(), false);
 	if (result == PATTERN_FOUND)
@@ -563,19 +506,19 @@ void Atpg::StuckAtFaultATPGWithDTC(FaultPtrList &faultListToGen, PatternProcesso
 					continue;
 				}
 
-				Gate *pGateForAtivation = getWireForActivation(*pFault);
-				if (((pGateForAtivation->atpgVal_ == L) && (pFault->faultType_ == Fault::SA0)) ||
-						((pGateForAtivation->atpgVal_ == H) && (pFault->faultType_ == Fault::SA1)))
+				Gate *pGateForActivation = getWireForActivation(*pFault);
+				if (((pGateForActivation->atpgVal_ == L) && (pFault->faultType_ == Fault::SA0)) ||
+						((pGateForActivation->atpgVal_ == H) && (pFault->faultType_ == Fault::SA1)))
 				{
 					continue;
 				}
 
 				// Activation check
-				if (pGateForAtivation->atpgVal_ != X)
+				if (pGateForActivation->atpgVal_ != X)
 				{
 					if ((pFault->faultType_ == Fault::SA0) || (pFault->faultType_ == Fault::SA1))
 					{
-						setValueAndRunImp((*pGateForAtivation), X);
+						setValueAndRunImp((*pGateForActivation), X);
 					}
 					else
 					{
@@ -583,7 +526,7 @@ void Atpg::StuckAtFaultATPGWithDTC(FaultPtrList &faultListToGen, PatternProcesso
 					}
 				}
 
-				if (isExistXPath(pGateForAtivation))
+				if (isExistXPath(pGateForActivation))
 				{
 					// TO-DO homework 05 implement DTC here end of TO-DO
 					if (generateSinglePatternOnTargetFault(*pFault, true) == PATTERN_FOUND)
@@ -603,7 +546,7 @@ void Atpg::StuckAtFaultATPGWithDTC(FaultPtrList &faultListToGen, PatternProcesso
 				}
 				else
 				{
-					setValueAndRunImp((*pGateForAtivation), pGateForAtivation->prevAtpgValStored_);
+					setValueAndRunImp((*pGateForActivation), pGateForActivation->prevAtpgValStored_);
 				}
 			}
 		}
@@ -622,7 +565,6 @@ void Atpg::StuckAtFaultATPGWithDTC(FaultPtrList &faultListToGen, PatternProcesso
 		//  This function will assign pi/ppi stored in pats_.back() to
 		//  the gh_ and gl_ in each gate, and then it will run fault
 		//  simulation to drop fault.
-
 		pSimulator_->pfFaultSim(pPatternProcessor->patternVector_.back(), faultListToGen);
 
 		// After pSimulator_->pfFaultSim(pPatternProcessor->patternVector_.back(),faultListToGen) , the pi/ppi
@@ -647,7 +589,7 @@ void Atpg::StuckAtFaultATPGWithDTC(FaultPtrList &faultListToGen, PatternProcesso
 
 // **************************************************************************
 // Function   [ Atpg::getWireForActivation ]
-// Commentor  [ CAL ]
+// Commenter  [ CAL ]
 // Synopsis   [ usage:
 //                return the gate need for activation of a fault
 //              in:    void
@@ -658,22 +600,22 @@ void Atpg::StuckAtFaultATPGWithDTC(FaultPtrList &faultListToGen, PatternProcesso
 Gate *Atpg::getWireForActivation(const Fault &fault)
 {
 	bool isOutputFault = (fault.faultyLine_ == 0);
-	Gate *pGateForAtivation = NULL;
+	Gate *pGateForActivation = NULL;
 	Gate *pFaultyGate = &pCircuit_->circuitGates_[fault.gateID_];
 	if (!isOutputFault)
 	{
-		pGateForAtivation = &pCircuit_->circuitGates_[pFaultyGate->faninVector_[fault.faultyLine_ - 1]];
+		pGateForActivation = &pCircuit_->circuitGates_[pFaultyGate->faninVector_[fault.faultyLine_ - 1]];
 	}
 	else
 	{
-		pGateForAtivation = pFaultyGate;
+		pGateForActivation = pFaultyGate;
 	}
-	return pGateForAtivation;
+	return pGateForActivation;
 }
 
 // **************************************************************************
 // Function   [ Atpg::setValueAndRunImp ]
-// Commentor  [ CAL ]
+// Commenter  [ CAL ]
 // Synopsis   [ usage:
 //                Directly set the output of a gate to specific value and
 //                run implication by event driven.
@@ -689,10 +631,10 @@ void Atpg::setValueAndRunImp(Gate &gate, const Value &val)
 	for (const int &fanoutID : gate.fanoutVector_)
 	{
 		Gate &og = pCircuit_->circuitGates_[fanoutID];
-		if (!isInEventStack_[og.gateId_])
+		if (isInEventStack_[og.gateId_] == 0)
 		{
 			circuitLevel_to_EventStack_[og.numLevel_].push(og.gateId_);
-			isInEventStack_[og.gateId_] = true;
+			isInEventStack_[og.gateId_] = 1;
 		}
 	}
 
@@ -703,7 +645,7 @@ void Atpg::setValueAndRunImp(Gate &gate, const Value &val)
 		{
 			int gateID = circuitLevel_to_EventStack_[i].top();
 			circuitLevel_to_EventStack_[i].pop();
-			isInEventStack_[gateID] = false;
+			isInEventStack_[gateID] = 0;
 			Gate &currGate = pCircuit_->circuitGates_[gateID];
 			Value newValue = evaluateGoodVal(currGate);
 			if (currGate.atpgVal_ != newValue)
@@ -712,10 +654,10 @@ void Atpg::setValueAndRunImp(Gate &gate, const Value &val)
 				for (int j = 0; j < currGate.numFO_; ++j)
 				{
 					Gate &og = pCircuit_->circuitGates_[currGate.fanoutVector_[j]];
-					if (!isInEventStack_[og.gateId_])
+					if (isInEventStack_[og.gateId_] == 0)
 					{
 						circuitLevel_to_EventStack_[og.numLevel_].push(og.gateId_);
-						isInEventStack_[og.gateId_] = true;
+						isInEventStack_[og.gateId_] = 1;
 					}
 				}
 			}
@@ -725,7 +667,7 @@ void Atpg::setValueAndRunImp(Gate &gate, const Value &val)
 
 // **************************************************************************
 // Function   [ Atpg::resetPreValue ]
-// Commentor  [ CAL ]
+// Commenter  [ CAL ]
 // Synopsis   [ usage: Reset the preV_ of each gate to X. ]
 // Date       [ started 2020/07/07    last modified 2020/07/07 ]
 // **************************************************************************
@@ -739,7 +681,7 @@ void Atpg::resetPreValue()
 
 // **************************************************************************
 // Function   [ Atpg::storeCurrentGateValue ]
-// Commentor  [ CAL ]
+// Commenter  [ CAL ]
 // Synopsis   [ usage:
 //                Store gate.atpgVal_ to gate.prevAtpgValStored_
 //              in:   void
@@ -762,7 +704,7 @@ int Atpg::storeCurrentGateValue()
 
 	if (numAssignedValueChanged != 0)
 	{
-		std::cerr << "Bug: storeCurrentGateValue detects the numAssignedValueChanged is not 0.\n";
+		std::cerr << "Bug: storeCurrentGateValue detects the numAssignedValueChanged is not 0\n";
 		std::cin.get();
 	}
 	return numAssignedValueChanged;
@@ -770,7 +712,7 @@ int Atpg::storeCurrentGateValue()
 
 // **************************************************************************
 // Function   [ Atpg::clearAllFaultEffectBySimulation ]
-// Commentor  [ CAL ]
+// Commenter  [ CAL ]
 // Synopsis   [ usage:
 //                Clear all the fault effects before test generation for next
 //                target fault.
@@ -795,24 +737,11 @@ void Atpg::clearAllFaultEffectBySimulation()
 			gate.atpgVal_ = evaluateGoodVal(gate);
 		}
 	}
-
-	// Remove fault effects in input gates
-	// for (int i = 0; i < numOfInputGate; ++i)
-	// {
-	// 	Gate &gate = pCircuit_->circuitGates_[i];
-	// 	clearOneGateFaultEffect(gate);
-	// }
-	// // Simulate the whole circuit ( gates were sorted by circuitLvl_ in "pCircuit_->circuitGates_" )
-	// for (int i = 0; i < pCircuit_->totalGate_; ++i)
-	// {
-	// 	Gate &gate = pCircuit_->circuitGates_[i];
-	// 	gate.atpgVal_ = evaluateGoodVal(gate);
-	// }
 }
 
 // **************************************************************************
 // Function   [ Atpg::clearOneGateFaultEffect ]
-// Commentor  [ CAL ]
+// Commenter  [ CAL ]
 // Synopsis   [ usage:
 //                Replace value of a gate from D/B to H/L.
 //              in:    Gate
@@ -834,7 +763,7 @@ void Atpg::clearOneGateFaultEffect(Gate &gate)
 
 // **************************************************************************
 // Function   [ Atpg::generateSinglePatternOnTargetFault ]
-// Commentor  [ KOREAL ]
+// Commenter  [ KOREAL ]
 // Synopsis   [ usage: Given a fault, generate the pattern
 //              in:    fault isDTC
 //              out:   PATTERN_GENERATION_STATUS(PATTERN_FOUND = 0, FAULT_UNTESTABLE, ABORT) //TODO
@@ -850,7 +779,7 @@ void Atpg::clearOneGateFaultEffect(Gate &gate)
 Atpg::SINGLE_PATTERN_GENERATION_STATUS Atpg::generateSinglePatternOnTargetFault(Fault fault, bool isDTC)
 {
 
-	int BackImpLevel = 0;																				// backward imply level
+	int backwardImplicationLevel = 0;														// backward imply level
 	int numOfBacktrack = 0;																			// backtrack times
 	bool Finish = false;																				// Finish is true when whole pattern generation process is done
 	bool faultPropToPO = false;																	// faultPropToPO is true when the fault is propagate to the PO
@@ -860,9 +789,9 @@ Atpg::SINGLE_PATTERN_GENERATION_STATUS Atpg::generateSinglePatternOnTargetFault(
 	BACKTRACE_STATUS backtraceFlag;															// backtrace flag including    { INITIAL, CHECK_AND_SELECT, CURRENT_OBJ_DETERMINE, FAN_OBJ_DETERMINE }
 	SINGLE_PATTERN_GENERATION_STATUS genStatus = PATTERN_FOUND; // the atpgStatus that will be return, including		{ PATTERN_FOUND, FAULT_UNTESTABLE, ABORT }
 
-	// Get the gate whose output is fault line and set the BackImpLevel
+	// Get the gate whose output is fault line and set the backwardImplicationLevel
 	// SET A FAULT SIGNAL
-	pFaultyLine = initialize(fault, BackImpLevel, implyStatus, isDTC);
+	pFaultyLine = initialize(fault, backwardImplicationLevel, implyStatus, isDTC);
 	// If there's no such gate, return FAULT_UNTESTABLE
 	if (!pFaultyLine)
 	{
@@ -874,11 +803,11 @@ Atpg::SINGLE_PATTERN_GENERATION_STATUS Atpg::generateSinglePatternOnTargetFault(
 	while (!Finish)
 	{
 		// Implication
-		if (!Implication(implyStatus, BackImpLevel))
+		if (!Implication(implyStatus, backwardImplicationLevel))
 		{
 			// implication INCONSISTENCY
 			// record the number of backtrack
-			if (decisionTree_.lastNodeMarked())
+			if (backtrackDecisionTree_.lastNodeMarked())
 			{
 				++numOfBacktrack;
 			}
@@ -891,14 +820,14 @@ Atpg::SINGLE_PATTERN_GENERATION_STATUS Atpg::generateSinglePatternOnTargetFault(
 
 			clearAllEvent();
 
-			// IS THERE AN UNTRIED COMBINATION OF VALUES ON ASSIGNED HEAD LINES OR FANOOUT POINTS?
+			// IS THERE AN UNTRIED COMBINATION OF VALUES ON ASSIGNED HEAD LINES OR FANOUT POINTS?
 			// If yes, SET UNTRIED COMBINATION OF VALUES in the function backtrack
-			if (backtrack(BackImpLevel))
+			if (backtrack(backwardImplicationLevel))
 			{
 				// backtrack success and initialize the data
 				// SET BACKTRACE FLAG
 				backtraceFlag = INITIAL;
-				implyStatus = (BackImpLevel > 0) ? BACKWARD : FORWARD;
+				implyStatus = (backwardImplicationLevel > 0) ? BACKWARD : FORWARD;
 				pLastDFrontier = NULL;
 			}
 			else
@@ -951,7 +880,7 @@ Atpg::SINGLE_PATTERN_GENERATION_STATUS Atpg::generateSinglePatternOnTargetFault(
 			{
 				// no frontier can propagate to the PO
 				// record the number of backtrack
-				if (decisionTree_.lastNodeMarked())
+				if (backtrackDecisionTree_.lastNodeMarked())
 				{
 					++numOfBacktrack;
 				}
@@ -964,14 +893,14 @@ Atpg::SINGLE_PATTERN_GENERATION_STATUS Atpg::generateSinglePatternOnTargetFault(
 
 				clearAllEvent();
 
-				// IS THERE AN UNTRIED COMBINATION OF VALUES ON ASSIGNED HEAD LINES OR FANOOUT POINTS?
+				// IS THERE AN UNTRIED COMBINATION OF VALUES ON ASSIGNED HEAD LINES OR FANOUT POINTS?
 				// If yes, SET UNTRIED COMBINATION OF VALUES in the function backtrack
-				if (backtrack(BackImpLevel))
+				if (backtrack(backwardImplicationLevel))
 				{
 					// backtrack success and initialize the data
 					// SET BACKTRACE FLAG
 					backtraceFlag = INITIAL;
-					implyStatus = BackImpLevel > 0 ? BACKWARD : FORWARD;
+					implyStatus = (backwardImplicationLevel > 0) ? BACKWARD : FORWARD;
 					pLastDFrontier = NULL;
 				}
 				else
@@ -986,27 +915,27 @@ Atpg::SINGLE_PATTERN_GENERATION_STATUS Atpg::generateSinglePatternOnTargetFault(
 			{
 				// There exist just one path to the PO
 				// UNIQUE SENSITIZATION
-				BackImpLevel = uniquePathSensitize(pCircuit_->circuitGates_[dFrontier_[0]]);
+				backwardImplicationLevel = uniquePathSensitize(pCircuit_->circuitGates_[dFrontiers_[0]]);
 				// Unique Sensitization fail
-				if (BackImpLevel == UNIQUE_PATH_SENSITIZE_FAIL)
+				if (backwardImplicationLevel == UNIQUE_PATH_SENSITIZE_FAIL)
 				{
 					// If UNIQUE_PATH_SENSITIZE_FAIL, the number of gates in d-frontier in the next while loop
 					// and will backtrack
 					continue;
 				}
 				// Unique Sensitization success
-				if (BackImpLevel > 0)
+				if (backwardImplicationLevel > 0)
 				{
 					implyStatus = BACKWARD;
 					continue;
 				}
-				else if (BackImpLevel == 0)
+				else if (backwardImplicationLevel == 0)
 				{
 					continue;
 				}
 				else
 				{
-					// BackImpLevel < 0, find an objective and set backtraceFlag and pLastDFrontier
+					// backwardImplicationLevel < 0, find an objective and set backtraceFlag and pLastDFrontier
 					findFinalObjective(backtraceFlag, faultPropToPO, pLastDFrontier);
 					assignValueToFinalObject();
 					implyStatus = FORWARD;
@@ -1027,7 +956,7 @@ Atpg::SINGLE_PATTERN_GENERATION_STATUS Atpg::generateSinglePatternOnTargetFault(
 	return genStatus;
 }
 
-Gate *Atpg::initialize(Fault &fault, int &BackImpLevel, IMPLICATION_STATUS &implyStatus, bool isDTC)
+Gate *Atpg::initialize(Fault &fault, int &backwardImplicationLevel, IMPLICATION_STATUS &implyStatus, bool isDTC)
 {
 	Gate *gFaultyLine = &pCircuit_->circuitGates_[fault.gateID_];
 	currentTargetFault_ = fault;
@@ -1051,25 +980,25 @@ Gate *Atpg::initialize(Fault &fault, int &BackImpLevel, IMPLICATION_STATUS &impl
 		{
 			gFaultyLine->atpgVal_ = B;
 		}
-		backtrackList_.push_back(gFaultyLine->gateId_);
+		backtrackImplicatedGateIDs_.push_back(gFaultyLine->gateId_);
 
 		currentTargetHeadLineFault_ = setFreeFaultyGate(*gFaultyLine);
 		currentTargetFault_ = currentTargetHeadLineFault_;
-		BackImpLevel = 0;
+		backwardImplicationLevel = 0;
 		implyStatus = FORWARD;
 		fGate_id = currentTargetHeadLineFault_.gateID_;
 	}
 	else
 	{
-		BackImpLevel = setFaultyGate(fault);
+		backwardImplicationLevel = setFaultyGate(fault);
 	}
 
-	if (BackImpLevel < 0)
+	if (backwardImplicationLevel < 0)
 	{
 		return NULL;
 	}
 
-	dFrontier_.push_back(fGate_id);
+	dFrontiers_.push_back(fGate_id);
 
 	int Level = uniquePathSensitize(pCircuit_->circuitGates_[fGate_id]);
 	if (Level == UNIQUE_PATH_SENSITIZE_FAIL)
@@ -1077,9 +1006,9 @@ Gate *Atpg::initialize(Fault &fault, int &BackImpLevel, IMPLICATION_STATUS &impl
 		return NULL;
 	}
 
-	if (Level > BackImpLevel)
+	if (Level > backwardImplicationLevel)
 	{
-		BackImpLevel = Level;
+		backwardImplicationLevel = Level;
 		implyStatus = BACKWARD;
 	}
 
@@ -1091,9 +1020,9 @@ Gate *Atpg::initialize(Fault &fault, int &BackImpLevel, IMPLICATION_STATUS &impl
 			return NULL;
 		}
 
-		if (Level > BackImpLevel)
+		if (Level > backwardImplicationLevel)
 		{
-			BackImpLevel = Level;
+			backwardImplicationLevel = Level;
 			implyStatus = BACKWARD;
 		}
 	}
@@ -1102,18 +1031,18 @@ Gate *Atpg::initialize(Fault &fault, int &BackImpLevel, IMPLICATION_STATUS &impl
 
 void Atpg::initialList(bool initFlag)
 {
-	initObject_.clear();
-	currentObject_.clear();
-	fanoutObjective_.clear();
-	headObject_.clear();
-	finalObject_.clear();
+	initialObjectives_.clear();
+	currentObjectives_.clear();
+	fanoutObjectives_.clear();
+	headObjectives_.clear();
+	finalObjectives_.clear();
 
 	if (initFlag)
 	{
-		unjustified_.clear();
-		dFrontier_.clear();
-		backtrackList_.clear();
-		decisionTree_.clear();
+		unjustifiedGateIDs_.clear();
+		dFrontiers_.clear();
+		backtrackImplicatedGateIDs_.clear();
+		backtrackDecisionTree_.clear();
 		currentTargetHeadLineFault_ = Fault(); // NE
 		firstTimeFrameHeadLine_ = NULL;
 	}
@@ -1163,7 +1092,7 @@ void Atpg::initialNetlist(Gate &gFaultyLine, bool isDTC)
 
 // **************************************************************************
 // Function   [ Atpg::clearEventStack ]
-// Commentor  [ CAL ]
+// Commenter  [ CAL ]
 // Synopsis   [ usage:
 //                Clear circuitLevel_to_EventStack_ and carefully reset gateID_to_valModified_ and isInEventStack_
 //              in:    check isInEventStack_ correctness
@@ -1174,7 +1103,7 @@ void Atpg::initialNetlist(Gate &gFaultyLine, bool isDTC)
 void Atpg::clearEventStack(bool isDebug)
 {
 
-	// pop and unmark
+	// pop and remove mark
 	for (std::stack<int> &eventStack : circuitLevel_to_EventStack_)
 	{
 		while (!eventStack.empty())
@@ -1182,7 +1111,7 @@ void Atpg::clearEventStack(bool isDebug)
 			int gateID = eventStack.top();
 			eventStack.pop();
 			gateID_to_valModified_[gateID] = 0;
-			isInEventStack_[gateID] = false;
+			isInEventStack_[gateID] = 0;
 		}
 	}
 
@@ -1195,7 +1124,7 @@ void Atpg::clearEventStack(bool isDebug)
 			if (isInEventStack_[i])
 			{
 				std::cerr << "Warning clearEventStack found unexpected behavior\n";
-				isInEventStack_[i] = false;
+				isInEventStack_[i] = 0;
 				std::cin.get();
 			}
 		}
@@ -1204,9 +1133,9 @@ void Atpg::clearEventStack(bool isDebug)
 
 // **************************************************************************
 // Function   [ Atpg::Implication ]
-// Commentor  [ CLT ]
+// Commenter  [ CLT ]
 // Synopsis   [ usage: Do BACKWARD and FORWARD implication to gates in circuitLevel_to_EventStack_,
-//                     also put gates which can't be implied into unjustified_ list.
+//                     also put gates which can't be implied into unjustifiedGateIDs_ list.
 //              in:    atpgStatus(BACKWARD or FORWARD), StartLevel
 //              out:   bool
 //            ]
@@ -1289,7 +1218,7 @@ Atpg::IMPLICATION_STATUS Atpg::backwardImplication(Gate *pGate)
 		Value isINV = pGate->gateType_ == Gate::INV ? H : L;
 		pImpGate->atpgVal_ = cXOR2(pGate->atpgVal_, isINV);
 
-		backtrackList_.push_back(pImpGate->gateId_);
+		backtrackImplicatedGateIDs_.push_back(pImpGate->gateId_);
 		pushGateToEventStack(pGate->faninVector_[0]);
 		pushGateFanoutsToEventStack(pGate->faninVector_[0]);
 		implyStatus = BACKWARD;
@@ -1312,7 +1241,7 @@ Atpg::IMPLICATION_STATUS Atpg::backwardImplication(Gate *pGate)
 				pInputGate0->atpgVal_ = cXNOR2(pGate->atpgVal_, pInputGate1->atpgVal_);
 			}
 			gateID_to_valModified_[pGate->gateId_] = 1;
-			backtrackList_.push_back(pInputGate0->gateId_);
+			backtrackImplicatedGateIDs_.push_back(pInputGate0->gateId_);
 			pushGateToEventStack(pGate->faninVector_[0]);
 			pushGateFanoutsToEventStack(pGate->faninVector_[0]);
 		}
@@ -1327,14 +1256,14 @@ Atpg::IMPLICATION_STATUS Atpg::backwardImplication(Gate *pGate)
 				pInputGate1->atpgVal_ = cXNOR2(pGate->atpgVal_, pInputGate0->atpgVal_);
 			}
 			gateID_to_valModified_[pGate->gateId_] = 1;
-			backtrackList_.push_back(pInputGate1->gateId_);
+			backtrackImplicatedGateIDs_.push_back(pInputGate1->gateId_);
 			pushGateToEventStack(pGate->faninVector_[1]);
 			pushGateFanoutsToEventStack(pGate->faninVector_[1]);
 		}
 		else
 		{
 			implyStatus = FORWARD;
-			unjustified_.push_back(pGate->gateId_);
+			unjustifiedGateIDs_.push_back(pGate->gateId_);
 		}
 	}
 	else if (pGate->gateType_ == Gate::XOR3 || pGate->gateType_ == Gate::XNOR3)
@@ -1382,14 +1311,14 @@ Atpg::IMPLICATION_STATUS Atpg::backwardImplication(Gate *pGate)
 			}
 			pImpGate->atpgVal_ = temp;
 			gateID_to_valModified_[pGate->gateId_] = 1;
-			backtrackList_.push_back(pImpGate->gateId_);
+			backtrackImplicatedGateIDs_.push_back(pImpGate->gateId_);
 			pushGateToEventStack(pGate->faninVector_[ImpPtr]);
 			pushGateFanoutsToEventStack(pGate->faninVector_[ImpPtr]);
 			implyStatus = BACKWARD;
 		}
 		else
 		{
-			unjustified_.push_back(pGate->gateId_);
+			unjustifiedGateIDs_.push_back(pGate->gateId_);
 			implyStatus = FORWARD;
 		}
 	}
@@ -1409,7 +1338,7 @@ Atpg::IMPLICATION_STATUS Atpg::backwardImplication(Gate *pGate)
 				if (pFaninGate->atpgVal_ == X)
 				{
 					pFaninGate->atpgVal_ = InputNonControlVal;
-					backtrackList_.push_back(pFaninGate->gateId_);
+					backtrackImplicatedGateIDs_.push_back(pFaninGate->gateId_);
 					pushGateToEventStack(pGate->faninVector_[i]);
 					pushGateFanoutsToEventStack(pGate->faninVector_[i]);
 				}
@@ -1435,14 +1364,14 @@ Atpg::IMPLICATION_STATUS Atpg::backwardImplication(Gate *pGate)
 				Gate *pImpGate = &pCircuit_->circuitGates_[pGate->faninVector_[ImpPtr]];
 				pImpGate->atpgVal_ = InputControlVal;
 				gateID_to_valModified_[pGate->gateId_] = 1;
-				backtrackList_.push_back(pImpGate->gateId_);
+				backtrackImplicatedGateIDs_.push_back(pImpGate->gateId_);
 				pushGateToEventStack(pGate->faninVector_[ImpPtr]);
 				pushGateFanoutsToEventStack(pGate->faninVector_[ImpPtr]);
 				implyStatus = BACKWARD;
 			}
 			else
 			{
-				unjustified_.push_back(pGate->gateId_);
+				unjustifiedGateIDs_.push_back(pGate->gateId_);
 				implyStatus = FORWARD;
 			}
 		}
@@ -1452,10 +1381,10 @@ Atpg::IMPLICATION_STATUS Atpg::backwardImplication(Gate *pGate)
 
 // **************************************************************************
 // Function   [ Atpg::backtrack ]
-// Commentor  [ CLT ]
-// Synopsis   [ usage: If decisionTree_ is not empty, update BackImpLevel.
-//                     If decisionTree_ is empty, return false.
-//              in:    BackImpLevel
+// Commenter  [ CLT ]
+// Synopsis   [ usage: If backtrackDecisionTree_ is not empty, update backwardImplicationLevel.
+//                     If backtrackDecisionTree_ is empty, return false.
+//              in:    backwardImplicationLevel
 //              out:   bool
 //            ]
 // Date       [ Ver. 1.0 started 2013/08/13 ]
@@ -1467,7 +1396,7 @@ Atpg::IMPLICATION_STATUS Atpg::backwardImplication(Gate *pGate)
 //
 // when we backtrack a single gate in decision tree,
 // we need to recover all the associated implications
-// starting from the startPoint of backtrakList
+// starting from the startPoint of backtrackList
 //
 //                       +------+------+
 //  decision tree nodes: | G0=1 | G1=0 |...
@@ -1475,37 +1404,38 @@ Atpg::IMPLICATION_STATUS Atpg::backwardImplication(Gate *pGate)
 //       startPoint of G0=1 |        \ startPoint of G1=0
 //                          V         \						.
 //                       +----+----++----+----+----+
-//  backtracklist:       |G4=0|G7=1||G6=1|G9=0|G8=0|...
+//  backtrackList:       |G4=0|G7=1||G6=1|G9=0|G8=0|...
 //                       +----+----++----+----+----+
 //                       \         /\______ _______/
 //                        \___ ___/        V
 //                            V            associated implications of G1=0
 //         associated implications of G0=1
 // **************************************************************************
-bool Atpg::backtrack(int &BackImpLevel)
+bool Atpg::backtrack(int &backwardImplicationLevel)
 {
 	int backtrackPoint = 0;
 	int mDecisionGateID;
 	Value Val;
 	Gate *pDecisionGate = NULL;
-	// backtrackList_ is for backtrack
+	// backtrackImplicatedGateIDs_ is for backtrack
 
-	while (!decisionTree_.empty())
+	while (!backtrackDecisionTree_.empty())
 	{
-		if (decisionTree_.get(mDecisionGateID, backtrackPoint))
+		// get the last node in backtrackDecisionTree_ as backtrackPoint
+		if (backtrackDecisionTree_.get(mDecisionGateID, backtrackPoint))
 		{
 			continue;
 		}
-		// pDecisionGate is the bottom node of decisionTree_
+		// pDecisionGate is the bottom node of backtrackDecisionTree_
 
 		updateUnjustifiedLines();
 		pDecisionGate = &pCircuit_->circuitGates_[mDecisionGateID];
 		Val = cINV(pDecisionGate->atpgVal_);
 
-		for (int i = backtrackPoint; i < (int)backtrackList_.size(); ++i)
+		for (int i = backtrackPoint; i < (int)backtrackImplicatedGateIDs_.size(); ++i)
 		{
-			// Reset gates and their ouput in backtrackList_, starts from its backtrack point.
-			Gate *pGate = &pCircuit_->circuitGates_[backtrackList_[i]];
+			// Reset gates and their ouput in backtrackImplicatedGateIDs_, starts from its backtrack point.
+			Gate *pGate = &pCircuit_->circuitGates_[backtrackImplicatedGateIDs_[i]];
 
 			pGate->atpgVal_ = X;
 			gateID_to_valModified_[pGate->gateId_] = 0;
@@ -1517,12 +1447,12 @@ bool Atpg::backtrack(int &BackImpLevel)
 			}
 		}
 
-		BackImpLevel = 0;
+		backwardImplicationLevel = 0;
 
-		for (int i = backtrackPoint + 1; i < (int)backtrackList_.size(); ++i)
+		for (int i = backtrackPoint + 1; i < (int)backtrackImplicatedGateIDs_.size(); ++i)
 		{
-			// Find MAX level output in backtrackList_ and save it to BackImpLevel.
-			Gate *pGate = &pCircuit_->circuitGates_[backtrackList_[i]];
+			// Find MAX level output in backtrackImplicatedGateIDs_ and save it to backwardImplicationLevel
+			Gate *pGate = &pCircuit_->circuitGates_[backtrackImplicatedGateIDs_[i]];
 
 			for (int j = 0; j < pGate->numFO_; ++j)
 			{
@@ -1532,20 +1462,20 @@ bool Atpg::backtrack(int &BackImpLevel)
 				{
 					if (!gateID_to_valModified_[pFanoutGate->gateId_])
 					{
-						unjustified_.push_back(pFanoutGate->gateId_);
+						unjustifiedGateIDs_.push_back(pFanoutGate->gateId_);
 					}
 					pushGateToEventStack(pFanoutGate->gateId_);
 				}
 
-				if (pFanoutGate->numLevel_ > BackImpLevel)
+				if (pFanoutGate->numLevel_ > backwardImplicationLevel)
 				{
-					BackImpLevel = pFanoutGate->numLevel_;
+					backwardImplicationLevel = pFanoutGate->numLevel_;
 				}
 			}
 		}
 
-		backtrackList_.resize(backtrackPoint + 1);
-		pDecisionGate->atpgVal_ = Val; // Reverse its value, do backtrack.
+		backtrackImplicatedGateIDs_.resize(backtrackPoint + 1); // cut the last backtracked point and its associated gates
+		pDecisionGate->atpgVal_ = Val;													// toggle its value, do backtrack, ex: 1=>0, 0=>1
 
 		if (gateID_to_lineType_[pDecisionGate->gateId_] == HEAD_LINE)
 		{
@@ -1560,16 +1490,16 @@ bool Atpg::backtrack(int &BackImpLevel)
 
 		Gate *pFaultyGate = &pCircuit_->circuitGates_[currentTargetFault_.gateID_];
 
-		dFrontier_.clear();
-		dFrontier_.push_back(pFaultyGate->gateId_);
+		dFrontiers_.clear();
+		dFrontiers_.push_back(pFaultyGate->gateId_);
 		updateDFrontier();
 
-		// Update unjustified_ list
-		for (int k = unjustified_.size() - 1; k >= 0; --k)
+		// Update unjustifiedGateIDs_ list
+		for (int k = (int)unjustifiedGateIDs_.size() - 1; k >= 0; --k)
 		{
-			if (pCircuit_->circuitGates_[unjustified_[k]].atpgVal_ == X)
+			if (pCircuit_->circuitGates_[unjustifiedGateIDs_[k]].atpgVal_ == X)
 			{
-				vecDelete(unjustified_, k);
+				vecDelete(unjustifiedGateIDs_, k);
 			}
 		}
 		// Reset xPathStatus
@@ -1585,12 +1515,12 @@ bool Atpg::continuationMeaningful(Gate *pLastDFrontier)
 	// update unjustified lines
 	updateUnjustifiedLines();
 
-	// if the initial object is modified, delete it from initObject_ list
-	for (int k = initObject_.size() - 1; k >= 0; --k)
+	// if the initial object is modified, delete it from initialObjectives_ list
+	for (int k = (int)initialObjectives_.size() - 1; k >= 0; --k)
 	{
-		if (gateID_to_valModified_[initObject_[k]])
+		if (gateID_to_valModified_[initialObjectives_[k]])
 		{
-			vecDelete(initObject_, k);
+			vecDelete(initialObjectives_, k);
 		}
 	}
 
@@ -1611,13 +1541,13 @@ bool Atpg::continuationMeaningful(Gate *pLastDFrontier)
 		fDFrontierChanged = true;
 	}
 	// If all init. objectives have been implied or the last D-frontier has changed, reset backtrace atpgStatus
-	return !(initObject_.empty() || fDFrontierChanged);
+	return !(initialObjectives_.empty() || fDFrontierChanged);
 }
 
 // **************************************************************************
 // Function   [ Atpg::updateUnjustifiedLines ]
-// Commentor  [ CAL ]
-// Synopsis   [ usage: update unjustified_ list
+// Commenter  [ CAL ]
+// Synopsis   [ usage: update unjustifiedGateIDs_ list
 //              in:    void
 //              out:   void
 //            ]
@@ -1625,35 +1555,35 @@ bool Atpg::continuationMeaningful(Gate *pLastDFrontier)
 // **************************************************************************
 void Atpg::updateUnjustifiedLines()
 {
-	// scan all gates in unjustified_ List, if some gates were put into unjustified list but were implied afterwards by other gates, remove those gates from the unjustified list.
-	// if gateID_to_valModified_[mGate.gateId_]  == true, delete it from unjustified_ List
-	// else push mGate into finalObject_ List
-	for (int i = unjustified_.size() - 1; i >= 0; --i)
+	// scan all gates in unjustifiedGateIDs_ List, if some gates were put into unjustified list but were implied afterwards by other gates, remove those gates from the unjustified list.
+	// if gateID_to_valModified_[mGate.gateId_]  == true, delete it from unjustifiedGateIDs_ List
+	// else push mGate into finalObjectives_ List
+	for (int i = unjustifiedGateIDs_.size() - 1; i >= 0; --i)
 	{
-		Gate &mGate = pCircuit_->circuitGates_[unjustified_[i]];
+		Gate &mGate = pCircuit_->circuitGates_[unjustifiedGateIDs_[i]];
 		if (gateID_to_valModified_[mGate.gateId_])
 		{
-			vecDelete(unjustified_, i);
+			vecDelete(unjustifiedGateIDs_, i);
 		}
 		else
 		{
 			gateID_to_valModified_[mGate.gateId_] = 0;
-			finalObject_.push_back(mGate.gateId_);
+			finalObjectives_.push_back(mGate.gateId_);
 		}
 	}
 
-	// pop all element from finalObject_ and set it's gateID_to_valModified_ to false till finalObject_ is empty
+	// pop all element from finalObjectives_ and set it's gateID_to_valModified_ to false till finalObjectives_ is empty
 	int gateID;
-	while (!finalObject_.empty())
+	while (!finalObjectives_.empty())
 	{
-		gateID = vecPop(finalObject_);
+		gateID = vecPop(finalObjectives_);
 		gateID_to_valModified_[gateID] = 0;
 	}
 }
 
 // **************************************************************************
 // Function   [ Atpg::updateDFrontier ]
-// Commentor  [ CAL ]
+// Commenter  [ CAL ]
 // Synopsis   [ usage: update DFrontier
 //              in:    void
 //              out:   void
@@ -1662,16 +1592,16 @@ void Atpg::updateUnjustifiedLines()
 // **************************************************************************
 void Atpg::updateDFrontier()
 {
-	for (int i = 0; i < dFrontier_.size();)
+	for (int i = 0; i < dFrontiers_.size();)
 	{
-		Gate &mGate = pCircuit_->circuitGates_[dFrontier_[i]];
+		Gate &mGate = pCircuit_->circuitGates_[dFrontiers_[i]];
 		if (mGate.atpgVal_ == D || mGate.atpgVal_ == B)
 		{
 			for (int j = 0; j < mGate.numFO_; ++j)
 			{
-				dFrontier_.push_back(mGate.fanoutVector_[j]);
+				dFrontiers_.push_back(mGate.fanoutVector_[j]);
 			}
-			vecDelete(dFrontier_, i);
+			vecDelete(dFrontiers_, i);
 		}
 		else if (mGate.atpgVal_ == X)
 		{
@@ -1679,7 +1609,7 @@ void Atpg::updateDFrontier()
 		}
 		else
 		{
-			vecDelete(dFrontier_, i);
+			vecDelete(dFrontiers_, i);
 		}
 	}
 }
@@ -1703,9 +1633,9 @@ bool Atpg::checkFaultPropToPO(bool &faultPropToPO)
 bool Atpg::checkUnjustifiedBoundLines()
 {
 	// Find if there exists any unjustified bound line
-	for (int i = 0; i < unjustified_.size(); ++i)
+	for (int i = 0; i < unjustifiedGateIDs_.size(); ++i)
 	{
-		Gate *pGate = &pCircuit_->circuitGates_[unjustified_[i]];
+		Gate *pGate = &pCircuit_->circuitGates_[unjustifiedGateIDs_[i]];
 		if (pGate->atpgVal_ != X && !gateID_to_valModified_[pGate->gateId_] && gateID_to_lineType_[pGate->gateId_] == BOUND_LINE)
 		{ // unjustified bound line
 			return true;
@@ -1716,14 +1646,14 @@ bool Atpg::checkUnjustifiedBoundLines()
 
 // **************************************************************************
 // Function   [ Atpg::findFinalObjective ]
-// Commentor  [ WYH ]
+// Commenter  [ WYH ]
 // Synopsis   [ usage: Determination of final objective.
 //                     Choose a value and a line such that the chosen value assigned
 //                     to the chosen line can meet the initial objectives.
 //              in:    BACKTRACE_STATUS& flag: The flag indicates the backtrace atpgStatus.
 //                     bool FaultPropPO: The FaultPropPo indicates whether the
 //                     fault signal can propagate to PO or not.
-//                     Gate* pLastDFrontier: The pLastDFrontier indicates the cloest
+//                     Gate* pLastDFrontier: The pLastDFrontier indicates the closest
 //                     DFrontier to PO
 //              out:   flag(BACKTRACE_STATUS reference)
 //                     pLastDFrontier(Gate pointer reference)
@@ -1746,18 +1676,18 @@ void Atpg::findFinalObjective(BACKTRACE_STATUS &flag, bool FaultPropPO, Gate *&p
 			flag = FAN_OBJ_DETERMINE;
 			// set the times of objective 0 and objective 1 of the gate to be zero
 			// AND LET ALL THE SETS OF OBJECTIVES BE EMPTY
-			for (const int &gateID : backtraceResetList_)
+			for (const int &gateID : gateIDsToResetAfterBackTrace_)
 			{
 				setGaten0n1(gateID, 0, 0);
 			}
-			backtraceResetList_.clear();
+			gateIDsToResetAfterBackTrace_.clear();
 			initialList(false);
 
 			// IS THERE ANY UNJUSTIFIED LINE?
-			if (!unjustified_.empty())
+			if (!unjustifiedGateIDs_.empty())
 			{ // YES
 				// LET ALL THE UNJUSTIFIED LINES BE THE SET OF INITIAL OBJECTIVES
-				initObject_ = unjustified_;
+				initialObjectives_ = unjustifiedGateIDs_;
 
 				// FAULT SIGNAL PROPAGATED TO A PRIMARY OUTPUT?
 				if (FaultPropPO) // YES
@@ -1767,15 +1697,15 @@ void Atpg::findFinalObjective(BACKTRACE_STATUS &flag, bool FaultPropPO, Gate *&p
 				else
 				{ // NO
 					// ADD A GATE IN D-FRONTIER TO THE SET OF INITIAL OBJECTIVES
-					pLastDFrontier = findCloseToOutput(dFrontier_, index);
-					initObject_.push_back(pLastDFrontier->gateId_);
+					pLastDFrontier = findCloseToOutput(dFrontiers_, index);
+					initialObjectives_.push_back(pLastDFrontier->gateId_);
 				}
 			}
 			else
 			{ // NO
 				// ADD A GATE IN D-FRONTIER TO THE SET OF INITIAL OBJECTIVES
-				pLastDFrontier = findCloseToOutput(dFrontier_, index);
-				initObject_.push_back(pLastDFrontier->gateId_);
+				pLastDFrontier = findCloseToOutput(dFrontiers_, index);
+				initialObjectives_.push_back(pLastDFrontier->gateId_);
 			}
 
 			// A
@@ -1784,8 +1714,8 @@ void Atpg::findFinalObjective(BACKTRACE_STATUS &flag, bool FaultPropPO, Gate *&p
 			// CONTRADICTORY REQUIREMENT AT A FANOUT-POINT OCCURRED?
 			if (result == CONTRADICTORY)
 			{ // YES
-				// LET THE FANOUT-POINT OBJECTIVE BE FINAL OBJECTIVE TO ASSIGNA VALUE
-				finalObject_.push_back(finalObjectiveId);
+				// LET THE FANOUT-POINT OBJECTIVE BE FINAL OBJECTIVE TO ASSIGN VALUE
+				finalObjectives_.push_back(finalObjectiveId);
 				// EXIT
 				return;
 			}
@@ -1793,7 +1723,7 @@ void Atpg::findFinalObjective(BACKTRACE_STATUS &flag, bool FaultPropPO, Gate *&p
 		else
 		{ // NO
 			// IS THE SET OF FANOUT-POINT OBJECTIVE EMPTY?
-			if (!fanoutObjective_.empty())
+			if (!fanoutObjectives_.empty())
 			{ // NO
 				// B
 				// MULTIPLE BACKTRACE FROM A FANOUT-POINT OBJECTIVE
@@ -1801,8 +1731,8 @@ void Atpg::findFinalObjective(BACKTRACE_STATUS &flag, bool FaultPropPO, Gate *&p
 				// CONTRADICTORY REQUIREMENT AT A FANOUT-POINT OCCURRED?
 				if (result == CONTRADICTORY)
 				{ // YES
-					// LET THE FANOUT-POINT OBJECTIVE BE FINAL OBJECTIVE TO ASSIGNA VALUE
-					finalObject_.push_back(finalObjectiveId);
+					// LET THE FANOUT-POINT OBJECTIVE BE FINAL OBJECTIVE TO ASSIGN VALUE
+					finalObjectives_.push_back(finalObjectiveId);
 					// EXIT
 					return;
 				}
@@ -1812,7 +1742,7 @@ void Atpg::findFinalObjective(BACKTRACE_STATUS &flag, bool FaultPropPO, Gate *&p
 		while (true)
 		{
 			// IS THE SET OF HEAD OBJECTIVES EMPTY?
-			if (headObject_.empty())
+			if (headObjectives_.empty())
 			{ // YES
 				flag = INITIAL;
 				break;
@@ -1820,12 +1750,12 @@ void Atpg::findFinalObjective(BACKTRACE_STATUS &flag, bool FaultPropPO, Gate *&p
 			else
 			{ // NO
 				// TAKE OUT A HEAD OBJECTIVE
-				pGate = &pCircuit_->circuitGates_[vecPop(headObject_)];
+				pGate = &pCircuit_->circuitGates_[vecPop(headObjectives_)];
 				// IS THE HEAD LINE UNSPECIFIED?
 				if (pGate->atpgVal_ == X)
 				{ // YES
 					// LET THE HEAD OBJECTIVE BE FINAL OBJECTIVE
-					finalObject_.push_back(pGate->gateId_);
+					finalObjectives_.push_back(pGate->gateId_);
 					// EXIT
 					return;
 				}
@@ -1836,9 +1766,9 @@ void Atpg::findFinalObjective(BACKTRACE_STATUS &flag, bool FaultPropPO, Gate *&p
 
 void Atpg::assignValueToFinalObject()
 {
-	while (!finalObject_.empty())
+	while (!finalObjectives_.empty())
 	{ // while exist any finalObject
-		Gate *pGate = &pCircuit_->circuitGates_[vecPop(finalObject_)];
+		Gate *pGate = &pCircuit_->circuitGates_[vecPop(finalObjectives_)];
 
 		// judge the value by numOfZero and numOfOne
 		if (gateID_to_n0_[pGate->gateId_] > gateID_to_n1_[pGate->gateId_])
@@ -1851,9 +1781,9 @@ void Atpg::assignValueToFinalObject()
 		}
 
 		// put decision of the finalObjective into decisionTree
-		decisionTree_.put(pGate->gateId_, (int)backtrackList_.size());
+		backtrackDecisionTree_.put(pGate->gateId_, (int)backtrackImplicatedGateIDs_.size());
 		// record this gate and backtrace later
-		backtrackList_.push_back(pGate->gateId_);
+		backtrackImplicatedGateIDs_.push_back(pGate->gateId_);
 
 		if (gateID_to_lineType_[pGate->gateId_] == HEAD_LINE)
 		{
@@ -1869,7 +1799,7 @@ void Atpg::assignValueToFinalObject()
 
 // **************************************************************************
 // Function   [ Atpg::justifyFreeLines ]
-// Commentor  [ CLT ]
+// Commenter  [ CLT ]
 // Synopsis   [ usage: Justify free lines before terminating this test pattern generation.
 //              in:    original fault
 //              out:   void
@@ -1895,7 +1825,7 @@ void Atpg::justifyFreeLines(Fault &fOriginalFault)
 			continue;
 		}
 		if (pHeadLineFaultGate == pGate)
-		{ // if the HEADLINE scaned now(pGate) is the new faulty gate
+		{ // if the HEADLINE scanned now(pGate) is the new faulty gate
 			// If the Original Fault is on a FREE LINE, map it back
 			restoreFault(fOriginalFault);
 			continue;
@@ -1918,7 +1848,7 @@ void Atpg::justifyFreeLines(Fault &fOriginalFault)
 }
 // **************************************************************************
 // Function   [ Atpg::restoreFault ]
-// Commentor  [ CLT ]
+// Commenter  [ CLT ]
 // Synopsis   [ usage: restore fault
 //              in:    Fault list
 //              out:   void
@@ -1929,12 +1859,12 @@ void Atpg::restoreFault(Fault &fOriginalFault)
 {
 	Gate *pFaultPropGate = NULL;
 
-	fanoutObjective_.clear();
+	fanoutObjectives_.clear();
 	pFaultPropGate = &pCircuit_->circuitGates_[fOriginalFault.gateID_];
 
 	if (fOriginalFault.faultyLine_ == 0)
 	{
-		fanoutObjective_.push_back(pFaultPropGate->gateId_);
+		fanoutObjectives_.push_back(pFaultPropGate->gateId_);
 	}
 
 	// To fix bugs of free line fault which is at gate input
@@ -1952,15 +1882,15 @@ void Atpg::restoreFault(Fault &fOriginalFault)
 
 		if (pFaninGate->atpgVal_ == L || pFaninGate->atpgVal_ == H)
 		{
-			fanoutObjective_.push_back(pFaninGate->gateId_);
+			fanoutObjectives_.push_back(pFaninGate->gateId_);
 		}
 	}
 
-	// push original fault gate into fanoutObjective_ list
+	// push original fault gate into fanoutObjectives_ list
 
 	// for each loop, scan all fanin gates of pFaultPropGate (initial to be original fault gate)
-	// if fanin gates' value == 0 or 1, add it into fanoutObjective_ list iteratively
-	// let pFaultPropGate's output gate (FREELINE only have one output gate) be new pFaultPropGate
+	// if fanin gates' value == 0 or 1, add it into fanoutObjectives_ list iteratively
+	// let pFaultPropGate's output gate (FREE_LINE only have one output gate) be new pFaultPropGate
 	// and perform the procedure of each loop till pFaultPropGate is HEADLINE
 	if (gateID_to_lineType_[pFaultPropGate->gateId_] == FREE_LINE)
 	{
@@ -1972,7 +1902,7 @@ void Atpg::restoreFault(Fault &fOriginalFault)
 				Gate *pFaninGate = &pCircuit_->circuitGates_[pFaultPropGate->faninVector_[i]];
 				if (pFaninGate->atpgVal_ == L || pFaninGate->atpgVal_ == H)
 				{
-					fanoutObjective_.push_back(pFaninGate->gateId_);
+					fanoutObjectives_.push_back(pFaninGate->gateId_);
 				}
 			}
 			if (gateID_to_lineType_[pFaultPropGate->gateId_] == HEAD_LINE)
@@ -1981,10 +1911,10 @@ void Atpg::restoreFault(Fault &fOriginalFault)
 			}
 		}
 	}
-	// each loop pop out an element in the fanoutObjective_ list
-	while (!fanoutObjective_.empty())
+	// each loop pop out an element in the fanoutObjectives_ list
+	while (!fanoutObjectives_.empty())
 	{
-		Gate *pGate = &pCircuit_->circuitGates_[vecPop(fanoutObjective_)];
+		Gate *pGate = &pCircuit_->circuitGates_[vecPop(fanoutObjectives_)];
 		// if the gate's value is D set to H, D' set to L
 		if (pGate->atpgVal_ == D)
 		{
@@ -2009,7 +1939,7 @@ int Atpg::countNumGatesInDFrontier(Gate *pFaultyLine)
 
 	// Change the xPathStatus from XPATH_EXIST to UNKNOWN of a gate
 	// which has equal or higher level than the faulty gate
-	//(the gate array has been levelized already)
+	//(the gate array has been given its level already)
 	// This is to clear the xPathStatus of previous xPathTracing
 	for (int i = pFaultyLine->gateId_; i < pCircuit_->totalGate_; ++i)
 	{
@@ -2021,30 +1951,30 @@ int Atpg::countNumGatesInDFrontier(Gate *pFaultyLine)
 	}
 
 	// if D-frontier can't propagate to the PO, erase it
-	for (int k = dFrontier_.size() - 1; k >= 0; --k)
+	for (int k = dFrontiers_.size() - 1; k >= 0; --k)
 	{
-		if (!xPathTracing(&pCircuit_->circuitGates_[dFrontier_[k]]))
+		if (!xPathTracing(&pCircuit_->circuitGates_[dFrontiers_[k]]))
 		{
-			vecDelete(dFrontier_, k);
+			vecDelete(dFrontiers_, k);
 		}
 	}
-	return dFrontier_.size();
+	return dFrontiers_.size();
 }
 
 // **************************************************************************
 // Function   [ Atpg::uniquePathSensitize ]
-// Commentor  [ CLT ]
-// Synopsis   [ usage: Finds the last gate(pnextgate) in the uniquepath starts from pgate,
-//                     return BackImpLevel which is the max of the pnextgate's input level.
-//                     BackImpLevel is -1 if no uniquepath.
+// Commenter  [ CLT ]
+// Synopsis   [ usage: Finds the last gate(pNextGate) in the uniquePath starts from pGate,
+//                     return backwardImplicationLevel which is the max of the pNextGate's input level.
+//                     backwardImplicationLevel is -1 if no uniquePath.
 //              in:    gate
-//              out:   int(BackImpLevel)
+//              out:   int(backwardImplicationLevel)
 //            ]
 // Date       [ Ver. 1.0 started 2013/08/13 ]
 // **************************************************************************
 int Atpg::uniquePathSensitize(Gate &gate)
 {
-	int BackImpLevel = NO_UNIQUE_PATH;
+	int backwardImplicationLevel = NO_UNIQUE_PATH;
 	Gate *pFaultyGate = &pCircuit_->circuitGates_[currentTargetFault_.gateID_];
 
 	// if gate is not the FaultyGate
@@ -2060,12 +1990,12 @@ int Atpg::uniquePathSensitize(Gate &gate)
 				if (pFaninGate->atpgVal_ == X)
 				{
 					pFaninGate->atpgVal_ = NonControlVal;
-					if (BackImpLevel < pFaninGate->numLevel_) // BackImpLevel becomes MAX of fan in level
+					if (backwardImplicationLevel < pFaninGate->numLevel_) // backwardImplicationLevel becomes MAX of fan in level
 					{
-						BackImpLevel = pFaninGate->numLevel_;
+						backwardImplicationLevel = pFaninGate->numLevel_;
 					}
 
-					backtrackList_.push_back(pFaninGate->gateId_);
+					backtrackImplicatedGateIDs_.push_back(pFaninGate->gateId_);
 					pushGateToEventStack(gate.faninVector_[i]);
 					pushGateFanoutsToEventStack(gate.faninVector_[i]);
 				}
@@ -2122,12 +2052,12 @@ int Atpg::uniquePathSensitize(Gate &gate)
 					if (pFaninGate != pCurrGate && pFaninGate->atpgVal_ == X)
 					{
 						pFaninGate->atpgVal_ = NonControlVal; // Set input gate of pNextGate to pNextGate's NonControlVal
-						if (BackImpLevel < pFaninGate->numLevel_)
+						if (backwardImplicationLevel < pFaninGate->numLevel_)
 						{
-							BackImpLevel = pFaninGate->numLevel_;
+							backwardImplicationLevel = pFaninGate->numLevel_;
 						}
-						// BackImpLevel becomes MAX of pNextGate's fanin level
-						backtrackList_.push_back(pFaninGate->gateId_);
+						// backwardImplicationLevel becomes MAX of pNextGate's fanin level
+						backtrackImplicatedGateIDs_.push_back(pFaninGate->gateId_);
 						pushGateToEventStack(pNextGate->faninVector_[i]);
 						pushGateFanoutsToEventStack(pNextGate->faninVector_[i]);
 					}
@@ -2166,11 +2096,11 @@ int Atpg::uniquePathSensitize(Gate &gate)
 
 						pFaninGate->atpgVal_ = NonControlVal; // set to NonControlVal
 
-						if (BackImpLevel < pFaninGate->numLevel_)
+						if (backwardImplicationLevel < pFaninGate->numLevel_)
 						{
-							BackImpLevel = pFaninGate->numLevel_; // BackImpLevel becomes MAX of pNextGate's fanin level
+							backwardImplicationLevel = pFaninGate->numLevel_; // backwardImplicationLevel becomes MAX of pNextGate's fanin level
 						}
-						backtrackList_.push_back(pFaninGate->gateId_);
+						backtrackImplicatedGateIDs_.push_back(pFaninGate->gateId_);
 						pushGateToEventStack(pNextGate->faninVector_[i]);
 						pushGateFanoutsToEventStack(pNextGate->faninVector_[i]);
 					}
@@ -2179,12 +2109,12 @@ int Atpg::uniquePathSensitize(Gate &gate)
 		}
 		pCurrGate = pNextGate; // move to last gate in gateID_to_uniquePath_
 	}
-	return BackImpLevel;
+	return backwardImplicationLevel;
 }
 
 // **************************************************************************
 // Function   [ Atpg::isExistXPath ]
-// Commentor  [ CAL ]
+// Commenter  [ CAL ]
 // Synopsis   [ usage:
 //                Used before generateSinglePatternOnTargetFault
 //                Return true if there is X-path.
@@ -2207,7 +2137,7 @@ bool Atpg::isExistXPath(Gate *pGate)
 
 // **************************************************************************
 // Function   [ Atpg::xPathTracing ]
-// Commentor  [ CLT ]
+// Commenter  [ CLT ]
 // Synopsis   [ usage: recursive call the fanout of pGate to PO and check if pGate has a X path
 //              in:    Gate* pGate
 //              out:   bool
@@ -2249,7 +2179,7 @@ bool Atpg::xPathTracing(Gate *pGate)
 
 // **************************************************************************
 // Function   [ Atpg::setFaultyGate ]
-// Commentor  [ WYH ]
+// Commenter  [ WYH ]
 // Synopsis   [ usage: Initial assignment of fault signal.
 //                     There are two situations :
 //                     1. Fault is on the input line of pFaultyGate, and
@@ -2261,7 +2191,7 @@ bool Atpg::xPathTracing(Gate *pGate)
 //                           pFaultyGate, and set value of pFaultyGate.
 //                       (3) Schedule all fanout gates of fanin gates of pFaultyGate,
 //                           and schedule fanout gates of pFaultyGate.
-//                       (4) Update BackImpLevel to be maximum level of
+//                       (4) Update backwardImplicationLevel to be maximum level of
 //                           fanin gates of pFaultyGate.
 //                     2. Fault is on the ouput line of pFaultyGate, and
 //                        pFaultyLine is pFaultyGate.
@@ -2269,24 +2199,24 @@ bool Atpg::xPathTracing(Gate *pGate)
 //                           according to fault type.
 //                       (2) Schedule fanout gates of pFaultyGate.
 //                       (3) If pFaultyGate is a HEADLINE, all it's fanin gates are
-//                           FREELINE, no need to set value.
+//                           FREE_LINE, no need to set value.
 //                           Else, set the value of it's fanin gates, and schedule
 //                           all fanout gates of fanin gates of pFaultyGate.
-//                       (4) Update BackImpLevel to be maximum level of
+//                       (4) Update backwardImplicationLevel to be maximum level of
 //                           fanin gates of pFaultyGate.
 //              in:    Fault& fault
-//              out:   int BackImpLevel: The BackImpLevel indicates the backward
+//              out:   int backwardImplicationLevel: The backwardImplicationLevel indicates the backward
 //                     imply level return -1 when fault FAULT_UNTESTABLE
 //            ]
 // Date       [ WYH Ver. 1.0 started 2013/08/16 ]
 // **************************************************************************
 int Atpg::setFaultyGate(Fault &fault)
 {
-	int BackImpLevel = 0;
+	int backwardImplicationLevel = 0;
 	Gate *pFaultyGate = NULL; // pFaultyLine is the gate before the fault (fanin gate of pFaultyGate)
 	Gate *pFaultyLine = NULL;
 	bool isOutputFault = (fault.faultyLine_ == 0); // if the fault is SA0 or STR, then set faulty value to D (1/0)
-	Value vtemp;
+	Value valueTemp;
 	Value FaultyValue = (fault.faultType_ == Fault::SA0 || fault.faultType_ == Fault::STR) ? D : B;
 
 	pFaultyGate = &pCircuit_->circuitGates_[fault.gateID_];
@@ -2316,7 +2246,7 @@ int Atpg::setFaultyGate(Fault &fault)
 			return -1;
 		}
 
-		backtrackList_.push_back(pFaultyLine->gateId_);
+		backtrackImplicatedGateIDs_.push_back(pFaultyLine->gateId_);
 
 		if (pFaultyGate->gateType_ == Gate::AND2 || pFaultyGate->gateType_ == Gate::AND3 || pFaultyGate->gateType_ == Gate::AND4 || pFaultyGate->gateType_ == Gate::NAND2 || pFaultyGate->gateType_ == Gate::NAND3 || pFaultyGate->gateType_ == Gate::NAND4 || pFaultyGate->gateType_ == Gate::NOR2 || pFaultyGate->gateType_ == Gate::NOR3 || pFaultyGate->gateType_ == Gate::NOR4 || pFaultyGate->gateType_ == Gate::OR2 || pFaultyGate->gateType_ == Gate::OR3 || pFaultyGate->gateType_ == Gate::OR4)
 		{
@@ -2330,12 +2260,12 @@ int Atpg::setFaultyGate(Fault &fault)
 					if (pFaninGate->atpgVal_ == X)
 					{
 						pFaninGate->atpgVal_ = pFaultyGate->getInputNonCtrlValue();
-						backtrackList_.push_back(pFaninGate->gateId_);
+						backtrackImplicatedGateIDs_.push_back(pFaninGate->gateId_);
 					}
 					else if (pFaninGate->atpgVal_ != pFaultyGate->getInputNonCtrlValue())
 					{
 						// If the value has already been set, it should be
-						// noncontrol value, otherwise the fault can't propagate
+						// non-control value, otherwise the fault can't propagate
 						return -1;
 					}
 				}
@@ -2351,16 +2281,16 @@ int Atpg::setFaultyGate(Fault &fault)
 					}
 				}
 			}
-			vtemp = pFaultyGate->isInverse();
+			valueTemp = pFaultyGate->isInverse();
 			// find the pFaultyGate output value
-			pFaultyGate->atpgVal_ = cXOR2(vtemp, FaultyValue);
-			backtrackList_.push_back(pFaultyGate->gateId_);
+			pFaultyGate->atpgVal_ = cXOR2(valueTemp, FaultyValue);
+			backtrackImplicatedGateIDs_.push_back(pFaultyGate->gateId_);
 		}
 		else if (pFaultyGate->gateType_ == Gate::INV || pFaultyGate->gateType_ == Gate::BUF || pFaultyGate->gateType_ == Gate::PO || pFaultyGate->gateType_ == Gate::PPO)
 		{
-			vtemp = pFaultyGate->isInverse();
-			pFaultyGate->atpgVal_ = cXOR2(vtemp, FaultyValue);
-			backtrackList_.push_back(pFaultyGate->gateId_);
+			valueTemp = pFaultyGate->isInverse();
+			pFaultyGate->atpgVal_ = cXOR2(valueTemp, FaultyValue);
+			backtrackImplicatedGateIDs_.push_back(pFaultyGate->gateId_);
 		}
 
 		if (pFaultyGate->atpgVal_ != X)
@@ -2375,13 +2305,13 @@ int Atpg::setFaultyGate(Fault &fault)
 			Gate *pFaninGate = &pCircuit_->circuitGates_[pFaultyGate->faninVector_[i]];
 			if (pFaninGate->atpgVal_ != X)
 			{
-				// set the BackImpLevel to be maximum of fanin gate's level
-				if (BackImpLevel < pFaninGate->numLevel_)
+				// set the backwardImplicationLevel to be maximum of fanin gate's level
+				if (backwardImplicationLevel < pFaninGate->numLevel_)
 				{
-					BackImpLevel = pFaninGate->numLevel_;
+					backwardImplicationLevel = pFaninGate->numLevel_;
 				}
-				// shedule all fanout gates of the fanin gate
-				// pushInputEvents(pFaultyGate->gateId_, i); replaced by folloing, by wang
+				// schedule all fanout gates of the fanin gate
+				// pushInputEvents(pFaultyGate->gateId_, i); replaced by following, by wang
 				pushGateToEventStack(pFaultyGate->faninVector_[i]);
 				pushGateFanoutsToEventStack(pFaultyGate->faninVector_[i]);
 			}
@@ -2394,7 +2324,7 @@ int Atpg::setFaultyGate(Fault &fault)
 			return -1;
 		}
 		pFaultyGate->atpgVal_ = FaultyValue;
-		backtrackList_.push_back(pFaultyGate->gateId_);
+		backtrackImplicatedGateIDs_.push_back(pFaultyGate->gateId_);
 		// schedule all of fanout gate of the pFaultyGate
 		pushGateFanoutsToEventStack(pFaultyGate->gateId_);
 		// backtrace stops at HEAD LINE
@@ -2408,15 +2338,15 @@ int Atpg::setFaultyGate(Fault &fault)
 			gateID_to_valModified_[pFaultyGate->gateId_] = 1;
 
 			Value Val = FaultyValue == D ? H : L;
-			vtemp = pFaultyGate->isInverse();
-			pFaninGate->atpgVal_ = cXOR2(vtemp, Val);
-			backtrackList_.push_back(pFaninGate->gateId_);
+			valueTemp = pFaultyGate->isInverse();
+			pFaninGate->atpgVal_ = cXOR2(valueTemp, Val);
+			backtrackImplicatedGateIDs_.push_back(pFaninGate->gateId_);
 			pushGateToEventStack(pFaultyGate->faninVector_[0]);
 			pushGateFanoutsToEventStack(pFaultyGate->faninVector_[0]);
 
-			if (BackImpLevel < pFaninGate->numLevel_)
+			if (backwardImplicationLevel < pFaninGate->numLevel_)
 			{
-				BackImpLevel = pFaninGate->numLevel_;
+				backwardImplicationLevel = pFaninGate->numLevel_;
 			}
 		}
 		else if ((FaultyValue == D && pFaultyGate->getOutputCtrlValue() == H) || (FaultyValue == B && pFaultyGate->getOutputCtrlValue() == L))
@@ -2429,13 +2359,13 @@ int Atpg::setFaultyGate(Fault &fault)
 				if (pFaninGate->atpgVal_ == X)
 				{
 					pFaninGate->atpgVal_ = pFaultyGate->getInputNonCtrlValue();
-					backtrackList_.push_back(pFaninGate->gateId_);
-					// shedule all fanout gate of the pFaninGate
+					backtrackImplicatedGateIDs_.push_back(pFaninGate->gateId_);
+					// schedule all fanout gate of the pFaninGate
 					pushGateToEventStack(pFaultyGate->faninVector_[i]);
 					pushGateFanoutsToEventStack(pFaultyGate->faninVector_[i]);
-					if (BackImpLevel < pFaninGate->numLevel_)
+					if (backwardImplicationLevel < pFaninGate->numLevel_)
 					{
-						BackImpLevel = pFaninGate->numLevel_;
+						backwardImplicationLevel = pFaninGate->numLevel_;
 					}
 				}
 			}
@@ -2443,25 +2373,25 @@ int Atpg::setFaultyGate(Fault &fault)
 		else
 		{
 			pushGateToEventStack(pFaultyGate->gateId_);
-			if (BackImpLevel < pFaultyGate->numLevel_)
+			if (backwardImplicationLevel < pFaultyGate->numLevel_)
 			{
-				BackImpLevel = pFaultyGate->numLevel_;
+				backwardImplicationLevel = pFaultyGate->numLevel_;
 			}
 		}
 	}
-	return BackImpLevel;
+	return backwardImplicationLevel;
 }
 
 // **************************************************************************
 // Function   [ Atpg::setFreeFaultyGate ]
-// Commentor  [ WYH ]
-// Synopsis   [ usage: This function is called when pFaultyLine is FREELINE.
+// Commenter  [ WYH ]
+// Synopsis   [ usage: This function is called when pFaultyLine is FREE_LINE.
 //                     That means it has only one output gate.
 //                     The fault must be on the output line of pFaultyGate.
 //                     This function first sets the value of pFaultyGate, and
 //                     pushes output gate pFaultyGate to BacktraceList.
 //                     In the while loop, sets unknown fanin gate of pFaultyGate
-//                     to noncontrol value of pFaultyGate and sets the value of
+//                     to non-control value of pFaultyGate and sets the value of
 //                     pFaultyGate.
 //                     The loop breaks when pFaultyGate becomes a HEADLINE.
 //                     When pFaultyGate is a HEADLINE, this function schedules
@@ -2492,11 +2422,11 @@ Fault Atpg::setFreeFaultyGate(Gate &gate)
 		for (int i = 0; i < pCurrentGate->numFI_; ++i)
 		{
 			Gate &gFanin = pCircuit_->circuitGates_[pCurrentGate->faninVector_[i]];
-			// set pCurrentGate unknown fanin gate to noncontrol value
+			// set pCurrentGate unknown fanin gate to non-control value
 			if (gFanin.atpgVal_ == X)
 			{
 				gFanin.atpgVal_ = Val;
-				backtrackList_.push_back(gFanin.gateId_);
+				backtrackImplicatedGateIDs_.push_back(gFanin.gateId_);
 			}
 		}
 
@@ -2504,7 +2434,7 @@ Fault Atpg::setFreeFaultyGate(Gate &gate)
 		{
 			// set the value of pCurrentGate by evaluateGoodVal
 			pCurrentGate->atpgVal_ = evaluateGoodVal(*pCurrentGate);
-			backtrackList_.push_back(pCurrentGate->gateId_);
+			backtrackImplicatedGateIDs_.push_back(pCurrentGate->gateId_);
 		}
 		// if the pCurrentGate is FREE LINE, pCurrentGate output gate becomes a new pCurrentGate
 		// until pCurrentGate becomes HEAD LINE
@@ -2521,7 +2451,7 @@ Fault Atpg::setFreeFaultyGate(Gate &gate)
 
 // **************************************************************************
 // Function   [ Atpg::fanoutFreeBacktrace ]
-// Commentor  [ CLT ]
+// Commenter  [ CLT ]
 // Synopsis   [ usage: Backtrace in Fanout Free situation
 //              in:    the gate to start performing
 //              out:   void
@@ -2530,21 +2460,21 @@ Fault Atpg::setFreeFaultyGate(Gate &gate)
 // **************************************************************************
 void Atpg::fanoutFreeBacktrace(Gate *pObjectGate)
 {
-	currentObject_.clear();
-	currentObject_.reserve(MAX_LIST_SIZE);
-	currentObject_.push_back(pObjectGate->gateId_);
-	// clear the currentObject_ list, push pObjectGate in currentObject_
+	currentObjectives_.clear();
+	currentObjectives_.reserve(MAX_LIST_SIZE);
+	currentObjectives_.push_back(pObjectGate->gateId_);
+	// clear the currentObjectives_ list, push pObjectGate in currentObjectives_
 
-	while (!currentObject_.empty())
+	while (!currentObjectives_.empty())
 	{
-		Gate *pGate = &pCircuit_->circuitGates_[vecPop(currentObject_)];
+		Gate *pGate = &pCircuit_->circuitGates_[vecPop(currentObjectives_)];
 
 		if (pGate->gateType_ == Gate::PI || pGate->gateType_ == Gate::PPI || pGate == firstTimeFrameHeadLine_)
 		{
 			continue;
 		}
 
-		Value vinv = pGate->isInverse();
+		Value vInv = pGate->isInverse();
 
 		if (pGate->gateType_ == Gate::XOR2 || pGate->gateType_ == Gate::XNOR2)
 		{
@@ -2560,8 +2490,8 @@ void Atpg::fanoutFreeBacktrace(Gate *pObjectGate)
 			{
 				pCircuit_->circuitGates_[pGate->faninVector_[0]].atpgVal_ = cXOR3(pGate->atpgVal_, pGate->isInverse(), pCircuit_->circuitGates_[pGate->faninVector_[1]].atpgVal_);
 			}
-			currentObject_.push_back(pGate->faninVector_[0]);
-			currentObject_.push_back(pGate->faninVector_[1]); // push both input gates into currentObject_ list
+			currentObjectives_.push_back(pGate->faninVector_[0]);
+			currentObjectives_.push_back(pGate->faninVector_[1]); // push both input gates into currentObjectives_ list
 		}
 		else if (pGate->gateType_ == Gate::XOR3 || pGate->gateType_ == Gate::XNOR3) // debugged by wang
 		{
@@ -2582,28 +2512,28 @@ void Atpg::fanoutFreeBacktrace(Gate *pObjectGate)
 				pCircuit_->circuitGates_[pGate->faninVector_[0]].atpgVal_ = L;
 				pCircuit_->circuitGates_[pGate->faninVector_[2]].atpgVal_ = cXOR3(cXOR2(pGate->atpgVal_, pGate->isInverse()), pCircuit_->circuitGates_[pGate->faninVector_[0]].atpgVal_, pCircuit_->circuitGates_[pGate->faninVector_[1]].atpgVal_);
 			}
-			currentObject_.push_back(pGate->faninVector_[0]);
-			currentObject_.push_back(pGate->faninVector_[1]);
-			currentObject_.push_back(pGate->faninVector_[2]);
+			currentObjectives_.push_back(pGate->faninVector_[0]);
+			currentObjectives_.push_back(pGate->faninVector_[1]);
+			currentObjectives_.push_back(pGate->faninVector_[2]);
 		}
 		else if (pGate->isUnary())
 		{ // if pGate only have one input gate
 			if (&pCircuit_->circuitGates_[pGate->faninVector_[0]] != firstTimeFrameHeadLine_)
 			{
-				pCircuit_->circuitGates_[pGate->faninVector_[0]].atpgVal_ = cXOR2(pGate->atpgVal_, vinv);
+				pCircuit_->circuitGates_[pGate->faninVector_[0]].atpgVal_ = cXOR2(pGate->atpgVal_, vInv);
 			}
-			currentObject_.push_back(pGate->faninVector_[0]); // add input gate into currentObject_ list
+			currentObjectives_.push_back(pGate->faninVector_[0]); // add input gate into currentObjectives_ list
 		}
 		else
 		{
-			Value Val = cXOR2(pGate->atpgVal_, vinv);
+			Value Val = cXOR2(pGate->atpgVal_, vInv);
 			if (Val == pGate->getInputCtrlValue())
 			{
 				Gate *pMinLevelGate = &pCircuit_->circuitGates_[pGate->minLevelOfFanins_];
 				if (pMinLevelGate != firstTimeFrameHeadLine_)
 				{
 					pMinLevelGate->atpgVal_ = Val;
-					currentObject_.push_back(pMinLevelGate->gateId_);
+					currentObjectives_.push_back(pMinLevelGate->gateId_);
 				}
 				else
 				{
@@ -2617,7 +2547,7 @@ void Atpg::fanoutFreeBacktrace(Gate *pObjectGate)
 						}
 					}
 					pFaninGate->atpgVal_ = Val;
-					currentObject_.push_back(pFaninGate->gateId_);
+					currentObjectives_.push_back(pFaninGate->gateId_);
 				}
 			}
 			else
@@ -2630,7 +2560,7 @@ void Atpg::fanoutFreeBacktrace(Gate *pObjectGate)
 					{
 						pFaninGate->atpgVal_ = Val;
 					}
-					currentObject_.push_back(pFaninGate->gateId_);
+					currentObjectives_.push_back(pFaninGate->gateId_);
 				}
 			}
 		}
@@ -2639,7 +2569,7 @@ void Atpg::fanoutFreeBacktrace(Gate *pObjectGate)
 
 // **************************************************************************
 // Function   [ Atpg::multipleBacktrace ]
-// Commentor  [ CKY ]
+// Commenter  [ CKY ]
 // Synopsis   [ usage: return NO_CONTRADICTORY  or  CONTRADICTORY after backtrace
 //                     see paper P.4 P.5 and Fig.8 for detail information
 //              in:    BACKTRACE_STATUS
@@ -2651,7 +2581,7 @@ void Atpg::fanoutFreeBacktrace(Gate *pObjectGate)
 //              out:   BACKTRACE_RESULT
 //                       return CONTRADICTORY when find a
 //                        Fanout-Point Objective is not reachable from the fault
-//                        line and n0, n1 of it are both nonezero;
+//                        line and n0, n1 of it are both not zero;
 //                        otherwise, return NO_CONTRADICTORY
 //                       n0 is the number of times objective 0 is required,
 //                       n1 is the number of times objective 1 is required
@@ -2679,11 +2609,11 @@ Atpg::BACKTRACE_RESULT Atpg::multipleBacktrace(BACKTRACE_STATUS atpgStatus, int 
 		{
 			case CHECK_AND_SELECT:
 				// IS THE SET OF CURRENT OBJECTIVES EMPTY?
-				if (currentObject_.empty())
+				if (currentObjectives_.empty())
 				{ // YES
 					// IS THE SET OF FANOUT-POINT OBJECTIVES EMPTY?
-					if (fanoutObjective_.empty()) // YES
-					{															// C, NO_CONTRADICTORY
+					if (fanoutObjectives_.empty()) // YES
+					{															 // C, NO_CONTRADICTORY
 						return NO_CONTRADICTORY;
 					}
 					else // NO
@@ -2694,7 +2624,7 @@ Atpg::BACKTRACE_RESULT Atpg::multipleBacktrace(BACKTRACE_STATUS atpgStatus, int 
 				else
 				{ // NO
 					// TAKE OUT A CURRENT OBJECTIVE
-					pCurrentObj = &pCircuit_->circuitGates_[vecPop(currentObject_)];
+					pCurrentObj = &pCircuit_->circuitGates_[vecPop(currentObjectives_)];
 					atpgStatus = CURRENT_OBJ_DETERMINE;
 				}
 				break; // switch break
@@ -2703,7 +2633,7 @@ Atpg::BACKTRACE_RESULT Atpg::multipleBacktrace(BACKTRACE_STATUS atpgStatus, int 
 				if (gateID_to_lineType_[pCurrentObj->gateId_] == HEAD_LINE)
 				{ // YES
 					// ADD THE CURRENT OBJECTIVE TO THE SET OF HEAD OBJECTIVES
-					headObject_.push_back(pCurrentObj->gateId_);
+					headObjectives_.push_back(pCurrentObj->gateId_);
 				}
 				else
 				{ // NO
@@ -2772,7 +2702,7 @@ Atpg::BACKTRACE_RESULT Atpg::multipleBacktrace(BACKTRACE_STATUS atpgStatus, int 
 								// Fanout-Point Objectives set
 								if (gateID_to_n0_[pFaninGate->gateId_] == 0 && gateID_to_n1_[pFaninGate->gateId_] == 0)
 								{
-									fanoutObjective_.push_back(pFaninGate->gateId_);
+									fanoutObjectives_.push_back(pFaninGate->gateId_);
 								}
 
 								// new value = old value(gateID_to_n0_(),gateID_to_n1_()) + this branch's value (nn0, nn1)
@@ -2782,7 +2712,7 @@ Atpg::BACKTRACE_RESULT Atpg::multipleBacktrace(BACKTRACE_STATUS atpgStatus, int 
 								// ADD n0 AND n1 TO THE CORRESPONDING
 								// modified to safe
 								setGaten0n1(pFaninGate->gateId_, gateID_to_n0_[pFaninGate->gateId_] + nn0, gateID_to_n1_[pFaninGate->gateId_] + nn1);
-								backtraceResetList_.push_back(pFaninGate->gateId_);
+								gateIDsToResetAfterBackTrace_.push_back(pFaninGate->gateId_);
 							}
 						}
 						else
@@ -2823,8 +2753,8 @@ Atpg::BACKTRACE_RESULT Atpg::multipleBacktrace(BACKTRACE_STATUS atpgStatus, int 
 								// BY THE RULES(1)-(5) DETERMINE NEXT OBJECTIVES
 								// AND ADD THEM TO THE SET OF CURRENT OBJECTIVES
 								setGaten0n1(pFaninGate->gateId_, nn0, nn1);
-								backtraceResetList_.push_back(pFaninGate->gateId_);
-								currentObject_.push_back(pFaninGate->gateId_);
+								gateIDsToResetAfterBackTrace_.push_back(pFaninGate->gateId_);
+								currentObjectives_.push_back(pFaninGate->gateId_);
 							}
 						}
 					}
@@ -2834,10 +2764,10 @@ Atpg::BACKTRACE_RESULT Atpg::multipleBacktrace(BACKTRACE_STATUS atpgStatus, int 
 
 			case FAN_OBJ_DETERMINE:
 				// TAKE OUT A FANOUT-POINT OBJECTIVE p CLOSEST TO A PRIMARY OUTPUT
-				pCurrentObj = findCloseToOutput(fanoutObjective_, index);
+				pCurrentObj = findCloseToOutput(fanoutObjectives_, index);
 
 				// specified by the index from FanObject
-				vecDelete(fanoutObjective_, index);
+				vecDelete(fanoutObjectives_, index);
 
 				// if value of pCurrent is not X
 				// ignore the Fanout-Point Objective that already set value
@@ -2882,7 +2812,7 @@ Atpg::BACKTRACE_RESULT Atpg::multipleBacktrace(BACKTRACE_STATUS atpgStatus, int 
 
 // **************************************************************************
 // Function   [ Atpg::assignBacktraceValue ]
-// Commentor  [ CKY ]
+// Commenter  [ CKY ]
 // Synopsis   [ usage: help to get n0 n1 and Value depend on Gate's controlling value
 //              in:    n0 (int reference), n1 (int reference), gate (Gate reference)
 //              out:   Value, n0, n1
@@ -3003,7 +2933,7 @@ Value Atpg::assignBacktraceValue(int &n0, int &n1, Gate &gate)
 
 // **************************************************************************
 // Function   [ Atpg::initialObjectives ]
-// Commentor  [ CKY ]
+// Commenter  [ CKY ]
 // Synopsis   [ usage: initial all objects of LineNum(gateID_to_n0_  gateID_to_n1_)
 //              in:    void
 //              out:   void
@@ -3012,10 +2942,10 @@ Value Atpg::assignBacktraceValue(int &n0, int &n1, Gate &gate)
 // **************************************************************************
 void Atpg::initialObjectives()
 {
-	currentObject_ = initObject_; // vector assignment
+	currentObjectives_ = initialObjectives_; // vector assignment
 
 	// go through all current Object size
-	for (const int &currentObjectGateID : currentObject_)
+	for (const int &currentObjectGateID : currentObjectives_)
 	{
 		// get currentObject gate in pCircuit_ to pGate
 		Gate *pGate = &pCircuit_->circuitGates_[currentObjectGateID];
@@ -3058,13 +2988,13 @@ void Atpg::initialObjectives()
 			}
 		}
 		// record reset list
-		backtraceResetList_.push_back(pGate->gateId_);
+		gateIDsToResetAfterBackTrace_.push_back(pGate->gateId_);
 	}
 }
 
 // **************************************************************************
 // Function   [ Atpg::findEasiestInput ]
-// Commentor  [ KOREAL ]
+// Commenter  [ KOREAL ]
 // Synopsis   [ usage: find the EasiestInput by gate::cc0_ or gate::cc1_
 //              in:    1. Target gate (Gate* pGate)
 //					   2. FanOut value of target gate (Value Val)
@@ -3127,7 +3057,7 @@ Gate *Atpg::findEasiestInput(Gate *pGate, Value Val)
 
 // **************************************************************************
 // Function   [ Atpg::findCloseToOutput ]
-// Commentor  [ CLT ]
+// Commenter  [ CLT ]
 // Synopsis   [ usage: find the gate which close to output
 //              in:    the list to search, the index of the gate
 //              out:   return the gate which is closest to output
@@ -3158,7 +3088,7 @@ Gate *Atpg::findCloseToOutput(std::vector<int> &list, int &index)
 
 // **************************************************************************
 // Function   [ Atpg::Evaluation ]
-// Commentor  [ KOREAL ]
+// Commenter  [ KOREAL ]
 // Synopsis   [ IN:  Gate *pGate
 //              OUT: IMP_STATUS (FORWARD, BACKWARD, CONFLICT)
 //
@@ -3166,7 +3096,7 @@ Gate *Atpg::findCloseToOutput(std::vector<int> &list, int &index)
 //              else check the relationships between pGate's evaluated value
 //              and current value.
 //
-//              If they are the same, set pGate to be modefied, return
+//              If they are the same, set pGate to be modified, return
 //              FORWARD,
 //              else if current value is unknown, set it to the evaluated
 //              value and return FORWARD,
@@ -3209,7 +3139,7 @@ Atpg::IMPLICATION_STATUS Atpg::evaluation(Gate *pGate)
 	{
 		// set it to the evaluated value.
 		pGate->atpgVal_ = Val;
-		backtrackList_.push_back(pGate->gateId_);
+		backtrackImplicatedGateIDs_.push_back(pGate->gateId_);
 		gateID_to_valModified_[pGate->gateId_] = 1;
 		pushGateFanoutsToEventStack(pGate->gateId_);
 		return FORWARD;
@@ -3223,7 +3153,7 @@ Atpg::IMPLICATION_STATUS Atpg::evaluation(Gate *pGate)
 
 // **************************************************************************
 // Function   [ Atpg::FaultEvaluation ]
-// Commentor  [ KOREAL ]
+// Commenter  [ KOREAL ]
 // Synopsis   [ IN:  Gate *pGate
 //              OUT: IMP_STATUS (FORWARD, BACKWARD, CONFLICT)
 //
@@ -3238,7 +3168,7 @@ Atpg::IMPLICATION_STATUS Atpg::evaluation(Gate *pGate)
 //              If pGate has current value, if only one input has an unknown
 //              value, set the input to proper value and return BACKWARD; if
 //              pGate has more than one input with unknown value, push pGate
-//              into unjustified_ list.
+//              into unjustifiedGateIDs_ list.
 //
 //              If the evaluated value is different from current value, return
 //              CONFLICT.
@@ -3328,13 +3258,13 @@ Atpg::IMPLICATION_STATUS Atpg::faultyGateEvaluation(Gate *pGate)
 				// pushInputEvents(pGate->gateId_, ImpPtr);
 				pushGateToEventStack(pGate->faninVector_[ImpPtr]);
 				pushGateFanoutsToEventStack(pGate->faninVector_[ImpPtr]);
-				backtrackList_.push_back(pImpGate->gateId_);
+				backtrackImplicatedGateIDs_.push_back(pImpGate->gateId_);
 
 				return BACKWARD;
 			}
 			else
 			{
-				unjustified_.push_back(pGate->gateId_);
+				unjustifiedGateIDs_.push_back(pGate->gateId_);
 			}
 		}
 	}
@@ -3349,7 +3279,7 @@ Atpg::IMPLICATION_STATUS Atpg::faultyGateEvaluation(Gate *pGate)
 		pGate->atpgVal_ = Val;
 		// forward setting
 		pushGateFanoutsToEventStack(pGate->gateId_);
-		backtrackList_.push_back(pGate->gateId_);
+		backtrackImplicatedGateIDs_.push_back(pGate->gateId_);
 	}
 	else
 	{
@@ -3360,7 +3290,7 @@ Atpg::IMPLICATION_STATUS Atpg::faultyGateEvaluation(Gate *pGate)
 
 // **************************************************************************
 // Function   [ Atpg::staticTestCompressionByReverseFaultSimulation ]
-// Commentor  [ CAL ]
+// Commenter  [ CAL ]
 // Synopsis   [ usage:
 //                Perform reverse fault simulation
 //              in:    void
@@ -3406,7 +3336,7 @@ void Atpg::staticTestCompressionByReverseFaultSimulation(PatternProcessor *pPatt
 
 // **************************************************************************
 // Function   [ Atpg::firstTimeFrameSetUp ]
-// Commentor  [ WYH ]
+// Commenter  [ WYH ]
 // Synopsis   [ usage: Initial assignment of fault signal, and set the first time
 //                     meet HEAD LINE gate.
 //                     There are two situations :
@@ -3419,22 +3349,22 @@ void Atpg::staticTestCompressionByReverseFaultSimulation(PatternProcessor *pPatt
 //                      (1)Activate the fault, and set value of pFaultyLine
 //                         according to fault type.
 //                      (2)Schedule fanout gates of pFaultyLine.
-//                      (3) Update BackImpLevel to be maximum level of
+//                      (3) Update backwardImplicationLevel to be maximum level of
 //                          fanin gates of pFaultyLine.
 //              in:    Fault& fault
-//              out:   int BackImpLevel: The BackImpLevel indicates the backward
+//              out:   int backwardImplicationLevel: The backwardImplicationLevel indicates the backward
 //                     imply level return -1 when fault FAULT_UNTESTABLE
 //            ]
 // Date       [ WYH Ver. 1.0 started 2013/08/17 ]
 // **************************************************************************
 int Atpg::firstTimeFrameSetUp(Fault &fault)
 { // NE
-	int BackImpLevel = 0;
+	int backwardImplicationLevel = 0;
 	Gate *pFaultyGate = NULL;
 	Gate *pFaultyLine = NULL;
 	bool isOutputFault = (fault.faultyLine_ == 0);
 	Value FaultyValue = (fault.faultType_ == Fault::STR) ? L : H;
-	Value vtemp;
+	Value valueTemp;
 
 	pFaultyGate = &pCircuit_->circuitGates_[fault.gateID_ - pCircuit_->numGate_];
 
@@ -3455,7 +3385,7 @@ int Atpg::firstTimeFrameSetUp(Fault &fault)
 		}
 
 		pFaultyLine->atpgVal_ = FaultyValue;
-		backtrackList_.push_back(pFaultyLine->gateId_);
+		backtrackImplicatedGateIDs_.push_back(pFaultyLine->gateId_);
 		fanoutFreeBacktrace(pFaultyLine);
 		Gate *gTemp = pFaultyLine;
 		Gate *gNext = NULL;
@@ -3474,7 +3404,7 @@ int Atpg::firstTimeFrameSetUp(Fault &fault)
 		if (gateID_to_lineType_[gTemp->gateId_] == HEAD_LINE)
 		{
 			gateID_to_valModified_[gTemp->gateId_] = 1;
-			backtrackList_.push_back(gTemp->gateId_);
+			backtrackImplicatedGateIDs_.push_back(gTemp->gateId_);
 			pushGateFanoutsToEventStack(gTemp->gateId_);
 		}
 		firstTimeFrameHeadLine_ = gTemp;
@@ -3487,7 +3417,7 @@ int Atpg::firstTimeFrameSetUp(Fault &fault)
 		}
 
 		pFaultyLine->atpgVal_ = FaultyValue;
-		backtrackList_.push_back(pFaultyLine->gateId_);
+		backtrackImplicatedGateIDs_.push_back(pFaultyLine->gateId_);
 		pushGateFanoutsToEventStack(pFaultyLine->gateId_);
 
 		if (gateID_to_lineType_[pFaultyLine->gateId_] == HEAD_LINE)
@@ -3500,14 +3430,14 @@ int Atpg::firstTimeFrameSetUp(Fault &fault)
 			gateID_to_valModified_[pFaultyLine->gateId_] = 1;
 
 			Value Val = FaultyValue == H ? H : L;
-			vtemp = pFaultyLine->isInverse();
-			pFaninGate->atpgVal_ = cXOR2(vtemp, Val);
-			backtrackList_.push_back(pFaninGate->gateId_);
+			valueTemp = pFaultyLine->isInverse();
+			pFaninGate->atpgVal_ = cXOR2(valueTemp, Val);
+			backtrackImplicatedGateIDs_.push_back(pFaninGate->gateId_);
 			pushGateToEventStack(pFaultyLine->faninVector_[0]);
 			pushGateFanoutsToEventStack(pFaultyLine->faninVector_[0]);
-			if (BackImpLevel < pFaninGate->numLevel_)
+			if (backwardImplicationLevel < pFaninGate->numLevel_)
 			{
-				BackImpLevel = pFaninGate->numLevel_;
+				backwardImplicationLevel = pFaninGate->numLevel_;
 			}
 		}
 		else if ((FaultyValue == H && pFaultyLine->getOutputCtrlValue() == H) || (FaultyValue == L && pFaultyLine->getOutputCtrlValue() == L))
@@ -3516,17 +3446,17 @@ int Atpg::firstTimeFrameSetUp(Fault &fault)
 			for (int i = 0; i < pFaultyLine->numFI_; ++i)
 			{
 				Gate *pFaninGate = &pCircuit_->circuitGates_[pFaultyLine->faninVector_[i]];
-				// if the value has not been set, then set it to noncontrol value
+				// if the value has not been set, then set it to non-control value
 				if (pFaninGate->atpgVal_ == X)
 				{
 					pFaninGate->atpgVal_ = pFaultyLine->getInputNonCtrlValue();
-					backtrackList_.push_back(pFaninGate->gateId_);
+					backtrackImplicatedGateIDs_.push_back(pFaninGate->gateId_);
 					pushGateToEventStack(pFaultyLine->faninVector_[i]);
 					pushGateFanoutsToEventStack(pFaultyLine->faninVector_[i]);
-					// set the BackImpLevel to be maximum of fanin gate's level
-					if (BackImpLevel < pFaninGate->numLevel_)
+					// set the backwardImplicationLevel to be maximum of fanin gate's level
+					if (backwardImplicationLevel < pFaninGate->numLevel_)
 					{
-						BackImpLevel = pFaninGate->numLevel_;
+						backwardImplicationLevel = pFaninGate->numLevel_;
 					}
 				}
 			}
@@ -3534,18 +3464,18 @@ int Atpg::firstTimeFrameSetUp(Fault &fault)
 		else
 		{
 			pushGateToEventStack(pFaultyLine->gateId_);
-			if (BackImpLevel < pFaultyLine->numLevel_)
+			if (backwardImplicationLevel < pFaultyLine->numLevel_)
 			{
-				BackImpLevel = pFaultyLine->numLevel_;
+				backwardImplicationLevel = pFaultyLine->numLevel_;
 			}
 		}
 	}
-	return BackImpLevel;
+	return backwardImplicationLevel;
 }
 
 // **************************************************************************
 // Function   [ Atpg::checkLevelInfo ]
-// Commentor  [ CAL ]
+// Commenter  [ CAL ]
 // Synopsis   [ usage:
 //                To check if the circuitLvl_ of all the gates does not exceed pCircuit_->totalLvl_
 //              in:    void
@@ -3568,7 +3498,7 @@ void Atpg::checkLevelInfo()
 
 // **************************************************************************
 // Function   [ Atpg::getValStr ]
-// Commentor  [ CAL ]
+// Commenter  [ CAL ]
 // Synopsis   [ usage: return string type of Value
 //              in:    Value
 //              out:   string of Value
@@ -3872,7 +3802,7 @@ void Atpg::calSCOAP()
 
 // **************************************************************************
 // Function   [ Atpg::testClearFaultEffect ]
-// Commentor  [ CAL ]
+// Commenter  [ CAL ]
 // Synopsis   [ usage:
 //                Test clearAllFaultEffectBySimulation for all faults
 //              in:    void
@@ -3901,7 +3831,7 @@ void Atpg::testClearFaultEffect(FaultPtrList &faultListToTest)
 
 // **************************************************************************
 // Function   [ Atpg::resetIsInEventStack ]
-// Commentor  [ CAL ]
+// Commenter  [ CAL ]
 // Synopsis   [ usage:
 //                Set all element in isInEventStack_ to false
 //              in:    void
@@ -3911,12 +3841,12 @@ void Atpg::testClearFaultEffect(FaultPtrList &faultListToTest)
 // **************************************************************************
 void Atpg::resetIsInEventStack()
 {
-	std::fill(isInEventStack_.begin(), isInEventStack_.end(), false);
+	std::fill(isInEventStack_.begin(), isInEventStack_.end(), 0);
 }
 
 // **************************************************************************
 // Function   [ Atpg::XFill ]
-// Commentor  [ HKY CYW ]
+// Commenter  [ HKY CYW ]
 // Synopsis   [ usage: do X-Fill on generated pattern
 //              in:    Pattern list
 //              out:   void //TODO
