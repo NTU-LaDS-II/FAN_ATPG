@@ -9,9 +9,9 @@
 
 using namespace CoreNs;
 
-void CoreNs::printValue(const Value &v, std::ostream &out)
+void CoreNs::printValue(const Value &value, std::ostream &out)
 {
-	switch(v){
+	switch(value){
 		case L:
 			out << "0";
 			break;
@@ -35,30 +35,30 @@ void CoreNs::printValue(const Value &v, std::ostream &out)
 			break;
 	}
 	out << std::flush;
-	// if (v == L)
+	// if (value == L)
 	// 	out << "0";
-	// else if (v == H)
+	// else if (value == H)
 	// 	out << "1";
-	// else if (v == X)
+	// else if (value == X)
 	// 	out << "X";
-	// else if (v == D)
+	// else if (value == D)
 	// 	out << "D";
-	// else if (v == B)
+	// else if (value == B)
 	// 	out << "B";
-	// else if (v == Z)
+	// else if (value == Z)
 	// 	out << "Z";
 	// else
 	// 	out << "I";
 }
 
-void CoreNs::printValue(const ParaValue &v, std::ostream &out)
+void CoreNs::printValue(const ParaValue &paraValue, std::ostream &out)
 {
 	for (int i = 0; i < WORD_SIZE; ++i)
 	{
-		int j = WORD_SIZE - i - 1;
+		int bit = WORD_SIZE - i - 1;
 		ParaValue mask = 0x01;
-		mask <<= j;
-		if ((v & mask) != PARA_L)
+		mask <<= bit;
+		if ((paraValue & mask) != PARA_L)
 		{
 			out << "1";
 		}
@@ -70,19 +70,19 @@ void CoreNs::printValue(const ParaValue &v, std::ostream &out)
 	}
 }
 
-void CoreNs::printValue(const ParaValue &l, const ParaValue &h,
+void CoreNs::printValue(const ParaValue &low, const ParaValue &high,
 												std::ostream &out)
 {
 	for (int i = 0; i < WORD_SIZE; ++i)
 	{
-		int j = WORD_SIZE - i - 1;
+		int bit = WORD_SIZE - i - 1;
 		ParaValue mask = 0x01;
-		mask <<= j;
-		if ((l & mask) != PARA_L)
+		mask <<= bit;
+		if ((low & mask) != PARA_L)
 		{
 			out << "0";
 		}
-		else if ((h & mask) != PARA_L)
+		else if ((high & mask) != PARA_L)
 		{
 			out << "1";
 		}

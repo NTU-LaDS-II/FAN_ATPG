@@ -19,30 +19,31 @@ namespace CoreNs {
 // B.9
 class PatternReader : public IntfNs::PatFile {
 public:
-                 PatternReader(PatternProcessor *pcoll, Circuit *cir);
+                 PatternReader(PatternProcessor *pPatternProcessor, Circuit *pCircuit);
                  ~PatternReader();
-    virtual void setPiOrder(const IntfNs::PatNames * const pis);
-    virtual void setPpiOrder(const IntfNs::PatNames * const ppis);
-    virtual void setPoOrder(const IntfNs::PatNames * const pos);
-    virtual void setPatternType(const IntfNs::PatType &type);
+    virtual void setPiOrder(const IntfNs::PatNames * const pPIs);
+    virtual void setPpiOrder(const IntfNs::PatNames * const pPPIs);
+    virtual void setPoOrder(const IntfNs::PatNames * const pPOs);
+    virtual void setPatternType(const IntfNs::PatType &patternType);
     virtual void setPatternNum(const int &num);
-    virtual void addPattern(const char * const pi1, const char * const pi2,
-                            const char * const ppi, const char * const si,
-                            const char * const po1, const char * const po2,
-                            const char * const ppo);
+    virtual void addPattern(const char * const pPI1, const char * const pPI2,
+                            const char * const pPPI, const char * const pSI,
+                            const char * const pPO1, const char * const pPO2,
+                            const char * const pPPO);
 
 protected:
-    void            assignValue(std::vector<Value> &v, const char * const pat,
+    void            assignValue(std::vector<Value> &valueVector, const char * const pPattern,
                                 const int &size);
-    int             curPat_;
-    PatternProcessor     *pcoll_;
-    Circuit         *cir_;
+    int             curPattern_;
+    PatternProcessor     *pPatternProcessor_;
+    Circuit         *pCircuit_;
 };
 
-inline PatternReader::PatternReader(PatternProcessor *pcoll, Circuit *cir) {
-    curPat_ = 0;
-    pcoll_  = pcoll;
-    cir_    = cir;
+inline PatternReader::PatternReader(PatternProcessor *pPatternProcessor, Circuit *pCircuit)
+{
+		curPattern_ = 0;
+    pPatternProcessor_  = pPatternProcessor;
+    pCircuit_    = pCircuit;
 }
 
 inline PatternReader::~PatternReader() {}
@@ -50,22 +51,22 @@ inline PatternReader::~PatternReader() {}
 
 class PatternWriter {
 public:
-         PatternWriter(PatternProcessor *pcoll, Circuit *cir);
+         PatternWriter(PatternProcessor *pPatternProcessor, Circuit *pCircuit);
          ~PatternWriter();
 
-    bool writePat(const char * const fname);
+    bool writePattern(const char * const fname);
     bool writeLht(const char * const fname);
     bool writeAscii(const char * const fname);
 	bool writeSTIL(const char * const fname); //2016 summer train
 
 protected:
-    PatternProcessor *pcoll_;
-    Circuit     *cir_;
+    PatternProcessor *pPatternProcessor_;
+    Circuit     *pCircuit_;
 };
 
-inline PatternWriter::PatternWriter(PatternProcessor *pcoll, Circuit *cir) {
-    pcoll_ = pcoll;
-    cir_   = cir;
+inline PatternWriter::PatternWriter(PatternProcessor *pPatternProcessor, Circuit *pCircuit) {
+    pPatternProcessor_ = pPatternProcessor;
+    pCircuit_   = pCircuit;
 }
 
 inline PatternWriter::~PatternWriter() {}
@@ -73,15 +74,15 @@ inline PatternWriter::~PatternWriter() {}
 
 class ProcedureWriter {
     public:
-             ProcedureWriter(Circuit *cir);
+             ProcedureWriter(Circuit *pCircuit);
              ~ProcedureWriter();
-        bool writeProc(const char * const fname);
+        bool writeProcedure(const char * const fname);
     protected:
-            Circuit *cir_;
+            Circuit *pCircuit_;
 };
 
-inline ProcedureWriter::ProcedureWriter(Circuit *cir) {
-    cir_ = cir;
+inline ProcedureWriter::ProcedureWriter(Circuit *pCircuit) {
+    pCircuit_ = pCircuit;
 }
 
 inline ProcedureWriter::~ProcedureWriter() {}

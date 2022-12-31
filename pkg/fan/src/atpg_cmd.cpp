@@ -1398,7 +1398,7 @@ bool WritePatCmd::exec(const std::vector<std::string> &argv)
 	}
 	else if (optMgr_.getFlagVar("f") == "pat" || optMgr_.getFlagVar("f") == "")
 	{
-		if (!writer.writePat(optMgr_.getParsedArg(0).c_str()))
+		if (!writer.writePattern(optMgr_.getParsedArg(0).c_str()))
 		{
 			std::cerr << "**ERROR WritePatternCmd::exec(): writer failed\n";
 			return false;
@@ -1490,7 +1490,7 @@ bool WriteProcCmd::exec(const std::vector<std::string> &argv)
 
 	std::cout << "#  Writing test procedure file ...\n";
 	ProcedureWriter writer(fanMgr_->cir);
-	if (!writer.writeProc(optMgr_.getParsedArg(0).c_str()))
+	if (!writer.writeProcedure(optMgr_.getParsedArg(0).c_str()))
 	{
 		std::cerr << "**ERROR WritePatternCmd::exec(): writer failed\n";
 		return false;

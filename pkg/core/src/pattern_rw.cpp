@@ -15,255 +15,259 @@ using namespace CoreNs;
 
 // PatternReader
 // this method map the PI order to the circuit order
-void PatternReader::setPiOrder(const PatNames *const pis)
+void PatternReader::setPiOrder(const PatNames *const pPIs)
 {
 	if (!success_)
 	{
 		return;
 	}
 
-	if (!cir_ || !cir_->pNetlist_)
+	if (!pCircuit_ || !pCircuit_->pNetlist_)
 	{
 		success_ = false;
 		return;
 	}
 
-	pcoll_->numPI_ = 0;
-	PatNames *pi = pis->head;
-	while (pi)
+	pPatternProcessor_->numPI_ = 0;
+	PatNames *pPI = pPIs->head;
+	while (pPI)
 	{
-		++pcoll_->numPI_;
-		pi = pi->next;
+		++pPatternProcessor_->numPI_;
+		pPI = pPI->next;
 	}
-	// delete [] pcoll_->piOrder_;
-	// pcoll_->piOrder_ = new int[pcoll_->numPI_];
-	pcoll_->pPIorder_.resize(pcoll_->numPI_);
-	pi = pis->head;
+	// delete [] pPatternProcessor_->piOrder_;
+	// pPatternProcessor_->piOrder_ = new int[pPatternProcessor_->numPI_];
+	pPatternProcessor_->pPIorder_.resize(pPatternProcessor_->numPI_);
+	pPI = pPIs->head;
 	int i = 0;
-	while (pi)
+	while (pPI)
 	{
-		Port *p = cir_->pNetlist_->getTop()->getPort(pi->name);
-		if (!p)
+		Port *pPort = pCircuit_->pNetlist_->getTop()->getPort(pPI->name);
+		if (!pPort)
 		{
 			fprintf(stderr, "**ERROR PatternReader::setPiOrder(): port ");
-			fprintf(stderr, "`%s' not found\n", pi->name);
+			fprintf(stderr, "`%s' not found\n", pPI->name);
 			success_ = false;
-			// delete[] pcoll_->piOrder_;
-			// pcoll_->piOrder_ = NULL;
-			pcoll_->pPIorder_.clear();
+			// delete[] pPatternProcessor_->piOrder_;
+			// pPatternProcessor_->piOrder_ = NULL;
+			pPatternProcessor_->pPIorder_.clear();
 			return;
 		}
-		pcoll_->pPIorder_[i] = cir_->portIndexToGateIndex_[p->id_];
+		pPatternProcessor_->pPIorder_[i] = pCircuit_->portIndexToGateIndex_[pPort->id_];
 		++i;
-		pi = pi->next;
+		pPI = pPI->next;
 	}
 }
 
-void PatternReader::setPpiOrder(const PatNames *const ppis)
+void PatternReader::setPpiOrder(const PatNames *const pPPIs)
 {
 	if (!success_)
 	{
 		return;
 	}
 
-	if (!cir_ || !cir_->pNetlist_)
+	if (!pCircuit_ || !pCircuit_->pNetlist_)
 	{
 		success_ = false;
 		return;
 	}
 
-	pcoll_->numPPI_ = 0;
-	PatNames *ppi = ppis->head;
-	while (ppi)
+	pPatternProcessor_->numPPI_ = 0;
+	PatNames *pPPI = pPPIs->head;
+	while (pPPI)
 	{
-		++pcoll_->numPPI_;
-		ppi = ppi->next;
+		++pPatternProcessor_->numPPI_;
+		pPPI = pPPI->next;
 	}
-	// delete[] pcoll_->ppiOrder_;
-	// pcoll_->ppiOrder_ = new int[pcoll_->numPPI_];
-	pcoll_->pPPIorder_.resize(pcoll_->numPPI_);
-	ppi = ppis->head;
+	// delete[] pPatternProcessor_->ppiOrder_;
+	// pPatternProcessor_->ppiOrder_ = new int[pPatternProcessor_->numPPI_];
+	pPatternProcessor_->pPPIorder_.resize(pPatternProcessor_->numPPI_);
+	pPPI = pPPIs->head;
 	int i = 0;
-	while (ppi)
+	while (pPPI)
 	{
-		Cell *c = cir_->pNetlist_->getTop()->getCell(ppi->name);
-		if (!c)
+		Cell *pCell = pCircuit_->pNetlist_->getTop()->getCell(pPPI->name);
+		if (!pCell)
 		{
 			fprintf(stderr, "**ERROR PatternReader::setPpiOrder(): gate ");
-			fprintf(stderr, "`%s' not found\n", ppi->name);
+			fprintf(stderr, "`%s' not found\n", pPPI->name);
 			success_ = false;
-			// delete[] pcoll_->ppiOrder_;
-			// pcoll_->ppiOrder_ = NULL;
-			pcoll_->pPPIorder_.clear();
+			// delete[] pPatternProcessor_->ppiOrder_;
+			// pPatternProcessor_->ppiOrder_ = NULL;
+			pPatternProcessor_->pPPIorder_.clear();
 			return;
 		}
-		pcoll_->pPPIorder_[i] = cir_->cellIndexToGateIndex_[c->id_];
+		pPatternProcessor_->pPPIorder_[i] = pCircuit_->cellIndexToGateIndex_[pCell->id_];
 		++i;
-		ppi = ppi->next;
+		pPPI = pPPI->next;
 	}
 }
 
-void PatternReader::setPoOrder(const PatNames *const pos)
+void PatternReader::setPoOrder(const PatNames *const pPOs)
 {
 	if (!success_)
 	{
 		return;
 	}
 
-	if (!cir_ || !cir_->pNetlist_)
+	if (!pCircuit_ || !pCircuit_->pNetlist_)
 	{
 		success_ = false;
 		return;
 	}
-	pcoll_->numPO_ = 0;
-	PatNames *po = pos->head;
-	while (po)
+	pPatternProcessor_->numPO_ = 0;
+	PatNames *pPO = pPOs->head;
+	while (pPO)
 	{
-		++pcoll_->numPO_;
-		po = po->next;
+		++pPatternProcessor_->numPO_;
+		pPO = pPO->next;
 	}
-	// delete[] pcoll_->poOrder_;
-	// pcoll_->poOrder_ = new int[pcoll_->numPO_];
-	pcoll_->pPOorder_.resize(pcoll_->numPO_);
-	po = pos->head;
+	// delete[] pPatternProcessor_->poOrder_;
+	// pPatternProcessor_->poOrder_ = new int[pPatternProcessor_->numPO_];
+	pPatternProcessor_->pPOorder_.resize(pPatternProcessor_->numPO_);
+	pPO = pPOs->head;
 	int i = 0;
-	while (po)
+	while (pPO)
 	{
-		Port *p = cir_->pNetlist_->getTop()->getPort(po->name);
-		if (!p)
+		Port *pPort = pCircuit_->pNetlist_->getTop()->getPort(pPO->name);
+		if (!pPort)
 		{
 			fprintf(stderr, "**ERROR PatternReader::setPoOrder(): port ");
-			fprintf(stderr, "`%s' not found\n", po->name);
+			fprintf(stderr, "`%s' not found\n", pPO->name);
 			success_ = false;
-			// delete[] pcoll_->poOrder_;
-			// pcoll_->poOrder_ = NULL;
-			pcoll_->pPOorder_.clear();
+			// delete[] pPatternProcessor_->poOrder_;
+			// pPatternProcessor_->poOrder_ = NULL;
+			pPatternProcessor_->pPOorder_.clear();
 			return;
 		}
-		pcoll_->pPOorder_[i] = cir_->portIndexToGateIndex_[p->id_];
+		pPatternProcessor_->pPOorder_[i] = pCircuit_->portIndexToGateIndex_[pPort->id_];
 		++i;
-		po = po->next;
+		pPO = pPO->next;
 	}
 }
 
-void PatternReader::setPatternType(const PatType &type)
+void PatternReader::setPatternType(const PatType &patternType)
 {
 	if (!success_)
 	{
 		return;
 	}
 
-	switch (type)
+	switch (patternType)
 	{
 		case IntfNs::BASIC_SCAN:
-			pcoll_->type_ = PatternProcessor::BASIC_SCAN;
+			pPatternProcessor_->type_ = PatternProcessor::BASIC_SCAN;
 			break;
 		case IntfNs::LAUNCH_CAPTURE:
-			pcoll_->type_ = PatternProcessor::LAUNCH_CAPTURE;
+			pPatternProcessor_->type_ = PatternProcessor::LAUNCH_CAPTURE;
 			break;
 		case IntfNs::LAUNCH_SHIFT:
-			pcoll_->type_ = PatternProcessor::LAUNCH_SHIFT;
-			pcoll_->numSI_ = 1;
+			pPatternProcessor_->type_ = PatternProcessor::LAUNCH_SHIFT;
+			pPatternProcessor_->numSI_ = 1;
 			break;
 	}
 }
 
-void PatternReader::setPatternNum(const int &num)
+void PatternReader::setPatternNum(const int &patternNum)
 {
 	if (!success_)
 	{
 		return;
 	}
-	pcoll_->patternVector_.resize(num);
-	for (size_t i = 0; i < pcoll_->patternVector_.size(); ++i)
+	pPatternProcessor_->patternVector_.resize(patternNum);
+	// for (size_t i = 0; i < pPatternProcessor_->patternVector_.size(); ++i)
+	// {
+	// 	pPatternProcessor_->patternVector_[i] = Pattern();
+	// }
+	for (Pattern pattern : pPatternProcessor_->patternVector_)
 	{
-		pcoll_->patternVector_[i] = Pattern();
+		pattern = Pattern();
 	}
-	curPat_ = 0;
+	curPattern_ = 0;
 }
 
 // read in a pattern
-void PatternReader::addPattern(const char *const pi1,
-															 const char *const pi2,
-															 const char *const ppi,
-															 const char *const si,
-															 const char *const po1,
-															 const char *const po2,
-															 const char *const ppo)
+void PatternReader::addPattern(const char *const pPI1,
+															 const char *const pPI2,
+															 const char *const pPPI,
+															 const char *const pSI,
+															 const char *const pPO1,
+															 const char *const pPO2,
+															 const char *const pPPO)
 {
 	if (!success_)
 	{
 		return;
 	}
-	if (pi1 && curPat_ < (int)pcoll_->patternVector_.size())
+	if (pPI1 && curPattern_ < (int)pPatternProcessor_->patternVector_.size())
 	{
-		pcoll_->patternVector_[curPat_].primaryInputs1st_.resize(pcoll_->numPI_);
-		assignValue(pcoll_->patternVector_[curPat_].primaryInputs1st_, pi1, pcoll_->numPI_);
+		pPatternProcessor_->patternVector_[curPattern_].primaryInputs1st_.resize(pPatternProcessor_->numPI_);
+		assignValue(pPatternProcessor_->patternVector_[curPattern_].primaryInputs1st_, pPI1, pPatternProcessor_->numPI_);
 	}
-	if (pi2 && curPat_ < (int)pcoll_->patternVector_.size())
+	if (pPI2 && curPattern_ < (int)pPatternProcessor_->patternVector_.size())
 	{
-		pcoll_->patternVector_[curPat_].primaryInputs2nd_.resize(pcoll_->numPI_);
-		assignValue(pcoll_->patternVector_[curPat_].primaryInputs2nd_, pi2, pcoll_->numPI_);
+		pPatternProcessor_->patternVector_[curPattern_].primaryInputs2nd_.resize(pPatternProcessor_->numPI_);
+		assignValue(pPatternProcessor_->patternVector_[curPattern_].primaryInputs2nd_, pPI2, pPatternProcessor_->numPI_);
 	}
-	if (ppi && curPat_ < (int)pcoll_->patternVector_.size())
+	if (pPPI && curPattern_ < (int)pPatternProcessor_->patternVector_.size())
 	{
-		pcoll_->patternVector_[curPat_].pseudoPrimaryInputs_.resize(pcoll_->numPPI_);
-		assignValue(pcoll_->patternVector_[curPat_].pseudoPrimaryInputs_, ppi, pcoll_->numPPI_);
+		pPatternProcessor_->patternVector_[curPattern_].pseudoPrimaryInputs_.resize(pPatternProcessor_->numPPI_);
+		assignValue(pPatternProcessor_->patternVector_[curPattern_].pseudoPrimaryInputs_, pPPI, pPatternProcessor_->numPPI_);
 	}
-	if (si && curPat_ < (int)pcoll_->patternVector_.size())
+	if (pSI && curPattern_ < (int)pPatternProcessor_->patternVector_.size())
 	{
-		pcoll_->patternVector_[curPat_].shiftIn_.resize(pcoll_->numSI_);
-		assignValue(pcoll_->patternVector_[curPat_].shiftIn_, si, pcoll_->numSI_);
+		pPatternProcessor_->patternVector_[curPattern_].shiftIn_.resize(pPatternProcessor_->numSI_);
+		assignValue(pPatternProcessor_->patternVector_[curPattern_].shiftIn_, pSI, pPatternProcessor_->numSI_);
 	}
-	if (po1 && curPat_ < (int)pcoll_->patternVector_.size())
+	if (pPO1 && curPattern_ < (int)pPatternProcessor_->patternVector_.size())
 	{
-		pcoll_->patternVector_[curPat_].primaryOutputs1st_.resize(pcoll_->numPO_);
-		assignValue(pcoll_->patternVector_[curPat_].primaryOutputs1st_, po1, pcoll_->numPO_);
+		pPatternProcessor_->patternVector_[curPattern_].primaryOutputs1st_.resize(pPatternProcessor_->numPO_);
+		assignValue(pPatternProcessor_->patternVector_[curPattern_].primaryOutputs1st_, pPO1, pPatternProcessor_->numPO_);
 	}
-	if (po2 && curPat_ < (int)pcoll_->patternVector_.size())
+	if (pPO2 && curPattern_ < (int)pPatternProcessor_->patternVector_.size())
 	{
-		pcoll_->patternVector_[curPat_].primaryOutputs2nd_.resize(pcoll_->numPO_);
-		assignValue(pcoll_->patternVector_[curPat_].primaryOutputs2nd_, po2, pcoll_->numPO_);
+		pPatternProcessor_->patternVector_[curPattern_].primaryOutputs2nd_.resize(pPatternProcessor_->numPO_);
+		assignValue(pPatternProcessor_->patternVector_[curPattern_].primaryOutputs2nd_, pPO2, pPatternProcessor_->numPO_);
 	}
-	if (ppo && curPat_ < (int)pcoll_->patternVector_.size())
+	if (pPPO && curPattern_ < (int)pPatternProcessor_->patternVector_.size())
 	{
-		pcoll_->patternVector_[curPat_].pseudoPrimaryOutputs_.resize(pcoll_->numPPI_);
-		assignValue(pcoll_->patternVector_[curPat_].pseudoPrimaryOutputs_, ppo, pcoll_->numPPI_);
+		pPatternProcessor_->patternVector_[curPattern_].pseudoPrimaryOutputs_.resize(pPatternProcessor_->numPPI_);
+		assignValue(pPatternProcessor_->patternVector_[curPattern_].pseudoPrimaryOutputs_, pPPO, pPatternProcessor_->numPPI_);
 	}
-	++curPat_;
+	++curPattern_;
 }
 
-void PatternReader::assignValue(std::vector<Value> &v, const char *const pat,
+void PatternReader::assignValue(std::vector<Value> &valueVector, const char *const pattern,
 																const int &size)
 {
 	for (int i = 0; i < size; ++i)
 	{
-		switch (pat[i])
+		switch (pattern[i])
 		{
 			case '0':
-				v[i] = L;
+				valueVector[i] = L;
 				break;
 			case '1':
-				v[i] = H;
+				valueVector[i] = H;
 				break;
 			default:
-				v[i] = X;
+				valueVector[i] = X;
 				break;
 		}
-		// if (pat[i] == '0')
-		// 	v[i] = L;
-		// else if (pat[i] == '1')
-		// 	v[i] = H;
+		// if (pattern[i] == '0')
+		// 	valueVector[i] = L;
+		// else if (pattern[i] == '1')
+		// 	valueVector[i] = H;
 		// else
-		// 	v[i] = X;
+		// 	valueVector[i] = X;
 	}
 }
 
 // PatternWriter
 
-// write to LaDS's own *.pat  pattern format
+// write to LaDS's own *.pattern  pattern format
 // support 2 time frames, but no more than 2 time frames
-bool PatternWriter::writePat(const char *const fname)
+bool PatternWriter::writePattern(const char *const fname)
 {
 	FILE *fout = fopen(fname, "w");
 	if (!fout)
@@ -273,29 +277,29 @@ bool PatternWriter::writePat(const char *const fname)
 		return false;
 	}
 
-	for (int i = 0; i < cir_->numPI_; ++i)
+	for (int i = 0; i < pCircuit_->numPI_; ++i)
 	{
 		fprintf(fout, "%s ",
-						cir_->pNetlist_->getTop()->getPort(cir_->circuitGates_[i].cellId_)->name_);
+						pCircuit_->pNetlist_->getTop()->getPort(pCircuit_->circuitGates_[i].cellId_)->name_);
 	}
 	fprintf(fout, " |\n");
 
-	for (int i = cir_->numPI_; i < cir_->numPI_ + cir_->numPPI_; ++i)
+	for (int i = pCircuit_->numPI_; i < pCircuit_->numPI_ + pCircuit_->numPPI_; ++i)
 	{
 		fprintf(fout, "%s ",
-						cir_->pNetlist_->getTop()->getCell(cir_->circuitGates_[i].cellId_)->name_);
+						pCircuit_->pNetlist_->getTop()->getCell(pCircuit_->circuitGates_[i].cellId_)->name_);
 	}
 	fprintf(fout, " |\n");
 
-	int start = cir_->numPI_ + cir_->numPPI_ + cir_->numComb_;
-	for (int i = start; i < start + cir_->numPO_; ++i)
+	int start = pCircuit_->numPI_ + pCircuit_->numPPI_ + pCircuit_->numComb_;
+	for (int i = start; i < start + pCircuit_->numPO_; ++i)
 	{
 		fprintf(fout, "%s ",
-						cir_->pNetlist_->getTop()->getPort(cir_->circuitGates_[i].cellId_)->name_);
+						pCircuit_->pNetlist_->getTop()->getPort(pCircuit_->circuitGates_[i].cellId_)->name_);
 	}
 	fprintf(fout, "\n");
 
-	switch (pcoll_->type_)
+	switch (pPatternProcessor_->type_)
 	{
 		case PatternProcessor::BASIC_SCAN:
 			fprintf(fout, "BASIC_SCAN\n");
@@ -308,96 +312,96 @@ bool PatternWriter::writePat(const char *const fname)
 			break;
 	}
 
-	fprintf(fout, "_num_of_pattern_%d\n", (int)pcoll_->patternVector_.size());
+	fprintf(fout, "_num_of_pattern_%d\n", (int)pPatternProcessor_->patternVector_.size());
 
-	for (int i = 0; i < (int)pcoll_->patternVector_.size(); ++i)
+	for (int i = 0; i < (int)pPatternProcessor_->patternVector_.size(); ++i)
 	{
 		fprintf(fout, "_pattern_%d ", i + 1);
-		if (!pcoll_->patternVector_[i].primaryInputs1st_.empty())
+		if (!pPatternProcessor_->patternVector_[i].primaryInputs1st_.empty())
 		{
-			for (int j = 0; j < pcoll_->numPI_; ++j)
+			for (int j = 0; j < pPatternProcessor_->numPI_; ++j)
 			{
-				if (pcoll_->patternVector_[i].primaryInputs1st_[j] == L)
+				if (pPatternProcessor_->patternVector_[i].primaryInputs1st_[j] == L)
 					fprintf(fout, "0");
-				else if (pcoll_->patternVector_[i].primaryInputs1st_[j] == H)
+				else if (pPatternProcessor_->patternVector_[i].primaryInputs1st_[j] == H)
 					fprintf(fout, "1");
 				else
 					fprintf(fout, "X");
 			}
 		}
 		fprintf(fout, " | ");
-		if (!pcoll_->patternVector_[i].primaryInputs2nd_.empty())
+		if (!pPatternProcessor_->patternVector_[i].primaryInputs2nd_.empty())
 		{
-			for (int j = 0; j < pcoll_->numPI_; ++j)
+			for (int j = 0; j < pPatternProcessor_->numPI_; ++j)
 			{
-				if (pcoll_->patternVector_[i].primaryInputs2nd_[j] == L)
+				if (pPatternProcessor_->patternVector_[i].primaryInputs2nd_[j] == L)
 					fprintf(fout, "0");
-				else if (pcoll_->patternVector_[i].primaryInputs2nd_[j] == H)
+				else if (pPatternProcessor_->patternVector_[i].primaryInputs2nd_[j] == H)
 					fprintf(fout, "1");
 				else
 					fprintf(fout, "X");
 			}
 		}
 		fprintf(fout, " | ");
-		if (!pcoll_->patternVector_[i].pseudoPrimaryInputs_.empty())
+		if (!pPatternProcessor_->patternVector_[i].pseudoPrimaryInputs_.empty())
 		{
-			for (int j = 0; j < pcoll_->numPPI_; ++j)
+			for (int j = 0; j < pPatternProcessor_->numPPI_; ++j)
 			{
-				if (pcoll_->patternVector_[i].pseudoPrimaryInputs_[j] == L)
+				if (pPatternProcessor_->patternVector_[i].pseudoPrimaryInputs_[j] == L)
 					fprintf(fout, "0");
-				else if (pcoll_->patternVector_[i].pseudoPrimaryInputs_[j] == H)
+				else if (pPatternProcessor_->patternVector_[i].pseudoPrimaryInputs_[j] == H)
 					fprintf(fout, "1");
 				else
 					fprintf(fout, "X");
 			}
 		}
 		fprintf(fout, " | ");
-		if (!pcoll_->patternVector_[i].shiftIn_.empty())
+		if (!pPatternProcessor_->patternVector_[i].shiftIn_.empty())
 		{
-			for (int j = 0; j < pcoll_->numSI_; ++j)
+			for (int j = 0; j < pPatternProcessor_->numSI_; ++j)
 			{
-				if (pcoll_->patternVector_[i].shiftIn_[j] == L)
+				if (pPatternProcessor_->patternVector_[i].shiftIn_[j] == L)
 					fprintf(fout, "0");
-				else if (pcoll_->patternVector_[i].shiftIn_[j] == H)
+				else if (pPatternProcessor_->patternVector_[i].shiftIn_[j] == H)
 					fprintf(fout, "1");
 				else
 					fprintf(fout, "X");
 			}
 		}
 		fprintf(fout, " | ");
-		if (!pcoll_->patternVector_[i].primaryOutputs1st_.empty())
+		if (!pPatternProcessor_->patternVector_[i].primaryOutputs1st_.empty())
 		{
-			for (int j = 0; j < pcoll_->numPO_; ++j)
+			for (int j = 0; j < pPatternProcessor_->numPO_; ++j)
 			{
-				if (pcoll_->patternVector_[i].primaryOutputs1st_[j] == L)
+				if (pPatternProcessor_->patternVector_[i].primaryOutputs1st_[j] == L)
 					fprintf(fout, "0");
-				else if (pcoll_->patternVector_[i].primaryOutputs1st_[j] == H)
+				else if (pPatternProcessor_->patternVector_[i].primaryOutputs1st_[j] == H)
 					fprintf(fout, "1");
 				else
 					fprintf(fout, "X");
 			}
 		}
 		fprintf(fout, " | ");
-		if (!pcoll_->patternVector_[i].primaryOutputs2nd_.empty())
+		if (!pPatternProcessor_->patternVector_[i].primaryOutputs2nd_.empty())
 		{
-			for (int j = 0; j < pcoll_->numPO_; ++j)
+			for (int j = 0; j < pPatternProcessor_->numPO_; ++j)
 			{
-				if (pcoll_->patternVector_[i].primaryOutputs2nd_[j] == L)
+				if (pPatternProcessor_->patternVector_[i].primaryOutputs2nd_[j] == L)
 					fprintf(fout, "0");
-				else if (pcoll_->patternVector_[i].primaryOutputs2nd_[j] == H)
+				else if (pPatternProcessor_->patternVector_[i].primaryOutputs2nd_[j] == H)
 					fprintf(fout, "1");
 				else
 					fprintf(fout, "X");
 			}
 		}
 		fprintf(fout, " | ");
-		if (!pcoll_->patternVector_[i].pseudoPrimaryInputs_.empty())
+		if (!pPatternProcessor_->patternVector_[i].pseudoPrimaryInputs_.empty())
 		{
-			for (int j = 0; j < pcoll_->numPPI_; ++j)
+			for (int j = 0; j < pPatternProcessor_->numPPI_; ++j)
 			{
-				if (pcoll_->patternVector_[i].pseudoPrimaryOutputs_[j] == L)
+				if (pPatternProcessor_->patternVector_[i].pseudoPrimaryOutputs_[j] == L)
 					fprintf(fout, "0");
-				else if (pcoll_->patternVector_[i].pseudoPrimaryOutputs_[j] == H)
+				else if (pPatternProcessor_->patternVector_[i].pseudoPrimaryOutputs_[j] == H)
 					fprintf(fout, "1");
 				else
 					fprintf(fout, "X");
@@ -426,56 +430,56 @@ bool PatternWriter::writeLht(const char *const fname)
 		return false;
 	}
 
-	for (size_t i = 0; i < pcoll_->patternVector_.size(); ++i)
+	for (size_t i = 0; i < pPatternProcessor_->patternVector_.size(); ++i)
 	{
 		fprintf(fout, "%d: ", (int)i + 1);
-		if (!pcoll_->patternVector_[i].primaryInputs1st_.empty())
+		if (!pPatternProcessor_->patternVector_[i].primaryInputs1st_.empty())
 		{
-			for (int j = 0; j < pcoll_->numPI_; ++j)
+			for (int j = 0; j < pPatternProcessor_->numPI_; ++j)
 			{
-				if (pcoll_->patternVector_[i].primaryInputs1st_[j] == L)
+				if (pPatternProcessor_->patternVector_[i].primaryInputs1st_[j] == L)
 					fprintf(fout, "0");
-				else if (pcoll_->patternVector_[i].primaryInputs1st_[j] == H)
+				else if (pPatternProcessor_->patternVector_[i].primaryInputs1st_[j] == H)
 					fprintf(fout, "1");
 				else
 					fprintf(fout, "X");
 			}
 		}
-		if (!pcoll_->patternVector_[i].primaryInputs2nd_.empty())
+		if (!pPatternProcessor_->patternVector_[i].primaryInputs2nd_.empty())
 		{
 			fprintf(fout, "->");
-			for (int j = 0; j < pcoll_->numPI_; ++j)
+			for (int j = 0; j < pPatternProcessor_->numPI_; ++j)
 			{
-				if (pcoll_->patternVector_[i].primaryInputs2nd_[j] == L)
+				if (pPatternProcessor_->patternVector_[i].primaryInputs2nd_[j] == L)
 					fprintf(fout, "0");
-				else if (pcoll_->patternVector_[i].primaryInputs2nd_[j] == H)
+				else if (pPatternProcessor_->patternVector_[i].primaryInputs2nd_[j] == H)
 					fprintf(fout, "1");
 				else
 					fprintf(fout, "X");
 			}
 		}
 		fprintf(fout, "_");
-		if (!pcoll_->patternVector_[i].pseudoPrimaryInputs_.empty())
+		if (!pPatternProcessor_->patternVector_[i].pseudoPrimaryInputs_.empty())
 		{
 			fprintf(fout, "->");
-			for (int j = 0; j < pcoll_->numPPI_; ++j)
+			for (int j = 0; j < pPatternProcessor_->numPPI_; ++j)
 			{
-				if (pcoll_->patternVector_[i].pseudoPrimaryInputs_[j] == L)
+				if (pPatternProcessor_->patternVector_[i].pseudoPrimaryInputs_[j] == L)
 					fprintf(fout, "0");
-				else if (pcoll_->patternVector_[i].pseudoPrimaryInputs_[j] == H)
+				else if (pPatternProcessor_->patternVector_[i].pseudoPrimaryInputs_[j] == H)
 					fprintf(fout, "1");
 				else
 					fprintf(fout, "X");
 			}
 		}
-		if (!pcoll_->patternVector_[i].shiftIn_.empty())
+		if (!pPatternProcessor_->patternVector_[i].shiftIn_.empty())
 		{
 			fprintf(fout, "@");
-			for (int j = 0; j < pcoll_->numSI_; ++j)
+			for (int j = 0; j < pPatternProcessor_->numSI_; ++j)
 			{
-				if (pcoll_->patternVector_[i].shiftIn_[j] == L)
+				if (pPatternProcessor_->patternVector_[i].shiftIn_[j] == L)
 					fprintf(fout, "0");
-				else if (pcoll_->patternVector_[i].shiftIn_[j] == H)
+				else if (pPatternProcessor_->patternVector_[i].shiftIn_[j] == H)
 					fprintf(fout, "1");
 				else
 					fprintf(fout, "X");
@@ -483,40 +487,40 @@ bool PatternWriter::writeLht(const char *const fname)
 		}
 		fprintf(fout, " | ");
 
-		if (!pcoll_->patternVector_[i].primaryOutputs1st_.empty() && pcoll_->type_ == PatternProcessor::BASIC_SCAN)
+		if (!pPatternProcessor_->patternVector_[i].primaryOutputs1st_.empty() && pPatternProcessor_->type_ == PatternProcessor::BASIC_SCAN)
 		{
-			for (int j = 0; j < pcoll_->numPO_; ++j)
+			for (int j = 0; j < pPatternProcessor_->numPO_; ++j)
 			{
-				if (pcoll_->patternVector_[i].primaryOutputs1st_[j] == L)
+				if (pPatternProcessor_->patternVector_[i].primaryOutputs1st_[j] == L)
 					fprintf(fout, "0");
-				else if (pcoll_->patternVector_[i].primaryOutputs1st_[j] == H)
+				else if (pPatternProcessor_->patternVector_[i].primaryOutputs1st_[j] == H)
 					fprintf(fout, "1");
 				else
 					fprintf(fout, "X");
 			}
 		}
 
-		if (!pcoll_->patternVector_[i].primaryOutputs2nd_.empty() && (pcoll_->type_ == PatternProcessor::LAUNCH_CAPTURE || pcoll_->type_ == PatternProcessor::LAUNCH_SHIFT))
+		if (!pPatternProcessor_->patternVector_[i].primaryOutputs2nd_.empty() && (pPatternProcessor_->type_ == PatternProcessor::LAUNCH_CAPTURE || pPatternProcessor_->type_ == PatternProcessor::LAUNCH_SHIFT))
 		{
-			for (int j = 0; j < pcoll_->numPO_; ++j)
+			for (int j = 0; j < pPatternProcessor_->numPO_; ++j)
 			{
-				if (pcoll_->patternVector_[i].primaryOutputs2nd_[j] == L)
+				if (pPatternProcessor_->patternVector_[i].primaryOutputs2nd_[j] == L)
 					fprintf(fout, "0");
-				else if (pcoll_->patternVector_[i].primaryOutputs2nd_[j] == H)
+				else if (pPatternProcessor_->patternVector_[i].primaryOutputs2nd_[j] == H)
 					fprintf(fout, "1");
 				else
 					fprintf(fout, "X");
 			}
 		}
 		fprintf(fout, "_");
-		if (!pcoll_->patternVector_[i].pseudoPrimaryOutputs_.empty())
+		if (!pPatternProcessor_->patternVector_[i].pseudoPrimaryOutputs_.empty())
 		{
 			fprintf(fout, "->");
-			for (int j = 0; j < pcoll_->numPPI_; ++j)
+			for (int j = 0; j < pPatternProcessor_->numPPI_; ++j)
 			{
-				if (pcoll_->patternVector_[i].pseudoPrimaryOutputs_[j] == L)
+				if (pPatternProcessor_->patternVector_[i].pseudoPrimaryOutputs_[j] == L)
 					fprintf(fout, "0");
-				else if (pcoll_->patternVector_[i].pseudoPrimaryOutputs_[j] == H)
+				else if (pPatternProcessor_->patternVector_[i].pseudoPrimaryOutputs_[j] == H)
 					fprintf(fout, "1");
 				else
 					fprintf(fout, "X");
@@ -550,44 +554,44 @@ bool PatternWriter::writeAscii(const char *const fname)
 	// input
 	fprintf(fout, "declare input bus \"PI\" = ");
 	// fprintf(fout, "\"/CK\", \"/test_si\", \"/test_se\"");
-	for (size_t i = 0; i < cir_->pNetlist_->getTop()->getNPort(); ++i)
+	for (size_t i = 0; i < pCircuit_->pNetlist_->getTop()->getNPort(); ++i)
 	{
-		Port *p = cir_->pNetlist_->getTop()->getPort(i);
-		if (p->type_ != Port::INPUT)
+		Port *pPort = pCircuit_->pNetlist_->getTop()->getPort(i);
+		if (pPort->type_ != Port::INPUT)
 			continue;
 		if (first_flag)
 		{
 			fprintf(fout, "\"/%s\"",
-							cir_->pNetlist_->getTop()->getPort(i)->name_);
+							pCircuit_->pNetlist_->getTop()->getPort(i)->name_);
 			first_flag = 0;
 		}
 		else
 		{
 			fprintf(fout, ", \"/%s\"",
-							cir_->pNetlist_->getTop()->getPort(i)->name_);
+							pCircuit_->pNetlist_->getTop()->getPort(i)->name_);
 		}
-		if (!strcmp(p->name_, "CK"))
+		if (!strcmp(pPort->name_, "CK"))
 			seqCircuitCheck = 1;
 	}
 	fprintf(fout, ";\n");
 	first_flag = 1;
 	// output
 	fprintf(fout, "declare output bus \"PO\" = ");
-	for (size_t i = 0; i < cir_->pNetlist_->getTop()->getNPort(); ++i)
+	for (size_t i = 0; i < pCircuit_->pNetlist_->getTop()->getNPort(); ++i)
 	{
-		Port *p = cir_->pNetlist_->getTop()->getPort(i);
-		if (p->type_ != Port::OUTPUT)
+		Port *pPort = pCircuit_->pNetlist_->getTop()->getPort(i);
+		if (pPort->type_ != Port::OUTPUT)
 			continue;
 		if (first_flag)
 		{
 			fprintf(fout, "\"/%s\"",
-							cir_->pNetlist_->getTop()->getPort(i)->name_);
+							pCircuit_->pNetlist_->getTop()->getPort(i)->name_);
 			first_flag = 0;
 		}
 		else
 		{
 			fprintf(fout, ", \"/%s\"",
-							cir_->pNetlist_->getTop()->getPort(i)->name_);
+							pCircuit_->pNetlist_->getTop()->getPort(i)->name_);
 		}
 	}
 	fprintf(fout, ";\n");
@@ -612,7 +616,7 @@ bool PatternWriter::writeAscii(const char *const fname)
 		fprintf(fout, "    scan_chain \"chain1\" =\n");
 		fprintf(fout, "    scan_in = \"/test_si\";\n");
 		fprintf(fout, "    scan_out = \"/test_so\";\n");
-		fprintf(fout, "    length = %d;\n", cir_->numPPI_);
+		fprintf(fout, "    length = %d;\n", pCircuit_->numPPI_);
 		fprintf(fout, "    end;\n");
 
 		fprintf(fout, "    procedure shift \"group1_load_shift\" =\n");
@@ -633,14 +637,14 @@ bool PatternWriter::writeAscii(const char *const fname)
 		fprintf(fout, "    force \"/CK\" 0 0;\n");
 		fprintf(fout, "    force \"/test_se\" 1 0;\n");
 		fprintf(fout, "    force \"/test_si\" 0 0;\n");
-		fprintf(fout, "    apply \"group1_load_shift\" %d 32;\n", cir_->numPPI_);
+		fprintf(fout, "    apply \"group1_load_shift\" %d 32;\n", pCircuit_->numPPI_);
 		fprintf(fout, "    end;\n");
 
 		fprintf(fout, "    procedure unload \"group1_unload\" =\n");
 		fprintf(fout, "    force \"/CK\" 0 0;\n");
 		fprintf(fout, "    force \"/test_se\" 1 0;\n");
 		fprintf(fout, "    force \"/test_si\" 0 0;\n");
-		fprintf(fout, "    apply \"group1_unload_shift\" %d 32;\n", cir_->numPPI_);
+		fprintf(fout, "    apply \"group1_unload_shift\" %d 32;\n", pCircuit_->numPPI_);
 		fprintf(fout, "    end;\n");
 
 		fprintf(fout, "end;\n");
@@ -650,23 +654,23 @@ bool PatternWriter::writeAscii(const char *const fname)
 	fprintf(fout, "SCAN_TEST =\n");
 	// fprintf(fout, "apply \"test_setup\" 1 0;\n");
 
-	for (int i = 0; i < (int)pcoll_->patternVector_.size(); ++i)
+	for (int i = 0; i < (int)pPatternProcessor_->patternVector_.size(); ++i)
 	{
 		fprintf(fout, "pattern = %d", i);
-		if (!pcoll_->patternVector_[i].primaryInputs2nd_.empty())
+		if (!pPatternProcessor_->patternVector_[i].primaryInputs2nd_.empty())
 			fprintf(fout, " clock_sequential;\n");
 		else
 			fprintf(fout, ";\n");
 
-		if (pcoll_->numPPI_)
+		if (pPatternProcessor_->numPPI_)
 		{
 			fprintf(fout, "apply  \"group1_load\" 0 =\n");
 			fprintf(fout, "chain \"chain1\" = \"");
-			for (int j = pcoll_->numPPI_ - 1; j >= 0; --j)
+			for (int j = pPatternProcessor_->numPPI_ - 1; j >= 0; --j)
 			{
-				if (pcoll_->patternVector_[i].pseudoPrimaryInputs_[j] == L)
+				if (pPatternProcessor_->patternVector_[i].pseudoPrimaryInputs_[j] == L)
 					fprintf(fout, "0");
-				else if (pcoll_->patternVector_[i].pseudoPrimaryInputs_[j] == H)
+				else if (pPatternProcessor_->patternVector_[i].pseudoPrimaryInputs_[j] == H)
 					fprintf(fout, "1");
 				else
 					fprintf(fout, "X");
@@ -674,16 +678,16 @@ bool PatternWriter::writeAscii(const char *const fname)
 			fprintf(fout, "\";\n");
 			fprintf(fout, "end;\n");
 		}
-		if (!pcoll_->patternVector_[i].primaryInputs1st_.empty())
+		if (!pPatternProcessor_->patternVector_[i].primaryInputs1st_.empty())
 		{
 			fprintf(fout, "force \"PI\" \"");
 			if (seqCircuitCheck)
 				fprintf(fout, "000");
-			for (int j = 0; j < pcoll_->numPI_; ++j)
+			for (int j = 0; j < pPatternProcessor_->numPI_; ++j)
 			{
-				if (pcoll_->patternVector_[i].primaryInputs1st_[j] == L)
+				if (pPatternProcessor_->patternVector_[i].primaryInputs1st_[j] == L)
 					fprintf(fout, "0");
-				else if (pcoll_->patternVector_[i].primaryInputs1st_[j] == H)
+				else if (pPatternProcessor_->patternVector_[i].primaryInputs1st_[j] == H)
 					fprintf(fout, "1");
 				else
 					fprintf(fout, "X");
@@ -691,65 +695,65 @@ bool PatternWriter::writeAscii(const char *const fname)
 			fprintf(fout, "\" 1;\n");
 		}
 		// fprintf(fout, "pulse \"/CK\" 2;\n");
-		if (!pcoll_->patternVector_[i].primaryInputs2nd_.empty())
+		if (!pPatternProcessor_->patternVector_[i].primaryInputs2nd_.empty())
 		{
 			if (seqCircuitCheck)
 				fprintf(fout, "pulse \"/CK\" 2;\n");
 			fprintf(fout, "force \"PI\" \"");
 			if (seqCircuitCheck)
 				fprintf(fout, "000");
-			for (int j = 0; j < pcoll_->numPI_; ++j)
+			for (int j = 0; j < pPatternProcessor_->numPI_; ++j)
 			{
-				if (pcoll_->patternVector_[i].primaryInputs2nd_[j] == L)
+				if (pPatternProcessor_->patternVector_[i].primaryInputs2nd_[j] == L)
 					fprintf(fout, "0");
-				else if (pcoll_->patternVector_[i].primaryInputs2nd_[j] == H)
+				else if (pPatternProcessor_->patternVector_[i].primaryInputs2nd_[j] == H)
 					fprintf(fout, "1");
 				else
 					fprintf(fout, "X");
 			}
 			fprintf(fout, "\" 3;\n");
 		}
-		if (!pcoll_->patternVector_[i].primaryOutputs2nd_.empty())
+		if (!pPatternProcessor_->patternVector_[i].primaryOutputs2nd_.empty())
 		{
 			fprintf(fout, "measure \"PO\" \"");
 			if (seqCircuitCheck)
 				fprintf(fout, "X");
-			for (int j = 0; j < pcoll_->numPO_; ++j)
+			for (int j = 0; j < pPatternProcessor_->numPO_; ++j)
 			{
-				if (pcoll_->patternVector_[i].primaryOutputs2nd_[j] == L)
+				if (pPatternProcessor_->patternVector_[i].primaryOutputs2nd_[j] == L)
 					fprintf(fout, "0");
-				else if (pcoll_->patternVector_[i].primaryOutputs2nd_[j] == H)
+				else if (pPatternProcessor_->patternVector_[i].primaryOutputs2nd_[j] == H)
 					fprintf(fout, "1");
 				else
 					fprintf(fout, "X");
 			}
 			fprintf(fout, "\" 4;\n");
 		}
-		else if (!pcoll_->patternVector_[i].primaryOutputs1st_.empty())
+		else if (!pPatternProcessor_->patternVector_[i].primaryOutputs1st_.empty())
 		{
 			fprintf(fout, "measure \"PO\" \"");
 			if (seqCircuitCheck)
 				fprintf(fout, "X");
-			for (int j = 0; j < pcoll_->numPO_; ++j)
+			for (int j = 0; j < pPatternProcessor_->numPO_; ++j)
 			{
-				if (pcoll_->patternVector_[i].primaryOutputs1st_[j] == L)
+				if (pPatternProcessor_->patternVector_[i].primaryOutputs1st_[j] == L)
 					fprintf(fout, "0");
-				else if (pcoll_->patternVector_[i].primaryOutputs1st_[j] == H)
+				else if (pPatternProcessor_->patternVector_[i].primaryOutputs1st_[j] == H)
 					fprintf(fout, "1");
 				else
 					fprintf(fout, "X");
 			}
 			fprintf(fout, "\" 4;\n");
 		}
-		/*if (pcoll_->patternVector_[i].primaryOutputs2nd_) {
+		/*if (pPatternProcessor_->patternVector_[i].primaryOutputs2nd_) {
 				fprintf(fout, "pulse \"/CK\" 5;\n");
 				fprintf(fout, "measure \"PO\" \"");
 				if (seqCircuitCheck)
 						fprintf(fout, "X");
-				for (int j = 0; j < pcoll_->numPO_; ++j) {
-						if (pcoll_->patternVector_[i].primaryOutputs2nd_[j] == L)
+				for (int j = 0; j < pPatternProcessor_->numPO_; ++j) {
+						if (pPatternProcessor_->patternVector_[i].primaryOutputs2nd_[j] == L)
 								fprintf(fout, "0");
-						else if (pcoll_->patternVector_[i].primaryOutputs2nd_[j] == H)
+						else if (pPatternProcessor_->patternVector_[i].primaryOutputs2nd_[j] == H)
 								fprintf(fout, "1");
 						else
 								fprintf(fout, "X");
@@ -757,16 +761,16 @@ bool PatternWriter::writeAscii(const char *const fname)
 				fprintf(fout, "\" 6;\n");
 		}*/
 
-		if (pcoll_->numPPI_)
+		if (pPatternProcessor_->numPPI_)
 		{
 			fprintf(fout, "pulse \"/CK\" 5;\n");
 			fprintf(fout, "apply  \"group1_unload\" 6 =\n");
 			fprintf(fout, "chain \"chain1\" = \"");
-			for (int j = pcoll_->numPPI_ - 1; j >= 0; --j)
+			for (int j = pPatternProcessor_->numPPI_ - 1; j >= 0; --j)
 			{
-				if (pcoll_->patternVector_[i].pseudoPrimaryOutputs_[j] == L)
+				if (pPatternProcessor_->patternVector_[i].pseudoPrimaryOutputs_[j] == L)
 					fprintf(fout, "0");
-				else if (pcoll_->patternVector_[i].pseudoPrimaryOutputs_[j] == H)
+				else if (pPatternProcessor_->patternVector_[i].pseudoPrimaryOutputs_[j] == H)
 					fprintf(fout, "1");
 				else
 					fprintf(fout, "X");
@@ -783,11 +787,11 @@ bool PatternWriter::writeAscii(const char *const fname)
 		fprintf(fout, "SCAN_CELLS =\n");
 		fprintf(fout, "scan_group \"group1\" =\n");
 		fprintf(fout, "scan_chain \"chain1\" =\n");
-		for (int i = cir_->numPI_ + cir_->numPPI_ - 1; i >= cir_->numPI_; --i)
+		for (int i = pCircuit_->numPI_ + pCircuit_->numPPI_ - 1; i >= pCircuit_->numPI_; --i)
 		{
 			fprintf(fout,
 							"scan_cell = %d MASTER FFFF \"/%s\" \"I1\" \"SI\" \"Q\";\n",
-							cir_->numPI_ + cir_->numPPI_ - 1 - i, cir_->pNetlist_->getTop()->getCell(cir_->circuitGates_[i].cellId_)->name_);
+							pCircuit_->numPI_ + pCircuit_->numPPI_ - 1 - i, pCircuit_->pNetlist_->getTop()->getCell(pCircuit_->circuitGates_[i].cellId_)->name_);
 		}
 
 		fprintf(fout, "end;\n");
@@ -820,43 +824,55 @@ bool PatternWriter::writeSTIL(const char *const fname)
 	PI_Order.push_back("test_se");
 	PO_Order.push_back("test_so");
 
-	for (int i = 0; i < cir_->numPI_; ++i)
+	for (int i = 0; i < pCircuit_->numPI_; ++i)
 	{
-		PI_Order.push_back(cir_->pNetlist_->getTop()->getPort(cir_->circuitGates_[i].cellId_)->name_);
+		PI_Order.push_back(pCircuit_->pNetlist_->getTop()->getPort(pCircuit_->circuitGates_[i].cellId_)->name_);
 	}
 
-	for (int i = cir_->numPI_; i < cir_->numPI_ + cir_->numPPI_; ++i)
+	for (int i = pCircuit_->numPI_; i < pCircuit_->numPI_ + pCircuit_->numPPI_; ++i)
 	{
-		SCAN_Order.push_back(cir_->pNetlist_->getTop()->getCell(cir_->circuitGates_[i].cellId_)->name_);
+		SCAN_Order.push_back(pCircuit_->pNetlist_->getTop()->getCell(pCircuit_->circuitGates_[i].cellId_)->name_);
 	}
 
-	int start = cir_->numPI_ + cir_->numPPI_ + cir_->numComb_;
-	for (int i = start; i < start + cir_->numPO_; ++i)
+	int start = pCircuit_->numPI_ + pCircuit_->numPPI_ + pCircuit_->numComb_;
+	for (int i = start; i < start + pCircuit_->numPO_; ++i)
 	{
-		PO_Order.push_back(cir_->pNetlist_->getTop()->getPort(cir_->circuitGates_[i].cellId_)->name_);
+		PO_Order.push_back(pCircuit_->pNetlist_->getTop()->getPort(pCircuit_->circuitGates_[i].cellId_)->name_);
 	}
 
 	std::cout << "PI_ORDER ";
-	for (size_t i = 0; i < PI_Order.size(); ++i)
+	// for (size_t i = 0; i < PI_Order.size(); ++i)
+	// {
+	// 	std::cout << PI_Order[i] << " ";
+	// }
+	for (std::string pi : PI_Order)
 	{
-		std::cout << PI_Order[i] << " ";
+		std::cout << pi << " ";
 	}
 	std::cout << "\n";
 
 	std::cout << "SCAN_ORDER ";
-	for (size_t i = 0; i < SCAN_Order.size(); ++i)
-		std::cout << SCAN_Order[i] << " ";
-	std::cout << "\n";
+	// for (size_t i = 0; i < SCAN_Order.size(); ++i)
+	// 	std::cout << SCAN_Order[i] << " ";
 
+	for (std::string scan : SCAN_Order)
+	{
+		std::cout << scan << " ";
+	}
+	std::cout << "\n";
 	std::cout << "PO_ORDER ";
-	for (size_t i = 0; i < PO_Order.size(); ++i)
-		std::cout << PO_Order[i] << " ";
+	// for (size_t i = 0; i < PO_Order.size(); ++i)
+	// 	std::cout << PO_Order[i] << " ";
+	for (std::string po : PO_Order)
+	{
+		std::cout << po << " ";
+	}
 	std::cout << "\n";
 
 	std::string Processor_Mode = "";
-	int pattern_size = (int)pcoll_->patternVector_.size();
+	int pattern_size = (int)pPatternProcessor_->patternVector_.size();
 
-	switch (pcoll_->type_)
+	switch (pPatternProcessor_->type_)
 	{
 		case PatternProcessor::BASIC_SCAN:
 			Processor_Mode = "BASIC_SCAN";
@@ -873,75 +889,135 @@ bool PatternWriter::writeSTIL(const char *const fname)
 
 	std::vector<std::map<std::string, std::string>> patternList;
 
-	for (int i = 0; i < (int)pcoll_->patternVector_.size(); ++i)
+	// for (int i = 0; i < (int)pPatternProcessor_->patternVector_.size(); ++i)
+	// {
+	// 	std::map<std::string, std::string> map_pattern;
+	// 	if (!pPatternProcessor_->patternVector_[i].primaryInputs1st_.empty())
+	// 	{
+	// 		map_pattern["pPI1"] = "";
+	// 		for (int j = 0; j < pPatternProcessor_->numPI_; ++j)
+	// 		{
+	// 			if (pPatternProcessor_->patternVector_[i].primaryInputs1st_[j] == L)
+	// 				map_pattern["pPI1"] += "0";
+	// 			else if (pPatternProcessor_->patternVector_[i].primaryInputs1st_[j] == H)
+	// 				map_pattern["pPI1"] += "1";
+	// 			else
+	// 				map_pattern["pPI1"] += "N";
+	// 		}
+	// 	}
+	// 	if (!pPatternProcessor_->patternVector_[i].pseudoPrimaryInputs_.empty())
+	// 	{
+	// 		map_pattern["pPPI1"] = "";
+	// 		for (int j = 0; j < pPatternProcessor_->numPPI_; ++j)
+	// 		{
+	// 			if (pPatternProcessor_->patternVector_[i].pseudoPrimaryInputs_[j] == L)
+	// 				map_pattern["pPPI1"] += "0";
+	// 			else if (pPatternProcessor_->patternVector_[i].pseudoPrimaryInputs_[j] == H)
+	// 				map_pattern["pPPI1"] += "1";
+	// 			else
+	// 				map_pattern["pPPI1"] += "N";
+	// 		}
+	// 		reverse(map_pattern["pPPI1"].begin(), map_pattern["pPPI1"].end());
+	// 	}
+	// 	if (!pPatternProcessor_->patternVector_[i].primaryOutputs1st_.empty())
+	// 	{
+	// 		map_pattern["pPO1"] = "";
+	// 		for (int j = 0; j < pPatternProcessor_->numPO_; ++j)
+	// 		{
+	// 			if (pPatternProcessor_->patternVector_[i].primaryOutputs1st_[j] == L)
+	// 				map_pattern["pPO1"] += "L";
+	// 			else if (pPatternProcessor_->patternVector_[i].primaryOutputs1st_[j] == H)
+	// 				map_pattern["pPO1"] += "H";
+	// 			else
+	// 				map_pattern["pPO1"] += "N";
+	// 		}
+	// 	}
+	// 	if (!pPatternProcessor_->patternVector_[i].pseudoPrimaryInputs_.empty())
+	// 	{
+	// 		map_pattern["pPPO"] = "";
+	// 		for (int j = 0; j < pPatternProcessor_->numPPI_; ++j)
+	// 		{
+	// 			if (pPatternProcessor_->patternVector_[i].pseudoPrimaryOutputs_[j] == L)
+	// 				map_pattern["pPPO"] += "L";
+	// 			else if (pPatternProcessor_->patternVector_[i].pseudoPrimaryOutputs_[j] == H)
+	// 				map_pattern["pPPO"] += "H";
+	// 			else
+	// 				map_pattern["pPPO"] += "N";
+	// 		}
+	// 		std::reverse(map_pattern["pPPO"].begin(), map_pattern["pPPO"].end());
+	// 	}
+	// 	patternList.push_back(map_pattern);
+	// }
+	for (Pattern pattern : pPatternProcessor_->patternVector_)
 	{
 		std::map<std::string, std::string> map_pattern;
 
-		if (!pcoll_->patternVector_[i].primaryInputs1st_.empty())
+		if (!pattern.primaryInputs1st_.empty())
 		{
-			map_pattern["pi1"] = "";
-			for (int j = 0; j < pcoll_->numPI_; ++j)
+			map_pattern["pPI1"] = "";
+			for (int j = 0; j < pPatternProcessor_->numPI_; ++j)
 			{
-				if (pcoll_->patternVector_[i].primaryInputs1st_[j] == L)
-					map_pattern["pi1"] += "0";
-				else if (pcoll_->patternVector_[i].primaryInputs1st_[j] == H)
-					map_pattern["pi1"] += "1";
+				if (pattern.primaryInputs1st_[j] == L)
+					map_pattern["pPI1"] += "0";
+				else if (pattern.primaryInputs1st_[j] == H)
+					map_pattern["pPI1"] += "1";
 				else
-					map_pattern["pi1"] += "N";
+					map_pattern["pPI1"] += "N";
 			}
 		}
 
-		if (!pcoll_->patternVector_[i].pseudoPrimaryInputs_.empty())
+		if (!pattern.pseudoPrimaryInputs_.empty())
 		{
-			map_pattern["ppi1"] = "";
-			for (int j = 0; j < pcoll_->numPPI_; ++j)
+			map_pattern["pPPI1"] = "";
+			for (int j = 0; j < pPatternProcessor_->numPPI_; ++j)
 			{
-				if (pcoll_->patternVector_[i].pseudoPrimaryInputs_[j] == L)
-					map_pattern["ppi1"] += "0";
-				else if (pcoll_->patternVector_[i].pseudoPrimaryInputs_[j] == H)
-					map_pattern["ppi1"] += "1";
+				if (pattern.pseudoPrimaryInputs_[j] == L)
+					map_pattern["pPPI1"] += "0";
+				else if (pattern.pseudoPrimaryInputs_[j] == H)
+					map_pattern["pPPI1"] += "1";
 				else
-					map_pattern["ppi1"] += "N";
+					map_pattern["pPPI1"] += "N";
 			}
-			reverse(map_pattern["ppi1"].begin(), map_pattern["ppi1"].end());
+			reverse(map_pattern["pPPI1"].begin(), map_pattern["pPPI1"].end());
 		}
-		if (!pcoll_->patternVector_[i].primaryOutputs1st_.empty())
+		if (!pattern.primaryOutputs1st_.empty())
 		{
-			map_pattern["po1"] = "";
-			for (int j = 0; j < pcoll_->numPO_; ++j)
+			map_pattern["pPO1"] = "";
+			for (int j = 0; j < pPatternProcessor_->numPO_; ++j)
 			{
-				if (pcoll_->patternVector_[i].primaryOutputs1st_[j] == L)
-					map_pattern["po1"] += "L";
-				else if (pcoll_->patternVector_[i].primaryOutputs1st_[j] == H)
-					map_pattern["po1"] += "H";
+				if (pattern.primaryOutputs1st_[j] == L)
+					map_pattern["pPO1"] += "L";
+				else if (pattern.primaryOutputs1st_[j] == H)
+					map_pattern["pPO1"] += "H";
 				else
-					map_pattern["po1"] += "N";
+					map_pattern["pPO1"] += "N";
 			}
 		}
 
-		if (!pcoll_->patternVector_[i].pseudoPrimaryInputs_.empty())
+		if (!pattern.pseudoPrimaryInputs_.empty())
 		{
-			map_pattern["ppo"] = "";
-			for (int j = 0; j < pcoll_->numPPI_; ++j)
+			map_pattern["pPPO"] = "";
+			for (int j = 0; j < pPatternProcessor_->numPPI_; ++j)
 			{
-				if (pcoll_->patternVector_[i].pseudoPrimaryOutputs_[j] == L)
-					map_pattern["ppo"] += "L";
-				else if (pcoll_->patternVector_[i].pseudoPrimaryOutputs_[j] == H)
-					map_pattern["ppo"] += "H";
+				if (pattern.pseudoPrimaryOutputs_[j] == L)
+					map_pattern["pPPO"] += "L";
+				else if (pattern.pseudoPrimaryOutputs_[j] == H)
+					map_pattern["pPPO"] += "H";
 				else
-					map_pattern["ppo"] += "N";
+					map_pattern["pPPO"] += "N";
 			}
-			std::reverse(map_pattern["ppo"].begin(), map_pattern["ppo"].end());
+			std::reverse(map_pattern["pPPO"].begin(), map_pattern["pPPO"].end());
 		}
 		patternList.push_back(map_pattern);
 	}
-
 	for (size_t i = 0; i < patternList.size(); ++i)
 	{
 		std::cout << "\npattern_" << i + 1 << "\n";
 		std::map<std::string, std::string>::iterator iter;
 		for (iter = patternList[i].begin(); iter != patternList[i].end(); iter++)
+		{
 			std::cout << iter->first << " " << iter->second << "\n";
+		}
 	} //
 
 	std::cout << "==========\n";
@@ -951,30 +1027,55 @@ bool PatternWriter::writeSTIL(const char *const fname)
 
 	/////signals/////
 	os << "Signals {\n";
-	for (size_t i = 0; i < PI_Order.size(); ++i)
-	{
-		os << "   \"" + PI_Order[i] + "\" " + "In";
-		if (PI_Order[i] == "test_si")
+	// for (size_t i = 0; i < PI_Order.size(); ++i)
+	// {
+	// 	os << "   \"" + PI_Order[i] + "\" " + "In";
+	// 	if (PI_Order[i] == "test_si")
+	// 	{
+	// 		os << " { ScanIn; }\n";
+	// 	}
+	// 	else
+	// 	{
+	// 		os << ";\n";
+	// 	}
+	// }
+	for (std::string pi : PI_Order)
 		{
-			os << " { ScanIn; }\n";
+			os << "   \"" + pi + "\" " + "In";
+			if (pi == "test_si")
+			{
+				os << " { ScanIn; }\n";
+			}
+			else
+			{
+				os << ";\n";
+			}
 		}
-		else
+
+		// for (size_t i = 0; i < PO_Order.size(); ++i)
+		// {
+		// 	os << "   \"" + PO_Order[i] + "\" " + "Out";
+		// 	if (PO_Order[i] == "test_so")
+		// 	{
+		// 		os << " { ScanOut; }\n";
+		// 	}
+		// 	else
+		// 	{
+		// 		os << ";\n";
+		// 	}
+		// }
+		for (std::string po : PO_Order)
 		{
-			os << ";\n";
+			os << "   \"" + po + "\" " + "Out";
+			if (po == "test_so")
+			{
+				os << " { ScanOut; }\n";
+			}
+			else
+			{
+				os << ";\n";
+			}
 		}
-	}
-	for (size_t i = 0; i < PO_Order.size(); ++i)
-	{
-		os << "   \"" + PO_Order[i] + "\" " + "Out";
-		if (PO_Order[i] == "test_so")
-		{
-			os << " { ScanOut; }\n";
-		}
-		else
-		{
-			os << ";\n";
-		}
-	}
 	os << "}\n\n";
 	/////SignalGroups/////
 	os << "SignalGroups {\n";
@@ -1044,9 +1145,13 @@ bool PatternWriter::writeSTIL(const char *const fname)
 	os << "       ScanOut \"test_so\";\n";
 	os << "       ScanInversion 0;\n";
 	os << "       ScanCells";
-	for (size_t i = 0; i < SCAN_Order.size(); ++i)
+	// for (size_t i = 0; i < SCAN_Order.size(); ++i)
+	// {
+	// 	os << " \"TOP." << SCAN_Order[i] << ".SI\"";
+	// }
+	for (std::string scan : SCAN_Order)
 	{
-		os << " \"TOP." << SCAN_Order[i] << ".SI\"";
+		os << " \"TOP." << scan << ".SI\"";
 	}
 	os << ";\n";
 	os << "       ScanMasterClock \"CK\" ;\n";
@@ -1110,29 +1215,29 @@ bool PatternWriter::writeSTIL(const char *const fname)
 		os << "       Call \"load_unload\" {\n";
 		if (i > 0)
 		{
-			os << "           \"test_so\"=" << patternList[i - 1]["ppo"] << ";\n";
+			os << "           \"test_so\"=" << patternList[i - 1]["pPPO"] << ";\n";
 		}
-		os << "           \"test_si\"=" << patternList[i]["ppi1"] << ";\n";
+		os << "           \"test_si\"=" << patternList[i]["pPPI1"] << ";\n";
 		os << "       }\n";
 		os << "       Call \"capture_CK\" {\n";
 		os << "           \"_pi\"=";
-		for (size_t j = patternList[i]["pi1"].length(); j < PI_Order.size(); ++j)
+		for (size_t j = patternList[i]["pPI1"].length(); j < PI_Order.size(); ++j)
 		{
 			os << "0";
 		}
-		os << patternList[i]["pi1"] << ";\n";
+		os << patternList[i]["pPI1"] << ";\n";
 		os << "           \"_po\"=";
-		for (size_t j = patternList[i]["po1"].length(); j < PO_Order.size(); ++j)
+		for (size_t j = patternList[i]["pPO1"].length(); j < PO_Order.size(); ++j)
 		{
 			os << "L";
 		}
-		os << patternList[i]["po1"] << ";\n";
+		os << patternList[i]["pPO1"] << ";\n";
 		os << "       }\n";
 	}
 
 	os << "   \"end " << pattern_size - 1 << " unload\":\n";
 	os << "       Call \"load_unload\" {\n";
-	os << "           \"test_so\"=" << patternList[pattern_size - 1]["ppo"] << ";\n";
+	os << "           \"test_so\"=" << patternList[pattern_size - 1]["pPPO"] << ";\n";
 	os << "       }\n";
 	os << "}";
 
@@ -1141,7 +1246,7 @@ bool PatternWriter::writeSTIL(const char *const fname)
 	return true;
 }
 
-bool ProcedureWriter::writeProc(const char *const fname)
+bool ProcedureWriter::writeProcedure(const char *const fname)
 {
 	FILE *fout = fopen(fname, "w");
 	if (!fout)
@@ -1177,7 +1282,7 @@ bool ProcedureWriter::writeProc(const char *const fname)
 	fprintf(fout, "force test_si 0 ;\n");
 	fprintf(fout, "measure_sco ;\n");
 	fprintf(fout, "end ;\n");
-	fprintf(fout, "apply shift %d;\n", cir_->numPPI_);
+	fprintf(fout, "apply shift %d;\n", pCircuit_->numPPI_);
 	fprintf(fout, "end;\n");
 	fprintf(fout, "procedure test_setup =\n");
 	fprintf(fout, "timeplate _default_WFT_ ;\n");
