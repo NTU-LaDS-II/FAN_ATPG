@@ -268,7 +268,7 @@ namespace CoreNs
 
 	// **************************************************************************
 	// Function   [ Atpg::evaluateGoodVal ]
-	// Commentor  [ WYH ]
+	// Commenter  [ WYH ]
 	// Synopsis   [ usage: Given the gate without falut, and generate the output,
 	//                     and return.
 	//              in:    Gate& gate
@@ -338,7 +338,7 @@ namespace CoreNs
 
 	// **************************************************************************
 	// Function   [ Atpg::evaluateFaultyVal ]
-	// Commentor  [ CAL ]
+	// Commenter  [ CAL ]
 	// Synopsis   [ usage: deal with 2 frame PPI, check it's D or D' logic
 	//              in:    gate
 	//              out:   value
@@ -740,7 +740,7 @@ namespace CoreNs
 
 	// **************************************************************************
 	// Function   [ Atpg::assignPatternPI_fromGateVal ]
-	// Commentor  [ CAL ]
+	// Commenter  [ CAL ]
 	// Synopsis   [ usage: assign primary input pattern value
 	//              in:    Pattern list
 	//              out:   void
@@ -775,7 +775,7 @@ namespace CoreNs
 
 	// **************************************************************************
 	// Function   [ Atpg::assignPatternPO_fromGoodSimVal ]
-	// Commentor  [ CAL ]
+	// Commenter  [ CAL ]
 	// Synopsis   [ usage: assign primary output pattern value
 	//              in:    Pattern list
 	//              out:   void
@@ -1015,7 +1015,7 @@ namespace CoreNs
 	// should be moved to pattern.h
 	// **************************************************************************
 	// Function   [ Atpg::randomFill ]
-	// Commentor  [ CAL ]
+	// Commenter  [ CAL ]
 	// Synopsis   [ usage: random to set the don't care pattern 1 or 0
 	//              in:    Pattern
 	//              out:   void

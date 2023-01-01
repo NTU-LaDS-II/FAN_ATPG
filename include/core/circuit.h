@@ -8,13 +8,11 @@
 #ifndef _CORE_CIRCUIT_H_
 #define _CORE_CIRCUIT_H_
 
-#include <set>
 #include "interface/netlist.h"
 #include "gate.h"
 
 namespace CoreNs
 {
-
 	class Circuit
 	{
 	public:
@@ -27,7 +25,6 @@ namespace CoreNs
 		};
 
 		inline Circuit();
-		// ~Circuit();
 
 		// buildCircuit circuit from netlist
 		bool buildCircuit(IntfNs::Netlist *const pNetlist, const int &numFrame = 1,
@@ -56,12 +53,8 @@ namespace CoreNs
 		// |PI1|PPI1|cell|PO1|PPO1|PI2|PPI2|cell|PO2|PPO2| ... |PIn|PPIn|cell|...
 		// |--- ---- ---- --- ----|--- ---- ---- --- ----|     |--- ---- ----
 		// **********************************************************************
-		// Gate *gates_; // gate array
+
 		std::vector<Gate> circuitGates_;
-		// int             *fis_;        // fanin net array
-		// int             *fos_;        // fanout net array
-		// std::vector<int> fis_;
-		// std::vector<int> fos_;
 		std::vector<int> cellIndexToGateIndex_; // map cells in netlist to gates
 		std::vector<int> portIndexToGateIndex_; // map ports in netlist to gates
 
@@ -71,15 +64,15 @@ namespace CoreNs
 		void calculateNumGate();
 		void calculateNumNet();
 		void createCircuitGates();
-		void createCircuitPI(int &numFO);
-		void createCircuitPPI(int &numFO);
-		void createCircuitComb(int &numFI, int &numFO);
+		void createCircuitPI();
+		void createCircuitPPI();
+		void createCircuitComb();
 		void createCircuitPmt(const int &gateID, const IntfNs::Cell *const cell,
-		                      const IntfNs::Pmt *const pmt, int &numFI, int &numFO);
+		                      const IntfNs::Pmt *const pmt);
 		void determineGateType(const int &gateID, const IntfNs::Cell *const cell,
 		                       const IntfNs::Pmt *const pmt);
-		void createCircuitPO(int &numFI);
-		void createCircuitPPO(int &numFI);
+		void createCircuitPO();
+		void createCircuitPPO();
 		void connectMultipleTimeFrame();
 		void assignFiMinLvl();
 	};
@@ -96,20 +89,7 @@ namespace CoreNs
 		circuitLvl_ = -1;
 		numFrame_ = 1;
 		timeFrameConnectType_ = CAPTURE;
-		// circuitGates_ = NULL;
-		// cellIndexToGateIndex_ = NULL;
-		// portIndexToGateIndex_ = NULL;
 	}
-
-	// inline Circuit::~Circuit()
-	// {
-	// 	// delete[] circuitGates_;
-	// 	// delete[] fis_;
-	// 	// delete[] fos_;
-	// 	// delete[] cellIndexToGateIndex_;
-	// 	// delete[] portIndexToGateIndex_;
-	// }
-
 };
 
 #endif
