@@ -53,14 +53,14 @@ namespace CoreNs
 		int nrecover_; // number of recovers needed
 		FaultPtrListIter injected_[WORD_SIZE];
 		int ninjected_;
-		ParaValue activated_;
+		ParallelValue activated_;
 		std::vector<std::stack<int>> events_;
 		std::vector<bool> processed_; // array of processed flags.  TRUE means this gate is processed
 		std::vector<int> recover_;    // array of gates to be recovered from the last fault injection
 		                              //  this is to inject fault into the circuit
 		                              //  faultInjectL_ =1 faultInjectH_ =0 inject a stuck-at zero fault
-		std::vector<std::array<ParaValue, 5>> faultInjectL_;
-		std::vector<std::array<ParaValue, 5>> faultInjectH_;
+		std::vector<std::array<ParallelValue, 5>> faultInjectL_;
+		std::vector<std::array<ParallelValue, 5>> faultInjectH_;
 
 		// parallel fault
 		void pfReset();
@@ -85,8 +85,8 @@ namespace CoreNs
 				events_(cir->totalLvl_),
 				processed_(cir->totalGate_, false),
 				recover_(cir->totalGate_),
-				faultInjectL_(cir->totalGate_, std::array<ParaValue, 5>({0, 0, 0, 0, 0})),
-				faultInjectH_(cir->totalGate_, std::array<ParaValue, 5>({0, 0, 0, 0, 0}))
+				faultInjectL_(cir->totalGate_, std::array<ParallelValue, 5>({0, 0, 0, 0, 0})),
+				faultInjectH_(cir->totalGate_, std::array<ParallelValue, 5>({0, 0, 0, 0, 0}))
 	{
 		// used by both parallel pattern and parallel fault
 		// cir_ = cir;
@@ -95,12 +95,12 @@ namespace CoreNs
 		// processed_ = new bool[cir_->totalGate_];
 		// recover_ = new int[cir_->totalGate_];
 		// nrecover_ = 0;
-		// faultInjectL_ = new ParaValue[cir_->totalGate_][5];
-		// faultInjectH_ = new ParaValue[cir_->totalGate_][5];
+		// faultInjectL_ = new ParallelValue[cir_->totalGate_][5];
+		// faultInjectH_ = new ParallelValue[cir_->totalGate_][5];
 
 		// memset(processed_, 0, cir_->totalGate_ * sizeof(bool));
-		// memset(faultInjectL_, 0, cir_->totalGate_ * 5 * sizeof(ParaValue));
-		// memset(faultInjectH_, 0, cir_->totalGate_ * 5 * sizeof(ParaValue));
+		// memset(faultInjectL_, 0, cir_->totalGate_ * 5 * sizeof(ParallelValue));
+		// memset(faultInjectH_, 0, cir_->totalGate_ * 5 * sizeof(ParallelValue));
 
 		// parallel fault
 		// ninjected_ = 0;
@@ -192,14 +192,14 @@ namespace CoreNs
 		const int fi3 = cir_->circuitGates_[i].numFI_ > 2 ? cir_->circuitGates_[i].faninVector_[2] : 0;
 		const int fi4 = cir_->circuitGates_[i].numFI_ > 3 ? cir_->circuitGates_[i].faninVector_[3] : 0;
 		// read value of fanin
-		const ParaValue &l1 = cir_->circuitGates_[fi1].goodSimLow_;
-		const ParaValue &h1 = cir_->circuitGates_[fi1].goodSimHigh_;
-		const ParaValue &l2 = cir_->circuitGates_[fi2].goodSimLow_;
-		const ParaValue &h2 = cir_->circuitGates_[fi2].goodSimHigh_;
-		const ParaValue &l3 = cir_->circuitGates_[fi3].goodSimLow_;
-		const ParaValue &h3 = cir_->circuitGates_[fi3].goodSimHigh_;
-		const ParaValue &l4 = cir_->circuitGates_[fi4].goodSimLow_;
-		const ParaValue &h4 = cir_->circuitGates_[fi4].goodSimHigh_;
+		const ParallelValue &l1 = cir_->circuitGates_[fi1].goodSimLow_;
+		const ParallelValue &h1 = cir_->circuitGates_[fi1].goodSimHigh_;
+		const ParallelValue &l2 = cir_->circuitGates_[fi2].goodSimLow_;
+		const ParallelValue &h2 = cir_->circuitGates_[fi2].goodSimHigh_;
+		const ParallelValue &l3 = cir_->circuitGates_[fi3].goodSimLow_;
+		const ParallelValue &h3 = cir_->circuitGates_[fi3].goodSimHigh_;
+		const ParallelValue &l4 = cir_->circuitGates_[fi4].goodSimLow_;
+		const ParallelValue &h4 = cir_->circuitGates_[fi4].goodSimHigh_;
 		// evaluate good value of gate's output
 		switch (cir_->circuitGates_[i].gateType_)
 		{
@@ -323,14 +323,14 @@ namespace CoreNs
 		const int fi3 = cir_->circuitGates_[i].numFI_ > 2 ? cir_->circuitGates_[i].faninVector_[2] : 0;
 		const int fi4 = cir_->circuitGates_[i].numFI_ > 3 ? cir_->circuitGates_[i].faninVector_[3] : 0;
 		// read value of fanin with fault masking
-		const ParaValue l1 = (cir_->circuitGates_[fi1].faultSimLow_ & ~faultInjectH_[i][1]) | faultInjectL_[i][1];
-		const ParaValue h1 = (cir_->circuitGates_[fi1].faultSimHigh_ & ~faultInjectL_[i][1]) | faultInjectH_[i][1];
-		const ParaValue l2 = (cir_->circuitGates_[fi2].faultSimLow_ & ~faultInjectH_[i][2]) | faultInjectL_[i][2];
-		const ParaValue h2 = (cir_->circuitGates_[fi2].faultSimHigh_ & ~faultInjectL_[i][2]) | faultInjectH_[i][2];
-		const ParaValue l3 = (cir_->circuitGates_[fi3].faultSimLow_ & ~faultInjectH_[i][3]) | faultInjectL_[i][3];
-		const ParaValue h3 = (cir_->circuitGates_[fi3].faultSimHigh_ & ~faultInjectL_[i][3]) | faultInjectH_[i][3];
-		const ParaValue l4 = (cir_->circuitGates_[fi4].faultSimLow_ & ~faultInjectH_[i][4]) | faultInjectL_[i][4];
-		const ParaValue h4 = (cir_->circuitGates_[fi4].faultSimHigh_ & ~faultInjectL_[i][4]) | faultInjectH_[i][4];
+		const ParallelValue l1 = (cir_->circuitGates_[fi1].faultSimLow_ & ~faultInjectH_[i][1]) | faultInjectL_[i][1];
+		const ParallelValue h1 = (cir_->circuitGates_[fi1].faultSimHigh_ & ~faultInjectL_[i][1]) | faultInjectH_[i][1];
+		const ParallelValue l2 = (cir_->circuitGates_[fi2].faultSimLow_ & ~faultInjectH_[i][2]) | faultInjectL_[i][2];
+		const ParallelValue h2 = (cir_->circuitGates_[fi2].faultSimHigh_ & ~faultInjectL_[i][2]) | faultInjectH_[i][2];
+		const ParallelValue l3 = (cir_->circuitGates_[fi3].faultSimLow_ & ~faultInjectH_[i][3]) | faultInjectL_[i][3];
+		const ParallelValue h3 = (cir_->circuitGates_[fi3].faultSimHigh_ & ~faultInjectL_[i][3]) | faultInjectH_[i][3];
+		const ParallelValue l4 = (cir_->circuitGates_[fi4].faultSimLow_ & ~faultInjectH_[i][4]) | faultInjectL_[i][4];
+		const ParallelValue h4 = (cir_->circuitGates_[fi4].faultSimHigh_ & ~faultInjectL_[i][4]) | faultInjectH_[i][4];
 		// evaluate faulty value of gate's output
 		switch (cir_->circuitGates_[i].gateType_)
 		{

@@ -175,10 +175,6 @@ void PatternReader::setPatternNum(const int &patternNum)
 		return;
 	}
 	pPatternProcessor_->patternVector_.resize(patternNum);
-	// for (size_t i = 0; i < pPatternProcessor_->patternVector_.size(); ++i)
-	// {
-	// 	pPatternProcessor_->patternVector_[i] = Pattern();
-	// }
 	for (Pattern pattern : pPatternProcessor_->patternVector_)
 	{
 		pattern = Pattern();
@@ -841,10 +837,6 @@ bool PatternWriter::writeSTIL(const char *const fname)
 	}
 
 	std::cout << "PI_ORDER ";
-	// for (size_t i = 0; i < PI_Order.size(); ++i)
-	// {
-	// 	std::cout << PI_Order[i] << " ";
-	// }
 	for (std::string pi : PI_Order)
 	{
 		std::cout << pi << " ";
@@ -852,17 +844,12 @@ bool PatternWriter::writeSTIL(const char *const fname)
 	std::cout << "\n";
 
 	std::cout << "SCAN_ORDER ";
-	// for (size_t i = 0; i < SCAN_Order.size(); ++i)
-	// 	std::cout << SCAN_Order[i] << " ";
-
 	for (std::string scan : SCAN_Order)
 	{
 		std::cout << scan << " ";
 	}
 	std::cout << "\n";
 	std::cout << "PO_ORDER ";
-	// for (size_t i = 0; i < PO_Order.size(); ++i)
-	// 	std::cout << PO_Order[i] << " ";
 	for (std::string po : PO_Order)
 	{
 		std::cout << po << " ";
@@ -886,68 +873,7 @@ bool PatternWriter::writeSTIL(const char *const fname)
 	}
 
 	std::cout << Processor_Mode << " " << pattern_size << "\n"; //
-
 	std::vector<std::map<std::string, std::string>> patternList;
-
-	// for (int i = 0; i < (int)pPatternProcessor_->patternVector_.size(); ++i)
-	// {
-	// 	std::map<std::string, std::string> map_pattern;
-	// 	if (!pPatternProcessor_->patternVector_[i].primaryInputs1st_.empty())
-	// 	{
-	// 		map_pattern["pPI1"] = "";
-	// 		for (int j = 0; j < pPatternProcessor_->numPI_; ++j)
-	// 		{
-	// 			if (pPatternProcessor_->patternVector_[i].primaryInputs1st_[j] == L)
-	// 				map_pattern["pPI1"] += "0";
-	// 			else if (pPatternProcessor_->patternVector_[i].primaryInputs1st_[j] == H)
-	// 				map_pattern["pPI1"] += "1";
-	// 			else
-	// 				map_pattern["pPI1"] += "N";
-	// 		}
-	// 	}
-	// 	if (!pPatternProcessor_->patternVector_[i].pseudoPrimaryInputs_.empty())
-	// 	{
-	// 		map_pattern["pPPI1"] = "";
-	// 		for (int j = 0; j < pPatternProcessor_->numPPI_; ++j)
-	// 		{
-	// 			if (pPatternProcessor_->patternVector_[i].pseudoPrimaryInputs_[j] == L)
-	// 				map_pattern["pPPI1"] += "0";
-	// 			else if (pPatternProcessor_->patternVector_[i].pseudoPrimaryInputs_[j] == H)
-	// 				map_pattern["pPPI1"] += "1";
-	// 			else
-	// 				map_pattern["pPPI1"] += "N";
-	// 		}
-	// 		reverse(map_pattern["pPPI1"].begin(), map_pattern["pPPI1"].end());
-	// 	}
-	// 	if (!pPatternProcessor_->patternVector_[i].primaryOutputs1st_.empty())
-	// 	{
-	// 		map_pattern["pPO1"] = "";
-	// 		for (int j = 0; j < pPatternProcessor_->numPO_; ++j)
-	// 		{
-	// 			if (pPatternProcessor_->patternVector_[i].primaryOutputs1st_[j] == L)
-	// 				map_pattern["pPO1"] += "L";
-	// 			else if (pPatternProcessor_->patternVector_[i].primaryOutputs1st_[j] == H)
-	// 				map_pattern["pPO1"] += "H";
-	// 			else
-	// 				map_pattern["pPO1"] += "N";
-	// 		}
-	// 	}
-	// 	if (!pPatternProcessor_->patternVector_[i].pseudoPrimaryInputs_.empty())
-	// 	{
-	// 		map_pattern["pPPO"] = "";
-	// 		for (int j = 0; j < pPatternProcessor_->numPPI_; ++j)
-	// 		{
-	// 			if (pPatternProcessor_->patternVector_[i].pseudoPrimaryOutputs_[j] == L)
-	// 				map_pattern["pPPO"] += "L";
-	// 			else if (pPatternProcessor_->patternVector_[i].pseudoPrimaryOutputs_[j] == H)
-	// 				map_pattern["pPPO"] += "H";
-	// 			else
-	// 				map_pattern["pPPO"] += "N";
-	// 		}
-	// 		std::reverse(map_pattern["pPPO"].begin(), map_pattern["pPPO"].end());
-	// 	}
-	// 	patternList.push_back(map_pattern);
-	// }
 	for (Pattern pattern : pPatternProcessor_->patternVector_)
 	{
 		std::map<std::string, std::string> map_pattern;
@@ -1027,55 +953,31 @@ bool PatternWriter::writeSTIL(const char *const fname)
 
 	/////signals/////
 	os << "Signals {\n";
-	// for (size_t i = 0; i < PI_Order.size(); ++i)
-	// {
-	// 	os << "   \"" + PI_Order[i] + "\" " + "In";
-	// 	if (PI_Order[i] == "test_si")
-	// 	{
-	// 		os << " { ScanIn; }\n";
-	// 	}
-	// 	else
-	// 	{
-	// 		os << ";\n";
-	// 	}
-	// }
 	for (std::string pi : PI_Order)
+	{
+		os << "   \"" + pi + "\" " + "In";
+		if (pi == "test_si")
 		{
-			os << "   \"" + pi + "\" " + "In";
-			if (pi == "test_si")
-			{
-				os << " { ScanIn; }\n";
-			}
-			else
-			{
-				os << ";\n";
-			}
+			os << " { ScanIn; }\n";
 		}
+		else
+		{
+			os << ";\n";
+		}
+	}
 
-		// for (size_t i = 0; i < PO_Order.size(); ++i)
-		// {
-		// 	os << "   \"" + PO_Order[i] + "\" " + "Out";
-		// 	if (PO_Order[i] == "test_so")
-		// 	{
-		// 		os << " { ScanOut; }\n";
-		// 	}
-		// 	else
-		// 	{
-		// 		os << ";\n";
-		// 	}
-		// }
-		for (std::string po : PO_Order)
+	for (std::string po : PO_Order)
+	{
+		os << "   \"" + po + "\" " + "Out";
+		if (po == "test_so")
 		{
-			os << "   \"" + po + "\" " + "Out";
-			if (po == "test_so")
-			{
-				os << " { ScanOut; }\n";
-			}
-			else
-			{
-				os << ";\n";
-			}
+			os << " { ScanOut; }\n";
 		}
+		else
+		{
+			os << ";\n";
+		}
+	}
 	os << "}\n\n";
 	/////SignalGroups/////
 	os << "SignalGroups {\n";
@@ -1145,10 +1047,7 @@ bool PatternWriter::writeSTIL(const char *const fname)
 	os << "       ScanOut \"test_so\";\n";
 	os << "       ScanInversion 0;\n";
 	os << "       ScanCells";
-	// for (size_t i = 0; i < SCAN_Order.size(); ++i)
-	// {
-	// 	os << " \"TOP." << SCAN_Order[i] << ".SI\"";
-	// }
+
 	for (std::string scan : SCAN_Order)
 	{
 		os << " \"TOP." << scan << ".SI\"";

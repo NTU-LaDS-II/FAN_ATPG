@@ -255,11 +255,11 @@ inline void Simulator::pfReset()
 	}
 	nrecover_ = 0;
 	// memset(processed_, 0, cir_->totalGate_ * sizeof(bool));
-	// memset(faultInjectL_, 0, cir_->totalGate_ * 5 * sizeof(ParaValue));
-	// memset(faultInjectH_, 0, cir_->totalGate_ * 5 * sizeof(ParaValue));
+	// memset(faultInjectL_, 0, cir_->totalGate_ * 5 * sizeof(ParallelValue));
+	// memset(faultInjectH_, 0, cir_->totalGate_ * 5 * sizeof(ParallelValue));
 	std::fill(processed_.begin(), processed_.end(), false);
-	std::fill(faultInjectL_.begin(), faultInjectL_.end(), std::array<ParaValue, 5>({0, 0, 0, 0, 0}));
-	std::fill(faultInjectH_.begin(), faultInjectH_.end(), std::array<ParaValue, 5>({0, 0, 0, 0, 0}));
+	std::fill(faultInjectL_.begin(), faultInjectL_.end(), std::array<ParallelValue, 5>({0, 0, 0, 0, 0}));
+	std::fill(faultInjectH_.begin(), faultInjectH_.end(), std::array<ParallelValue, 5>({0, 0, 0, 0, 0}));
 
 	ninjected_ = 0;
 }
@@ -277,8 +277,8 @@ inline void Simulator::pfReset()
 bool Simulator::pfCheckActivation(const Fault *const f)
 {
 	const int &fg = f->faultyLine_ == 0 ? f->gateID_ : cir_->circuitGates_[f->gateID_].faninVector_[f->faultyLine_ - 1];
-	const ParaValue &gl = cir_->circuitGates_[fg].goodSimLow_;
-	const ParaValue &gh = cir_->circuitGates_[fg].goodSimHigh_;
+	const ParallelValue &gl = cir_->circuitGates_[fg].goodSimLow_;
+	const ParallelValue &gh = cir_->circuitGates_[fg].goodSimHigh_;
 
 	switch (f->faultType_)
 	{
@@ -356,7 +356,7 @@ void Simulator::pfInject(const Fault *const f, const size_t &i)
 // **************************************************************************
 void Simulator::pfCheckDetection(FaultPtrList &remain)
 {
-	ParaValue detected = PARA_L;
+	ParallelValue detected = PARA_L;
 	int start = cir_->totalGate_ - cir_->numPO_ - cir_->numPPI_;
 	for (int i = start; i < cir_->totalGate_; ++i)
 	{
@@ -397,11 +397,11 @@ inline void Simulator::ppReset()
 	}
 	nrecover_ = 0;
 	// memset(processed_, 0, cir_->totalGate_ * sizeof(bool));
-	// memset(faultInjectL_, 0, cir_->totalGate_ * 5 * sizeof(ParaValue));
-	// memset(faultInjectH_, 0, cir_->totalGate_ * 5 * sizeof(ParaValue));
+	// memset(faultInjectL_, 0, cir_->totalGate_ * 5 * sizeof(ParallelValue));
+	// memset(faultInjectH_, 0, cir_->totalGate_ * 5 * sizeof(ParallelValue));
 	std::fill(processed_.begin(), processed_.end(), false);
-	std::fill(faultInjectL_.begin(), faultInjectL_.end(), std::array<ParaValue, 5>({0, 0, 0, 0, 0}));
-	std::fill(faultInjectH_.begin(), faultInjectH_.end(), std::array<ParaValue, 5>({0, 0, 0, 0, 0}));
+	std::fill(faultInjectL_.begin(), faultInjectL_.end(), std::array<ParallelValue, 5>({0, 0, 0, 0, 0}));
+	std::fill(faultInjectH_.begin(), faultInjectH_.end(), std::array<ParallelValue, 5>({0, 0, 0, 0, 0}));
 	activated_ = PARA_L;
 }
 
@@ -418,8 +418,8 @@ bool Simulator::ppCheckActivation(const Fault *const f)
 {
 	const int &fg = f->faultyLine_ == 0 ? f->gateID_ : /// if output fault,fg=ID of the faulty gate,else if input fault,fg=ID of the faulty gate's fanin array
 											cir_->circuitGates_[f->gateID_].faninVector_[f->faultyLine_ - 1];
-	const ParaValue &gl = cir_->circuitGates_[fg].goodSimLow_;
-	const ParaValue &gh = cir_->circuitGates_[fg].goodSimHigh_;
+	const ParallelValue &gl = cir_->circuitGates_[fg].goodSimLow_;
+	const ParallelValue &gh = cir_->circuitGates_[fg].goodSimHigh_;
 
 	switch (f->faultType_)
 	{
@@ -502,7 +502,7 @@ void Simulator::ppInject(const Fault *const f)
 // **************************************************************************
 void Simulator::ppCheckDetection(Fault *const f)
 {
-	ParaValue detected = PARA_L;
+	ParallelValue detected = PARA_L;
 	int start = cir_->totalGate_ - cir_->numPO_ - cir_->numPPI_;
 	for (int i = start; i < cir_->totalGate_; ++i)
 	{

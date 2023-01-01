@@ -14,8 +14,8 @@ namespace CoreNs
 {
 
 	// type defines
-	typedef unsigned char Value;		 // typedef uint8_t   Value;
-	typedef unsigned long ParaValue; // typedef uintptr_t ParaValue;
+	typedef unsigned char Value;				 // typedef uint8_t   Value;
+	typedef unsigned long ParallelValue; // typedef uintptr_t ParallelValue;
 
 	// constant single logic
 	constexpr Value L = 0;	 // Low
@@ -27,26 +27,26 @@ namespace CoreNs
 	constexpr Value I = 255; // Invalid
 
 	// constant multi-bit logic
-	constexpr ParaValue PARA_L = 0;				// all bits are zero
-	constexpr ParaValue PARA_H = ~PARA_L; // all bits are one
+	constexpr ParallelValue PARA_L = 0;				// all bits are zero
+	constexpr ParallelValue PARA_H = ~PARA_L; // all bits are one
 
 	// determine word size
 	constexpr int BYTE_SIZE = 8;
-	constexpr int WORD_SIZE = sizeof(ParaValue) * BYTE_SIZE;
+	constexpr int WORD_SIZE = sizeof(ParallelValue) * BYTE_SIZE;
 
-	inline void setBitValue(ParaValue &paraValue, const size_t &bit, const Value &value)
+	inline void setBitValue(ParallelValue &parallelValue, const size_t &bit, const Value &value)
 	{
-		paraValue = value == L ? paraValue & ~((ParaValue)0x01 << bit) : paraValue | ((ParaValue)0x01 << bit);
+		parallelValue = value == L ? parallelValue & ~((ParallelValue)0x01 << bit) : parallelValue | ((ParallelValue)0x01 << bit);
 	}
 
-	inline Value getBitValue(const ParaValue &paraValue, const size_t &bit)
+	inline Value getBitValue(const ParallelValue &parallelValue, const size_t &bit)
 	{
-		return (paraValue & ((ParaValue)0x01 << bit)) == PARA_L ? L : H;
+		return (parallelValue & ((ParallelValue)0x01 << bit)) == PARA_L ? L : H;
 	}
 
 	void printValue(const Value &value, std::ostream &out = std::cout);
-	void printValue(const ParaValue &paraValue, std::ostream &out = std::cout);
-	void printValue(const ParaValue &low, const ParaValue &high, std::ostream &out = std::cout);
+	void printValue(const ParallelValue &parallelValue, std::ostream &out = std::cout);
+	void printValue(const ParallelValue &low, const ParallelValue &high, std::ostream &out = std::cout);
 
 };
 

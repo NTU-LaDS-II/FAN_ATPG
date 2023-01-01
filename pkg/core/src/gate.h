@@ -79,15 +79,15 @@ namespace CoreNs
 
 		// values
 		Value atpgVal_;					 // single value for ATPG
-		ParaValue goodSimLow_;	 // good low
-		ParaValue goodSimHigh_;	 // good high
-		ParaValue faultSimLow_;	 // faulty low
-		ParaValue faultSimHigh_; // faulty high
+		ParallelValue goodSimLow_;	 // good low
+		ParallelValue goodSimHigh_;	 // good high
+		ParallelValue faultSimLow_;	 // faulty low
+		ParallelValue faultSimHigh_; // faulty high
 
 		// constraint
 		// user can tie the gate to certain value
 		bool hasConstraint_;
-		ParaValue constraint_;
+		ParallelValue constraint_;
 
 		// SCOAP, testability
 		int cc0_;
