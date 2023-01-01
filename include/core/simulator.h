@@ -49,12 +49,12 @@ namespace CoreNs
 		Circuit *pCircuit_;
 		int numDetection_; // for n-detect
 		int numRecover_;	 // number of recovers needed
-		FaultPtrListIter injectedFaults[WORD_SIZE];
+		FaultPtrListIter injectedFaults_[WORD_SIZE];
 		int numInjectedFaults_;
 		ParallelValue activated_;
 		std::vector<std::stack<int>> events_;
-		std::vector<int> processed_;   // array of processed flags.  TRUE means this gate is processed
-		std::vector<int> recoverGates_;// array of gates to be recovered from the last fault injection
+		std::vector<int> processed_;		// array of processed flags.  TRUE means this gate is processed
+		std::vector<int> recoverGates_; // array of gates to be recovered from the last fault injection
 		//  this is to inject fault into the circuit
 		//  faultInjectLow_ = 1 faultInjectHigh_ = 0 inject a stuck-at zero fault
 		//  We use 5 ParallelValue since a gate have 1 fanout and at most 4 fanin

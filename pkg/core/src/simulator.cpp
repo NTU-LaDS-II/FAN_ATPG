@@ -136,7 +136,7 @@ void Simulator::parallelFaultFaultSim(FaultPtrList &remainingFaults)
 		if (parallelFaultCheckActivation(*it))
 		{
 			parallelFaultFaultInjection(*it, numInjectedFaults_);
-			injectedFaults[numInjectedFaults_++] = it;
+			injectedFaults_[numInjectedFaults_++] = it;
 		}
 		++it;
 		// run fault sim if enough fault or end of fault list
@@ -372,11 +372,11 @@ void Simulator::parallelFaultCheckDetectionDropFaults(FaultPtrList &remainingFau
 		{
 			continue;
 		}
-		++((*injectedFaults[i])->detection_);
-		if ((*injectedFaults[i])->detection_ >= numDetection_)
+		++((*injectedFaults_[i])->detection_);
+		if ((*injectedFaults_[i])->detection_ >= numDetection_)
 		{
-			(*injectedFaults[i])->faultState_ = Fault::DT;
-			remainingFaults.erase(injectedFaults[i]);
+			(*injectedFaults_[i])->faultState_ = Fault::DT;
+			remainingFaults.erase(injectedFaults_[i]);
 		}
 	}
 }
