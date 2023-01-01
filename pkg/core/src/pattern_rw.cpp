@@ -35,8 +35,7 @@ void PatternReader::setPiOrder(const PatNames *const pPIs)
 		++pPatternProcessor_->numPI_;
 		pPI = pPI->next;
 	}
-	// delete [] pPatternProcessor_->piOrder_;
-	// pPatternProcessor_->piOrder_ = new int[pPatternProcessor_->numPI_];
+
 	pPatternProcessor_->pPIorder_.resize(pPatternProcessor_->numPI_);
 	pPI = pPIs->head;
 	int i = 0;
@@ -48,8 +47,6 @@ void PatternReader::setPiOrder(const PatNames *const pPIs)
 			fprintf(stderr, "**ERROR PatternReader::setPiOrder(): port ");
 			fprintf(stderr, "`%s' not found\n", pPI->name);
 			success_ = false;
-			// delete[] pPatternProcessor_->piOrder_;
-			// pPatternProcessor_->piOrder_ = NULL;
 			pPatternProcessor_->pPIorder_.clear();
 			return;
 		}
@@ -79,8 +76,6 @@ void PatternReader::setPpiOrder(const PatNames *const pPPIs)
 		++pPatternProcessor_->numPPI_;
 		pPPI = pPPI->next;
 	}
-	// delete[] pPatternProcessor_->ppiOrder_;
-	// pPatternProcessor_->ppiOrder_ = new int[pPatternProcessor_->numPPI_];
 	pPatternProcessor_->pPPIorder_.resize(pPatternProcessor_->numPPI_);
 	pPPI = pPPIs->head;
 	int i = 0;
@@ -92,8 +87,6 @@ void PatternReader::setPpiOrder(const PatNames *const pPPIs)
 			fprintf(stderr, "**ERROR PatternReader::setPpiOrder(): gate ");
 			fprintf(stderr, "`%s' not found\n", pPPI->name);
 			success_ = false;
-			// delete[] pPatternProcessor_->ppiOrder_;
-			// pPatternProcessor_->ppiOrder_ = NULL;
 			pPatternProcessor_->pPPIorder_.clear();
 			return;
 		}
@@ -122,8 +115,6 @@ void PatternReader::setPoOrder(const PatNames *const pPOs)
 		++pPatternProcessor_->numPO_;
 		pPO = pPO->next;
 	}
-	// delete[] pPatternProcessor_->poOrder_;
-	// pPatternProcessor_->poOrder_ = new int[pPatternProcessor_->numPO_];
 	pPatternProcessor_->pPOorder_.resize(pPatternProcessor_->numPO_);
 	pPO = pPOs->head;
 	int i = 0;
@@ -135,8 +126,6 @@ void PatternReader::setPoOrder(const PatNames *const pPOs)
 			fprintf(stderr, "**ERROR PatternReader::setPoOrder(): port ");
 			fprintf(stderr, "`%s' not found\n", pPO->name);
 			success_ = false;
-			// delete[] pPatternProcessor_->poOrder_;
-			// pPatternProcessor_->poOrder_ = NULL;
 			pPatternProcessor_->pPOorder_.clear();
 			return;
 		}
@@ -250,12 +239,6 @@ void PatternReader::assignValue(std::vector<Value> &valueVector, const char *con
 				valueVector[i] = X;
 				break;
 		}
-		// if (pattern[i] == '0')
-		// 	valueVector[i] = L;
-		// else if (pattern[i] == '1')
-		// 	valueVector[i] = H;
-		// else
-		// 	valueVector[i] = X;
 	}
 }
 
@@ -409,13 +392,9 @@ bool PatternWriter::writePattern(const char *const fname)
 	fclose(fout);
 
 	return true;
-} //}}}
+}
 
-//{{{ bool PatternWriter::writeLht(const char * const)
-
-// write to Ling Hsio-Ting's pattern format
-// This format is OBSOLETE, no longer supported
-//
+// This format is no longer supported
 bool PatternWriter::writeLht(const char *const fname)
 {
 	FILE *fout = fopen(fname, "w");
@@ -528,7 +507,7 @@ bool PatternWriter::writeLht(const char *const fname)
 	fclose(fout);
 
 	return true;
-} //}}}
+}
 
 // write to Mentor ASCii
 // E.5 problem
@@ -549,7 +528,6 @@ bool PatternWriter::writeAscii(const char *const fname)
 
 	// input
 	fprintf(fout, "declare input bus \"PI\" = ");
-	// fprintf(fout, "\"/CK\", \"/test_si\", \"/test_se\"");
 	for (size_t i = 0; i < pCircuit_->pNetlist_->getTop()->getNPort(); ++i)
 	{
 		Port *pPort = pCircuit_->pNetlist_->getTop()->getPort(i);
@@ -741,21 +719,6 @@ bool PatternWriter::writeAscii(const char *const fname)
 			}
 			fprintf(fout, "\" 4;\n");
 		}
-		/*if (pPatternProcessor_->patternVector_[i].primaryOutputs2nd_) {
-				fprintf(fout, "pulse \"/CK\" 5;\n");
-				fprintf(fout, "measure \"PO\" \"");
-				if (seqCircuitCheck)
-						fprintf(fout, "X");
-				for (int j = 0; j < pPatternProcessor_->numPO_; ++j) {
-						if (pPatternProcessor_->patternVector_[i].primaryOutputs2nd_[j] == L)
-								fprintf(fout, "0");
-						else if (pPatternProcessor_->patternVector_[i].primaryOutputs2nd_[j] == H)
-								fprintf(fout, "1");
-						else
-								fprintf(fout, "X");
-				}
-				fprintf(fout, "\" 6;\n");
-		}*/
 
 		if (pPatternProcessor_->numPPI_)
 		{
@@ -805,10 +768,6 @@ bool PatternWriter::writeAscii(const char *const fname)
 //  must test with tetramax
 bool PatternWriter::writeSTIL(const char *const fname)
 {
-
-	// TODO
-
-	//
 	std::vector<std::string> PI_Order;
 	std::vector<std::string> SCAN_Order;
 	std::vector<std::string> PO_Order;

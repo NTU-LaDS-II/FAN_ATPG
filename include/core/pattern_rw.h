@@ -57,7 +57,7 @@ namespace CoreNs
 		~PatternWriter();
 
 		bool writePattern(const char *const fname);
-		bool writeLht(const char *const fname);
+		bool writeLht(const char *const fname); // no longer supported
 		bool writeAscii(const char *const fname);
 		bool writeSTIL(const char *const fname); // 2016 summer train
 
