@@ -1181,7 +1181,7 @@ bool RunLogicSimCmd::exec(const std::vector<std::string> &argv)
 	std::cout << "#  Performing logic simulation ...\n";
 
 	Simulator sim(fanMgr_->cir);
-	sim.ppGoodSim(fanMgr_->pcoll);
+	sim.parallelPatternGoodSimWithAllPattern(fanMgr_->pcoll);
 
 	TmStat stat;
 	fanMgr_->tmusg.getPeriodUsage(stat);
@@ -1247,11 +1247,11 @@ bool RunFaultSimCmd::exec(const std::vector<std::string> &argv)
 
 	if (optMgr_.isFlagSet("m") && optMgr_.getFlagVar("m") == "pf")
 	{
-		fanMgr_->sim->pfFaultSim(fanMgr_->pcoll, fanMgr_->fListExtract);
+		fanMgr_->sim->parallelFaultFaultSimWithMultiplePattern(fanMgr_->pcoll, fanMgr_->fListExtract);
 	}
 	else
 	{
-		fanMgr_->sim->ppFaultSim(fanMgr_->pcoll, fanMgr_->fListExtract);
+		fanMgr_->sim->parallelPatternFaultSimWithPattern(fanMgr_->pcoll, fanMgr_->fListExtract);
 	}
 
 	TmStat stat;

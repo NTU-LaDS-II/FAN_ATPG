@@ -148,7 +148,7 @@ namespace CoreNs
 
 	// **************************************************************************
 	// Function   [ PatternProcessor::StaticCompression ]
-	// Commentor  [ HKY CYW ]
+	// Commenter  [ HKY CYW ]
 	// Synopsis   [ usage: do static compression
 	// 		We first compare each pair of the patterns and check whether they are compatible.
 	// 		If so, we will merge these patterns bit by bit

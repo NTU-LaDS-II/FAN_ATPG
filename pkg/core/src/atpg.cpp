@@ -11,7 +11,7 @@ using namespace CoreNs;
 
 // **************************************************************************
 // Function   [ Atpg::generatePatternSet ]
-// Commentor  [ CAL ]
+// Commenter  [ CAL ]
 // Synopsis   [ usage: the main function of atpg generate the complete test pattern set for faults
 //              in:    PatternProcessor, FaultListExtract
 //              out:   void //TODO not void
@@ -142,7 +142,7 @@ void Atpg::generatePatternSet(PatternProcessor *pPatternProcessor, FaultListExtr
 
 // **************************************************************************
 // Function   [ Atpg::setupCircuitParameter ]
-// Commentor  [ KOREAL ]
+// Commenter  [ KOREAL ]
 // Synopsis   [ usage: initialize gate's data including
 //					    numOfZero = {0} numOfOne  = {0} // unneccesary by wang
 //							gateID_to_valModified_ // initialized in calGateDepthFromPO()
@@ -175,7 +175,7 @@ void Atpg::setupCircuitParameter()
 
 // **************************************************************************
 // Function   [ Atpg::calGateDepthFromPO ]
-// Commentor  [ CAL ]
+// Commenter  [ CAL ]
 // Synopsis   [ usage: Calculate the depthFromPo_ of each gate.
 //              notes:
 //                If there is no path from a gate to PO/PPO,
@@ -226,7 +226,7 @@ void Atpg::calGateDepthFromPO()
 
 // **************************************************************************
 // Function   [ Atpg::identifyLineParameter ]
-// Commentor  [ CKY ]
+// Commenter  [ CKY ]
 // Synopsis   [ usage: fill in LineParameter(FREE or HEAD or BOUND)
 //              in:    void //TODO
 //              out:   void //TODO
@@ -296,7 +296,7 @@ void Atpg::identifyLineParameter()
 
 // **************************************************************************
 // Function   [ Atpg::identifyDominator ]
-// Commentor  [ CAL ]
+// Commenter  [ CAL ]
 // Synopsis   [ usage: identify Dominator of the output gate
 //                     for unique sensitization. After this function, each
 //                     gate have one or zero Dominator in its gateID_to_uniquePath_ vector
@@ -387,7 +387,7 @@ void Atpg::identifyDominator()
 
 // **************************************************************************
 // Function   [ Atpg::identifyUniquePath ]
-// Commentor  [ CAL ]
+// Commenter  [ CAL ]
 // Synopsis   [ usage: compute the gateID_to_uniquePath_
 //                In unique path sensitizatoin phase, we will need to know
 //                if the inputs of a gate is fault reachable. Then, we can
@@ -452,7 +452,7 @@ void Atpg::identifyUniquePath()
 
 // **************************************************************************
 // Function   [ Atpg::TransitionDelayFaultATPG ]
-// Commentor  [ HKY CYW ]
+// Commenter  [ HKY CYW ]
 // Synopsis   [ usage: do transition delay fault model ATPG
 //              in:    Pattern list, Fault list, int numOfAtpgUntestableFaults
 //              out:   void//TODO
@@ -476,7 +476,7 @@ void Atpg::TransitionDelayFaultATPG(FaultPtrList &faultListToGen, PatternProcess
 			randomFill(pPatternProcessor->patternVector_.back());
 		}
 
-		pSimulator_->pfFaultSim(pPatternProcessor->patternVector_.back(), faultListToGen);
+		pSimulator_->parallelFaultFaultSimWithOnePattern(pPatternProcessor->patternVector_.back(), faultListToGen);
 		pSimulator_->goodSim();
 		assignPatternPO_fromGoodSimVal(pPatternProcessor->patternVector_.back());
 	}
@@ -496,7 +496,7 @@ void Atpg::TransitionDelayFaultATPG(FaultPtrList &faultListToGen, PatternProcess
 
 // **************************************************************************
 // Function   [ Atpg::StuckAtFaultATPG ]
-// Commentor  [ HKY CYW ]
+// Commenter  [ HKY CYW ]
 // Synopsis   [ usage: do stuck at fault model ATPG
 //              in:    Pattern list, Fault list, int numOfAtpgUntestableFaults
 //              out:   void //TODO
@@ -521,7 +521,7 @@ void Atpg::TransitionDelayFaultATPG(FaultPtrList &faultListToGen, PatternProcess
 // 		{
 // 			randomFill(pPatternProcessor->patternVector_.back());
 // 		}
-// 		pSimulator_->pfFaultSim(pPatternProcessor->patternVector_.back(), faultListToGen);
+// 		pSimulator_->parallelFaultFaultSimWithOnePattern(pPatternProcessor->patternVector_.back(), faultListToGen);
 // 		pSimulator_->goodSim();
 // 		assignPatternPO_fromGoodSimVal(pPatternProcessor->patternVector_.back());
 // 	}
@@ -541,7 +541,7 @@ void Atpg::TransitionDelayFaultATPG(FaultPtrList &faultListToGen, PatternProcess
 
 // **************************************************************************
 // Function   [ Atpg::StuckAtFaultATPGWithDTC ]
-// Commentor  [ CAL ]
+// Commenter  [ CAL ]
 // Synopsis   [ usage: do stuck at fault model ATPG with dynamic test compression
 //              in:    Pattern list, Fault list, int numOfAtpgUntestableFaults
 //              out:   void //add pattern to PatternProcessor*
@@ -564,7 +564,7 @@ void Atpg::StuckAtFaultATPGWithDTC(FaultPtrList &faultListToGen, PatternProcesso
 		if (pPatternProcessor->dynamicCompression_ == PatternProcessor::ON)
 		{
 			FaultPtrList faultListTemp = faultListToGen;
-			pSimulator_->pfFaultSim(pPatternProcessor->patternVector_.back(), faultListToGen);
+			pSimulator_->parallelFaultFaultSimWithOnePattern(pPatternProcessor->patternVector_.back(), faultListToGen);
 			pSimulator_->goodSim();
 			assignPatternPO_fromGoodSimVal(pPatternProcessor->patternVector_.back());
 
@@ -636,9 +636,9 @@ void Atpg::StuckAtFaultATPGWithDTC(FaultPtrList &faultListToGen, PatternProcesso
 		//  the gh_ and gl_ in each gate, and then it will run fault
 		//  simulation to drop fault.
 
-		pSimulator_->pfFaultSim(pPatternProcessor->patternVector_.back(), faultListToGen);
+		pSimulator_->parallelFaultFaultSimWithOnePattern(pPatternProcessor->patternVector_.back(), faultListToGen);
 
-		// After pSimulator_->pfFaultSim(pPatternProcessor->patternVector_.back(),faultListToGen) , the pi/ppi
+		// After pSimulator_->parallelFaultFaultSimWithOnePattern(pPatternProcessor->patternVector_.back(),faultListToGen) , the pi/ppi
 		// values have been passed to gh_ and gl_ of each gate.  Therefore, we can
 		// directly use "assignPatternPO_fromGoodSimVal" to perform goodSim to get the PoValue.
 		pSimulator_->goodSim();
@@ -660,7 +660,7 @@ void Atpg::StuckAtFaultATPGWithDTC(FaultPtrList &faultListToGen, PatternProcesso
 
 // **************************************************************************
 // Function   [ Atpg::getWireForActivation ]
-// Commentor  [ CAL ]
+// Commenter  [ CAL ]
 // Synopsis   [ usage:
 //                return the gate need for activation of a fault
 //              in:    void
@@ -686,7 +686,7 @@ Gate *Atpg::getWireForActivation(const Fault &fault)
 
 // **************************************************************************
 // Function   [ Atpg::setValueAndRunImp ]
-// Commentor  [ CAL ]
+// Commenter  [ CAL ]
 // Synopsis   [ usage:
 //                Directly set the output of a gate to specific value and
 //                run implication by event driven.
@@ -738,7 +738,7 @@ void Atpg::setValueAndRunImp(Gate &gate, const Value &val)
 
 // **************************************************************************
 // Function   [ Atpg::resetPreValue ]
-// Commentor  [ CAL ]
+// Commenter  [ CAL ]
 // Synopsis   [ usage: Reset the preV_ of each gate to X. ]
 // Date       [ started 2020/07/07    last modified 2020/07/07 ]
 // **************************************************************************
@@ -752,7 +752,7 @@ void Atpg::resetPreValue()
 
 // **************************************************************************
 // Function   [ Atpg::storeCurrentGateValue ]
-// Commentor  [ CAL ]
+// Commenter  [ CAL ]
 // Synopsis   [ usage:
 //                Store gate.atpgVal_ to gate.preValue_
 //              in:   void
@@ -783,7 +783,7 @@ int Atpg::storeCurrentGateValue()
 
 // **************************************************************************
 // Function   [ Atpg::clearAllFaultEffectBySimulation ]
-// Commentor  [ CAL ]
+// Commenter  [ CAL ]
 // Synopsis   [ usage:
 //                Clear all the fault effects before test generation for next
 //                target fault.
@@ -825,7 +825,7 @@ void Atpg::clearAllFaultEffectBySimulation()
 
 // **************************************************************************
 // Function   [ Atpg::clearOneGateFaultEffect ]
-// Commentor  [ CAL ]
+// Commenter  [ CAL ]
 // Synopsis   [ usage:
 //                Replace value of a gate from D/B to H/L.
 //              in:    Gate
@@ -847,7 +847,7 @@ void Atpg::clearOneGateFaultEffect(Gate &gate)
 
 // **************************************************************************
 // Function   [ Atpg::generateSinglePatternOnTargetFault ]
-// Commentor  [ KOREAL ]
+// Commenter  [ KOREAL ]
 // Synopsis   [ usage: Given a fault, generate the pattern
 //              in:    fault isDTC
 //              out:   PATTERN_GENERATION_STATUS(PATTERN_FOUND = 0, FAULT_UNTESTABLE, ABORT) //TODO
@@ -1176,7 +1176,7 @@ void Atpg::initialNetlist(Gate &gFaultyLine, bool isDTC)
 
 // **************************************************************************
 // Function   [ Atpg::clearEventStack ]
-// Commentor  [ CAL ]
+// Commenter  [ CAL ]
 // Synopsis   [ usage:
 //                Clear circuitLevel_to_EventStack_ and carefully reset gateID_to_valModified_ and isInEventStack_
 //              in:    check isInEventStack_ correctness
@@ -1217,7 +1217,7 @@ void Atpg::clearEventStack(bool isDebug)
 
 // **************************************************************************
 // Function   [ Atpg::Implication ]
-// Commentor  [ CLT ]
+// Commenter  [ CLT ]
 // Synopsis   [ usage: Do BACKWARD and FORWARD implication to gates in circuitLevel_to_EventStack_,
 //                     also put gates which can't be implied into unjustified_ list.
 //              in:    atpgStatus(BACKWARD or FORWARD), StartLevel
@@ -1471,7 +1471,7 @@ Atpg::IMPLICATION_STATUS Atpg::backwardImplication(Gate *pGate)
 
 // **************************************************************************
 // Function   [ Atpg::backtrack ]
-// Commentor  [ CLT ]
+// Commenter  [ CLT ]
 // Synopsis   [ usage: If decisionTree_ is not empty, update BackImpLevel.
 //                     If decisionTree_ is empty, return false.
 //              in:    BackImpLevel
@@ -1638,7 +1638,7 @@ bool Atpg::continuationMeaningful(Gate *pLastDFrontier)
 
 // **************************************************************************
 // Function   [ Atpg::updateUnjustifiedLines ]
-// Commentor  [ CAL ]
+// Commenter  [ CAL ]
 // Synopsis   [ usage: update unjustified_ list
 //              in:    void
 //              out:   void
@@ -1675,7 +1675,7 @@ void Atpg::updateUnjustifiedLines()
 
 // **************************************************************************
 // Function   [ Atpg::updateDFrontier ]
-// Commentor  [ CAL ]
+// Commenter  [ CAL ]
 // Synopsis   [ usage: update DFrontier
 //              in:    void
 //              out:   void
@@ -1738,7 +1738,7 @@ bool Atpg::checkUnjustifiedBoundLines()
 
 // **************************************************************************
 // Function   [ Atpg::findFinalObjective ]
-// Commentor  [ WYH ]
+// Commenter  [ WYH ]
 // Synopsis   [ usage: Determination of final objective.
 //                     Choose a value and a line such that the chosen value assigned
 //                     to the chosen line can meet the initial objectives.
@@ -1891,7 +1891,7 @@ void Atpg::assignValueToFinalObject()
 
 // **************************************************************************
 // Function   [ Atpg::justifyFreeLines ]
-// Commentor  [ CLT ]
+// Commenter  [ CLT ]
 // Synopsis   [ usage: Justify free lines before terminating this test pattern generation.
 //              in:    original fault
 //              out:   void
@@ -1940,7 +1940,7 @@ void Atpg::justifyFreeLines(Fault &fOriginalFault)
 }
 // **************************************************************************
 // Function   [ Atpg::restoreFault ]
-// Commentor  [ CLT ]
+// Commenter  [ CLT ]
 // Synopsis   [ usage: restore fault
 //              in:    Fault list
 //              out:   void
@@ -2055,7 +2055,7 @@ int Atpg::countNumGatesInDFrontier(Gate *pFaultyLine)
 
 // **************************************************************************
 // Function   [ Atpg::uniquePathSensitize ]
-// Commentor  [ CLT ]
+// Commenter  [ CLT ]
 // Synopsis   [ usage: Finds the last gate(pnextgate) in the uniquepath starts from pgate,
 //                     return BackImpLevel which is the max of the pnextgate's input level.
 //                     BackImpLevel is -1 if no uniquepath.
@@ -2209,7 +2209,7 @@ int Atpg::uniquePathSensitize(Gate &gate)
 
 // **************************************************************************
 // Function   [ Atpg::isExistXPath ]
-// Commentor  [ CAL ]
+// Commenter  [ CAL ]
 // Synopsis   [ usage:
 //                Used before generateSinglePatternOnTargetFault
 //                Return true if there is X-path.
@@ -2232,7 +2232,7 @@ bool Atpg::isExistXPath(Gate *pGate)
 
 // **************************************************************************
 // Function   [ Atpg::xPathTracing ]
-// Commentor  [ CLT ]
+// Commenter  [ CLT ]
 // Synopsis   [ usage: recursive call the fanout of pGate to PO and check if pGate has a X path
 //              in:    Gate* pGate
 //              out:   bool
@@ -2274,7 +2274,7 @@ bool Atpg::xPathTracing(Gate *pGate)
 
 // **************************************************************************
 // Function   [ Atpg::setFaultyGate ]
-// Commentor  [ WYH ]
+// Commenter  [ WYH ]
 // Synopsis   [ usage: Initial assignment of fault signal.
 //                     There are two situations :
 //                     1. Fault is on the input line of pFaultyGate, and
@@ -2481,7 +2481,7 @@ int Atpg::setFaultyGate(Fault &fault)
 
 // **************************************************************************
 // Function   [ Atpg::setFreeFaultyGate ]
-// Commentor  [ WYH ]
+// Commenter  [ WYH ]
 // Synopsis   [ usage: This function is called when pFaultyLine is FREELINE.
 //                     That means it has only one output gate.
 //                     The fault must be on the output line of pFaultyGate.
@@ -2548,7 +2548,7 @@ Fault Atpg::setFreeFaultyGate(Gate &gate)
 
 // **************************************************************************
 // Function   [ Atpg::fanoutFreeBacktrace ]
-// Commentor  [ CLT ]
+// Commenter  [ CLT ]
 // Synopsis   [ usage: Backtrace in Fanout Free situation
 //              in:    the gate to start performing
 //              out:   void
@@ -2666,7 +2666,7 @@ void Atpg::fanoutFreeBacktrace(Gate *pObjectGate)
 
 // **************************************************************************
 // Function   [ Atpg::multipleBacktrace ]
-// Commentor  [ CKY ]
+// Commenter  [ CKY ]
 // Synopsis   [ usage: return NO_CONTRADICTORY  or  CONTRADICTORY after backtrace
 //                     see paper P.4 P.5 and Fig.8 for detail information
 //              in:    BACKTRACE_STATUS
@@ -2909,7 +2909,7 @@ Atpg::BACKTRACE_RESULT Atpg::multipleBacktrace(BACKTRACE_STATUS atpgStatus, int 
 
 // **************************************************************************
 // Function   [ Atpg::assignBacktraceValue ]
-// Commentor  [ CKY ]
+// Commenter  [ CKY ]
 // Synopsis   [ usage: help to get n0 n1 and Value depend on Gate's controlling value
 //              in:    n0 (int reference), n1 (int reference), gate (Gate reference)
 //              out:   Value, n0, n1
@@ -3030,7 +3030,7 @@ Value Atpg::assignBacktraceValue(int &n0, int &n1, Gate &gate)
 
 // **************************************************************************
 // Function   [ Atpg::initialObjectives ]
-// Commentor  [ CKY ]
+// Commenter  [ CKY ]
 // Synopsis   [ usage: initial all objects of LineNum(gateID_to_n0_  gateID_to_n1_)
 //              in:    void
 //              out:   void
@@ -3091,7 +3091,7 @@ void Atpg::initialObjectives()
 
 // **************************************************************************
 // Function   [ Atpg::findEasiestInput ]
-// Commentor  [ KOREAL ]
+// Commenter  [ KOREAL ]
 // Synopsis   [ usage: find the EasiestInput by gate::cc0_ or gate::cc1_
 //              in:    1. Target gate (Gate* pGate)
 //					   2. FanOut value of target gate (Value Val)
@@ -3154,7 +3154,7 @@ Gate *Atpg::findEasiestInput(Gate *pGate, Value Val)
 
 // **************************************************************************
 // Function   [ Atpg::findCloseToOutput ]
-// Commentor  [ CLT ]
+// Commenter  [ CLT ]
 // Synopsis   [ usage: find the gate which close to output
 //              in:    the list to search, the index of the gate
 //              out:   return the gate which is closest to output
@@ -3185,7 +3185,7 @@ Gate *Atpg::findCloseToOutput(std::vector<int> &list, int &index)
 
 // **************************************************************************
 // Function   [ Atpg::Evaluation ]
-// Commentor  [ KOREAL ]
+// Commenter  [ KOREAL ]
 // Synopsis   [ IN:  Gate *pGate
 //              OUT: IMP_STATUS (FORWARD, BACKWARD, CONFLICT)
 //
@@ -3250,7 +3250,7 @@ Atpg::IMPLICATION_STATUS Atpg::evaluation(Gate *pGate)
 
 // **************************************************************************
 // Function   [ Atpg::FaultEvaluation ]
-// Commentor  [ KOREAL ]
+// Commenter  [ KOREAL ]
 // Synopsis   [ IN:  Gate *pGate
 //              OUT: IMP_STATUS (FORWARD, BACKWARD, CONFLICT)
 //
@@ -3387,7 +3387,7 @@ Atpg::IMPLICATION_STATUS Atpg::faultyGateEvaluation(Gate *pGate)
 
 // **************************************************************************
 // Function   [ Atpg::staticTestCompressionByReverseFaultSimulation ]
-// Commentor  [ CAL ]
+// Commenter  [ CAL ]
 // Synopsis   [ usage:
 //                Perform reverse fault simulation
 //              in:    void
@@ -3413,7 +3413,7 @@ void Atpg::staticTestCompressionByReverseFaultSimulation(PatternProcessor *pPatt
 	int leftFaultCount = originalFaultList.size();
 	for (std::vector<Pattern>::reverse_iterator rit = tmp.rbegin(); rit != tmp.rend(); ++rit)
 	{
-		pSimulator_->pfFaultSim((*rit), originalFaultList);
+		pSimulator_->parallelFaultFaultSimWithOnePattern((*rit), originalFaultList);
 		if (leftFaultCount > originalFaultList.size())
 		{
 			leftFaultCount = originalFaultList.size();
@@ -3433,7 +3433,7 @@ void Atpg::staticTestCompressionByReverseFaultSimulation(PatternProcessor *pPatt
 
 // **************************************************************************
 // Function   [ Atpg::firstTimeFrameSetUp ]
-// Commentor  [ WYH ]
+// Commenter  [ WYH ]
 // Synopsis   [ usage: Initial assignment of fault signal, and set the first time
 //                     meet HEAD LINE gate.
 //                     There are two situations :
@@ -3574,7 +3574,7 @@ int Atpg::firstTimeFrameSetUp(Fault &fault)
 
 // **************************************************************************
 // Function   [ Atpg::checkLevelInfo ]
-// Commentor  [ CAL ]
+// Commenter  [ CAL ]
 // Synopsis   [ usage:
 //                To check if the circuitLvl_ of all the gates does not exceed pCircuit_->totalLvl_
 //              in:    void
@@ -3597,7 +3597,7 @@ void Atpg::checkLevelInfo()
 
 // **************************************************************************
 // Function   [ Atpg::getValStr ]
-// Commentor  [ CAL ]
+// Commenter  [ CAL ]
 // Synopsis   [ usage: return string type of Value
 //              in:    Value
 //              out:   string of Value
@@ -3903,7 +3903,7 @@ void Atpg::calSCOAP()
 
 // **************************************************************************
 // Function   [ Atpg::testClearFaultEffect ]
-// Commentor  [ CAL ]
+// Commenter  [ CAL ]
 // Synopsis   [ usage:
 //                Test clearAllFaultEffectBySimulation for all faults
 //              in:    void
@@ -3932,7 +3932,7 @@ void Atpg::testClearFaultEffect(FaultPtrList &faultListToTest)
 
 // **************************************************************************
 // Function   [ Atpg::resetIsInEventStack ]
-// Commentor  [ CAL ]
+// Commenter  [ CAL ]
 // Synopsis   [ usage:
 //                Set all element in isInEventStack_ to false
 //              in:    void
@@ -3947,7 +3947,7 @@ void Atpg::resetIsInEventStack()
 
 // **************************************************************************
 // Function   [ Atpg::XFill ]
-// Commentor  [ HKY CYW ]
+// Commenter  [ HKY CYW ]
 // Synopsis   [ usage: do X-Fill on generated pattern
 //              in:    Pattern list
 //              out:   void //TODO
@@ -3959,7 +3959,7 @@ void Atpg::XFill(PatternProcessor *pPatternProcessor)
 	for (int i = 0; i < (int)pPatternProcessor->patternVector_.size(); ++i)
 	{
 		randomFill(pPatternProcessor->patternVector_[i]);
-		pSimulator_->assignPatternToPi(pPatternProcessor->patternVector_.at(i));
+		pSimulator_->assignPatternToCircuitInputs(pPatternProcessor->patternVector_.at(i));
 		pSimulator_->goodSim();
 		assignPatternPO_fromGoodSimVal(pPatternProcessor->patternVector_.at(i));
 	}
