@@ -9,18 +9,15 @@
 #define _CORE_GATE_H_
 
 #include <cstring>
-
 #include "interface/cell.h"
-
 #include "logic.h"
 
 namespace CoreNs
 {
-
 	class Gate
 	{
 	public:
-		enum Type
+		enum GateType
 		{
 			NA = 0,
 			PI,
@@ -54,28 +51,21 @@ namespace CoreNs
 			TIEZ
 		};
 		inline Gate();
-		// inline Gate(int gateId, int cellId, int primitiveId, int numLevel, Type gateType);
-		// inline Gate(const Gate &g);
-		// inline Gate &operator=(const Gate &g);
-		inline Gate(int gateId, int cellId, int primitiveId, int numLevel, Type gateType, int numFO);
-
-		// inline ~Gate();
+		inline Gate(int gateId, int cellId, int primitiveId, int numLevel, GateType gateType, int numFO);
 
 		// basic info
-		int gateId_;			// position in circuit gate array
-		int cellId_;			// original cell id in the netlist
-		int primitiveId_; // original primitive id in the library cell
-		int numLevel_;		// level number after levelization
-		int frame_;				// time frame of the gate, for 2-pattern test
-		Type gateType_;		// type of the gate
+		int gateId_;				// position in circuit gate array
+		int cellId_;				// original cell id in the netlist
+		int primitiveId_;		// original primitive id in the library cell
+		int numLevel_;			// level number after levelization
+		int frame_;					// time frame of the gate, for 2-pattern test
+		GateType gateType_; // type of the gate
 
 		// connection
 		int numFI_;											// number of fanin
-		// int 	*faninVector_;	// fanin array
-		std::vector<int> faninVector_;	// fanin array
 		int numFO_;											// number of fanout
+		std::vector<int> faninVector_;	// fanin array
 		std::vector<int> fanoutVector_; // fanout array
-		// int 	*fanoutVector_; // fanout array
 
 		// values
 		Value atpgVal_;					 // single value for ATPG
@@ -84,27 +74,24 @@ namespace CoreNs
 		ParallelValue faultSimLow_;	 // faulty low
 		ParallelValue faultSimHigh_; // faulty high
 
-		// constraint
-		// user can tie the gate to certain value
+		// constraint, user can tie the gate to certain value
 		bool hasConstraint_;
 		ParallelValue constraint_;
 
-		// SCOAP, testability
+		// SCOAP testability
 		int cc0_;
 		int cc1_;
 		int co_;
 
-		int depthFromPo_; // depth from po, this is for fault effect propagation
-		int fiMinLvl_;		// the minimum level of the fanin gates, this is to justify the headline cone, (in atpg.cpp)
+		int depthFromPo_;			 // depth from po, this is for fault effect propagation
+		int minLevelOfFanins_; // the minimum level of the fanin gates, this is to justify the headline cone, (in atpg.cpp)
 
 		Value isUnary() const;
 		Value isInverse() const;
 		Value getInputNonCtrlValue() const;
 		Value getInputCtrlValue() const;
 		Value getOutputCtrlValue() const;
-
-		/* Added by Shi-Tang Liu */
-		Value preValue_;
+		Value prevAtpgValStored_; // Added by Shi-Tang Liu
 	};
 
 	inline Gate::Gate()
@@ -116,9 +103,7 @@ namespace CoreNs
 		frame_ = 0;
 		gateType_ = NA;
 		numFI_ = 0;
-		// faninVector_ = NULL;
 		numFO_ = 0;
-		// fanoutVector_ = NULL;
 		atpgVal_ = X;
 		goodSimLow_ = PARA_L;
 		goodSimHigh_ = PARA_L;
@@ -126,79 +111,15 @@ namespace CoreNs
 		faultSimHigh_ = PARA_L;
 		hasConstraint_ = false;
 		constraint_ = PARA_L;
-
 		cc0_ = 0;
 		cc1_ = 0;
 		co_ = 0;
-
 		depthFromPo_ = -1;
-		fiMinLvl_ = -1;
-
-		/* Added by Shi-Tang Liu */
-		preValue_ = X;
+		minLevelOfFanins_ = -1;
+		prevAtpgValStored_ = X; // Added by Shi-Tang Liu
 	}
 
-	// inline Gate::Gate(int gateId, int cellId, int primitiveId, int numLevel, Type gateType)
-	// : gateId_(gateId_), cellId_(cellId), primitiveId_(primitiveId), numLevel_(numLevel), gateType_(gateType)
-	// {
-	// }
-
-	// inline Gate::Gate(const Gate &g)
-	// {
-	// 	gateId_ = g.gateId_;
-	// 	cellId_ = g.cellId_;
-	// 	primitiveId_ = g.primitiveId_;
-	// 	numLevel_ = g.numLevel_;
-	// 	frame_ = g.frame_;
-	// 	gateType_ = g.gateType_;
-	// 	numFI_ = g.numFI_;
-	// 	faninVector_ = g.faninVector_;
-	// 	numFO_ = g.numFO_;
-	// 	fanoutVector_ = g.fanoutVector_;
-	// 	atpgVal_ = g.atpgVal_;
-	// 	goodSimLow_ = g.goodSimLow_;
-	// 	goodSimHigh_ = g.goodSimHigh_;
-	// 	faultSimLow_ = g.faultSimLow_;
-	// 	faultSimHigh_ = g.faultSimHigh_;
-	// 	hasConstraint_ = g.hasConstraint_;
-	// 	constraint_ = g.constraint_;
-	// 	cc0_ = g.cc0_;
-	// 	cc1_ = g.cc1_;
-	// 	co_ = g.co_;
-	// 	depthFromPo_ = g.depthFromPo_;
-	// 	fiMinLvl_ = g.fiMinLvl_;
-	// 	preValue_ = g.preValue_;
-	// }
-
-	// inline Gate &Gate::operator=(const Gate &g)
-	// {
-	// 	gateId_ = g.gateId_;
-	// 	cellId_ = g.cellId_;
-	// 	primitiveId_ = g.primitiveId_;
-	// 	numLevel_ = g.numLevel_;
-	// 	frame_ = g.frame_;
-	// 	gateType_ = g.gateType_;
-	// 	numFI_ = g.numFI_;
-	// 	faninVector_ = g.faninVector_;
-	// 	numFO_ = g.numFO_;
-	// 	fanoutVector_ = g.fanoutVector_;
-	// 	atpgVal_ = g.atpgVal_;
-	// 	goodSimLow_ = g.goodSimLow_;
-	// 	goodSimHigh_ = g.goodSimHigh_;
-	// 	faultSimLow_ = g.faultSimLow_;
-	// 	faultSimHigh_ = g.faultSimHigh_;
-	// 	hasConstraint_ = g.hasConstraint_;
-	// 	constraint_ = g.constraint_;
-	// 	cc0_ = g.cc0_;
-	// 	cc1_ = g.cc1_;
-	// 	co_ = g.co_;
-	// 	depthFromPo_ = g.depthFromPo_;
-	// 	fiMinLvl_ = g.fiMinLvl_;
-	// 	preValue_ = g.preValue_;
-	// 	return *this;
-	// }
-
-	inline Gate::Gate(int gateId, int cellId, int primitiveId, int numLevel, Type gateType, int numFO)
+	inline Gate::Gate(int gateId, int cellId, int primitiveId, int numLevel, GateType gateType, int numFO)
 			: gateId_(gateId),
 				cellId_(cellId),
 				primitiveId_(primitiveId),
@@ -220,12 +141,9 @@ namespace CoreNs
 		cc1_ = 0;
 		co_ = 0;
 		depthFromPo_ = -1;
-		fiMinLvl_ = -1;
-		/* Added by Shi-Tang Liu */
-		preValue_ = X;
+		minLevelOfFanins_ = -1;
+		prevAtpgValStored_ = X; // Added by Shi-Tang Liu
 	}
-
-	// inline Gate::~Gate() {}
 
 	inline Value Gate::isUnary() const
 	{
@@ -253,12 +171,12 @@ namespace CoreNs
 
 	inline Value Gate::getInputNonCtrlValue() const
 	{
-		return isInverse() == getOutputCtrlValue() ? L : H;
+		return (isInverse() == getOutputCtrlValue()) ? L : H;
 	}
 
 	inline Value Gate::getInputCtrlValue() const
 	{
-		return getInputNonCtrlValue() == H ? L : H;
+		return (getInputNonCtrlValue() == H) ? L : H;
 	}
 
 	inline Value Gate::getOutputCtrlValue() const

@@ -810,7 +810,7 @@ void Circuit::connectMultipleTimeFrame()
 //                     it to the gate->fiMinLvl.
 //                     used for headLine justification (atpg.h)
 //              in:    gate array.
-//              out:   gate->fiMinLvl_ is updated
+//              out:   gate->minLevelOfFanins_ is updated
 //            ]
 // Date       [ Jun-Han,Pan Ver. 1.0 at 2013/08/18 ]
 // **************************************************************************
@@ -825,7 +825,7 @@ void Circuit::assignFiMinLvl() // Need to modify this function name
 			if (circuitGates_[gate->faninVector_[j]].numLevel_ < minLvl)
 			{
 				minLvl = circuitGates_[gate->faninVector_[j]].numLevel_;
-				gate->fiMinLvl_ = gate->faninVector_[j];
+				gate->minLevelOfFanins_ = gate->faninVector_[j];
 				//          find the minimum among gate->fis_[j] and replace gate->fiMinLvl with it.
 				//                                            **********
 				//                             gate->numFI_   *        *

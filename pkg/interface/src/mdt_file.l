@@ -11,7 +11,7 @@
 
 
 int  mdt_fileline    = 1;
-bool mdt_filewarning = 1;
+int mdt_filewarning = 1;
 int  mdt_fileparen   = 0;
 
 // skip scan definition

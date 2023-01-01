@@ -12,9 +12,9 @@
 
 using namespace IntfNs;
 
+extern int mdt_filewarning;
 int main(int argc, char **argv)
 {
-	extern int mdt_filewarning;
 	mdt_filewarning = 1;
 	if (argc < 2)
 	{

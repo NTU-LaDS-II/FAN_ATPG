@@ -12,27 +12,25 @@
 
 namespace CoreNs
 {
-
 	struct DecisionTreeNode
 	{
 	public:
-		DecisionTreeNode(const int &gid, const unsigned &startPoint);
-		int gid_;							//  the gate ID of the decision
-		unsigned startPoint_; // starting point in backtrackList of gid_ ;
-		bool mark_;						// initially, mark=false;  when backtracked once, this is changed to true; when backtracked again, this decision is poped out.
+		DecisionTreeNode(const int &gateId, const int &startPoint);
+		int gateId_;																// the gate ID of the decision
+		int startPointInBacktrackImplicatedGateIDs; // starting point in backtrackList of gid_ ;
+		bool mark_;																	// initially mark_=false, when backtracked once, mark_ is changed to true, when backtracked again, this decision is popped out.
 	};
 
 	class DecisionTree
 	{
 	public:
-		static const unsigned InitSize = 5000;
+		static constexpr int InitSize = 5000;
 
 		DecisionTree();
-		~DecisionTree();
 
 		void clear();
-		void put(const int &gid, const unsigned &startPoint);
-		bool get(int &gid, unsigned &startPoint);
+		void put(const int &gateId, const int &startPoint);
+		bool get(int &gateId, int &startPoint);
 		bool empty() const;
 		bool lastNodeMarked() const;
 
@@ -40,10 +38,10 @@ namespace CoreNs
 		std::vector<DecisionTreeNode> tree_;
 	};
 
-	inline DecisionTreeNode::DecisionTreeNode(const int &gid, const unsigned &startPoint)
+	inline DecisionTreeNode::DecisionTreeNode(const int &gateId, const int &startPoint)
 	{
-		gid_ = gid;
-		startPoint_ = startPoint;
+		gateId_ = gateId;
+		startPointInBacktrackImplicatedGateIDs = startPoint;
 		mark_ = false;
 	}
 
@@ -52,23 +50,21 @@ namespace CoreNs
 		tree_.reserve(InitSize);
 	}
 
-	inline DecisionTree::~DecisionTree() {}
-
 	inline void DecisionTree::clear()
 	{
 		tree_.clear();
 	}
 
-	inline void DecisionTree::put(const int &gid, const unsigned &startPoint)
+	inline void DecisionTree::put(const int &gateId, const int &startPoint)
 	{
-		tree_.push_back(DecisionTreeNode(gid, startPoint));
+		tree_.push_back(DecisionTreeNode(gateId, startPoint));
 	}
 
-	inline bool DecisionTree::get(int &gid, unsigned &startPoint)
+	inline bool DecisionTree::get(int &gateId, int &startPoint)
 	{
 		DecisionTreeNode &node = tree_.back();
-		gid = node.gid_;
-		startPoint = node.startPoint_;
+		gateId = node.gateId_;
+		startPoint = node.startPointInBacktrackImplicatedGateIDs;
 
 		if (node.mark_)
 		{
