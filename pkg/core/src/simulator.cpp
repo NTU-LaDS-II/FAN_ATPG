@@ -274,7 +274,8 @@ void Simulator::parallelFaultReset()
 // **************************************************************************
 bool Simulator::parallelFaultCheckActivation(const Fault *const pfault)
 {
-	const int &faultyGate = pfault->faultyLine_ == 0 ? pfault->gateID_ : pCircuit_->circuitGates_[pfault->gateID_].faninVector_pfault->faultyLine_ - 1];
+	const int &faultyGate = pfault->faultyLine_ == 0 ? pfault->gateID_ : pCircuit_->circuitGates_[pfault->gateID_].faninVector_[pfault->faultyLine_ - 1];
+	                        /// if output fault,faultyGate = gateID of the faulty gate,else if input fault,faultyGate = gateID of the faulty gate's fanin array
 	const ParallelValue &faultyGateGoodSimLow = pCircuit_->circuitGates_[faultyGate].goodSimLow_;
 	const ParallelValue &faultyGateGoodSimHigh = pCircuit_->circuitGates_[faultyGate].goodSimHigh_;
 
@@ -416,7 +417,7 @@ void Simulator::parallelPatternReset()
 bool Simulator::parallelPatternCheckActivation(const Fault *const pfault)
 {
 	const int &faultyGate = pfault->faultyLine_ == 0 ? pfault->gateID_ : pCircuit_->circuitGates_[pfault->gateID_].faninVector_[pfault->faultyLine_ - 1];
-	/// if output fault,fg=ID of the faulty gate,else if input fault,fg=ID of the faulty gate's fanin array
+	/// if output fault,faultyGate = gateID of the faulty gate,else if input fault,faultyGate = gateID of the faulty gate's fanin array
 	const ParallelValue &faultyGateGoodSimLow = pCircuit_->circuitGates_[faultyGate].goodSimLow_;
 	const ParallelValue &faultyGateGoodSimHigh = pCircuit_->circuitGates_[faultyGate].goodSimHigh_;
 

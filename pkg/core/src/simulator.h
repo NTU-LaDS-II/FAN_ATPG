@@ -83,9 +83,9 @@ namespace CoreNs
 				activated_(PARA_L),
 				events_(pCircuit->totalLvl_),
 				processed_(pCircuit->totalGate_, 0),
-				recover_(pCircuit->totalGate_),
-				faultInjectL_(pCircuit->totalGate_, std::array<ParallelValue, 5>({0, 0, 0, 0, 0})),
-				faultInjectH_(pCircuit->totalGate_, std::array<ParallelValue, 5>({0, 0, 0, 0, 0}))
+				recoverGates_(pCircuit->totalGate_),
+				faultInjectLow_(pCircuit->totalGate_, std::array<ParallelValue, 5>({0, 0, 0, 0, 0})),
+				faultInjectHigh_(pCircuit->totalGate_, std::array<ParallelValue, 5>({0, 0, 0, 0, 0}))
 	{
 	}
 
@@ -294,14 +294,14 @@ namespace CoreNs
 		const int fanin3 = pCircuit_->circuitGates_[gateID].numFI_ > 2 ? pCircuit_->circuitGates_[gateID].faninVector_[2] : 0;
 		const int fanin4 = pCircuit_->circuitGates_[gateID].numFI_ > 3 ? pCircuit_->circuitGates_[gateID].faninVector_[3] : 0;
 		// read value of fanin with fault masking
-		const ParallelValue l1 = (pCircuit_->circuitGates_[fanin1].faultSimLow_ & ~faultInjectH_[i][1]) | faultInjectL_[i][1];
-		const ParallelValue h1 = (pCircuit_->circuitGates_[fanin1].faultSimHigh_ & ~faultInjectL_[i][1]) | faultInjectH_[i][1];
-		const ParallelValue l2 = (pCircuit_->circuitGates_[fanin2].faultSimLow_ & ~faultInjectH_[i][2]) | faultInjectL_[i][2];
-		const ParallelValue h2 = (pCircuit_->circuitGates_[fanin2].faultSimHigh_ & ~faultInjectL_[i][2]) | faultInjectH_[i][2];
-		const ParallelValue l3 = (pCircuit_->circuitGates_[fanin3].faultSimLow_ & ~faultInjectH_[i][3]) | faultInjectL_[i][3];
-		const ParallelValue h3 = (pCircuit_->circuitGates_[fanin3].faultSimHigh_ & ~faultInjectL_[i][3]) | faultInjectH_[i][3];
-		const ParallelValue l4 = (pCircuit_->circuitGates_[fanin4].faultSimLow_ & ~faultInjectH_[i][4]) | faultInjectL_[i][4];
-		const ParallelValue h4 = (pCircuit_->circuitGates_[fanin4].faultSimHigh_ & ~faultInjectL_[i][4]) | faultInjectH_[i][4];
+		const ParallelValue l1 = (pCircuit_->circuitGates_[fanin1].faultSimLow_ & ~faultInjectHigh_[gateID][1]) | faultInjectLow_[gateID][1];
+		const ParallelValue h1 = (pCircuit_->circuitGates_[fanin1].faultSimHigh_ & ~faultInjectLow_[gateID][1]) | faultInjectHigh_[gateID][1];
+		const ParallelValue l2 = (pCircuit_->circuitGates_[fanin2].faultSimLow_ & ~faultInjectHigh_[gateID][2]) | faultInjectLow_[gateID][2];
+		const ParallelValue h2 = (pCircuit_->circuitGates_[fanin2].faultSimHigh_ & ~faultInjectLow_[gateID][2]) | faultInjectHigh_[gateID][2];
+		const ParallelValue l3 = (pCircuit_->circuitGates_[fanin3].faultSimLow_ & ~faultInjectHigh_[gateID][3]) | faultInjectLow_[gateID][3];
+		const ParallelValue h3 = (pCircuit_->circuitGates_[fanin3].faultSimHigh_ & ~faultInjectLow_[gateID][3]) | faultInjectHigh_[gateID][3];
+		const ParallelValue l4 = (pCircuit_->circuitGates_[fanin4].faultSimLow_ & ~faultInjectHigh_[gateID][4]) | faultInjectLow_[gateID][4];
+		const ParallelValue h4 = (pCircuit_->circuitGates_[fanin4].faultSimHigh_ & ~faultInjectLow_[gateID][4]) | faultInjectHigh_[gateID][4];
 		// evaluate faulty value of gate's output
 		switch (pCircuit_->circuitGates_[gateID].gateType_)
 		{
