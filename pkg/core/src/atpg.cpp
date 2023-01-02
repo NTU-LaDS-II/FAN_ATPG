@@ -19,7 +19,7 @@ using namespace CoreNs;
 //            ]
 // Date       [ Ver. 1.0 started 2013/08/13 ]
 // **************************************************************************
-void Atpg::generatePatternSet(PatternProcessor *pPatternProcessor, FaultListExtract *pFaultListExtractor, bool MTODTC)
+void Atpg::generatePatternSet(PatternProcessor *pPatternProcessor, FaultListExtract *pFaultListExtractor, bool isMFODTC)
 {
 	Fault *pCurrentFault = NULL;
 	FaultPtrList originalFaultPtrListForPatternGeneration, reorderedFaultPtrListForPatternGeneration;
@@ -34,7 +34,6 @@ void Atpg::generatePatternSet(PatternProcessor *pPatternProcessor, FaultListExtr
 		{
 			originalFaultPtrListForPatternGeneration.push_back(pFault);
 			reorderedFaultPtrListForPatternGeneration.push_back(pFault);
-			// faultPtrListForStaticTestCompression.push_back(pFault); // save a copy for static test compression
 		}
 	}
 
@@ -45,7 +44,7 @@ void Atpg::generatePatternSet(PatternProcessor *pPatternProcessor, FaultListExtr
 	// if the fault is undetected, run ATPG on it
 	const double faultPtrListSize = (double)(originalFaultPtrListForPatternGeneration.size());
 	const int halfListSize = faultPtrListSize / 2.0;
-	const int iterations = MTODTC ? (log2(faultPtrListSize) + 1) : 1;
+	const int iterations = isMFODTC ? (log2(faultPtrListSize) + 1) : 1;
 	int minNumOfFaultsLeft = INFINITE;
 	int numOfAtpgUntestableFaults = 0;
 	std::vector<Pattern> bestTestPatternSet;
@@ -210,7 +209,7 @@ void Atpg::calculateGateDepthFromPO()
 // **************************************************************************
 void Atpg::identifyGateLineType()
 {
-	numOfHeadLines = 0;
+	numOfheadLines_ = 0;
 
 	for (const Gate &gate : pCircuit_->circuitGates_)
 	{
@@ -234,7 +233,7 @@ void Atpg::identifyGateLineType()
 		if ((gateID_to_lineType_[gateID] == FREE_LINE) && (gate.numFO_ != 1))
 		{
 			gateID_to_lineType_[gateID] = HEAD_LINE;
-			++numOfHeadLines;
+			++numOfheadLines_;
 		}
 
 		// check it is HEAD_LINE or not(rule 2)
@@ -245,14 +244,14 @@ void Atpg::identifyGateLineType()
 				if (gateID_to_lineType_[fanInGateID] == FREE_LINE)
 				{
 					gateID_to_lineType_[fanInGateID] = HEAD_LINE;
-					++numOfHeadLines;
+					++numOfheadLines_;
 				}
 			}
 		}
 	}
 
 	// store all head lines to array headLineGateIDs_
-	headLineGateIDs_.reserve(numOfHeadLines);
+	headLineGateIDs_.reserve(numOfheadLines_);
 
 	int count = 0;
 	for (const Gate &gate : pCircuit_->circuitGates_)
@@ -262,7 +261,7 @@ void Atpg::identifyGateLineType()
 			headLineGateIDs_.push_back(gate.gateId_);
 			++count;
 		}
-		if (count == numOfHeadLines)
+		if (count == numOfheadLines_)
 		{
 			break;
 		}
@@ -1837,7 +1836,7 @@ void Atpg::justifyFreeLines(Fault &originalFault)
 	}
 
 	// scan each HEADLINE
-	for (int i = 0; i < numOfHeadLines; ++i)
+	for (int i = 0; i < numOfheadLines_; ++i)
 	{
 		Gate *pGate = &pCircuit_->circuitGates_[headLineGateIDs_[i]];
 		if (pGate->prevAtpgValStored_ == pGate->atpgVal_)

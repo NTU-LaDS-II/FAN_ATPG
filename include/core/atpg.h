@@ -68,18 +68,18 @@ namespace CoreNs
 		};
 
 		// class Atpg main method
-		void generatePatternSet(PatternProcessor *pPatternProcessor, FaultListExtract *pFaultListExtractor, bool MTODTC);
+		void generatePatternSet(PatternProcessor *pPatternProcessor, FaultListExtract *pFaultListExtractor, bool isMFODTC);
 
 	private:
-		int numOfHeadLines;																				// number of headlines
 		Circuit *pCircuit_;																				// the circuit built on read verilog
 		Simulator *pSimulator_;																		// the simulator based on the built circuit
 		Fault currentTargetFault_;																// current target fault for generateSinglePatternOnTargetFault
 		Fault currentTargetHeadLineFault_;												// current equivalent headline fault of target currentTargetFault_
+		int numOfheadLines_;																			// number of headlines
+		std::vector<int> headLineGateIDs_;												// all the head line gateID in the circuit
 		std::vector<int> gateID_to_n0_;														// gateID's n0_ value for multiple backtracing
 		std::vector<int> gateID_to_n1_;														// gateID's n1_ value for multiple backtracing
 		std::vector<int> gateID_to_valModified_;									// indicate whether the gate has been backtraced or implied, true means the gate has been modified
-		std::vector<int> headLineGateIDs_;												// all the head line gateID in the circuit
 		std::vector<int> gateID_to_reachableByTargetFault_;				// 1 means this fanout is in fanout cone of target fault, 0 otherwise
 		std::vector<GATE_LINE_TYPE> gateID_to_lineType_;					// array of line types for all gates, i.e. FREE, HEAD, BOUND
 		std::vector<XPATH_STATE> gateID_to_xPathStatus_;					// gateID to its xPathStatus, i.e. XPATH_EXIST, NO_XPATH_EXIST, UNKNOWN
