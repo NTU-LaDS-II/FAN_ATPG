@@ -984,6 +984,7 @@ bool ReportStatsCmd::exec(const std::vector<std::string> &argv)
 		npat = fanMgr_->pcoll->patternVector_.size();
 	}
 
+	size_t numCollapsedFaults = 0;
 	size_t fu = 0;
 	size_t ud = 0;
 	size_t dt = 0;
@@ -996,6 +997,7 @@ bool ReportStatsCmd::exec(const std::vector<std::string> &argv)
 	FaultPtrListIter it = fanMgr_->fListExtract->faultsInCircuit_.begin();
 	for (; it != fanMgr_->fListExtract->faultsInCircuit_.end(); ++it)
 	{
+		++numCollapsedFaults;
 		int eq = (*it)->equivalent_;
 		fu += eq;
 		switch ((*it)->faultState_)
@@ -1039,6 +1041,7 @@ bool ReportStatsCmd::exec(const std::vector<std::string> &argv)
 	std::cout << "#  Fault classes                             #faults\n";
 	std::cout << "#  ----------------------------  -------------------\n";
 	std::cout << "#    FU (full)                   " << std::setw(19) << fu << "\n";
+	std::cout << "#    FU (collapsed)              " << std::setw(19) << numCollapsedFaults << "\n";
 	std::cout << "#    --------------------------  -------------------\n";
 	std::cout << "#    UD (undetected)             " << std::setw(19) << ud << "\n";
 	std::cout << "#    PT (possibly testable)      " << std::setw(19) << pt << "\n";
@@ -1247,11 +1250,11 @@ bool RunFaultSimCmd::exec(const std::vector<std::string> &argv)
 
 	if (optMgr_.isFlagSet("m") && optMgr_.getFlagVar("m") == "pf")
 	{
-		fanMgr_->sim->parallelFaultFaultSimWithMultiplePattern(fanMgr_->pcoll, fanMgr_->fListExtract);
+		fanMgr_->sim->parallelFaultFaultSimWithAllPattern(fanMgr_->pcoll, fanMgr_->fListExtract);
 	}
 	else
 	{
-		fanMgr_->sim->parallelPatternFaultSimWithPattern(fanMgr_->pcoll, fanMgr_->fListExtract);
+		fanMgr_->sim->parallelPatternFaultSimWithAllPattern(fanMgr_->pcoll, fanMgr_->fListExtract);
 	}
 
 	TmStat stat;

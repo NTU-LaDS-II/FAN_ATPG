@@ -16,7 +16,6 @@
 #include "pattern.h"
 #include "fault.h"
 #include "logic.h"
-// TODO comment for each attribute
 
 namespace CoreNs
 {
@@ -35,31 +34,34 @@ namespace CoreNs
 		void eventFaultSim();
 
 		// parallel fault simulator
-		void parallelFaultFaultSimWithMultiplePattern(PatternProcessor *pPatternCollector, FaultListExtract *pFaultListExtract);
+		void parallelFaultFaultSimWithAllPattern(PatternProcessor *pPatternCollector, FaultListExtract *pFaultListExtract);
 		void parallelFaultFaultSimWithOnePattern(const Pattern &pattern, FaultPtrList &remainingFaults);
 		void parallelFaultFaultSim(FaultPtrList &remainingFaults);
 
 		// parallel pattern simulator
 		void parallelPatternGoodSimWithAllPattern(PatternProcessor *pPatternCollector);
-		void parallelPatternFaultSimWithPattern(PatternProcessor *pPatternCollector, FaultListExtract *pFaultListExtract);
+		void parallelPatternFaultSimWithAllPattern(PatternProcessor *pPatternCollector, FaultListExtract *pFaultListExtract);
 		void parallelPatternFaultSim(FaultPtrList &remainingFaults);
 
 	private:
-		// used by both parallel pattern and parallel fault
-		Circuit *pCircuit_;
-		int numDetection_; // for n-detect
-		int numRecover_;	 // number of recovers needed
-		FaultPtrListIter injectedFaults_[WORD_SIZE];
-		int numInjectedFaults_;
-		ParallelValue activated_;
-		std::vector<std::stack<int>> events_;
-		std::vector<int> processed_;		// array of processed flags.  TRUE means this gate is processed
-		std::vector<int> recoverGates_; // array of gates to be recovered from the last fault injection
+		// used by both parallel fault and parallel pattern simulation
+		Circuit *pCircuit_;                          // The circuit use in simulator
+		int numDetection_;                           // for n-detect
+		int numRecover_;                             // number of recovers needed
+		std::vector<std::stack<int>> events_;        // The event stacks for every circuit levels
+		std::vector<int> processed_;                 // array of processed flags.  TRUE means this gate is processed
+		std::vector<int> recoverGates_;              // array of gates to be recovered from the last fault injection
 		//  this is to inject fault into the circuit
 		//  faultInjectLow_ = 1 faultInjectHigh_ = 0 inject a stuck-at zero fault
 		//  We use 5 ParallelValue since a gate have 1 fanout and at most 4 fanin
 		std::vector<std::array<ParallelValue, 5>> faultInjectLow_;
 		std::vector<std::array<ParallelValue, 5>> faultInjectHigh_;
+
+		// used by parallel fault simulation
+		FaultPtrListIter injectedFaults_[WORD_SIZE]; // The injected faults, used for erase detected faults
+		int numInjectedFaults_;                      // The number of injected faults
+		// used by parallel pattern simulation
+		ParallelValue activated_;                    // In parallel pattern, this record which pattern is activated
 
 		// functions for parallel fault simulator
 		void parallelFaultReset();
@@ -71,8 +73,8 @@ namespace CoreNs
 		void parallelPatternReset();
 		bool parallelPatternCheckActivation(const Fault *const pfault);
 		void parallelPatternFaultInjection(const Fault *const pfault);
-		void parallelPatternCheckDetection(Fault *const f);
-		void parallelPatternSetPattern(PatternProcessor *pcoll, const int &i);
+		void parallelPatternCheckDetection(Fault *const pfault);
+		void parallelPatternSetPattern(PatternProcessor *pPatternProcessor, const int &patternStartIndex);
 	};
 
 	inline Simulator::Simulator(Circuit *pCircuit)
