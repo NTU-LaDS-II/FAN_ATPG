@@ -44,6 +44,7 @@ void Atpg::generatePatternSet(PatternProcessor *pPatternProcessor, FaultListExtr
 	// if the fault is undetected, run ATPG on it
 	const double faultPtrListSize = (double)(originalFaultPtrListForPatternGeneration.size());
 	const int halfListSize = faultPtrListSize / 2.0;
+	isMFODTC = (pPatternProcessor->dynamicCompression_ == PatternProcessor::ON) ? isMFODTC : false;
 	const int iterations = isMFODTC ? (log2(faultPtrListSize) + 1) : 1;
 	int minNumOfFaultsLeft = INFINITE;
 	int numOfAtpgUntestableFaults = 0;
