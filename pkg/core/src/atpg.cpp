@@ -19,10 +19,10 @@ using namespace CoreNs;
 //            ]
 // Date       [ Ver. 1.0 started 2013/08/13 ]
 // **************************************************************************
-void Atpg::generatePatternSet(PatternProcessor *pPatternProcessor, FaultListExtract *pFaultListExtractor, bool isMFODTC)
+void Atpg::generatePatternSet(PatternProcessor *pPatternProcessor, FaultListExtract *pFaultListExtractor, bool isMFO)
 {
 	Fault *pCurrentFault = NULL;
-	FaultPtrList originalFaultPtrListForPatternGeneration, reorderedFaultPtrListForPatternGeneration;
+	FaultPtrList prevOrderFaultPtrList, newOrderFaultPtrList, newOrderFaultPtrListForSTC;
 	setupCircuitParameter();
 	pPatternProcessor->init(pCircuit_);
 
@@ -32,109 +32,110 @@ void Atpg::generatePatternSet(PatternProcessor *pPatternProcessor, FaultListExtr
 		const bool faultIsQualified = (pFault->faultState_ != Fault::DT && pFault->faultState_ != Fault::RE && pFault->faultyLine_ >= 0);
 		if (faultIsQualified)
 		{
-			originalFaultPtrListForPatternGeneration.push_back(pFault);
-			reorderedFaultPtrListForPatternGeneration.push_back(pFault);
+			prevOrderFaultPtrList.push_back(pFault);
+			newOrderFaultPtrList.push_back(pFault);
+			newOrderFaultPtrListForSTC.push_back(pFault);
 		}
 	}
 
-	// To test clearAllFaultEffectByEvaluation
-	// testClearFaultEffect(originalFaultPtrListForPatternGeneration); // removed for now seems like debug usage, by wang
+	// testClearFaultEffect(prevOrderFaultPtrList); // only used for debug
 
-	// start ATPG, take one undetected fault from the reorderedFaultPtrListForPatternGeneration
-	// if the fault is undetected, run ATPG on it
-	const double faultPtrListSize = (double)(originalFaultPtrListForPatternGeneration.size());
+	const double faultPtrListSize = (double)(prevOrderFaultPtrList.size());
 	const int halfListSize = faultPtrListSize / 2.0;
-	isMFODTC = (pPatternProcessor->dynamicCompression_ == PatternProcessor::ON) ? isMFODTC : false;
-	const int iterations = isMFODTC ? (log2(faultPtrListSize) + 1) : 1;
-	int minNumOfFaultsLeft = INFINITE;
+	// isMFO is always false if DTC is not turned on
+	isMFO = (pPatternProcessor->dynamicCompression_ == PatternProcessor::ON) ? isMFO : false;
+	const int faultListReorderTimes = isMFO ? (log2(faultPtrListSize) + 1) : 1;
 	int numOfAtpgUntestableFaults = 0;
+	int minNumOfFaultsLeft = INFINITE;
+	// record pattern set when lower undetected fault/ lower test length with same undetected fault
 	std::vector<Pattern> bestTestPatternSet;
-	for (int i = 0; i < iterations; ++i)
+	for (int i = 0; i < faultListReorderTimes; ++i)
 	{
-		std::cerr << i << "th reorder\n";
 		numOfAtpgUntestableFaults = 0;
+		// no need to reorder for the first iteration
 		if (i != 0)
 		{
-			reorderedFaultPtrListForPatternGeneration.assign(originalFaultPtrListForPatternGeneration.begin(), originalFaultPtrListForPatternGeneration.end());
-			FaultPtrListIter it = reorderedFaultPtrListForPatternGeneration.begin();
+			// set up new fault list order
+			newOrderFaultPtrList.assign(prevOrderFaultPtrList.begin(), prevOrderFaultPtrList.end());
+			FaultPtrListIter it = newOrderFaultPtrList.begin();
+			// start folding the fault list
 			for (int j = 0; j < halfListSize; ++j)
 			{
-				reorderedFaultPtrListForPatternGeneration.insert(it, reorderedFaultPtrListForPatternGeneration.back());
-				reorderedFaultPtrListForPatternGeneration.pop_back();
+				newOrderFaultPtrList.insert(it, newOrderFaultPtrList.back());
+				newOrderFaultPtrList.pop_back();
 				++it;
 			}
-			for (Fault *pFault : reorderedFaultPtrListForPatternGeneration)
+			// reinitialize the faults in fault list
+			for (Fault *pFault : newOrderFaultPtrList)
 			{
 				pFault->detection_ = 0;
 				pFault->faultState_ = Fault::UD;
 			}
-			originalFaultPtrListForPatternGeneration.assign(reorderedFaultPtrListForPatternGeneration.begin(), reorderedFaultPtrListForPatternGeneration.end());
+
+			// save the fault order for next new fault list order generation
+			prevOrderFaultPtrList.assign(newOrderFaultPtrList.begin(), newOrderFaultPtrList.end());
+			// save a fault list order for static test compression for this iteration
+			newOrderFaultPtrListForSTC.assign(newOrderFaultPtrList.begin(), newOrderFaultPtrList.end());
 		}
 		pPatternProcessor->patternVector_.clear();
-		// pPatternProcessor->patternVector_.reserve(MAX_LIST_SIZE);
-		while (!reorderedFaultPtrListForPatternGeneration.empty())
+		pPatternProcessor->patternVector_.reserve(MAX_LIST_SIZE);
+
+		// start ATPG
+		while (!newOrderFaultPtrList.empty())
 		{
-			// if the reorderedFaultPtrListForPatternGeneration is already left with aborted fault
-			if (reorderedFaultPtrListForPatternGeneration.front()->faultState_ == Fault::AB)
+			// meaning the newOrderFaultPtrList is already left with aborted fault
+			if (newOrderFaultPtrList.front()->faultState_ == Fault::AB)
 			{
 				break;
 			}
 
 			// the fault is not popped in previous call of StuckAtFaultATPG()
-			// => the fault is neither aborted or untestable => a pattern was found => detected fault
-			if (pCurrentFault == reorderedFaultPtrListForPatternGeneration.front())
+			// => the fault is neither aborted nor untestable => a pattern was found => detected fault
+			if (pCurrentFault == newOrderFaultPtrList.front())
 			{
-				reorderedFaultPtrListForPatternGeneration.front()->faultState_ = Fault::DT;
-				reorderedFaultPtrListForPatternGeneration.pop_front();
+				newOrderFaultPtrList.front()->faultState_ = Fault::DT;
+				newOrderFaultPtrList.pop_front();
 				continue;
 			}
 
-			pCurrentFault = reorderedFaultPtrListForPatternGeneration.front();
+			pCurrentFault = newOrderFaultPtrList.front();
 			const bool isTransitionDelayFault = (pCurrentFault->faultType_ == Fault::STR || pCurrentFault->faultType_ == Fault::STF);
 			if (isTransitionDelayFault)
 			{
-				TransitionDelayFaultATPG(reorderedFaultPtrListForPatternGeneration, pPatternProcessor, numOfAtpgUntestableFaults);
+				TransitionDelayFaultATPG(newOrderFaultPtrList, pPatternProcessor, numOfAtpgUntestableFaults);
 			}
 			else
 			{
-				StuckAtFaultATPG(reorderedFaultPtrListForPatternGeneration, pPatternProcessor, numOfAtpgUntestableFaults);
+				StuckAtFaultATPG(newOrderFaultPtrList, pPatternProcessor, numOfAtpgUntestableFaults);
 			}
 		}
+		if (pPatternProcessor->staticCompression_ == PatternProcessor::ON)
+		{
+			staticTestCompressionByReverseFaultSimulation(pPatternProcessor, newOrderFaultPtrListForSTC);
+		}
 
-		int currNumOfFaultsLeft = numOfAtpgUntestableFaults;
-		for (Fault *pFault : reorderedFaultPtrListForPatternGeneration)
+		// finsh calculation equivalent faults left
+		for (Fault *pFault : newOrderFaultPtrList)
 		{
-			currNumOfFaultsLeft += pFault->equivalent_;
+			numOfAtpgUntestableFaults += pFault->equivalent_;
 		}
-		if (i == 0)
-		{
+
+		if (numOfAtpgUntestableFaults < minNumOfFaultsLeft)
+		{// better fault coverage
 			bestTestPatternSet = pPatternProcessor->patternVector_;
-			minNumOfFaultsLeft = currNumOfFaultsLeft;
-			std::cerr << "Undetected Fault Count: " << currNumOfFaultsLeft << "\n";
-			std::cerr << "Test Length: " << bestTestPatternSet.size() << "\n";
+			minNumOfFaultsLeft = numOfAtpgUntestableFaults;
 		}
-		else if (currNumOfFaultsLeft < minNumOfFaultsLeft)
+		else if (numOfAtpgUntestableFaults == minNumOfFaultsLeft)
 		{
-			bestTestPatternSet = pPatternProcessor->patternVector_;
-			minNumOfFaultsLeft = currNumOfFaultsLeft;
-			std::cerr << "Undetected Fault Count: " << currNumOfFaultsLeft << "\n";
-			std::cerr << "Test Length: " << bestTestPatternSet.size() << "\n";
-		}
-		else if (currNumOfFaultsLeft == minNumOfFaultsLeft)
-		{
+			// less test length with same fault coverage
 			if (pPatternProcessor->patternVector_.size() < bestTestPatternSet.size())
 			{
 				bestTestPatternSet = pPatternProcessor->patternVector_;
-				std::cerr << "Undetected Fault Count: " << currNumOfFaultsLeft << "\n";
-				std::cerr << "Test Length: " << bestTestPatternSet.size() << "\n";
 			}
 		}
 	}
+	// assign the patternset to the best one at last
 	pPatternProcessor->patternVector_ = bestTestPatternSet;
-	if (pPatternProcessor->staticCompression_ == PatternProcessor::ON)
-	{
-		staticTestCompressionByReverseFaultSimulation(pPatternProcessor, originalFaultPtrListForPatternGeneration);
-	}
 }
 
 // **************************************************************************

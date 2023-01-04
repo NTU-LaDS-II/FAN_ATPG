@@ -832,7 +832,7 @@ namespace CoreNs
 	// 		FaultList fault_;
 	// 	};
 
-	// 	inline Vertex::Vertex()
+	// 	inline ::Vertex()
 	// 	{
 	// 		data_ = NULL;
 	// 	}
@@ -843,7 +843,7 @@ namespace CoreNs
 	// 		fault_.push_back(fault);
 	// 	}
 
-	// 	inline Vertex::~Vertex()
+	// 	inline ::~Vertex()
 	// 	{
 	// 		delete[] data_;
 	// 		fault_.clear();
