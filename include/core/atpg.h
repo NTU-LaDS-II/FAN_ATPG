@@ -75,7 +75,7 @@ namespace CoreNs
 		Simulator *pSimulator_;																		// the simulator based on the built circuit
 		Fault currentTargetFault_;																// current target fault for generateSinglePatternOnTargetFault
 		Fault currentTargetHeadLineFault_;												// current equivalent headline fault of target currentTargetFault_
-		int numOfheadLines_;																			// number of headlines
+		int numOfHeadLines_;																			// number of headlines
 		std::vector<int> headLineGateIDs_;												// all the head line gateID in the circuit
 		std::vector<int> gateID_to_n0_;														// gateID's n0_ value for multiple backtracing
 		std::vector<int> gateID_to_n1_;														// gateID's n1_ value for multiple backtracing

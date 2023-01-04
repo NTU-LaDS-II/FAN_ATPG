@@ -299,16 +299,16 @@ namespace CoreNs
 		{
 			int i = it->first.first;
 			int j = it->first.second;
-			int similararityCount = 0;
+			int similarityCount = 0;
 			for (size_t k = 0; k < size; ++k)
 			{
 				// if(mergeRecord[k]){continue;}
 				if (patternTable[i * size + k] && patternTable[i * size + k] == patternTable[j * size + k])
 				{
-					++similararityCount;
+					++similarityCount;
 				}
 			}
-			it->second = similararityCount;
+			it->second = similarityCount;
 		}
 
 		while (!patternCandidate.empty())
@@ -461,12 +461,12 @@ namespace CoreNs
 			for(Pattern_table::iterator it = patternCandidate.begin(); it !=patternCandidate.end(); ++it){
 					int i = it->first.first;
 					int j = it->first.second;
-					int similararityCount = 0;
+					int similarityCount = 0;
 					for(int k = 0; k<size;++k){
 							if(mergeRecord[k]){continue;}
-							if(patternTable[i*size+k] && patternTable[i*size+k]==patternTable[j*size+k]){++similararityCount;}
+							if(patternTable[i*size+k] && patternTable[i*size+k]==patternTable[j*size+k]){++similarityCount;}
 					}
-					it->second = similararityCount;
+					it->second = similarityCount;
 					//std::cout<<"PAT "<<i<<" "<<j<<" "<<it->second<<std::endl;
 			}
 			*/
@@ -505,7 +505,7 @@ namespace CoreNs
 							Pattern_table::iterator it = patternCandidate.find(temp_pair);
 							if (it != patternCandidate.end())
 							{
-								int similararityCount = 0;
+								int similarityCount = 0;
 								for (size_t b = 0; b < size; ++b)
 								{
 									if (mergeRecord[b])
@@ -514,10 +514,10 @@ namespace CoreNs
 									}
 									if (patternTable[i * size + b] && patternTable[i * size + b] == patternTable[j * size + b])
 									{
-										++similararityCount;
+										++similarityCount;
 									}
 								}
-								it->second = similararityCount;
+								it->second = similarityCount;
 							}
 						}
 					}
@@ -557,16 +557,16 @@ namespace CoreNs
 	// 	{
 	// 		int i = it->first.first;
 	// 		int j = it->first.second;
-	// 		int similararityCount = 0;
+	// 		int similarityCount = 0;
 	// 		for (int k = 0; k < size; ++k)
 	// 		{
 	// 			// if(mergeRecord[k]){continue;}
 	// 			if (patternTable[i * size + k] && patternTable[i * size + k] == patternTable[j * size + k])
 	// 			{
-	// 				++similararityCount;
+	// 				++similarityCount;
 	// 			}
 	// 		}
-	// 		it->second = similararityCount;
+	// 		it->second = similarityCount;
 	// 		// std::cout<<"PAT "<<i<<" "<<j<<" "<<it->second<<std::endl;
 	// 	}
 
@@ -752,12 +752,12 @@ namespace CoreNs
 	// 		for(Pattern_table::iterator it = patternCandidate.begin(); it !=patternCandidate.end(); ++it){
 	// 				int i = it->first.first;
 	// 				int j = it->first.second;
-	// 				int similararityCount = 0;
+	// 				int similarityCount = 0;
 	// 				for(int k = 0; k<size;++k){
 	// 						if(mergeRecord[k]){continue;}
-	// 						if(patternTable[i*size+k] && patternTable[i*size+k]==patternTable[j*size+k]){++similararityCount;}
+	// 						if(patternTable[i*size+k] && patternTable[i*size+k]==patternTable[j*size+k]){++similarityCount;}
 	// 				}
-	// 				it->second = similararityCount;
+	// 				it->second = similarityCount;
 	// 				//std::cout<<"PAT "<<i<<" "<<j<<" "<<it->second<<std::endl;
 	// 		}
 	// 		*/
@@ -796,7 +796,7 @@ namespace CoreNs
 	// 						Pattern_table::iterator it = patternCandidate.find(temp_pair);
 	// 						if (it != patternCandidate.end())
 	// 						{
-	// 							int similararityCount = 0;
+	// 							int similarityCount = 0;
 	// 							for (int b = 0; b < size; ++b)
 	// 							{
 	// 								if (mergeRecord[b])
@@ -805,16 +805,16 @@ namespace CoreNs
 	// 								}
 	// 								if (patternTable[i * size + b] && patternTable[i * size + b] == patternTable[j * size + b])
 	// 								{
-	// 									++similararityCount;
+	// 									++similarityCount;
 	// 								}
 	// 							}
-	// 							it->second = similararityCount;
+	// 							it->second = similarityCount;
 	// 						}
 	// 					}
 	// 				}
 	// 			}
 	// 		}
-	// 		// std::cout<<"PCSIZE "<<patternCandidate.size()<<std::endl;
+	// 		// std::cout<<"PC SIZE "<<patternCandidate.size()<<std::endl;
 	// 	}
 
 	// 	return true;
