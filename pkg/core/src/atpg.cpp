@@ -590,7 +590,7 @@ void Atpg::TransitionDelayFaultATPG(FaultPtrList &faultPtrListForGen, PatternPro
 // 										the fault is then declared as fault untestable.
 // 								3.	ABORT
 // 										If the Atpg is aborted due to the time of backtracks
-// 										exceeding the BACKTRACK_LIMIT 500 (can be changed 
+// 										exceeding the BACKTRACK_LIMIT 500 (can be changed
 // 										manually in namespace atpg.h::CoreNs).
 //
 // 							arguments:
@@ -662,7 +662,7 @@ void Atpg::StuckAtFaultATPG(FaultPtrList &faultPtrListForGen, PatternProcessor *
 				{
 					if ((pFault->faultType_ == Fault::SA0) || (pFault->faultType_ == Fault::SA1))
 					{
-						setGateAtpgValAndRunImplication((*pGateForActivation), X);
+						setGateAtpgValAndEventDrivenEvaluation((*pGateForActivation), X);
 					}
 					else
 					{
@@ -692,7 +692,7 @@ void Atpg::StuckAtFaultATPG(FaultPtrList &faultPtrListForGen, PatternProcessor *
 				}
 				else
 				{
-					setGateAtpgValAndRunImplication((*pGateForActivation), pGateForActivation->prevAtpgValStored_);
+					setGateAtpgValAndEventDrivenEvaluation((*pGateForActivation), pGateForActivation->prevAtpgValStored_);
 				}
 			}
 		}
@@ -725,7 +725,7 @@ void Atpg::StuckAtFaultATPG(FaultPtrList &faultPtrListForGen, PatternProcessor *
 		numOfAtpgUntestableFaults += faultPtrListForGen.front()->equivalent_;
 		faultPtrListForGen.pop_front();
 	}
-	else if(singlePatternGenerationResult == ABORT)
+	else if (singlePatternGenerationResult == ABORT)
 	{
 		faultPtrListForGen.front()->faultState_ = Fault::AB;
 		faultPtrListForGen.push_back(faultPtrListForGen.front());
@@ -741,9 +741,9 @@ void Atpg::StuckAtFaultATPG(FaultPtrList &faultPtrListForGen, PatternProcessor *
 //                Find and return the gate needed for fault activation, the
 // 								will then went on to be checked if it is possible to be
 // 								used for DTC stage.
-// 
+//
 // 							arguments:
-//              	[in] faultToActivate: The latter fault selected to be 
+//              	[in] faultToActivate: The latter fault selected to be
 // 								activated in DTC stage.
 // 							output:
 // 								The return of this function is a gate pointer pointing to
@@ -768,50 +768,59 @@ Gate *Atpg::getGateForFaultActivation(const Fault &faultToActivate)
 }
 
 // **************************************************************************
-// Function   [ Atpg::setGateAtpgValAndRunImplication ]
-// Commenter  [ CAL ]
+// Function   [ Atpg::setGateAtpgValAndEventDrivenEvaluation ]
+// Commenter  [ CAL WWS ]
 // Synopsis   [ usage:
-//                Directly set the output of a gate to specific value and
-//                run implication by event driven.
-//              in:    void
-//              out:   void
+//                Directly set the output of "gate" to "value" and run
+// 								implication by event driven.
+//
+//              description:
+// 								1.	Call clearEventStack() and set gate.atpgVal_ to "val"
+// 								2.	For each fanout gate of gate, push the gateID into the
+// 										event stack if not in the event stack.
+// 								3.	Do event driven evaluation to update all the gates in
+//										the event stack.
+// 
+// 							arguments:
+// 								[in] gate : The gate to set "val" to.
+// 								[in] val : The "val" to assign to gate.atpgVal_.
 //            ]
 // Date       [ started 2020/07/07    last modified 2020/07/07 ]
 // **************************************************************************
-void Atpg::setGateAtpgValAndRunImplication(Gate &gate, const Value &val)
+void Atpg::setGateAtpgValAndEventDrivenEvaluation(Gate &gate, const Value &val)
 {
-	clearEventStack(false);
+	clearEventStack(false); // false to disable debug mode of clearEventStack
 	gate.atpgVal_ = val;
 	for (const int &fanoutID : gate.fanoutVector_)
 	{
-		Gate &og = this->pCircuit_->circuitGates_[fanoutID];
-		if (this->isInEventStack_[og.gateId_] == 0)
+		Gate &fanoutGate = this->pCircuit_->circuitGates_[fanoutID];
+		if (this->isInEventStack_[fanoutGate.gateId_] == 0)
 		{
-			this->circuitLevel_to_eventStack_[og.numLevel_].push(og.gateId_);
-			this->isInEventStack_[og.gateId_] = 1;
+			this->circuitLevel_to_eventStack_[fanoutGate.numLevel_].push(fanoutGate.gateId_);
+			this->isInEventStack_[fanoutGate.gateId_] = 1;
 		}
 	}
 
 	// event-driven simulation
-	for (int i = gate.numLevel_; i < this->pCircuit_->totalLvl_; ++i)
+	for (int level = gate.numLevel_; level < this->pCircuit_->totalLvl_; ++level)
 	{
-		while (!this->circuitLevel_to_eventStack_[i].empty())
+		while (!(this->circuitLevel_to_eventStack_[level].empty()))
 		{
-			int gateID = this->circuitLevel_to_eventStack_[i].top();
-			this->circuitLevel_to_eventStack_[i].pop();
+			const int gateID = this->circuitLevel_to_eventStack_[level].top();
+			this->circuitLevel_to_eventStack_[level].pop();
 			this->isInEventStack_[gateID] = 0;
 			Gate &currGate = this->pCircuit_->circuitGates_[gateID];
 			Value newValue = evaluateGoodVal(currGate);
 			if (currGate.atpgVal_ != newValue)
 			{
 				currGate.atpgVal_ = newValue;
-				for (int j = 0; j < currGate.numFO_; ++j)
+				for (int fanoutGateID : currGate.fanoutVector_)
 				{
-					Gate &og = this->pCircuit_->circuitGates_[currGate.fanoutVector_[j]];
-					if (this->isInEventStack_[og.gateId_] == 0)
+					const Gate& fanoutGate = this->pCircuit_->circuitGates_[fanoutGateID];
+					if (this->isInEventStack_[fanoutGateID] == 0)
 					{
-						this->circuitLevel_to_eventStack_[og.numLevel_].push(og.gateId_);
-						this->isInEventStack_[og.gateId_] = 1;
+						this->circuitLevel_to_eventStack_[fanoutGate.numLevel_].push(fanoutGateID);
+						this->isInEventStack_[fanoutGateID] = 1;
 					}
 				}
 			}
@@ -2388,7 +2397,7 @@ int Atpg::setFaultyGate(Fault &fault)
 	Value valueTemp;
 	int backwardImplicationLevel = 0;
 	Gate *pFaultyGate = NULL;
-	Gate *pFaultyLine = NULL;											 // pFaultyLine is the gate before the fault (fanin gate of pFaultyGate)
+	Gate *pFaultyLine = NULL;																	 // pFaultyLine is the gate before the fault (fanin gate of pFaultyGate)
 	const bool faultIsAtGateOutput = (fault.faultyLine_ == 0); // if the fault is SA0 or STR, then set faulty value to D (1/0)
 	Value FaultyValue = (fault.faultType_ == Fault::SA0 || fault.faultType_ == Fault::STR) ? D : B;
 

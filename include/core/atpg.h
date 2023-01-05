@@ -110,7 +110,7 @@ namespace CoreNs
 		void StuckAtFaultATPG(FaultPtrList &faultPtrListForGen, PatternProcessor *pPatternProcessor, int &numOfAtpgUntestableFaults);
 
 		Gate *getGateForFaultActivation(const Fault &faultToActivate);
-		void setGateAtpgValAndRunImplication(Gate &gate, const Value &val);
+		void setGateAtpgValAndEventDrivenEvaluation(Gate &gate, const Value &val);
 
 		void resetPrevAtpgValStored();
 		int storeCurrentAtpgVal();
