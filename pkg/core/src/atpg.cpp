@@ -1017,8 +1017,9 @@ void Atpg::clearFaultEffectOnGateAtpgVal(Gate &gate)
 // 																	A pattern is found for target fault.
 // 								FAULT_UNTESTABLE:	The target fault is not detected
 // 																	after all backtracks have ended.
-// 								ABORT: The single pattern generation is aborted due to
-// 									the time of backtracks exceeding the BACKTRACK_LIMIT(500).
+// 								ABORT:	The single pattern generation is aborted due to
+//												the time of backtracks exceeding the
+// 												BACKTRACK_LIMIT(500).
 //            ]
 // Date       [ KOREAL Ver. 1.0 started 2013/08/10 last modified 2023/01/05 ]
 // **************************************************************************
@@ -1202,9 +1203,46 @@ Atpg::SINGLE_PATTERN_GENERATION_STATUS Atpg::generateSinglePatternOnTargetFault(
 // Commenter  [ WWS ]
 // Synopsis   [ usage:
 //                This function replace value of a gate from D/B to H/L.
-// 								
+//
+// 							description:
+// 								First, assign fault to this->currentTargetFault_ for the
+//								future use of other functions.
+// 								Then, assign the faulty gate to pFaultyLine. Initialize
+// 								all the objectives and d-frontiers in Atpg. 
+// 								Initialize the circuit according to the faulty gate.
+// 								IF gFaultyLine is free line,
+// 									Set the value according to Fault.type_.
+// 									SetFreeFaultyGate() to get the equivalent HEADLINE fault.
+// 									Assign this->currentFault_ to the new fault.
+// 									Set BackImpLevel to 0, implyStatus to FORWARD, 
+// 									faultyGateID to the new fault.gateID.
+// 								ELSE
+// 									setFaultyGate() to assign the BackImpLevel and assign 
+// 									the value of fanin gates of pFaultyLineGate and itself.
+// 									Add the faultyGateID to the this->dFrontier_.
+//									Do unique sensitization to pre assign some values and
+// 									then set implyStatus to BACKWARD.
+// 								Last,
+// 									If fault.type_ is STR or STF, setup time frames for 
+// 									transition delay faults.
+// 
 //              arguments:
-// 								[in] targetFault : The target fault used 
+// 								[in] targetFault : The target fault for single pattern
+// 								generation, the faultyLine_ can be at input or output.
+//
+// 								[out] backwardImplicationLevel : The variable reference of
+// 								backward implication level in single pattern generation,
+// 								will be initialized according to the targetFault, and will
+// 								be assigned to 0 if the implicationStatus is FORWARD.
+//
+// 								[out] implicationStatus : The variable reference of
+// 								implication status in single pattern generation which
+// 								indicates whether to do implication FORWARD or BACKWARD
+// 								according to the targetFault.
+//
+// 								[in] isAtStageDTC : Specifying whether this function is
+// 								called in the single pattern generation in DTC stage or
+// 								not.
 //            ]
 // Date       [ last modified 2023/01/05 ]
 // **************************************************************************
@@ -1220,7 +1258,7 @@ Gate *Atpg::initializeForSinglePatternGeneration(Fault &targetFault, int &backwa
 	}
 	initializeObjectivesAndFrontiers();
 	initializeCircuitWithFaultyGate(*pFaultyLineGate, isAtStageDTC);
-	int fGate_id = targetFault.gateID_;
+	int faultyGateID = targetFault.gateID_;
 
 	if (this->gateID_to_lineType_[pFaultyLineGate->gateId_] == FREE_LINE)
 	{
@@ -1238,7 +1276,7 @@ Gate *Atpg::initializeForSinglePatternGeneration(Fault &targetFault, int &backwa
 		this->currentTargetFault_ = this->currentTargetHeadLineFault_;
 		backwardImplicationLevel = 0;
 		implicationStatus = FORWARD;
-		fGate_id = this->currentTargetHeadLineFault_.gateID_;
+		faultyGateID = this->currentTargetHeadLineFault_.gateID_;
 	}
 	else
 	{
@@ -1250,9 +1288,9 @@ Gate *Atpg::initializeForSinglePatternGeneration(Fault &targetFault, int &backwa
 		return NULL;
 	}
 
-	this->dFrontiers_.push_back(fGate_id);
+	this->dFrontiers_.push_back(faultyGateID);
 
-	int Level = doUniquePathSensitization(this->pCircuit_->circuitGates_[fGate_id]);
+	int Level = doUniquePathSensitization(this->pCircuit_->circuitGates_[faultyGateID]);
 	if (Level == UNIQUE_PATH_SENSITIZE_FAIL)
 	{
 		return NULL;
@@ -1278,7 +1316,7 @@ Gate *Atpg::initializeForSinglePatternGeneration(Fault &targetFault, int &backwa
 			implicationStatus = BACKWARD;
 		}
 	}
-	return &(this->pCircuit_->circuitGates_[fGate_id]);
+	return &(this->pCircuit_->circuitGates_[faultyGateID]);
 }
 
 void Atpg::initializeObjectivesAndFrontiers()
