@@ -320,14 +320,14 @@ void Atpg::identifyGateLineType()
 // 								The dominator doesn’t exist when :
 // 									1.	Event stack isn’t empty but we find the PO/PPO in the
 // 											event stack(numFO_ == 0). This implies more than one
-// 										path to PO/PPO. 
+// 										path to PO/PPO.
 // 									2.	Event stack contains a fanout which has no dominator.
 // 								Notice that the gateCount is equal to the number of events
 // 								in the the whole event stack during this function call.
 // 								If we have finished finding the Dominator of the gate,
-// 								or the Dominator doesn't exist, gateCount will be 0 or 
-// 								set to 0. Then, we remove all the remaining events in 
-// 								event stack and go to next iteration(next gate). 
+// 								or the Dominator doesn't exist, gateCount will be 0 or
+// 								set to 0. Then, we remove all the remaining events in
+// 								event stack and go to next iteration(next gate).
 // 								In addition, we check this->gateID_to_valModified_ to avoid
 // 								repeated assignments.
 // Date       [ Ver. 1.0 started 2013/08/13  last modified 2023/01/05 ]
@@ -371,7 +371,7 @@ void Atpg::identifyGateDominator()
 				// event queue (gateCount larger than 1), it means that the gate does
 				// not have any Dominator.  Hence, we will set gateCount to zero as a
 				// signal to clear the gates left in this->circuitLevel_to_eventStack_.
-				// If the this->circuitLevel_to_eventStack_ is not empty but gateCount 
+				// If the this->circuitLevel_to_eventStack_ is not empty but gateCount
 				// is zero, we will continue.
 				if (gDom.numFO_ == 0)
 				{
@@ -431,25 +431,25 @@ void Atpg::identifyGateDominator()
 // 								Do NOT use fRIG in actual code for the sake of readability.
 //
 // 							description:
-// 								We traverse all gates. For each gate, if it has no 
-// 								Dominator, we skip the gate. Now we push its fanout gates 
+// 								We traverse all gates. For each gate, if it has no
+// 								Dominator, we skip the gate. Now we push its fanout gates
 // 								into the event stack.
-// 								Notice that "count" is equal to the number of events in 
+// 								Notice that "count" is equal to the number of events in
 // 								the whole event stack. We check the event stack for levels
-// 								higher than the gate level. In this function, we keep 
+// 								higher than the gate level. In this function, we keep
 // 								adding the fanout of the current gate into the event stack
 // 								to traverse all paths the gate would have to pass to reach
-// 								PO/PPO. Simultaneously we adjust "count" and set the 
+// 								PO/PPO. Simultaneously we adjust "count" and set the
 // 								reachableByDominator of the fanout to current gate.
 // 								Once "count" is 0 (the event stack has only one gate left),
 // 								we should get the Dominator.
-// 								Then we check reachableBtDominator of the fanin of the 
-// 								Dominator. If it is the current gate, then we push the 
+// 								Then we check reachableBtDominator of the fanin of the
+// 								Dominator. If it is the current gate, then we push the
 // 								fanin into this->gateID_to_uniquePath.
 // 								Finally, we go to the next iteration (the next gate).
 //
 //            ]
-// Date       [ Ver. 1.0 started 2013/08/13  last modified 2023/01/03 ]
+// Date       [ Ver. 1.0 started 2013/08/13  last modified 2023/01/05 ]
 // **************************************************************************
 void Atpg::identifyGateUniquePath()
 {
@@ -460,7 +460,7 @@ void Atpg::identifyGateUniquePath()
 		Gate &gate = this->pCircuit_->circuitGates_[i];
 		// Since we will call identifyGateDominator before this function,
 		// a gate's this->gateID_to_uniquePath_ will contain one Dominator.
-		// Hence, we can skip the gates while their 
+		// Hence, we can skip the gates while their
 		// this->gateID_to_uniquePath_ is empty.
 		if (this->gateID_to_uniquePath_[gate.gateId_].empty())
 		{
@@ -473,7 +473,7 @@ void Atpg::identifyGateUniquePath()
 		{
 			// condition: fanout gate was not empty
 			while (!this->circuitLevel_to_eventStack_[j].empty())
-			{ 
+			{
 				Gate &gTmp = this->pCircuit_->circuitGates_[this->circuitLevel_to_eventStack_[j].top()];
 				this->circuitLevel_to_eventStack_[j].pop();
 				this->gateID_to_valModified_[gTmp.gateId_] = 0;
@@ -484,7 +484,7 @@ void Atpg::identifyGateUniquePath()
 					for (int gReachID : gTmp.faninVector_)
 					{
 						// if it is a unique path
-						if (reachableByDominator[gReachID] == i) 
+						if (reachableByDominator[gReachID] == i)
 						{
 							// save gate to this->gateID_to_uniquePath_
 							this->gateID_to_uniquePath_[gate.gateId_].push_back(gReachID);
@@ -503,20 +503,20 @@ void Atpg::identifyGateUniquePath()
 // Commenter  [ HKY CYW WWS ]
 // Synopsis   [ usage: Do transition delay fault model ATPG.
 // 							description:
-// 								This function is implemented very similar to the 
+// 								This function is implemented very similar to the
 // 								StuckAtFaultATPG() except for the following differences.
 // 								1.	The fault model used is transition delay fault instead
 // 										of stuck at fault.
-// 								2.	Dynamic test compression is not implemented for 
+// 								2.	Dynamic test compression is not implemented for
 // 										transition delay fault.
 // 							arguments:
 // 								Please see the documentation of Atpg::StuckAtFaultATPG().
 //            ]
-// Date       [ HKY Ver. 1.0 started 2014/09/01 last modified 2023/01/03 ]
+// Date       [ HKY Ver. 1.0 started 2014/09/01 last modified 2023/01/05 ]
 // **************************************************************************
-void Atpg::TransitionDelayFaultATPG(FaultPtrList &faultListToGen, PatternProcessor *pPatternProcessor, int &numOfAtpgUntestableFaults)
+void Atpg::TransitionDelayFaultATPG(FaultPtrList &faultPtrListForGen, PatternProcessor *pPatternProcessor, int &numOfAtpgUntestableFaults)
 {
-	const Fault &fTDF = *faultListToGen.front();
+	const Fault &fTDF = *faultPtrListForGen.front();
 
 	SINGLE_PATTERN_GENERATION_STATUS singlePatternGenerationResult = generateSinglePatternOnTargetFault(Fault(fTDF.gateID_ + this->pCircuit_->numGate_, fTDF.faultType_, fTDF.faultyLine_, fTDF.equivalent_, fTDF.faultState_), false);
 	if (singlePatternGenerationResult == PATTERN_FOUND)
@@ -531,36 +531,69 @@ void Atpg::TransitionDelayFaultATPG(FaultPtrList &faultListToGen, PatternProcess
 			randomFill(pPatternProcessor->patternVector_.back());
 		}
 
-		this->pSimulator_->parallelFaultFaultSimWithOnePattern(pPatternProcessor->patternVector_.back(), faultListToGen);
+		this->pSimulator_->parallelFaultFaultSimWithOnePattern(pPatternProcessor->patternVector_.back(), faultPtrListForGen);
 		this->pSimulator_->goodSim();
 		writeGoodSimValToPatternPO(pPatternProcessor->patternVector_.back());
 	}
 	else if (singlePatternGenerationResult == FAULT_UNTESTABLE)
 	{
-		faultListToGen.front()->faultState_ = Fault::AU;
-		numOfAtpgUntestableFaults += faultListToGen.front()->equivalent_;
-		faultListToGen.pop_front();
+		faultPtrListForGen.front()->faultState_ = Fault::AU;
+		numOfAtpgUntestableFaults += faultPtrListForGen.front()->equivalent_;
+		faultPtrListForGen.pop_front();
 	}
 	else
 	{
-		faultListToGen.front()->faultState_ = Fault::AB;
-		faultListToGen.push_back(faultListToGen.front());
-		faultListToGen.pop_front();
+		faultPtrListForGen.front()->faultState_ = Fault::AB;
+		faultPtrListForGen.push_back(faultPtrListForGen.front());
+		faultPtrListForGen.pop_front();
 	}
 }
 
 // **************************************************************************
 // Function   [ Atpg::StuckAtFaultATPG ]
-// Commenter  [ CAL ]
-// Synopsis   [ usage: Do stuck at fault model ATPG.
-//              in:    Pattern list, Fault list, int numOfAtpgUntestableFaults
-//              out:   void //add pattern to PatternProcessor*
+// Commenter  [ CAL WWS ]
+// Synopsis   [ usage: Do stuck at fault model ATPG on one fault and do DTC
+// 								on the pattern generated to the single fault if the DTC 
+// 								flag is set to ON.
+// 
+// 							description:
+// 								The first fault pointed to by the first pointer in
+// 								faultPtrListForGen will be selected as the first target
+// 								fault for single pattern generation in this function.
+// 								There will be three possible scenario after the
+// 								single pattern generation on the first selected fault.
+// 								
+// 								
+// 							arguments:
+// 								[in, out] faultPtrListForGen : Current list of fault
+// 								pointers that are pointed to undetected faults. If detected
+// 								when seen as the first selected target fault, it will be 
+// 								dropped immediately by fault simulation. If detected during
+// 								DTC stage the faults will be dropped altogether after DTC.
+// 
+// 								[in, out] pPatternProcessor : A pointer to pattern 
+// 								processor that contains a pattern vector recording the 
+// 								whole pattern set. In this function, the pattern processor
+// 								should already possess the patterns generated for the 
+// 								faults before the current fault. A new Pattern will be
+// 								pushed back to the the pPatternProcessor->patternVector_
+// 								if the fault first selected in this function is detected.
+// 								It will become pPatternProcessor->patternVector_.back().
+// 								Then it will be determined and random XFilled at end of
+// 								the function.
+// 								
+// 								[in, out] numOfAtpgUntestableFaults : It is a reference
+// 								variable for recording the number of equivalent faults
+// 								untestable. Here untestable faults means this function call
+// 								has ended without abortion. If the function is aborted due
+// 								to backtrack time exceeding limit, it is called aborted
+// 								fault which is different to untestable fault.
 //            ]
-// Date       [ started 2020/07/07    last modified 2021/09/14 ]
+// Date       [ started 2020/07/07    last modified 2023/01/05 ]
 // **************************************************************************
-void Atpg::StuckAtFaultATPG(FaultPtrList &faultListToGen, PatternProcessor *pPatternProcessor, int &numOfAtpgUntestableFaults)
+void Atpg::StuckAtFaultATPG(FaultPtrList &faultPtrListForGen, PatternProcessor *pPatternProcessor, int &numOfAtpgUntestableFaults)
 {
-	SINGLE_PATTERN_GENERATION_STATUS singlePatternGenerationResult = generateSinglePatternOnTargetFault(*faultListToGen.front(), false);
+	SINGLE_PATTERN_GENERATION_STATUS singlePatternGenerationResult = generateSinglePatternOnTargetFault(*faultPtrListForGen.front(), false);
 	if (singlePatternGenerationResult == PATTERN_FOUND)
 	{
 		Pattern pattern(this->pCircuit_);
@@ -573,12 +606,13 @@ void Atpg::StuckAtFaultATPG(FaultPtrList &faultListToGen, PatternProcessor *pPat
 
 		if (pPatternProcessor->dynamicCompression_ == PatternProcessor::ON)
 		{
-			FaultPtrList faultListTemp = faultListToGen;
-			this->pSimulator_->parallelFaultFaultSimWithOnePattern(pPatternProcessor->patternVector_.back(), faultListToGen);
+			FaultPtrList faultPtrListForDTC = faultPtrListForGen;
+			// the following function will drop faults detected by the pattern if any
+			this->pSimulator_->parallelFaultFaultSimWithOnePattern(pPatternProcessor->patternVector_.back(), faultPtrListForGen);
 			this->pSimulator_->goodSim();
 			writeGoodSimValToPatternPO(pPatternProcessor->patternVector_.back());
 
-			for (Fault *pFault : faultListTemp)
+			for (Fault *pFault : faultPtrListForDTC)
 			{
 				// skip detected faults
 				if (pFault->faultState_ == Fault::DT)
@@ -608,7 +642,8 @@ void Atpg::StuckAtFaultATPG(FaultPtrList &faultListToGen, PatternProcessor *pPat
 
 				if (xPathExists(pGateForActivation))
 				{
-					// TO-DO homework 05 implement DTC here end of TO-DO
+					// TO-DO homework 05
+					// implement DTC here
 					if (generateSinglePatternOnTargetFault(*pFault, true) == PATTERN_FOUND)
 					{
 						resetPrevAtpgValStored();
@@ -623,6 +658,7 @@ void Atpg::StuckAtFaultATPG(FaultPtrList &faultListToGen, PatternProcessor *pPat
 							gate.atpgVal_ = gate.prevAtpgValStored_;
 						}
 					}
+					// end of TO-DO
 				}
 				else
 				{
@@ -637,34 +673,33 @@ void Atpg::StuckAtFaultATPG(FaultPtrList &faultListToGen, PatternProcessor *pPat
 
 		if (pPatternProcessor->XFill_ == PatternProcessor::ON)
 		{
-			// Randomly fill the pats_.back().
+			// Randomly XFill the last pattern (most recently added pattern).
 			// Note that the v_, gh_, gl_, fh_ and fl_ do not be changed.
 			randomFill(pPatternProcessor->patternVector_.back());
 		}
 
-		//  This function will assign pi/ppi stored in pats_.back() to
-		//  the gh_ and gl_ in each gate, and then it will run fault
-		//  simulation to drop fault.
+		// This function will assign PI/PPI stored in patternVector_.back() to
+		// the gh_ and gl_ in each gate, and then it will run fault simulation
+		// to drop fault.
+		this->pSimulator_->parallelFaultFaultSimWithOnePattern(pPatternProcessor->patternVector_.back(), faultPtrListForGen);
 
-		this->pSimulator_->parallelFaultFaultSimWithOnePattern(pPatternProcessor->patternVector_.back(), faultListToGen);
-
-		// After this->pSimulator_->parallelFaultFaultSimWithOnePattern(pPatternProcessor->patternVector_.back(),faultListToGen) , the pi/ppi
-		// values have been passed to gh_ and gl_ of each gate.  Therefore, we can
-		// directly use "writeGoodSimValToPatternPO" to perform goodSim to get the PoValue.
+		// After parallelFaultFaultSimWithOnePattern(), the PI/PPI values have
+		// been passed to gh_ and gl_ of each gate. Therefore, we can directly
+		// use "writeGoodSimValToPatternPO" to perform goodSim to get the PoValue.
 		this->pSimulator_->goodSim();
 		writeGoodSimValToPatternPO(pPatternProcessor->patternVector_.back());
 	}
 	else if (singlePatternGenerationResult == FAULT_UNTESTABLE)
 	{
-		faultListToGen.front()->faultState_ = Fault::AU;
-		numOfAtpgUntestableFaults += faultListToGen.front()->equivalent_;
-		faultListToGen.pop_front();
+		faultPtrListForGen.front()->faultState_ = Fault::AU;
+		numOfAtpgUntestableFaults += faultPtrListForGen.front()->equivalent_;
+		faultPtrListForGen.pop_front();
 	}
-	else
+	else if(singlePatternGenerationResult == ABORT)
 	{
-		faultListToGen.front()->faultState_ = Fault::AB;
-		faultListToGen.push_back(faultListToGen.front());
-		faultListToGen.pop_front();
+		faultPtrListForGen.front()->faultState_ = Fault::AB;
+		faultPtrListForGen.push_back(faultPtrListForGen.front());
+		faultPtrListForGen.pop_front();
 	}
 }
 

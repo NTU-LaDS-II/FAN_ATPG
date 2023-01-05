@@ -106,8 +106,8 @@ namespace CoreNs
 		void identifyGateDominator();
 		void identifyGateUniquePath();
 
-		void TransitionDelayFaultATPG(FaultPtrList &faultListToGen, PatternProcessor *pPatternProcessor, int &numOfAtpgUntestableFaults);
-		void StuckAtFaultATPG(FaultPtrList &faultListToGen, PatternProcessor *pPatternProcessor, int &numOfAtpgUntestableFaults);
+		void TransitionDelayFaultATPG(FaultPtrList &faultPtrListForGen, PatternProcessor *pPatternProcessor, int &numOfAtpgUntestableFaults);
+		void StuckAtFaultATPG(FaultPtrList &faultPtrListForGen, PatternProcessor *pPatternProcessor, int &numOfAtpgUntestableFaults);
 
 		Gate *getGateForFaultActivation(const Fault &fault);
 		void setGateAtpgValAndRunImplication(Gate &gate, const Value &val);
