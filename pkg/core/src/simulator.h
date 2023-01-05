@@ -98,7 +98,7 @@ namespace CoreNs
 	//              description:
 	//              	Set numDetection_ (default = 1) for n-detect.
 	//              arguments:
-	//              	[in] numDetection : The number ot detection.
+	//              	[in] numDetection : The number of detection.
 	// 						]
 	// Date       [ Ver. 1.0 started 2013/08/18 last modified 2023/01/05 ]
 	// **************************************************************************
@@ -110,9 +110,9 @@ namespace CoreNs
 	// **************************************************************************
 	// Function   [ Simulator::goodSim ]
 	// Commenter  [ CJY, CBH, PYH ]
-	// Synopsis   [ usage: Simulate good value of every gate.
+	// Synopsis   [ usage: Simulate the good value of every gate.
 	//              description:
-	//              	Call goodValueEvaluation function for each gate. Here we use
+	//              	Call the goodValueEvaluation function for each gate. Here we use
 	//              	goodSimLow_ and goodSimHigh_ instead of atpgVal_ in each gate.
 	// 						]
 	// Date       [ Ver. 1.0 started 2013/08/18 last modified 2023/01/05 ]
@@ -128,10 +128,10 @@ namespace CoreNs
 	// **************************************************************************
 	// Function   [ Simulator::goodSimCopyGoodToFault ]
 	// Commenter  [ CJY, CBH,PYH ]
-	// Synopsis   [ usage: Simulate good value of every gate and copy to fault value.
+	// Synopsis   [ usage: Simulate the good value of every gate and copy to the fault value.
 	//              description:
-	//              	Call goodValueEvaluation function for each gate and copy goodsim
-	//              	result to faultsim variable.
+	//              	Call the goodValueEvaluation function for each gate and copy the goodsim
+	//              	result to the faultsim variable.
 	// 						]
 	// Date       [ Ver. 1.0 started 2013/08/18 last modified 2023/01/05 ]
 	// **************************************************************************

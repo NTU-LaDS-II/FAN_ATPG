@@ -14,9 +14,9 @@ using namespace CoreNs;
 // **************************************************************************
 // Function   [ FaultListExtract::extractFaultFromCircuit ]
 // Commenter  [ PYH ]
-// Synopsis   [ usage: Extract faults from the circuit
+// Synopsis   [ usage: Extract faults from the circuit.
 //              description:
-//              	This function extracts uncollapsed faults, and extract collapsed
+//              	This function extracts uncollapsed faults, and extracts collapsed
 //              	faults if needed. The method we use in fault collapsing is
 //              	Simple Equivalent Fault Collapsing. In addition, we calculate
 //              	the number of equivalent faults to recover the original
