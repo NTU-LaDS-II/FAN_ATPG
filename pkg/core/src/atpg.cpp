@@ -14,7 +14,12 @@ using namespace CoreNs;
 // Function   [ Atpg::generatePatternSet ]
 // Commenter  [ CAL, WWS ]
 // Synopsis   [ usage: The main function of class Atpg
-// 							notes:
+// 							description:
+// 								This function generates a test pattern set based on a 
+// 								extracted fault list extracted from the target circuit.
+// 								Activate STC/DTC depending on the pPatternProcessor's flag
+// 								which is set previously in atpg_cmd.cpp based on user's 
+// 								script.
 //
 // 							arguments:
 //
@@ -155,38 +160,33 @@ void Atpg::generatePatternSet(PatternProcessor *pPatternProcessor, FaultListExtr
 
 // **************************************************************************
 // Function   [ Atpg::setupCircuitParameter ]
-// Commenter  [ KOREAL ]
-// Synopsis   [ usage: initialize gate's data including
-//						circuitLevel_to_EventStack_
-//            ]
-// Date       [ KOREAL Ver. 1.0 started 2013/08/10 ]
+// Commenter  [ KOREAL, WWS ]
+// Synopsis   [ usage: Initialize the target circuit's parameters
+// 							descriptions:
+// 								This function set up all the circuits' parameters and gates'
+// 								parameters. Including circuitLevel_to_eventStack. ]
+// Date       [ KOREAL Ver. 1.0 started 2013/08/10 last modified 2023/01/05 ]
 // **************************************************************************
 void Atpg::setupCircuitParameter()
 {
-	// set depthFromPo_
 	calculateGateDepthFromPO();
-
-	// Determine the lineType of a gate is FREE_LINE, BOUND_LINE or HEAD_LINE.
 	identifyGateLineType();
-
-	// see identifyGateDominator()
 	identifyGateDominator();
-
-	// see identifyGateUniquePath()
 	identifyGateUniquePath();
 }
 
 // **************************************************************************
 // Function   [ Atpg::calculateGateDepthFromPO ]
-// Commenter  [ CAL ]
+// Commenter  [ CAL, WWS ]
 // Synopsis   [ usage: Calculate the depthFromPo_ of each gate.
-//              notes:
-//                If there is no path from a gate to PO/PPO,
-//                set its depthFromPo_ as pCircuit_->totalLvl_ + 100
-//              in:    void
-//              out:   void
+//              description:
+// 								This functions calculates the depth (how many gates) from 
+// 								PO/PPO of every gates.
+// 
+// 								This function also initializes the gateID_to_valModified_.
+// 								It should be moved to other places (TODO) for readability.
 //            ]
-// Date       [ started 2020/07/06    last modified 2020/07/06 ]
+// Date       [ started 2020/07/06    last modified 2023/01/05 ]
 // **************************************************************************
 void Atpg::calculateGateDepthFromPO()
 {
@@ -211,7 +211,7 @@ void Atpg::calculateGateDepthFromPO()
 				}
 			}
 		}
-		// else exist no path to output, so default assignment large number
+		// else exist no path to output, so assign depthFromPO_ to INFINITE by default
 	}
 }
 
@@ -219,8 +219,6 @@ void Atpg::calculateGateDepthFromPO()
 // Function   [ Atpg::identifyGateLineType ]
 // Commenter  [ CKY ]
 // Synopsis   [ usage: fill in LineParameter(FREE or HEAD or BOUND)
-//              in:    void //TODO
-//              out:   void //TODO
 //            ]
 // Date       [ CKY Ver. 1.0 commented and finished 2013/08/17 ]
 // **************************************************************************
