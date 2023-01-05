@@ -12,7 +12,7 @@ using namespace CoreNs;
 
 // **************************************************************************
 // Function   [ Circuit::buildCircuit ]
-// Commenter  [ Pan ]
+// Commenter  [ PYH ]
 // Synopsis   [ usage: Map the circuit to our data structure.
 //              description:
 //              	We build the circuit with the input netlist. Also, determine
@@ -64,7 +64,7 @@ bool Circuit::buildCircuit(Netlist *const pNetlist, const int &numFrame,
 
 // **************************************************************************
 // Function   [ Circuit::mapNetlistToCircuit ]
-// Commenter  [ littleshamoo,Pan ]
+// Commenter  [ littleshamoo, PYH ]
 // Synopsis   [ usage: Map cells and ports (in verilog netlist) to gates (in the circuit).
 //              description:
 //              	Call functions to determine some class variables, such as
@@ -85,7 +85,7 @@ void Circuit::mapNetlistToCircuit()
 
 // **************************************************************************
 // Function   [ Circuit::calculateNumGate ]
-// Commenter  [ Pan ]
+// Commenter  [ PYH ]
 // Synopsis   [ usage: Calculate the number of gates in circuit.
 //              description:
 //              	Determine the number of PI, PPI(PPO), PO and combinational
@@ -103,7 +103,7 @@ void Circuit::calculateNumGate()
 	// Map PI to pseudo gates.
 	portIndexToGateIndex_.resize(top->getNPort());
 	numPI_ = 0;
-	for (int i = 0; i < top->getNPort(); ++i)
+	for (int i = 0; i < (int)top->getNPort(); ++i)
 	{
 		if (top->getPort(i)->type_ == Port::INPUT) // Input port
 		{
@@ -120,7 +120,7 @@ void Circuit::calculateNumGate()
 	// A single cell can have more than one gate in it.
 	numPPI_ = 0;
 	cellIndexToGateIndex_.resize(top->getNCell());
-	for (int i = 0; i < top->getNCell(); ++i)
+	for (int i = 0; i < (int)top->getNCell(); ++i)
 	{
 		cellIndexToGateIndex_[i] = numGate_;
 
@@ -140,7 +140,7 @@ void Circuit::calculateNumGate()
 
 	// Map PO to pseudo gates.
 	numPO_ = 0;
-	for (int i = 0; i < top->getNPort(); ++i)
+	for (int i = 0; i < (int)top->getNPort(); ++i)
 	{
 		if (top->getPort(i)->type_ == Port::OUTPUT) // Output port
 		{
@@ -159,7 +159,7 @@ void Circuit::calculateNumGate()
 
 // **************************************************************************
 // Function   [ Circuit::calculateNumNet ]
-// Commenter  [ Pan ]
+// Commenter  [ PYH ]
 // Synopsis   [ usage: Calculate the number of nets in circuit.
 //              description:
 //              	Determine the number of nets in the circuit.
@@ -173,7 +173,7 @@ void Circuit::calculateNumNet()
 
 	numNet_ = 0;
 
-	for (int i = 0; i < top->getNNet(); ++i)
+	for (int i = 0; i < (int)top->getNNet(); ++i)
 	{
 		NetSet eqvs = top->getEqvNets(i);
 		int nports = 0;
@@ -194,7 +194,7 @@ void Circuit::calculateNumNet()
 	}
 
 	// Add internal nets.
-	for (int i = 0; i < top->getNCell(); ++i)
+	for (int i = 0; i < (int)top->getNCell(); ++i)
 	{
 		Cell *cellInTop = top->getCell(i);
 		if (!techlib->hasPmt(cellInTop->typeName_, Pmt::DFF))
@@ -206,7 +206,7 @@ void Circuit::calculateNumNet()
 
 // **************************************************************************
 // Function   [ Circuit::createCircuitGates ]
-// Commenter  [ Bill,Pan ]
+// Commenter  [ Bill, PYH ]
 // Synopsis   [ usage: Create gate's PI,PPI,PP,PPO,Comb and initialize all
 //                     kind of gate's data.
 //              description:
@@ -225,7 +225,7 @@ void Circuit::createCircuitGates()
 
 // **************************************************************************
 // Function   [ Circuit::createCircuitPI ]
-// Commenter  [ Pan ]
+// Commenter  [ PYH ]
 // Synopsis   [ usage: Create PI gates of the circuit.
 //              description:
 //              	Create PI gates of the circuit from the input ports in the netlist.
@@ -236,7 +236,7 @@ void Circuit::createCircuitPI()
 {
 	Cell *top = pNetlist_->getTop();
 
-	for (int i = 0; i < top->getNPort(); ++i)
+	for (int i = 0; i < (int)top->getNPort(); ++i)
 	{
 		Port *piPort = top->getPort(i);
 		// Ignore clock and test inputs.
@@ -260,7 +260,7 @@ void Circuit::createCircuitPI()
 
 // **************************************************************************
 // Function   [ Circuit::createCircuitPPI ]
-// Commenter  [ Pan ]
+// Commenter  [ PYH ]
 // Synopsis   [ usage: Create PPI gates of the circuit.
 //              description:
 //              	Create PPI gates of the circuit from the cells(DFF) in the netlist.
@@ -297,7 +297,7 @@ void Circuit::createCircuitPPI()
 
 // **************************************************************************
 // Function   [ Circuit::createCircuitComb ]
-// Commenter  [ Pan ]
+// Commenter  [ PYH ]
 // Synopsis   [ usage: Create combinational logic gates of the circuit.
 //              description:
 //              	Call createCircuitPmt() to construct the gates. Finally,
@@ -323,7 +323,7 @@ void Circuit::createCircuitComb()
 			createCircuitPmt(combGateID, cellInTop, pmt);
 		}
 	}
-	if (top->getNCell() > 0)
+	if ((int)top->getNCell() > 0)
 	{
 		circuitLvl_ = circuitGates_[cellIndexToGateIndex_[top->getNCell() - 1]].numLevel_ + 2;
 	}
@@ -331,7 +331,7 @@ void Circuit::createCircuitComb()
 
 // **************************************************************************
 // Function   [ Circuit::createCircuitPmt ]
-// Commenter  [ Pan ]
+// Commenter  [ PYH ]
 // Synopsis   [ usage: Create primitives(gates) of the circuit.
 //              description:
 //              	Primitive is from Mentor .mdt . We have the relationship
@@ -354,7 +354,7 @@ void Circuit::createCircuitPmt(const int &gateID, const Cell *const cell,
 
 	// Determine fanin and level.
 	int maxLvl = -1;
-	for (int i = 0; i < pmt->getNPort(); ++i)
+	for (int i = 0; i < (int)pmt->getNPort(); ++i)
 	{
 		if (pmt->getPort(i)->type_ != Port::INPUT)
 		{
@@ -362,7 +362,7 @@ void Circuit::createCircuitPmt(const int &gateID, const Cell *const cell,
 		}
 		Net *nin = pmt->getPort(i)->exNet_;
 		circuitGates_[gateID].faninVector_.reserve(nin->getNPort());
-		for (int j = 0; j < nin->getNPort(); ++j)
+		for (int j = 0; j < (int)nin->getNPort(); ++j)
 		{
 			Port *port = nin->getPort(j);
 			if (port == pmt->getPort(i))
@@ -418,7 +418,7 @@ void Circuit::createCircuitPmt(const int &gateID, const Cell *const cell,
 	// Determine fanout size.
 	Port *outp = NULL;
 	int fanoutSize = 0;
-	for (int i = 0; i < pmt->getNPort() && !outp; ++i)
+	for (int i = 0; i < (int)pmt->getNPort() && !outp; ++i)
 	{
 		if (pmt->getPort(i)->type_ == Port::OUTPUT)
 		{
@@ -444,7 +444,7 @@ void Circuit::createCircuitPmt(const int &gateID, const Cell *const cell,
 
 // **************************************************************************
 // Function   [ Circuit::determineGateType ]
-// Commenter  [ Pan ]
+// Commenter  [ PYH ]
 // Synopsis   [ usage: Determine the type of the gate.
 //              description:
 //              	Determine and set the gateType_ class variable of the gates
@@ -591,7 +591,7 @@ void Circuit::determineGateType(const int &gateID, const Cell *const cell,
 
 // **************************************************************************
 // Function   [ Circuit::createCircuitPO ]
-// Commenter  [ Pan ]
+// Commenter  [ PYH ]
 // Synopsis   [ usage: Create PO gates of the circuit.
 //              description:
 //              	Create PO gates of the circuit from the ports in the netlist.
@@ -602,7 +602,7 @@ void Circuit::createCircuitPO()
 {
 	Cell *top = pNetlist_->getTop();
 
-	for (int i = 0; i < top->getNPort(); ++i)
+	for (int i = 0; i < (int)top->getNPort(); ++i)
 	{
 		Port *poPort = top->getPort(i);
 		if (!strcmp(poPort->name_, "test_so"))
@@ -657,7 +657,7 @@ void Circuit::createCircuitPO()
 
 // **************************************************************************
 // Function   [ Circuit::createCircuitPPO ]
-// Commenter  [ Pan ]
+// Commenter  [ PYH ]
 // Synopsis   [ usage: Create PPO gates of the circuit.
 //              description:
 //              	Create PPO gates of the circuit from the cells(DFF) in the netlist.
@@ -720,7 +720,7 @@ void Circuit::createCircuitPPO()
 
 // **************************************************************************
 // Function   [ Circuit::connectMultipleTimeFrame ]
-// Commenter  [ LingYunHsu,Pan ]
+// Commenter  [ LingYunHsu, PYH ]
 // Synopsis   [ usage: Connect gates in different time frames. This for multiple
 //                     time frame ATPG.
 //              description:
@@ -828,7 +828,7 @@ void Circuit::connectMultipleTimeFrame()
 
 // **************************************************************************
 // Function   [ Circuit::assignMinLevelOfFanins ]
-// Commenter  [ Jun-Han,Pan ]
+// Commenter  [ Jun-Han Pan, PYH ]
 // Synopsis   [ usage: For every gate, find the minimum level from all fanins' level.
 //              description:
 //              	For every gate, find the minimum level from all fanins' level

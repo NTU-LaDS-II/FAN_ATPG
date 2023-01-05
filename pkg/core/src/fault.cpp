@@ -1,6 +1,6 @@
 // **************************************************************************
 // File       [ fault.cpp ]
-// Author     [ littleshamoo,Pan ]
+// Author     [ littleshamoo,PYH ]
 // Synopsis   [ This program extract faults from the circuit.
 //              Currently there is no fault collapsing yet. 2014/8/26
 //              Implement fault collapsing. 2022/12/1 ]
@@ -13,7 +13,7 @@ using namespace CoreNs;
 
 // **************************************************************************
 // Function   [ FaultListExtract::extractFaultFromCircuit ]
-// Commenter  [ Pan ]
+// Commenter  [ PYH ]
 // Synopsis   [ usage: Extract faults from the circuit
 //              description:
 //              	This function extracts uncollapsed faults, and extract collapsed
@@ -89,7 +89,7 @@ void FaultListExtract::extractFaultFromCircuit(Circuit *pCircuit)
 		else // Simple Equivalent Fault Collapsing.
 		{
 			std::vector<int> SA0Equivalent(pCircuit->numGate_, 1), SA1Equivalent(pCircuit->numGate_, 1); // Used to count the number of equivalent faults.
-			int SA0EquivalentOfInput, SA1EquivalentOfInput; // SA0Equivalent, SA1Equivalent of the input(fanin) gates.
+			int SA0EquivalentOfInput, SA1EquivalentOfInput;																							 // SA0Equivalent, SA1Equivalent of the input(fanin) gates.
 			for (int i = 0; i < pCircuit->numGate_; ++i)
 			{
 				// Adding input faults.
@@ -214,7 +214,7 @@ void FaultListExtract::extractFaultFromCircuit(Circuit *pCircuit)
 		}
 
 		// HYH try to fix the fault number @20141121.
-		for (int i = 0; i < pCircuit->pNetlist_->getTop()->getNPort(); ++i)
+		for (int i = 0; i < (int)pCircuit->pNetlist_->getTop()->getNPort(); ++i)
 		{
 			IntfNs::Port *p = pCircuit->pNetlist_->getTop()->getPort(i);
 			if (!strcmp(p->name_, "CK")) // Sequential circuit
@@ -290,7 +290,7 @@ void FaultListExtract::extractFaultFromCircuit(Circuit *pCircuit)
 		extractedFaults_.assign(uncollapsedFaults_.begin(), uncollapsedFaults_.end());
 
 		// HYH try to fix the fault number @20141121.
-		for (int i = 0; i < pCircuit->pNetlist_->getTop()->getNPort(); ++i)
+		for (int i = 0; i < (int)pCircuit->pNetlist_->getTop()->getNPort(); ++i)
 		{
 			IntfNs::Port *p = pCircuit->pNetlist_->getTop()->getPort(i);
 			if (!strcmp(p->name_, "CK")) // Sequential circuit
