@@ -1,8 +1,7 @@
 // **************************************************************************
 // File       [ simulator.h ]
 // Author     [ littleshamoo ]
-// Synopsis   [ it supports two modes: parallel pattern;
-//                                     parallel fault
+// Synopsis   [ It supports two modes: parallel pattern ; parallel fault.
 // Date       [ 2011/09/14 created ]
 // **************************************************************************
 
@@ -24,52 +23,53 @@ namespace CoreNs
 	public:
 		inline Simulator(Circuit *pCircuit);
 
-		// used by both parallel pattern and parallel fault
-		inline void setNumDetection(const int &numDetection); // this for n-detect
+		// Used by both parallel pattern and parallel fault.
+		inline void setNumDetection(const int &numDetection); // This for n-detect.
 		inline void goodSim();
 		inline void goodSimCopyGoodToFault();
 		inline void goodValueEvaluation(const int &gateID);
-		inline void faultValueEvaluation(const int &gateID);
+		inline void faultyValueEvaluation(const int &gateID);
 		inline void assignPatternToCircuitInputs(const Pattern &pattern);
 		void eventFaultSim();
 
-		// parallel fault simulator
+		// Parallel fault simulator.
 		void parallelFaultFaultSimWithAllPattern(PatternProcessor *pPatternCollector, FaultListExtract *pFaultListExtract);
 		void parallelFaultFaultSimWithOnePattern(const Pattern &pattern, FaultPtrList &remainingFaults);
 		void parallelFaultFaultSim(FaultPtrList &remainingFaults);
 
-		// parallel pattern simulator
+		// Parallel pattern simulator.
 		void parallelPatternGoodSimWithAllPattern(PatternProcessor *pPatternCollector);
 		void parallelPatternFaultSimWithAllPattern(PatternProcessor *pPatternCollector, FaultListExtract *pFaultListExtract);
 		void parallelPatternFaultSim(FaultPtrList &remainingFaults);
 
 	private:
-		// used by both parallel fault and parallel pattern simulation
-		Circuit *pCircuit_;                          // The circuit use in simulator
-		int numDetection_;                           // for n-detect
-		int numRecover_;                             // number of recovers needed
-		std::vector<std::stack<int>> events_;        // The event stacks for every circuit levels
-		std::vector<int> processed_;                 // array of processed flags.  TRUE means this gate is processed
-		std::vector<int> recoverGates_;              // array of gates to be recovered from the last fault injection
-		//  this is to inject fault into the circuit
-		//  faultInjectLow_ = 1 faultInjectHigh_ = 0 inject a stuck-at zero fault
-		//  We use 5 ParallelValue since a gate have 1 fanout and at most 4 fanin
+		// Used by both parallel fault and parallel pattern simulation.
+		Circuit *pCircuit_;										// The circuit use in simulator.
+		int numDetection_;										// For n-detect.
+		int numRecover_;											// Number of recovers needed.
+		std::vector<std::stack<int>> events_; // The event stacks for every circuit levels.
+		std::vector<int> processed_;					// Array of processed flags. 1 means this gate is processed.
+		std::vector<int> recoverGates_;				// Array of gates to be recovered from the last fault injection.
+		// This is to inject fault into the circuit.
+		// faultInjectLow_ = 1 faultInjectHigh_ = 0 means we inject a stuck-at zero fault.
+		// faultInjectLow_ = 0 faultInjectHigh_ = 1 means we inject a stuck-at one fault.
+		// We use 5 ParallelValues since a gate have 1 fanout and at most 4 fanins.
 		std::vector<std::array<ParallelValue, 5>> faultInjectLow_;
 		std::vector<std::array<ParallelValue, 5>> faultInjectHigh_;
 
-		// used by parallel fault simulation
-		FaultPtrListIter injectedFaults_[WORD_SIZE]; // The injected faults, used for erase detected faults
-		int numInjectedFaults_;                      // The number of injected faults
-		// used by parallel pattern simulation
-		ParallelValue activated_;                    // In parallel pattern, this record which pattern is activated
+		// Used by parallel fault simulation.
+		FaultPtrListIter injectedFaults_[WORD_SIZE]; // The injected faults, used for erase detected faults.
+		int numInjectedFaults_;											 // The number of injected faults.
+		// Used by parallel pattern simulation.
+		ParallelValue activated_; // Record which pattern is activated.
 
-		// functions for parallel fault simulator
+		// Functions for parallel fault simulator.
 		void parallelFaultReset();
 		bool parallelFaultCheckActivation(const Fault *const pfault);
 		void parallelFaultFaultInjection(const Fault *const pfault, const size_t &injectFaultIndex);
 		void parallelFaultCheckDetectionDropFaults(FaultPtrList &remainingFaults);
 
-		// functions for parallel pattern simulator
+		// Functions for parallel pattern simulator.
 		void parallelPatternReset();
 		bool parallelPatternCheckActivation(const Fault *const pfault);
 		void parallelPatternFaultInjection(const Fault *const pfault);
@@ -81,24 +81,26 @@ namespace CoreNs
 			: pCircuit_(pCircuit),
 				numDetection_(1),
 				numRecover_(0),
-				numInjectedFaults_(0),
-				activated_(PARA_L),
 				events_(pCircuit->totalLvl_),
 				processed_(pCircuit->totalGate_, 0),
 				recoverGates_(pCircuit->totalGate_),
 				faultInjectLow_(pCircuit->totalGate_, std::array<ParallelValue, 5>({0, 0, 0, 0, 0})),
-				faultInjectHigh_(pCircuit->totalGate_, std::array<ParallelValue, 5>({0, 0, 0, 0, 0}))
+				faultInjectHigh_(pCircuit->totalGate_, std::array<ParallelValue, 5>({0, 0, 0, 0, 0})),
+				numInjectedFaults_(0),
+				activated_(PARA_L)
 	{
 	}
 
 	// **************************************************************************
 	// Function   [ Simulator::setNumDetection ]
-	// Commenter  [ CJY CBH ]
-	// Synopsis   [ usage: set number of detection (default = 1)
-	//              in:    #detection
-	//              out:   void
-	//            ]
-	// Date       [ CJY Ver. 1.0 started 2013/08/18 ]
+	// Commenter  [ CJY, CBH, PYH ]
+	// Synopsis   [ usage: Set number of detection (default = 1).
+	//              description:
+	//              	Set numDetection_ (default = 1) for n-detect.
+	//              arguments:
+	//              	[in] numDetection : The number of detection.
+	// 						]
+	// Date       [ Ver. 1.0 started 2013/08/18 last modified 2023/01/05 ]
 	// **************************************************************************
 	inline void Simulator::setNumDetection(const int &numDetection)
 	{
@@ -107,14 +109,13 @@ namespace CoreNs
 
 	// **************************************************************************
 	// Function   [ Simulator::goodSim ]
-	// Commenter  [ CJY CBH ]
-	// Synopsis   [ usage:
-	//                sim good value of every gate; call goodEval function for each gate
-	//                Please note that we use gl_ and gh_ instead of v_ in each gate.
-	//              in:    void
-	//              out:   void
-	//            ]
-	// Date       [ CJY Ver. 1.0 started 2013/08/18 ]
+	// Commenter  [ CJY, CBH, PYH ]
+	// Synopsis   [ usage: Simulate the good value of every gate.
+	//              description:
+	//              	Call the goodValueEvaluation function for each gate. Here we use
+	//              	goodSimLow_ and goodSimHigh_ instead of atpgVal_ in each gate.
+	// 						]
+	// Date       [ Ver. 1.0 started 2013/08/18 last modified 2023/01/05 ]
 	// **************************************************************************
 	inline void Simulator::goodSim()
 	{
@@ -126,13 +127,13 @@ namespace CoreNs
 
 	// **************************************************************************
 	// Function   [ Simulator::goodSimCopyGoodToFault ]
-	// Commenter  [ CJY CBH]
-	// Synopsis   [ usage: call goodValueEvaluation function for each gate
-	//                     and copy goodsim result to faultsim variable
-	//              in:    void
-	//              out:   void
-	//            ]
-	// Date       [ CBH Ver. 1.0 started 2031/08/18 ]
+	// Commenter  [ CJY, CBH,PYH ]
+	// Synopsis   [ usage: Simulate the good value of every gate and copy to the fault value.
+	//              description:
+	//              	Call the goodValueEvaluation function for each gate and copy the goodsim
+	//              	result to the faultsim variable.
+	// 						]
+	// Date       [ Ver. 1.0 started 2013/08/18 last modified 2023/01/05 ]
 	// **************************************************************************
 	inline void Simulator::goodSimCopyGoodToFault()
 	{
@@ -146,16 +147,18 @@ namespace CoreNs
 
 	// **************************************************************************
 	// Function   [ Simulator::goodValueEvaluation ]
-	// Commenter  [ CJY CBH ]
-	// Synopsis   [ usage: assign good value from fanin value
-	//                     to output of gate(gl and gh)
-	//                       PS:  case1:  gl = 1, gh = 0 => 0
-	//                            case2:  gl = 0, gh = 1 => 1
-	//                            case3:  gl = 0, gh = 0 => X
-	//              in:    gate's ID
-	//              out:   void
-	//            ]
-	// Date       [ CJY Ver. 1.0 started 2013/08/18 ]
+	// Commenter  [ CJY, CBH,PYH ]
+	// Synopsis   [ usage: Assign good value from fanin value to output of gate.
+	//              description:
+	//              	Evaluate good output value (goodSimLow_ and goodSimHigh_)
+	//              	from the fanin values. We have the relationships :
+	//              	goodSimLow_ = 1, goodSimHigh_ = 0 => Real value = 0.
+	//              	goodSimLow_ = 0, goodSimHigh_ = 1 => Real value = 1.
+	//              	goodSimLow_ = 0, goodSimHigh_ = 1 => Real value = X.
+	//              arguments:
+	//              	[in] gateID : The gate we want to evaluate.
+	// 						]
+	// Date       [ Ver. 1.0 started 2013/08/18 last modified 2023/01/05 ]
 	// **************************************************************************
 	inline void Simulator::goodValueEvaluation(const int &gateID)
 	{
@@ -279,16 +282,23 @@ namespace CoreNs
 	}
 
 	// **************************************************************************
-	// Function   [ Simulator::faultValueEvaluation ]
-	// Commenter  [ CJY CBH ]
-	// Synopsis   [ usage: assign faulty value from fanin value
-	//                     to output of gate(fl and gh)
-	//              in:    gate's ID
-	//              out:   void
-	//            ]
-	// Date       [ CJY Ver. 1.0 started 2013/08/14 ]
+	// Function   [ Simulator::faultyValueEvaluation ]
+	// Commenter  [ CJY, CBH, PYH ]
+	// Synopsis   [ usage: Assign faulty value from fanin value to output of gate.
+	//              description:
+	//              	Evaluate faulty output value (faultSimLow_ and faultSimHigh_)
+	//              	from the fanin values. We have the relationships :
+	//              	faultSimLow_ = 1, faultSimHigh_ = 0 => Real value = 0.
+	//              	faultSimLow_ = 0, faultSimHigh_ = 1 => Real value = 1.
+	//              	faultSimLow_ = 0, faultSimHigh_ = 1 => Real value = X.
+	//              	The calculation is similar to GoodValueEvaluation . The difference
+	//              	is that there are fault masking at input and output of the gate.
+	//              arguments:
+	//              	[in] gateID : The gate we want to evaluate.
+	// 						]
+	// Date       [ Ver. 1.0 started 2013/08/14 last modified 2023/01/06 ]
 	// **************************************************************************
-	inline void Simulator::faultValueEvaluation(const int &gateID)
+	inline void Simulator::faultyValueEvaluation(const int &gateID)
 	{
 		// find number of fanin
 		const int fanin1 = pCircuit_->circuitGates_[gateID].numFI_ > 0 ? pCircuit_->circuitGates_[gateID].faninVector_[0] : 0;
@@ -414,13 +424,15 @@ namespace CoreNs
 
 	// **************************************************************************
 	// Function   [ Simulator::assignPatternToCircuitInputs ]
-	// Commenter  [ HKY CYW ]
-	// Synopsis   [ usage: assign test pattern to circuit PI & PPI
-	//					   for further fault simulation
-	//              in:    Pattern*
-	//              out:   void
-	//            ]
-	// Date       [ HKY Ver. 1.1 started 2014/09/01 ]
+	// Commenter  [ HKY, CYW, PYH ]
+	// Synopsis   [ usage: Assign test pattern to circuit PI & PPI.
+	//              description:
+	//              	Assign test pattern to circuit PI & PPI for further fault
+	//              	simulation.
+	//              arguments:
+	//              	[in] pattern : The pattern we want to assign.
+	// 						]
+	// Date       [ Ver. 1.1 started 2014/09/01 last modified 2023/01/06 ]
 	// **************************************************************************
 	inline void Simulator::assignPatternToCircuitInputs(const Pattern &pattern)
 	{
