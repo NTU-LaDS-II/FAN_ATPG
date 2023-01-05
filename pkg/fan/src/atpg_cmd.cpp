@@ -153,56 +153,56 @@ bool ReportPatCmd::exec(const std::vector<std::string> &argv)
 	{
 		std::cout << "#    pattern " << i << "\n";
 		std::cout << "#      pi1: ";
-		if (!fanMgr_->pcoll->patternVector_[i].primaryInputs1st_.empty())
+		if (!fanMgr_->pcoll->patternVector_[i].PI1_.empty())
 		{
 			for (int j = 0; j < fanMgr_->pcoll->numPI_; ++j)
 			{
-				printValue(fanMgr_->pcoll->patternVector_[i].primaryInputs1st_[j]);
+				printValue(fanMgr_->pcoll->patternVector_[i].PI1_[j]);
 			}
 		}
 		std::cout << "\n";
 		std::cout << "#      pi2: ";
-		if (!fanMgr_->pcoll->patternVector_[i].primaryInputs2nd_.empty())
+		if (!fanMgr_->pcoll->patternVector_[i].PI2_.empty())
 		{
 			for (int j = 0; j < fanMgr_->pcoll->numPI_; ++j)
 			{
-				printValue(fanMgr_->pcoll->patternVector_[i].primaryInputs2nd_[j]);
+				printValue(fanMgr_->pcoll->patternVector_[i].PI2_[j]);
 			}
 		}
 		std::cout << "\n";
 		std::cout << "#      ppi: ";
-		if (!fanMgr_->pcoll->patternVector_[i].pseudoPrimaryInputs_.empty())
+		if (!fanMgr_->pcoll->patternVector_[i].PPI_.empty())
 		{
 			for (int j = 0; j < fanMgr_->pcoll->numPPI_; ++j)
 			{
-				printValue(fanMgr_->pcoll->patternVector_[i].pseudoPrimaryInputs_[j]);
+				printValue(fanMgr_->pcoll->patternVector_[i].PPI_[j]);
 			}
 		}
 		std::cout << "\n";
 		std::cout << "#      po1: ";
-		if (!fanMgr_->pcoll->patternVector_[i].primaryOutputs1st_.empty())
+		if (!fanMgr_->pcoll->patternVector_[i].PO1_.empty())
 		{
 			for (int j = 0; j < fanMgr_->pcoll->numPO_; ++j)
 			{
-				printValue(fanMgr_->pcoll->patternVector_[i].primaryOutputs1st_[j]);
+				printValue(fanMgr_->pcoll->patternVector_[i].PO1_[j]);
 			}
 		}
 		std::cout << "\n";
 		std::cout << "#      po2: ";
-		if (!fanMgr_->pcoll->patternVector_[i].primaryOutputs2nd_.empty())
+		if (!fanMgr_->pcoll->patternVector_[i].PO2_.empty())
 		{
 			for (int j = 0; j < fanMgr_->pcoll->numPO_; ++j)
 			{
-				printValue(fanMgr_->pcoll->patternVector_[i].primaryOutputs2nd_[j]);
+				printValue(fanMgr_->pcoll->patternVector_[i].PO2_[j]);
 			}
 		}
 		std::cout << "\n";
 		std::cout << "#      ppo: ";
-		if (!fanMgr_->pcoll->patternVector_[i].pseudoPrimaryOutputs_.empty())
+		if (!fanMgr_->pcoll->patternVector_[i].PPO_.empty())
 		{
 			for (int j = 0; j < fanMgr_->pcoll->numPPI_; ++j)
 			{
-				printValue(fanMgr_->pcoll->patternVector_[i].pseudoPrimaryOutputs_[j]);
+				printValue(fanMgr_->pcoll->patternVector_[i].PPO_[j]);
 			}
 		}
 		std::cout << "\n"

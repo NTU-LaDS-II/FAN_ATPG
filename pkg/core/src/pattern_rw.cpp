@@ -13,8 +13,21 @@
 using namespace IntfNs;
 using namespace CoreNs;
 
-// PatternReader
-// this method map the PI order to the circuit order
+// **************************************************************************
+// Function   [ PatternReader::setPiOrder ]
+// Commenter  [ CHT ]
+// Synopsis   [ usage: Map the PI order to the circuit order.
+//							description:
+//								First traverse all PIs to calculate the number of PIs,
+//								then set the order of PIs of the PatternProcessor
+//								according to the gate id of the circuit. The result will be
+//								stored to the vector pPIorder_ of the PatternProcessor.
+//							arguments:
+// 								[in] pPIs : A pointer to the linked structure of
+//														primary inputs.
+//						]
+// Date       [ CHT started 2023/01/05 ]
+// **************************************************************************
 void PatternReader::setPiOrder(const PatNames *const pPIs)
 {
 	if (!success_)
@@ -56,6 +69,21 @@ void PatternReader::setPiOrder(const PatNames *const pPIs)
 	}
 }
 
+// **************************************************************************
+// Function   [ PatternReader::setPpiOrder ]
+// Commenter  [ CHT ]
+// Synopsis   [ usage: Map the PPI order to the circuit order.
+//							description:
+//								First traverse all PPIs to calculate the number of PPIs,
+//								then set the order of PPIs of the PatternProcessor
+//								according to the gate id of the circuit. The result will be
+//								stored to the vector pPPIorder_ of the PatternProcessor.
+//							arguments:
+// 								[in] pPPIs : A pointer to the linked structure of
+//														pseudo primary inputs.
+//						]
+// Date       [ CHT started 2023/01/05 ]
+// **************************************************************************
 void PatternReader::setPpiOrder(const PatNames *const pPPIs)
 {
 	if (!success_)
@@ -96,6 +124,21 @@ void PatternReader::setPpiOrder(const PatNames *const pPPIs)
 	}
 }
 
+// **************************************************************************
+// Function   [ PatternReader::setPoOrder ]
+// Commenter  [ CHT ]
+// Synopsis   [ usage: Map the PO order to the circuit order.
+//							description:
+//								First traverse all POs to calculate the number of POs,
+//								then set the order of POs of the PatternProcessor
+//								according to the gate id of the circuit. The result will be
+//								stored to the vector pPOorder_ of the PatternProcessor.
+//							arguments:
+// 								[in] pPOs : A pointer to the linked structure of
+//														primary onputs.
+//						]
+// Date       [ CHT started 2023/01/05 ]
+// **************************************************************************
 void PatternReader::setPoOrder(const PatNames *const pPOs)
 {
 	if (!success_)
@@ -135,6 +178,18 @@ void PatternReader::setPoOrder(const PatNames *const pPOs)
 	}
 }
 
+// **************************************************************************
+// Function   [ PatternReader::setPatternType ]
+// Commenter  [ CHT ]
+// Synopsis   [ usage: Set the type of the Pattern Processor.
+//							description:
+//								Set type_ of the Pattern Processor according to the input.
+//								If type is LAUNCH_SHIFT, set numSI_ to be 1.
+//							arguments:
+// 								[in] patternType : Pattern Type to be set.
+//						]
+// Date       [ CHT started 2023/01/05 ]
+// **************************************************************************
 void PatternReader::setPatternType(const PatType &patternType)
 {
 	if (!success_)
@@ -157,6 +212,18 @@ void PatternReader::setPatternType(const PatType &patternType)
 	}
 }
 
+// **************************************************************************
+// Function   [ PatternReader::setPatternNum ]
+// Commenter  [ CHT ]
+// Synopsis   [ usage: Set the pattern vector according to given size.
+//							description:
+//								Set each element of patternvector_ of the Pattern Processor
+//								 to be default Pattern() with given input size (patternNum).
+//							arguments:
+// 								[in] patternNum : Pattern Type to be set.
+//						]
+// Date       [ CHT started 2023/01/05 ]
+// **************************************************************************
 void PatternReader::setPatternNum(const int &patternNum)
 {
 	if (!success_)
@@ -171,7 +238,24 @@ void PatternReader::setPatternNum(const int &patternNum)
 	curPattern_ = 0;
 }
 
-// read in a pattern
+// **************************************************************************
+// Function   [ PatternReader::addPattern ]
+// Commenter  [ CHT ]
+// Synopsis   [ usage: Read in a pattern and assign according values.
+//							description:
+//								For each input arguement, assign according values to the
+//								corresponding vector of the Pattern Processor if exists.
+//							arguments:
+// 								[in] pPI1 : The pointer to the first primary input pattern.
+// 								[in] pPI2 : The pointer to the second primary input pattern.
+// 								[in] pPPI : The pointer to the pseudo primary input pattern.
+// 								[in] pSI  : The pointer to the shift in pattern.
+// 								[in] pPO1 : The pointer to the first primary output pattern.
+// 								[in] pPO2 : The pointer to the second primary output pattern.
+// 								[in] pPPO : The pointer to the pseudo primary output pattern.
+//						]
+// Date       [ CHT started 2023/01/05 ]
+// **************************************************************************
 void PatternReader::addPattern(const char *const pPI1,
 															 const char *const pPI2,
 															 const char *const pPPI,
@@ -186,42 +270,56 @@ void PatternReader::addPattern(const char *const pPI1,
 	}
 	if (pPI1 && curPattern_ < (int)pPatternProcessor_->patternVector_.size())
 	{
-		pPatternProcessor_->patternVector_[curPattern_].primaryInputs1st_.resize(pPatternProcessor_->numPI_);
-		assignValue(pPatternProcessor_->patternVector_[curPattern_].primaryInputs1st_, pPI1, pPatternProcessor_->numPI_);
+		pPatternProcessor_->patternVector_[curPattern_].PI1_.resize(pPatternProcessor_->numPI_);
+		assignValue(pPatternProcessor_->patternVector_[curPattern_].PI1_, pPI1, pPatternProcessor_->numPI_);
 	}
 	if (pPI2 && curPattern_ < (int)pPatternProcessor_->patternVector_.size())
 	{
-		pPatternProcessor_->patternVector_[curPattern_].primaryInputs2nd_.resize(pPatternProcessor_->numPI_);
-		assignValue(pPatternProcessor_->patternVector_[curPattern_].primaryInputs2nd_, pPI2, pPatternProcessor_->numPI_);
+		pPatternProcessor_->patternVector_[curPattern_].PI2_.resize(pPatternProcessor_->numPI_);
+		assignValue(pPatternProcessor_->patternVector_[curPattern_].PI2_, pPI2, pPatternProcessor_->numPI_);
 	}
 	if (pPPI && curPattern_ < (int)pPatternProcessor_->patternVector_.size())
 	{
-		pPatternProcessor_->patternVector_[curPattern_].pseudoPrimaryInputs_.resize(pPatternProcessor_->numPPI_);
-		assignValue(pPatternProcessor_->patternVector_[curPattern_].pseudoPrimaryInputs_, pPPI, pPatternProcessor_->numPPI_);
+		pPatternProcessor_->patternVector_[curPattern_].PPI_.resize(pPatternProcessor_->numPPI_);
+		assignValue(pPatternProcessor_->patternVector_[curPattern_].PPI_, pPPI, pPatternProcessor_->numPPI_);
 	}
 	if (pSI && curPattern_ < (int)pPatternProcessor_->patternVector_.size())
 	{
-		pPatternProcessor_->patternVector_[curPattern_].shiftIn_.resize(pPatternProcessor_->numSI_);
-		assignValue(pPatternProcessor_->patternVector_[curPattern_].shiftIn_, pSI, pPatternProcessor_->numSI_);
+		pPatternProcessor_->patternVector_[curPattern_].SI_.resize(pPatternProcessor_->numSI_);
+		assignValue(pPatternProcessor_->patternVector_[curPattern_].SI_, pSI, pPatternProcessor_->numSI_);
 	}
 	if (pPO1 && curPattern_ < (int)pPatternProcessor_->patternVector_.size())
 	{
-		pPatternProcessor_->patternVector_[curPattern_].primaryOutputs1st_.resize(pPatternProcessor_->numPO_);
-		assignValue(pPatternProcessor_->patternVector_[curPattern_].primaryOutputs1st_, pPO1, pPatternProcessor_->numPO_);
+		pPatternProcessor_->patternVector_[curPattern_].PO1_.resize(pPatternProcessor_->numPO_);
+		assignValue(pPatternProcessor_->patternVector_[curPattern_].PO1_, pPO1, pPatternProcessor_->numPO_);
 	}
 	if (pPO2 && curPattern_ < (int)pPatternProcessor_->patternVector_.size())
 	{
-		pPatternProcessor_->patternVector_[curPattern_].primaryOutputs2nd_.resize(pPatternProcessor_->numPO_);
-		assignValue(pPatternProcessor_->patternVector_[curPattern_].primaryOutputs2nd_, pPO2, pPatternProcessor_->numPO_);
+		pPatternProcessor_->patternVector_[curPattern_].PO2_.resize(pPatternProcessor_->numPO_);
+		assignValue(pPatternProcessor_->patternVector_[curPattern_].PO2_, pPO2, pPatternProcessor_->numPO_);
 	}
 	if (pPPO && curPattern_ < (int)pPatternProcessor_->patternVector_.size())
 	{
-		pPatternProcessor_->patternVector_[curPattern_].pseudoPrimaryOutputs_.resize(pPatternProcessor_->numPPI_);
-		assignValue(pPatternProcessor_->patternVector_[curPattern_].pseudoPrimaryOutputs_, pPPO, pPatternProcessor_->numPPI_);
+		pPatternProcessor_->patternVector_[curPattern_].PPO_.resize(pPatternProcessor_->numPPI_);
+		assignValue(pPatternProcessor_->patternVector_[curPattern_].PPO_, pPPO, pPatternProcessor_->numPPI_);
 	}
 	++curPattern_;
 }
 
+// **************************************************************************
+// Function   [ PatternReader::assignValue ]
+// Commenter  [ CHT ]
+// Synopsis   [ usage: Set the pattern vector according to given size.
+//							description:
+//								For each bit in the range of input size, assign value to
+//								the Value vector according to the input pattern content.
+//							arguments:
+// 								[in, out] valueVector : The Value vector to be modified.
+// 								[in] pattern : The pattern content to be assigned to.
+// 								[in] size : The length of the input pattern.
+//						]
+// Date       [ CHT started 2023/01/05 ]
+// **************************************************************************
 void PatternReader::assignValue(std::vector<Value> &valueVector, const char *const pattern,
 																const int &size)
 {
@@ -243,9 +341,20 @@ void PatternReader::assignValue(std::vector<Value> &valueVector, const char *con
 }
 
 // PatternWriter
-
-// write to LaDS's own *.pattern  pattern format
-// support 2 time frames, but no more than 2 time frames
+// **************************************************************************
+// Function   [ PatternWriter::writePattern ]
+// Commenter  [ CHT ]
+// Synopsis   [ usage: Write to LaDS's own *.pattern  pattern format
+//							description:
+//								Output the pattern to the given input file name
+//								with LaDS's own *.pattern  pattern format.
+// 								Support at most 2 time frames.
+//							arguments:
+// 								[in] fname : The file name to be written to.
+//								[out] bool : Output written successfully or not.
+//						]
+// Date       [ CHT started 2023/01/05 ]
+// **************************************************************************
 bool PatternWriter::writePattern(const char *const fname)
 {
 	FILE *fout = fopen(fname, "w");
@@ -296,91 +405,91 @@ bool PatternWriter::writePattern(const char *const fname)
 	for (int i = 0; i < (int)pPatternProcessor_->patternVector_.size(); ++i)
 	{
 		fprintf(fout, "_pattern_%d ", i + 1);
-		if (!pPatternProcessor_->patternVector_[i].primaryInputs1st_.empty())
+		if (!pPatternProcessor_->patternVector_[i].PI1_.empty())
 		{
 			for (int j = 0; j < pPatternProcessor_->numPI_; ++j)
 			{
-				if (pPatternProcessor_->patternVector_[i].primaryInputs1st_[j] == L)
+				if (pPatternProcessor_->patternVector_[i].PI1_[j] == L)
 					fprintf(fout, "0");
-				else if (pPatternProcessor_->patternVector_[i].primaryInputs1st_[j] == H)
+				else if (pPatternProcessor_->patternVector_[i].PI1_[j] == H)
 					fprintf(fout, "1");
 				else
 					fprintf(fout, "X");
 			}
 		}
 		fprintf(fout, " | ");
-		if (!pPatternProcessor_->patternVector_[i].primaryInputs2nd_.empty())
+		if (!pPatternProcessor_->patternVector_[i].PI2_.empty())
 		{
 			for (int j = 0; j < pPatternProcessor_->numPI_; ++j)
 			{
-				if (pPatternProcessor_->patternVector_[i].primaryInputs2nd_[j] == L)
+				if (pPatternProcessor_->patternVector_[i].PI2_[j] == L)
 					fprintf(fout, "0");
-				else if (pPatternProcessor_->patternVector_[i].primaryInputs2nd_[j] == H)
+				else if (pPatternProcessor_->patternVector_[i].PI2_[j] == H)
 					fprintf(fout, "1");
 				else
 					fprintf(fout, "X");
 			}
 		}
 		fprintf(fout, " | ");
-		if (!pPatternProcessor_->patternVector_[i].pseudoPrimaryInputs_.empty())
+		if (!pPatternProcessor_->patternVector_[i].PPI_.empty())
 		{
 			for (int j = 0; j < pPatternProcessor_->numPPI_; ++j)
 			{
-				if (pPatternProcessor_->patternVector_[i].pseudoPrimaryInputs_[j] == L)
+				if (pPatternProcessor_->patternVector_[i].PPI_[j] == L)
 					fprintf(fout, "0");
-				else if (pPatternProcessor_->patternVector_[i].pseudoPrimaryInputs_[j] == H)
+				else if (pPatternProcessor_->patternVector_[i].PPI_[j] == H)
 					fprintf(fout, "1");
 				else
 					fprintf(fout, "X");
 			}
 		}
 		fprintf(fout, " | ");
-		if (!pPatternProcessor_->patternVector_[i].shiftIn_.empty())
+		if (!pPatternProcessor_->patternVector_[i].SI_.empty())
 		{
 			for (int j = 0; j < pPatternProcessor_->numSI_; ++j)
 			{
-				if (pPatternProcessor_->patternVector_[i].shiftIn_[j] == L)
+				if (pPatternProcessor_->patternVector_[i].SI_[j] == L)
 					fprintf(fout, "0");
-				else if (pPatternProcessor_->patternVector_[i].shiftIn_[j] == H)
+				else if (pPatternProcessor_->patternVector_[i].SI_[j] == H)
 					fprintf(fout, "1");
 				else
 					fprintf(fout, "X");
 			}
 		}
 		fprintf(fout, " | ");
-		if (!pPatternProcessor_->patternVector_[i].primaryOutputs1st_.empty())
+		if (!pPatternProcessor_->patternVector_[i].PO1_.empty())
 		{
 			for (int j = 0; j < pPatternProcessor_->numPO_; ++j)
 			{
-				if (pPatternProcessor_->patternVector_[i].primaryOutputs1st_[j] == L)
+				if (pPatternProcessor_->patternVector_[i].PO1_[j] == L)
 					fprintf(fout, "0");
-				else if (pPatternProcessor_->patternVector_[i].primaryOutputs1st_[j] == H)
+				else if (pPatternProcessor_->patternVector_[i].PO1_[j] == H)
 					fprintf(fout, "1");
 				else
 					fprintf(fout, "X");
 			}
 		}
 		fprintf(fout, " | ");
-		if (!pPatternProcessor_->patternVector_[i].primaryOutputs2nd_.empty())
+		if (!pPatternProcessor_->patternVector_[i].PO2_.empty())
 		{
 			for (int j = 0; j < pPatternProcessor_->numPO_; ++j)
 			{
-				if (pPatternProcessor_->patternVector_[i].primaryOutputs2nd_[j] == L)
+				if (pPatternProcessor_->patternVector_[i].PO2_[j] == L)
 					fprintf(fout, "0");
-				else if (pPatternProcessor_->patternVector_[i].primaryOutputs2nd_[j] == H)
+				else if (pPatternProcessor_->patternVector_[i].PO2_[j] == H)
 					fprintf(fout, "1");
 				else
 					fprintf(fout, "X");
 			}
 		}
 		fprintf(fout, " | ");
-		if (!pPatternProcessor_->patternVector_[i].pseudoPrimaryInputs_.empty())
+		if (!pPatternProcessor_->patternVector_[i].PPI_.empty())
 		{
 			for (int j = 0; j < pPatternProcessor_->numPPI_; ++j)
 			{
-				if (pPatternProcessor_->patternVector_[i].pseudoPrimaryOutputs_[j] == L)
+				if (pPatternProcessor_->patternVector_[i].PPO_[j] == L)
 					fprintf(fout, "0");
-				else if (pPatternProcessor_->patternVector_[i].pseudoPrimaryOutputs_[j] == H)
+				else if (pPatternProcessor_->patternVector_[i].PPO_[j] == H)
 					fprintf(fout, "1");
 				else
 					fprintf(fout, "X");
@@ -394,7 +503,21 @@ bool PatternWriter::writePattern(const char *const fname)
 	return true;
 }
 
-// This format is no longer supported
+// **************************************************************************
+// Function   [ PatternWriter::writeLht ]
+// Commenter  [ CHT ]
+// Synopsis   [ usage: Write to Ling Hsio-Ting's pattern format.
+//										 Not supported now!
+//							description:
+//								Output the pattern to the given input file name
+//								with Ling Hsio-Ting's pattern format
+// 								Not supported now!
+//							arguments:
+// 								[in] fname : The file name to be written to.
+//								[out] bool : Output written successfully or not.
+//						]
+// Date       [ CHT started 2023/01/05 ]
+// **************************************************************************
 bool PatternWriter::writeLht(const char *const fname)
 {
 	FILE *fout = fopen(fname, "w");
@@ -408,53 +531,53 @@ bool PatternWriter::writeLht(const char *const fname)
 	for (size_t i = 0; i < pPatternProcessor_->patternVector_.size(); ++i)
 	{
 		fprintf(fout, "%d: ", (int)i + 1);
-		if (!pPatternProcessor_->patternVector_[i].primaryInputs1st_.empty())
+		if (!pPatternProcessor_->patternVector_[i].PI1_.empty())
 		{
 			for (int j = 0; j < pPatternProcessor_->numPI_; ++j)
 			{
-				if (pPatternProcessor_->patternVector_[i].primaryInputs1st_[j] == L)
+				if (pPatternProcessor_->patternVector_[i].PI1_[j] == L)
 					fprintf(fout, "0");
-				else if (pPatternProcessor_->patternVector_[i].primaryInputs1st_[j] == H)
+				else if (pPatternProcessor_->patternVector_[i].PI1_[j] == H)
 					fprintf(fout, "1");
 				else
 					fprintf(fout, "X");
 			}
 		}
-		if (!pPatternProcessor_->patternVector_[i].primaryInputs2nd_.empty())
+		if (!pPatternProcessor_->patternVector_[i].PI2_.empty())
 		{
 			fprintf(fout, "->");
 			for (int j = 0; j < pPatternProcessor_->numPI_; ++j)
 			{
-				if (pPatternProcessor_->patternVector_[i].primaryInputs2nd_[j] == L)
+				if (pPatternProcessor_->patternVector_[i].PI2_[j] == L)
 					fprintf(fout, "0");
-				else if (pPatternProcessor_->patternVector_[i].primaryInputs2nd_[j] == H)
+				else if (pPatternProcessor_->patternVector_[i].PI2_[j] == H)
 					fprintf(fout, "1");
 				else
 					fprintf(fout, "X");
 			}
 		}
 		fprintf(fout, "_");
-		if (!pPatternProcessor_->patternVector_[i].pseudoPrimaryInputs_.empty())
+		if (!pPatternProcessor_->patternVector_[i].PPI_.empty())
 		{
 			fprintf(fout, "->");
 			for (int j = 0; j < pPatternProcessor_->numPPI_; ++j)
 			{
-				if (pPatternProcessor_->patternVector_[i].pseudoPrimaryInputs_[j] == L)
+				if (pPatternProcessor_->patternVector_[i].PPI_[j] == L)
 					fprintf(fout, "0");
-				else if (pPatternProcessor_->patternVector_[i].pseudoPrimaryInputs_[j] == H)
+				else if (pPatternProcessor_->patternVector_[i].PPI_[j] == H)
 					fprintf(fout, "1");
 				else
 					fprintf(fout, "X");
 			}
 		}
-		if (!pPatternProcessor_->patternVector_[i].shiftIn_.empty())
+		if (!pPatternProcessor_->patternVector_[i].SI_.empty())
 		{
 			fprintf(fout, "@");
 			for (int j = 0; j < pPatternProcessor_->numSI_; ++j)
 			{
-				if (pPatternProcessor_->patternVector_[i].shiftIn_[j] == L)
+				if (pPatternProcessor_->patternVector_[i].SI_[j] == L)
 					fprintf(fout, "0");
-				else if (pPatternProcessor_->patternVector_[i].shiftIn_[j] == H)
+				else if (pPatternProcessor_->patternVector_[i].SI_[j] == H)
 					fprintf(fout, "1");
 				else
 					fprintf(fout, "X");
@@ -462,40 +585,40 @@ bool PatternWriter::writeLht(const char *const fname)
 		}
 		fprintf(fout, " | ");
 
-		if (!pPatternProcessor_->patternVector_[i].primaryOutputs1st_.empty() && pPatternProcessor_->type_ == PatternProcessor::BASIC_SCAN)
+		if (!pPatternProcessor_->patternVector_[i].PO1_.empty() && pPatternProcessor_->type_ == PatternProcessor::BASIC_SCAN)
 		{
 			for (int j = 0; j < pPatternProcessor_->numPO_; ++j)
 			{
-				if (pPatternProcessor_->patternVector_[i].primaryOutputs1st_[j] == L)
+				if (pPatternProcessor_->patternVector_[i].PO1_[j] == L)
 					fprintf(fout, "0");
-				else if (pPatternProcessor_->patternVector_[i].primaryOutputs1st_[j] == H)
+				else if (pPatternProcessor_->patternVector_[i].PO1_[j] == H)
 					fprintf(fout, "1");
 				else
 					fprintf(fout, "X");
 			}
 		}
 
-		if (!pPatternProcessor_->patternVector_[i].primaryOutputs2nd_.empty() && (pPatternProcessor_->type_ == PatternProcessor::LAUNCH_CAPTURE || pPatternProcessor_->type_ == PatternProcessor::LAUNCH_SHIFT))
+		if (!pPatternProcessor_->patternVector_[i].PO2_.empty() && (pPatternProcessor_->type_ == PatternProcessor::LAUNCH_CAPTURE || pPatternProcessor_->type_ == PatternProcessor::LAUNCH_SHIFT))
 		{
 			for (int j = 0; j < pPatternProcessor_->numPO_; ++j)
 			{
-				if (pPatternProcessor_->patternVector_[i].primaryOutputs2nd_[j] == L)
+				if (pPatternProcessor_->patternVector_[i].PO2_[j] == L)
 					fprintf(fout, "0");
-				else if (pPatternProcessor_->patternVector_[i].primaryOutputs2nd_[j] == H)
+				else if (pPatternProcessor_->patternVector_[i].PO2_[j] == H)
 					fprintf(fout, "1");
 				else
 					fprintf(fout, "X");
 			}
 		}
 		fprintf(fout, "_");
-		if (!pPatternProcessor_->patternVector_[i].pseudoPrimaryOutputs_.empty())
+		if (!pPatternProcessor_->patternVector_[i].PPO_.empty())
 		{
 			fprintf(fout, "->");
 			for (int j = 0; j < pPatternProcessor_->numPPI_; ++j)
 			{
-				if (pPatternProcessor_->patternVector_[i].pseudoPrimaryOutputs_[j] == L)
+				if (pPatternProcessor_->patternVector_[i].PPO_[j] == L)
 					fprintf(fout, "0");
-				else if (pPatternProcessor_->patternVector_[i].pseudoPrimaryOutputs_[j] == H)
+				else if (pPatternProcessor_->patternVector_[i].PPO_[j] == H)
 					fprintf(fout, "1");
 				else
 					fprintf(fout, "X");
@@ -509,9 +632,21 @@ bool PatternWriter::writeLht(const char *const fname)
 	return true;
 }
 
-// write to Mentor ASCii
-// E.5 problem
-// must test with mentor fastscan
+// **************************************************************************
+// Function   [ PatternWriter::writeAscii ]
+// Commenter  [ CHT ]
+// Synopsis   [ usage: Write to Mentor ASCii pattern format.
+//										 Must be tested with mentor fastscan.
+//							description:
+//								Output the pattern to the given input file name
+//								with Mentor ASCii pattern format
+// 								Should be tested with mentor fastscan.
+//							arguments:
+// 								[in] fname : The file name to be written to.
+//								[out] bool : Output written successfully or not.
+//						]
+// Date       [ CHT started 2023/01/05 ]
+// **************************************************************************
 bool PatternWriter::writeAscii(const char *const fname)
 {
 	FILE *fout = fopen(fname, "w");
@@ -631,7 +766,7 @@ bool PatternWriter::writeAscii(const char *const fname)
 	for (int i = 0; i < (int)pPatternProcessor_->patternVector_.size(); ++i)
 	{
 		fprintf(fout, "pattern = %d", i);
-		if (!pPatternProcessor_->patternVector_[i].primaryInputs2nd_.empty())
+		if (!pPatternProcessor_->patternVector_[i].PI2_.empty())
 			fprintf(fout, " clock_sequential;\n");
 		else
 			fprintf(fout, ";\n");
@@ -642,9 +777,9 @@ bool PatternWriter::writeAscii(const char *const fname)
 			fprintf(fout, "chain \"chain1\" = \"");
 			for (int j = pPatternProcessor_->numPPI_ - 1; j >= 0; --j)
 			{
-				if (pPatternProcessor_->patternVector_[i].pseudoPrimaryInputs_[j] == L)
+				if (pPatternProcessor_->patternVector_[i].PPI_[j] == L)
 					fprintf(fout, "0");
-				else if (pPatternProcessor_->patternVector_[i].pseudoPrimaryInputs_[j] == H)
+				else if (pPatternProcessor_->patternVector_[i].PPI_[j] == H)
 					fprintf(fout, "1");
 				else
 					fprintf(fout, "X");
@@ -652,16 +787,16 @@ bool PatternWriter::writeAscii(const char *const fname)
 			fprintf(fout, "\";\n");
 			fprintf(fout, "end;\n");
 		}
-		if (!pPatternProcessor_->patternVector_[i].primaryInputs1st_.empty())
+		if (!pPatternProcessor_->patternVector_[i].PI1_.empty())
 		{
 			fprintf(fout, "force \"PI\" \"");
 			if (seqCircuitCheck)
 				fprintf(fout, "000");
 			for (int j = 0; j < pPatternProcessor_->numPI_; ++j)
 			{
-				if (pPatternProcessor_->patternVector_[i].primaryInputs1st_[j] == L)
+				if (pPatternProcessor_->patternVector_[i].PI1_[j] == L)
 					fprintf(fout, "0");
-				else if (pPatternProcessor_->patternVector_[i].primaryInputs1st_[j] == H)
+				else if (pPatternProcessor_->patternVector_[i].PI1_[j] == H)
 					fprintf(fout, "1");
 				else
 					fprintf(fout, "X");
@@ -669,7 +804,7 @@ bool PatternWriter::writeAscii(const char *const fname)
 			fprintf(fout, "\" 1;\n");
 		}
 		// fprintf(fout, "pulse \"/CK\" 2;\n");
-		if (!pPatternProcessor_->patternVector_[i].primaryInputs2nd_.empty())
+		if (!pPatternProcessor_->patternVector_[i].PI2_.empty())
 		{
 			if (seqCircuitCheck)
 				fprintf(fout, "pulse \"/CK\" 2;\n");
@@ -678,41 +813,41 @@ bool PatternWriter::writeAscii(const char *const fname)
 				fprintf(fout, "000");
 			for (int j = 0; j < pPatternProcessor_->numPI_; ++j)
 			{
-				if (pPatternProcessor_->patternVector_[i].primaryInputs2nd_[j] == L)
+				if (pPatternProcessor_->patternVector_[i].PI2_[j] == L)
 					fprintf(fout, "0");
-				else if (pPatternProcessor_->patternVector_[i].primaryInputs2nd_[j] == H)
+				else if (pPatternProcessor_->patternVector_[i].PI2_[j] == H)
 					fprintf(fout, "1");
 				else
 					fprintf(fout, "X");
 			}
 			fprintf(fout, "\" 3;\n");
 		}
-		if (!pPatternProcessor_->patternVector_[i].primaryOutputs2nd_.empty())
+		if (!pPatternProcessor_->patternVector_[i].PO2_.empty())
 		{
 			fprintf(fout, "measure \"PO\" \"");
 			if (seqCircuitCheck)
 				fprintf(fout, "X");
 			for (int j = 0; j < pPatternProcessor_->numPO_; ++j)
 			{
-				if (pPatternProcessor_->patternVector_[i].primaryOutputs2nd_[j] == L)
+				if (pPatternProcessor_->patternVector_[i].PO2_[j] == L)
 					fprintf(fout, "0");
-				else if (pPatternProcessor_->patternVector_[i].primaryOutputs2nd_[j] == H)
+				else if (pPatternProcessor_->patternVector_[i].PO2_[j] == H)
 					fprintf(fout, "1");
 				else
 					fprintf(fout, "X");
 			}
 			fprintf(fout, "\" 4;\n");
 		}
-		else if (!pPatternProcessor_->patternVector_[i].primaryOutputs1st_.empty())
+		else if (!pPatternProcessor_->patternVector_[i].PO1_.empty())
 		{
 			fprintf(fout, "measure \"PO\" \"");
 			if (seqCircuitCheck)
 				fprintf(fout, "X");
 			for (int j = 0; j < pPatternProcessor_->numPO_; ++j)
 			{
-				if (pPatternProcessor_->patternVector_[i].primaryOutputs1st_[j] == L)
+				if (pPatternProcessor_->patternVector_[i].PO1_[j] == L)
 					fprintf(fout, "0");
-				else if (pPatternProcessor_->patternVector_[i].primaryOutputs1st_[j] == H)
+				else if (pPatternProcessor_->patternVector_[i].PO1_[j] == H)
 					fprintf(fout, "1");
 				else
 					fprintf(fout, "X");
@@ -727,9 +862,9 @@ bool PatternWriter::writeAscii(const char *const fname)
 			fprintf(fout, "chain \"chain1\" = \"");
 			for (int j = pPatternProcessor_->numPPI_ - 1; j >= 0; --j)
 			{
-				if (pPatternProcessor_->patternVector_[i].pseudoPrimaryOutputs_[j] == L)
+				if (pPatternProcessor_->patternVector_[i].PPO_[j] == L)
 					fprintf(fout, "0");
-				else if (pPatternProcessor_->patternVector_[i].pseudoPrimaryOutputs_[j] == H)
+				else if (pPatternProcessor_->patternVector_[i].PPO_[j] == H)
 					fprintf(fout, "1");
 				else
 					fprintf(fout, "X");
@@ -763,9 +898,21 @@ bool PatternWriter::writeAscii(const char *const fname)
 	return true;
 }
 
-// 2016 summer train
-//  write to STIL
-//  must test with tetramax
+// **************************************************************************
+// Function   [ PatternWriter::writeSTIL ]
+// Commenter  [ CHT ]
+// Synopsis   [ usage: Write to STIL pattern format.
+//										 Must be tested with tetramax.
+//							description:
+//								Output the pattern to the given input file name
+//								with STIL pattern format
+// 								Should be tested with tetramax.
+//							arguments:
+// 								[in] fname : The file name to be written to.
+//								[out] bool : Output written successfully or not.
+//						]
+// Date       [ CHT started 2023/01/05 ]
+// **************************************************************************
 bool PatternWriter::writeSTIL(const char *const fname)
 {
 	std::vector<std::string> PI_Order;
@@ -837,56 +984,56 @@ bool PatternWriter::writeSTIL(const char *const fname)
 	{
 		std::map<std::string, std::string> map_pattern;
 
-		if (!pattern.primaryInputs1st_.empty())
+		if (!pattern.PI1_.empty())
 		{
 			map_pattern["pPI1"] = "";
 			for (int j = 0; j < pPatternProcessor_->numPI_; ++j)
 			{
-				if (pattern.primaryInputs1st_[j] == L)
+				if (pattern.PI1_[j] == L)
 					map_pattern["pPI1"] += "0";
-				else if (pattern.primaryInputs1st_[j] == H)
+				else if (pattern.PI1_[j] == H)
 					map_pattern["pPI1"] += "1";
 				else
 					map_pattern["pPI1"] += "N";
 			}
 		}
 
-		if (!pattern.pseudoPrimaryInputs_.empty())
+		if (!pattern.PPI_.empty())
 		{
 			map_pattern["pPPI1"] = "";
 			for (int j = 0; j < pPatternProcessor_->numPPI_; ++j)
 			{
-				if (pattern.pseudoPrimaryInputs_[j] == L)
+				if (pattern.PPI_[j] == L)
 					map_pattern["pPPI1"] += "0";
-				else if (pattern.pseudoPrimaryInputs_[j] == H)
+				else if (pattern.PPI_[j] == H)
 					map_pattern["pPPI1"] += "1";
 				else
 					map_pattern["pPPI1"] += "N";
 			}
 			reverse(map_pattern["pPPI1"].begin(), map_pattern["pPPI1"].end());
 		}
-		if (!pattern.primaryOutputs1st_.empty())
+		if (!pattern.PO1_.empty())
 		{
 			map_pattern["pPO1"] = "";
 			for (int j = 0; j < pPatternProcessor_->numPO_; ++j)
 			{
-				if (pattern.primaryOutputs1st_[j] == L)
+				if (pattern.PO1_[j] == L)
 					map_pattern["pPO1"] += "L";
-				else if (pattern.primaryOutputs1st_[j] == H)
+				else if (pattern.PO1_[j] == H)
 					map_pattern["pPO1"] += "H";
 				else
 					map_pattern["pPO1"] += "N";
 			}
 		}
 
-		if (!pattern.pseudoPrimaryInputs_.empty())
+		if (!pattern.PPI_.empty())
 		{
 			map_pattern["pPPO"] = "";
 			for (int j = 0; j < pPatternProcessor_->numPPI_; ++j)
 			{
-				if (pattern.pseudoPrimaryOutputs_[j] == L)
+				if (pattern.PPO_[j] == L)
 					map_pattern["pPPO"] += "L";
-				else if (pattern.pseudoPrimaryOutputs_[j] == H)
+				else if (pattern.PPO_[j] == H)
 					map_pattern["pPPO"] += "H";
 				else
 					map_pattern["pPPO"] += "N";
@@ -1104,6 +1251,19 @@ bool PatternWriter::writeSTIL(const char *const fname)
 	return true;
 }
 
+// **************************************************************************
+// Function   [ PatternWriter::writeProcedure ]
+// Commenter  [ CHT ]
+// Synopsis   [ usage: Write the procedure setup.
+//							description:
+//								Output the procedure setup to the given
+//								input file name.
+//							arguments:
+// 								[in] fname : The file name to be written to.
+//								[out] bool : Output written successfully or not.
+//						]
+// Date       [ CHT started 2023/01/05 ]
+// **************************************************************************
 bool ProcedureWriter::writeProcedure(const char *const fname)
 {
 	FILE *fout = fopen(fname, "w");

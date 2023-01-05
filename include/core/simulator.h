@@ -429,13 +429,13 @@ namespace CoreNs
 		{
 			pCircuit_->circuitGates_[j].goodSimLow_ = PARA_L;
 			pCircuit_->circuitGates_[j].goodSimHigh_ = PARA_L;
-			if (!pattern.primaryInputs1st_.empty())
+			if (!pattern.PI1_.empty())
 			{
-				if (pattern.primaryInputs1st_[j] == L)
+				if (pattern.PI1_[j] == L)
 				{
 					pCircuit_->circuitGates_[j].goodSimLow_ = PARA_H;
 				}
-				else if (pattern.primaryInputs1st_[j] == H)
+				else if (pattern.PI1_[j] == H)
 				{
 					pCircuit_->circuitGates_[j].goodSimHigh_ = PARA_H;
 				}
@@ -444,13 +444,13 @@ namespace CoreNs
 			{
 				pCircuit_->circuitGates_[j + pCircuit_->numGate_].goodSimLow_ = PARA_L;
 				pCircuit_->circuitGates_[j + pCircuit_->numGate_].goodSimHigh_ = PARA_L;
-				if (!pattern.primaryInputs2nd_.empty())
+				if (!pattern.PI2_.empty())
 				{
-					if (pattern.primaryInputs2nd_[j] == L)
+					if (pattern.PI2_[j] == L)
 					{
 						pCircuit_->circuitGates_[j + pCircuit_->numGate_].goodSimLow_ = PARA_H;
 					}
-					else if (pattern.primaryInputs2nd_[j] == H)
+					else if (pattern.PI2_[j] == H)
 					{
 						pCircuit_->circuitGates_[j + pCircuit_->numGate_].goodSimHigh_ = PARA_H;
 					}
@@ -463,13 +463,13 @@ namespace CoreNs
 		{
 			pCircuit_->circuitGates_[j].goodSimLow_ = PARA_L;
 			pCircuit_->circuitGates_[j].goodSimHigh_ = PARA_L;
-			if (!pattern.pseudoPrimaryInputs_.empty())
+			if (!pattern.PPI_.empty())
 			{
-				if (pattern.pseudoPrimaryInputs_[j - pCircuit_->numPI_] == L)
+				if (pattern.PPI_[j - pCircuit_->numPI_] == L)
 				{
 					pCircuit_->circuitGates_[j].goodSimLow_ = PARA_H;
 				}
-				else if (pattern.pseudoPrimaryInputs_[j - pCircuit_->numPI_] == H)
+				else if (pattern.PPI_[j - pCircuit_->numPI_] == H)
 				{
 					pCircuit_->circuitGates_[j].goodSimHigh_ = PARA_H;
 				}
@@ -482,13 +482,13 @@ namespace CoreNs
 					pCircuit_->circuitGates_[j + pCircuit_->numGate_ * k].goodSimHigh_ = PARA_L;
 					if (j == pCircuit_->numPI_)
 					{
-						if (!pattern.shiftIn_.empty())
+						if (!pattern.SI_.empty())
 						{
-							if (pattern.shiftIn_[k - 1] == L)
+							if (pattern.SI_[k - 1] == L)
 							{
 								pCircuit_->circuitGates_[j + pCircuit_->numGate_ * k].goodSimLow_ = PARA_H;
 							}
-							else if (pattern.shiftIn_[k - 1] == H)
+							else if (pattern.SI_[k - 1] == H)
 							{
 								pCircuit_->circuitGates_[j + pCircuit_->numGate_ * k].goodSimHigh_ = PARA_H;
 							}

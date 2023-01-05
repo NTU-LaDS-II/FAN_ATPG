@@ -723,24 +723,24 @@ namespace CoreNs
 	{
 		for (int i = 0; i < pCircuit_->numPI_; ++i)
 		{
-			pattern.primaryInputs1st_[i] = pCircuit_->circuitGates_[i].atpgVal_;
+			pattern.PI1_[i] = pCircuit_->circuitGates_[i].atpgVal_;
 		}
-		// if (pattern.primaryInputs2nd_ != NULL && pCircuit_->numFrame_ > 1)
-		if (!(pattern.primaryInputs2nd_.empty()) && pCircuit_->numFrame_ > 1)
+		// if (pattern.PI2_ != NULL && pCircuit_->numFrame_ > 1)
+		if (!(pattern.PI2_.empty()) && pCircuit_->numFrame_ > 1)
 		{
 			for (int i = 0; i < pCircuit_->numPI_; ++i)
 			{
-				pattern.primaryInputs2nd_[i] = pCircuit_->circuitGates_[i + pCircuit_->numGate_].atpgVal_;
+				pattern.PI2_[i] = pCircuit_->circuitGates_[i + pCircuit_->numGate_].atpgVal_;
 			}
 		}
 		for (int i = 0; i < pCircuit_->numPPI_; ++i)
 		{
-			pattern.pseudoPrimaryInputs_[i] = pCircuit_->circuitGates_[pCircuit_->numPI_ + i].atpgVal_;
+			pattern.PPI_[i] = pCircuit_->circuitGates_[pCircuit_->numPI_ + i].atpgVal_;
 		}
-		// if (pattern.shiftIn_ != NULL && pCircuit_->numFrame_ > 1)
-		if (!(pattern.shiftIn_.empty()) && pCircuit_->numFrame_ > 1)
+		// if (pattern.SI_ != NULL && pCircuit_->numFrame_ > 1)
+		if (!(pattern.SI_.empty()) && pCircuit_->numFrame_ > 1)
 		{
-			pattern.shiftIn_[0] = (pCircuit_->timeFrameConnectType_ == Circuit::SHIFT) ? pCircuit_->circuitGates_[pCircuit_->numGate_ + pCircuit_->numPI_].atpgVal_ : X;
+			pattern.SI_[0] = (pCircuit_->timeFrameConnectType_ == Circuit::SHIFT) ? pCircuit_->circuitGates_[pCircuit_->numGate_ + pCircuit_->numPI_].atpgVal_ : X;
 		}
 	}
 
@@ -761,33 +761,33 @@ namespace CoreNs
 		{
 			if (pCircuit_->circuitGates_[offset + i].goodSimLow_ == PARA_H)
 			{
-				pattern.primaryOutputs1st_[i] = L;
+				pattern.PO1_[i] = L;
 			}
 			else if (pCircuit_->circuitGates_[offset + i].goodSimHigh_ == PARA_H)
 			{
-				pattern.primaryOutputs1st_[i] = H;
+				pattern.PO1_[i] = H;
 			}
 			else
 			{
-				pattern.primaryOutputs1st_[i] = X;
+				pattern.PO1_[i] = X;
 			}
 		}
 
-		if (!(pattern.primaryOutputs2nd_.empty()) && pCircuit_->numFrame_ > 1)
+		if (!(pattern.PO2_.empty()) && pCircuit_->numFrame_ > 1)
 		{
 			for (int i = 0; i < pCircuit_->numPO_; ++i)
 			{
 				if (pCircuit_->circuitGates_[offset + i + pCircuit_->numGate_].goodSimLow_ == PARA_H)
 				{
-					pattern.primaryOutputs2nd_[i] = L;
+					pattern.PO2_[i] = L;
 				}
 				else if (pCircuit_->circuitGates_[offset + i + pCircuit_->numGate_].goodSimHigh_ == PARA_H)
 				{
-					pattern.primaryOutputs2nd_[i] = H;
+					pattern.PO2_[i] = H;
 				}
 				else
 				{
-					pattern.primaryOutputs2nd_[i] = X;
+					pattern.PO2_[i] = X;
 				}
 			}
 		}
@@ -802,15 +802,15 @@ namespace CoreNs
 		{
 			if (pCircuit_->circuitGates_[offset + i].goodSimLow_ == PARA_H)
 			{
-				pattern.pseudoPrimaryOutputs_[i] = L;
+				pattern.PPO_[i] = L;
 			}
 			else if (pCircuit_->circuitGates_[offset + i].goodSimHigh_ == PARA_H)
 			{
-				pattern.pseudoPrimaryOutputs_[i] = H;
+				pattern.PPO_[i] = H;
 			}
 			else
 			{
-				pattern.pseudoPrimaryOutputs_[i] = X;
+				pattern.PPO_[i] = X;
 			}
 		}
 	}
@@ -998,78 +998,78 @@ namespace CoreNs
 		srand(0);
 		for (int i = 0; i < pCircuit_->numPI_; ++i)
 		{
-			if (pattern.primaryInputs1st_[i] == X)
+			if (pattern.PI1_[i] == X)
 			{
-				pattern.primaryInputs1st_[i] = rand() % 2;
+				pattern.PI1_[i] = rand() % 2;
 			}
 		}
 		for (int i = 0; i < pCircuit_->numPPI_; ++i)
 		{
-			if (pattern.pseudoPrimaryInputs_[i] == X)
+			if (pattern.PPI_[i] == X)
 			{
-				pattern.pseudoPrimaryInputs_[i] = rand() % 2;
+				pattern.PPI_[i] = rand() % 2;
 			}
 		}
-		if (!pattern.primaryInputs2nd_.empty())
+		if (!pattern.PI2_.empty())
 		{
 			for (int i = 0; i < pCircuit_->numPI_; ++i)
 			{
-				if (pattern.primaryInputs2nd_[i] == X)
+				if (pattern.PI2_[i] == X)
 				{
-					pattern.primaryInputs2nd_[i] = rand() % 2;
+					pattern.PI2_[i] = rand() % 2;
 				}
 			}
 		}
-		if (!pattern.shiftIn_.empty())
+		if (!pattern.SI_.empty())
 		{
-			if (pattern.shiftIn_[0] == X)
+			if (pattern.SI_[0] == X)
 			{
-				pattern.shiftIn_[0] = rand() % 2;
+				pattern.SI_[0] = rand() % 2;
 			}
 		}
 	}
 
 	inline void Atpg::adjacentFill(Pattern &pattern)
 	{
-		if (pattern.primaryInputs1st_[0] == X)
+		if (pattern.PI1_[0] == X)
 		{
-			pattern.primaryInputs1st_[0] = L;
+			pattern.PI1_[0] = L;
 		}
 		for (int i = 1; i < pCircuit_->numPI_; ++i)
 		{
-			if (pattern.primaryInputs1st_[i] == X)
+			if (pattern.PI1_[i] == X)
 			{
-				pattern.primaryInputs1st_[i] = pattern.primaryInputs1st_[i - 1];
+				pattern.PI1_[i] = pattern.PI1_[i - 1];
 			}
 		}
 
-		if (pattern.pseudoPrimaryInputs_[0] == X)
+		if (pattern.PPI_[0] == X)
 		{
-			pattern.pseudoPrimaryInputs_[0] = pattern.primaryInputs1st_[pCircuit_->numPI_ - 1];
+			pattern.PPI_[0] = pattern.PI1_[pCircuit_->numPI_ - 1];
 		}
 		for (int i = 1; i < pCircuit_->numPPI_; ++i)
 		{
-			if (pattern.pseudoPrimaryInputs_[i] == X)
+			if (pattern.PPI_[i] == X)
 			{
-				pattern.pseudoPrimaryInputs_[i] = pattern.pseudoPrimaryInputs_[i - 1];
+				pattern.PPI_[i] = pattern.PPI_[i - 1];
 			}
 		}
 
-		if (!pattern.primaryInputs2nd_.empty())
+		if (!pattern.PI2_.empty())
 		{
 			for (int i = 0; i < pCircuit_->numPI_; ++i)
 			{
-				if (pattern.primaryInputs2nd_[i] == X)
+				if (pattern.PI2_[i] == X)
 				{
-					pattern.primaryInputs2nd_[i] = pattern.primaryInputs1st_[i];
+					pattern.PI2_[i] = pattern.PI1_[i];
 				}
 			}
 		}
-		if (!pattern.shiftIn_.empty())
+		if (!pattern.SI_.empty())
 		{
-			if (pattern.shiftIn_[0] == X)
+			if (pattern.SI_[0] == X)
 			{
-				pattern.shiftIn_[0] = L;
+				pattern.SI_[0] = L;
 			}
 		}
 	}

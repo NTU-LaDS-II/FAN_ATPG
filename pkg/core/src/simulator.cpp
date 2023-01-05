@@ -565,61 +565,61 @@ void Simulator::parallelPatternSetPattern(PatternProcessor *pPatternProcessor, c
 	for (int j = patternStartIndex; j < endpat; ++j)
 	{
 		// assign PI
-		if (!pPatternProcessor->patternVector_[j].primaryInputs1st_.empty())
+		if (!pPatternProcessor->patternVector_[j].PI1_.empty())
 		{
 			for (int k = 0; k < pPatternProcessor->numPI_; ++k)
 			{
-				if (pPatternProcessor->patternVector_[j].primaryInputs1st_[k] == L)
+				if (pPatternProcessor->patternVector_[j].PI1_[k] == L)
 				{
 					setBitValue(pCircuit_->circuitGates_[k].goodSimLow_, j - patternStartIndex, H);
 				}
-				else if (pPatternProcessor->patternVector_[j].primaryInputs1st_[k] == H)
+				else if (pPatternProcessor->patternVector_[j].PI1_[k] == H)
 				{
 					setBitValue(pCircuit_->circuitGates_[k].goodSimHigh_, j - patternStartIndex, H);
 				}
 			}
 		}
 
-		if (!pPatternProcessor->patternVector_[j].primaryInputs2nd_.empty() && pCircuit_->numFrame_ > 1)
+		if (!pPatternProcessor->patternVector_[j].PI2_.empty() && pCircuit_->numFrame_ > 1)
 		{
 			for (int k = 0; k < pPatternProcessor->numPI_; ++k)
 			{
 				int index = k + pCircuit_->numGate_;
-				if (pPatternProcessor->patternVector_[j].primaryInputs2nd_[k] == L)
+				if (pPatternProcessor->patternVector_[j].PI2_[k] == L)
 				{
 					setBitValue(pCircuit_->circuitGates_[index].goodSimLow_, j - patternStartIndex, H);
 				}
-				else if (pPatternProcessor->patternVector_[j].primaryInputs2nd_[k] == H)
+				else if (pPatternProcessor->patternVector_[j].PI2_[k] == H)
 				{
 					setBitValue(pCircuit_->circuitGates_[index].goodSimHigh_, j - patternStartIndex, H);
 				}
 			}
 		}
 		// assign PPI
-		if (!pPatternProcessor->patternVector_[j].pseudoPrimaryInputs_.empty())
+		if (!pPatternProcessor->patternVector_[j].PPI_.empty())
 		{
 			for (int k = 0; k < pPatternProcessor->numPPI_; ++k)
 			{
 				int index = k + pCircuit_->numPI_;
-				if (pPatternProcessor->patternVector_[j].pseudoPrimaryInputs_[k] == L)
+				if (pPatternProcessor->patternVector_[j].PPI_[k] == L)
 				{
 					setBitValue(pCircuit_->circuitGates_[index].goodSimLow_, j - patternStartIndex, H);
 				}
-				else if (pPatternProcessor->patternVector_[j].pseudoPrimaryInputs_[k] == H)
+				else if (pPatternProcessor->patternVector_[j].PPI_[k] == H)
 				{
 					setBitValue(pCircuit_->circuitGates_[index].goodSimHigh_, j - patternStartIndex, H);
 				}
 			}
 		}
 
-		if (!pPatternProcessor->patternVector_[j].shiftIn_.empty() && pCircuit_->numFrame_ > 1 && pCircuit_->timeFrameConnectType_ == Circuit::SHIFT)
+		if (!pPatternProcessor->patternVector_[j].SI_.empty() && pCircuit_->numFrame_ > 1 && pCircuit_->timeFrameConnectType_ == Circuit::SHIFT)
 		{
 			int index = pCircuit_->numGate_ + pCircuit_->numPI_;
-			if (pPatternProcessor->patternVector_[j].shiftIn_[0] == L)
+			if (pPatternProcessor->patternVector_[j].SI_[0] == L)
 			{
 				setBitValue(pCircuit_->circuitGates_[index].goodSimLow_, j - patternStartIndex, H);
 			}
-			else if (pPatternProcessor->patternVector_[j].shiftIn_[0] == H)
+			else if (pPatternProcessor->patternVector_[j].SI_[0] == H)
 			{
 				setBitValue(pCircuit_->circuitGates_[index].goodSimHigh_, j - patternStartIndex, H);
 			}

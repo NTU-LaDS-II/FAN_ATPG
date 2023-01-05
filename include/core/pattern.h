@@ -16,35 +16,30 @@
 
 namespace CoreNs
 {
-
-	// Not used now
-	// class Vertex;
-	// typedef std::vector<Vertex *> VertexVec;
-	// end of compatibility graph
 	class Pattern
 	{
 	public:
 		inline Pattern() {}
 		inline Pattern(Circuit *pCircuit);
-		std::vector<Value> primaryInputs1st_;
-		std::vector<Value> primaryInputs2nd_;
-		std::vector<Value> pseudoPrimaryInputs_;
-		std::vector<Value> shiftIn_;
-		std::vector<Value> primaryOutputs1st_;
-		std::vector<Value> primaryOutputs2nd_;
-		std::vector<Value> pseudoPrimaryOutputs_;
+		std::vector<Value> PI1_;
+		std::vector<Value> PI2_;
+		std::vector<Value> PPI_;
+		std::vector<Value> SI_;
+		std::vector<Value> PO1_;
+		std::vector<Value> PO2_;
+		std::vector<Value> PPO_;
 		inline void initForTransitionDelayFault(Circuit *pCircuit);
 	};
 	inline Pattern::Pattern(Circuit *pCircuit)
-			: primaryInputs1st_(pCircuit->numPI_),
-				pseudoPrimaryInputs_(pCircuit->numPPI_),
-				primaryOutputs1st_(pCircuit->numPO_),
-				pseudoPrimaryOutputs_(pCircuit->numPPI_){};
+			: PI1_(pCircuit->numPI_),
+				PPI_(pCircuit->numPPI_),
+				PO1_(pCircuit->numPO_),
+				PPO_(pCircuit->numPPI_){};
 	inline void Pattern::initForTransitionDelayFault(Circuit *pCircuit)
 	{
-		primaryInputs2nd_.resize(pCircuit->numPI_);
-		primaryOutputs2nd_.resize(pCircuit->numPO_);
-		shiftIn_.resize(1);
+		PI2_.resize(pCircuit->numPI_);
+		PO2_.resize(pCircuit->numPO_);
+		SI_.resize(1);
 	}
 
 	// This class process the test pattern set
@@ -65,11 +60,6 @@ namespace CoreNs
 		};
 
 		inline PatternProcessor();
-		// ~PatternProcessor();
-
-		//  pattern set attribute
-		//  dynamic compression should be moved to ATPG  (E.4)
-		//  static compression and x fill should be rewritten as two independent methods (A.1)
 		enum State
 		{
 			OFF = 0,
@@ -93,13 +83,12 @@ namespace CoreNs
 		// Fixed static compression
 		void StaticCompression();
 		bool updateTable(std::vector<bool> mergeRecord, std::vector<bool> patternTable);
-		// bool updateTable2(std::vector<bool> mergeRecord, std::vector<bool> patternTable); not used, hence removed
 	};
 
 	inline PatternProcessor::PatternProcessor()
 	{
 		staticCompression_ = OFF;
-		dynamicCompression_ = OFF; // dynamic compression should be moved to ATPG
+		dynamicCompression_ = OFF;
 		XFill_ = OFF;
 
 		type_ = BASIC_SCAN;
@@ -108,14 +97,6 @@ namespace CoreNs
 		numSI_ = 0;
 		numPO_ = 0;
 	}
-
-	// inline PatternProcessor::~PatternProcessor()
-	// {
-	// 	patternVector_.clear();
-	// 	pPIorder_.clear();
-	// 	pPPIorder_.clear();
-	// 	pPOorder_.clear();
-	// }
 
 	inline void PatternProcessor::init(Circuit *pCircuit)
 	{
@@ -148,39 +129,31 @@ namespace CoreNs
 
 	// **************************************************************************
 	// Function   [ PatternProcessor::StaticCompression ]
-	// Commenter  [ HKY CYW ]
+	// Commenter  [ HKY, CYW, CHT ]
 	// Synopsis   [ usage: do static compression
-	// 		We first compare each pair of the patterns and check whether they are compatible.
-	// 		If so, we will merge these patterns bit by bit
-	// 		Note that
-	// 		Value L = 0
-	// 		Value H = 1
-	// 		Value X = 3
-	// 		And the rule of compression
-	// 		(X,L) -> L
-	// 		(X,H) -> H
-	//		So when we merge two patterns, always let the bit to be the smaller one.
-	//		That is, always don't use X as a result if one bit is L or H.
-	//              in:    Pattern list
-	//              out:   void
-	//            ]
-	// Date       [ HKY Ver. 1.0 started 2014/09/01 ]
+	//							description:
+	//								Compare each pair of the patterns and check
+	// 								whether they are compatible.
+	// 								(i.e. can be merged without value assignment conflict)
+	// 								If so, merge these patterns bit by bit.
+	// 								The rule of compression: (X,L) -> L, (X,H) -> H
+	//						]
+	// Date       [ HKY Ver. 1.0 started 2014/09/01 last modified 2023/01/05 ]
 	// **************************************************************************
 	inline void PatternProcessor::StaticCompression()
 	{
 		const size_t &size = patternVector_.size();
-		std::vector<bool> mergeRecord(size);
-		for (size_t i = 0; i < size; ++i)
-		{
-			mergeRecord[i] = false;
-		}
-		// bool *patternTable = new bool[size * size]();
+		std::vector<bool> mergeRecord(size, false);
+		// for (size_t i = 0; i < size; ++i)
+		// {
+		// 	mergeRecord[i] = false;
+		// }
 		std::vector<bool> patternTable(size * size);
 		for (size_t i = 0; i < size; ++i)
 		{
 			patternTable[i * size + i] = true;
 		}
-		// for each pair of patterns, build pattern table
+		// build pattern table for each pair of patterns
 		for (size_t i = 0; i < size - 1; ++i)
 		{
 			if (mergeRecord[i] == true)
@@ -197,40 +170,39 @@ namespace CoreNs
 				bool compatible = true; // Can be merged into one
 				for (int k = 0; k < numPI_; ++k)
 				{ // If any bit of the patterns has different values(one is high and one is low), the patterns are not compatible
-					if (((patternVector_[i].primaryInputs1st_[k] == L) && (patternVector_[j].primaryInputs1st_[k] == H)) || ((patternVector_[i].primaryInputs1st_[k] == H) && (patternVector_[j].primaryInputs1st_[k] == L)))
+					if (((patternVector_[i].PI1_[k] == L) && (patternVector_[j].PI1_[k] == H)) || ((patternVector_[i].PI1_[k] == H) && (patternVector_[j].PI1_[k] == L)))
 					{
 						compatible = false;
 						break;
 					}
 				}
-				if (!(patternVector_[i].primaryInputs2nd_.empty()) && (compatible == true))
-				{ // If the pattern has second primary input, we have to check it too
+				if (!(patternVector_[i].PI2_.empty()) && (compatible == true))
+				{ // If the pattern has second primary input, need to check it too
 					for (int k = 0; k < numPI_; ++k)
 					{
-						if (((patternVector_[i].primaryInputs2nd_[k] == L) && (patternVector_[j].primaryInputs2nd_[k] == H)) || ((patternVector_[i].primaryInputs2nd_[k] == H) && (patternVector_[j].primaryInputs2nd_[k] == L)))
+						if (((patternVector_[i].PI2_[k] == L) && (patternVector_[j].PI2_[k] == H)) || ((patternVector_[i].PI2_[k] == H) && (patternVector_[j].PI2_[k] == L)))
 						{
 							compatible = false;
 							break;
 						}
 					}
 				}
-				if (!(patternVector_[i].pseudoPrimaryInputs_.empty()) && (compatible == true))
+				if (!(patternVector_[i].PPI_.empty()) && (compatible == true))
 				{ // Check ppi
 					for (int k = 0; k < numPPI_; ++k)
 					{
-						if (((patternVector_[i].pseudoPrimaryInputs_[k] == L) && (patternVector_[j].pseudoPrimaryInputs_[k] == H)) || ((patternVector_[i].pseudoPrimaryInputs_[k] == H) && (patternVector_[j].pseudoPrimaryInputs_[k] == L)))
+						if (((patternVector_[i].PPI_[k] == L) && (patternVector_[j].PPI_[k] == H)) || ((patternVector_[i].PPI_[k] == H) && (patternVector_[j].PPI_[k] == L)))
 						{
 							compatible = false;
 							break;
 						}
 					}
 				}
-				// if ((patternVector_[i].shiftIn_ != NULL) && (compatible == true))
-				if (!(patternVector_[i].shiftIn_.empty()) && (compatible == true))
+				if (!(patternVector_[i].SI_.empty()) && (compatible == true))
 				{ // Check si
 					for (int k = 0; k < numSI_; ++k)
 					{
-						if (((patternVector_[i].shiftIn_[k] == L) && (patternVector_[j].shiftIn_[k] == H)) || ((patternVector_[i].shiftIn_[k] == H) && (patternVector_[j].shiftIn_[k] == L)))
+						if (((patternVector_[i].SI_[k] == L) && (patternVector_[j].SI_[k] == H)) || ((patternVector_[i].SI_[k] == H) && (patternVector_[j].SI_[k] == L)))
 						{
 							compatible = false;
 							break;
@@ -250,17 +222,7 @@ namespace CoreNs
 				}
 			}
 		}
-		// std::cout << "Finish build table" << std::endl;
 
-		// show pattern table
-		/*
-		for (int i=0; i<size; ++i){
-				for (int j=0; j<size; ++j){
-						std::cout<<patternTable[i*size+j]<<" ";
-				}
-				std::cout<<std::endl;
-		}
-		*/
 		// for each pair of patterns, try to merge them
 		updateTable(mergeRecord, patternTable);
 		// replace Pattern
@@ -274,7 +236,28 @@ namespace CoreNs
 		}
 		patternVector_ = compPattern;
 	}
-
+	// **************************************************************************
+	// Function   [ PatternProcessor::updateTable ]
+	// Commenter  [ CHT ]
+	// Synopsis   [ usage: Function called in StaticCompression()
+	//										 Try merging patterns according to the information
+	//										 given in the two input arguements.
+	//							description:
+	//										 First stores each pair of compatible patterns,
+	//										 and calculate their similarity.
+	//										 If no patterns can be merged, break and return false.
+	//										 Each time try merging the pairs with max similarity
+	//										 and update the mergeRecord and patternTable.
+	//										 Repeat the procedure until no remainging candidates.
+	//							arguments:
+	// 								[in] mergeRecord : Stores whether each pattern can be merged.
+	// 								[in] patternTable : Stores whether each pair of patterns can
+	//																		be merged.
+	// 								[out] bool : true if patterns merged successfully;
+	//														 false if patterns can't be compressed correctly.
+	//						]
+	// Date       [ CHT started 2023/01/05 ]
+	// **************************************************************************
 	inline bool PatternProcessor::updateTable(std::vector<bool> mergeRecord, std::vector<bool> patternTable)
 	{
 		const size_t &size = patternVector_.size();
@@ -294,7 +277,6 @@ namespace CoreNs
 			}
 		}
 		// update similarity pattern pair candidate
-		// std::cout<<"FIRST similarity pattern pair candidate"<<std::endl;
 		for (Pattern_table::iterator it = patternCandidate.begin(); it != patternCandidate.end(); ++it)
 		{
 			int i = it->first.first;
@@ -302,7 +284,6 @@ namespace CoreNs
 			int similararityCount = 0;
 			for (size_t k = 0; k < size; ++k)
 			{
-				// if(mergeRecord[k]){continue;}
 				if (patternTable[i * size + k] && patternTable[i * size + k] == patternTable[j * size + k])
 				{
 					++similararityCount;
@@ -313,12 +294,11 @@ namespace CoreNs
 
 		while (!patternCandidate.empty())
 		{
-
-			std::vector<bool> updateSimilarityPattern(size);
-			for (size_t i = 0; i < size; ++i)
-			{
-				updateSimilarityPattern[i] = false;
-			}
+			std::vector<bool> updateSimilarityPattern(size, false);
+			// for (size_t i = 0; i < size; ++i)
+			// {
+			// 	updateSimilarityPattern[i] = false;
+			// }
 			int similarityPattern_first = 0;
 			int similarityPattern_second = 0;
 			int maxSimilarity = 0;
@@ -335,8 +315,8 @@ namespace CoreNs
 			{
 				return false;
 			}
-			// std::cout<<"-----MERGE PAIR "<<similarityPattern_first<<" "<<similarityPattern_second<<std::endl;
-			// del_first_pattern
+
+			// delete first pattern
 			std::vector<int> del_first_pattern;
 			if (maxSimilarity != 0)
 			{
@@ -379,7 +359,7 @@ namespace CoreNs
 					continue;
 				}
 
-				if (similarityPattern_second == i)
+				if ((size_t)similarityPattern_second == i)
 				{
 					continue;
 				}
@@ -392,7 +372,6 @@ namespace CoreNs
 			const size_t &del_second_pattern_size = del_second_pattern.size();
 			for (size_t i = 0; i < del_second_pattern_size; ++i)
 			{
-				// std::cout<<del_second_pattern[i]<<"-"<<similarityPattern_second<<std::endl;
 				if (del_second_pattern[i] < similarityPattern_second)
 				{
 					Pattern_pair temp_pair(del_second_pattern[i], similarityPattern_second);
@@ -404,72 +383,58 @@ namespace CoreNs
 					patternCandidate.erase(temp_pair);
 				}
 			}
-			// merge pattern
+			// merge patterns
 			if (maxSimilarity != 0)
 			{
 				int i = similarityPattern_first;
 				int j = similarityPattern_second;
 				for (int k = 0; k < numPI_; ++k)
 				{
-					patternVector_[i].primaryInputs1st_[k] = (patternVector_[i].primaryInputs1st_[k] < patternVector_[j].primaryInputs1st_[k]) ? patternVector_[i].primaryInputs1st_[k] : patternVector_[j].primaryInputs1st_[k];
+					patternVector_[i].PI1_[k] = (patternVector_[i].PI1_[k] < patternVector_[j].PI1_[k]) ? patternVector_[i].PI1_[k] : patternVector_[j].PI1_[k];
 				}
-				if (!patternVector_[i].primaryInputs2nd_.empty())
+				if (!patternVector_[i].PI2_.empty())
 				{
 					for (int k = 0; k < numPI_; ++k)
 					{
-						patternVector_[i].primaryInputs2nd_[k] = (patternVector_[i].primaryInputs2nd_[k] < patternVector_[j].primaryInputs2nd_[k]) ? patternVector_[i].primaryInputs2nd_[k] : patternVector_[j].primaryInputs2nd_[k];
+						patternVector_[i].PI2_[k] = (patternVector_[i].PI2_[k] < patternVector_[j].PI2_[k]) ? patternVector_[i].PI2_[k] : patternVector_[j].PI2_[k];
 					}
 				}
-				if (!patternVector_[i].pseudoPrimaryInputs_.empty())
+				if (!patternVector_[i].PPI_.empty())
 				{
 					for (int k = 0; k < numPPI_; ++k)
 					{
-						patternVector_[i].pseudoPrimaryInputs_[k] = (patternVector_[i].pseudoPrimaryInputs_[k] < patternVector_[j].pseudoPrimaryInputs_[k]) ? patternVector_[i].pseudoPrimaryInputs_[k] : patternVector_[j].pseudoPrimaryInputs_[k];
+						patternVector_[i].PPI_[k] = (patternVector_[i].PPI_[k] < patternVector_[j].PPI_[k]) ? patternVector_[i].PPI_[k] : patternVector_[j].PPI_[k];
 					}
 				}
-				if (!patternVector_[i].shiftIn_.empty())
+				if (!patternVector_[i].SI_.empty())
 				{
 					for (int k = 0; k < numSI_; ++k)
 					{
-						patternVector_[i].shiftIn_[k] = (patternVector_[i].shiftIn_[k] < patternVector_[j].shiftIn_[k]) ? patternVector_[i].shiftIn_[k] : patternVector_[j].shiftIn_[k];
+						patternVector_[i].SI_[k] = (patternVector_[i].SI_[k] < patternVector_[j].SI_[k]) ? patternVector_[i].SI_[k] : patternVector_[j].SI_[k];
 					}
 				}
 
 				for (int k = 0; k < numPO_; ++k)
 				{
-					patternVector_[i].primaryOutputs1st_[k] = (patternVector_[i].primaryOutputs1st_[k] < patternVector_[j].primaryOutputs1st_[k]) ? patternVector_[i].primaryOutputs1st_[k] : patternVector_[j].primaryOutputs1st_[k];
+					patternVector_[i].PO1_[k] = (patternVector_[i].PO1_[k] < patternVector_[j].PO1_[k]) ? patternVector_[i].PO1_[k] : patternVector_[j].PO1_[k];
 				}
-				if (!patternVector_[i].primaryOutputs2nd_.empty())
+				if (!patternVector_[i].PO2_.empty())
 				{
 					for (int k = 0; k < numPO_; ++k)
 					{
-						patternVector_[i].primaryOutputs2nd_[k] = (patternVector_[i].primaryOutputs2nd_[k] < patternVector_[j].primaryOutputs2nd_[k]) ? patternVector_[i].primaryOutputs2nd_[k] : patternVector_[j].primaryOutputs2nd_[k];
+						patternVector_[i].PO2_[k] = (patternVector_[i].PO2_[k] < patternVector_[j].PO2_[k]) ? patternVector_[i].PO2_[k] : patternVector_[j].PO2_[k];
 					}
 				}
-				if (!patternVector_[i].pseudoPrimaryOutputs_.empty())
+				if (!patternVector_[i].PPO_.empty())
 				{
 					for (int k = 0; k < numPPI_; ++k)
 					{
-						patternVector_[i].pseudoPrimaryOutputs_[k] = (patternVector_[i].pseudoPrimaryOutputs_[k] < patternVector_[j].pseudoPrimaryOutputs_[k]) ? patternVector_[i].pseudoPrimaryOutputs_[k] : patternVector_[j].pseudoPrimaryOutputs_[k];
+						patternVector_[i].PPO_[k] = (patternVector_[i].PPO_[k] < patternVector_[j].PPO_[k]) ? patternVector_[i].PPO_[k] : patternVector_[j].PPO_[k];
 					}
 				}
 				mergeRecord[j] = true;
 			}
-			// update similarity pattern pair candidate
-			// std::cout<<"--AFTER-------------------"<<std::endl;
-			/*
-			for(Pattern_table::iterator it = patternCandidate.begin(); it !=patternCandidate.end(); ++it){
-					int i = it->first.first;
-					int j = it->first.second;
-					int similararityCount = 0;
-					for(int k = 0; k<size;++k){
-							if(mergeRecord[k]){continue;}
-							if(patternTable[i*size+k] && patternTable[i*size+k]==patternTable[j*size+k]){++similararityCount;}
-					}
-					it->second = similararityCount;
-					//std::cout<<"PAT "<<i<<" "<<j<<" "<<it->second<<std::endl;
-			}
-			*/
+
 			// update similarity pattern pair candidate
 			for (size_t i = 0; i < size; ++i)
 			{
@@ -526,330 +491,6 @@ namespace CoreNs
 		}
 		return true;
 	}
-	// This is for static compression using compatibility graph
-	//
-	// new static compression, Not In Used
-
-	// inline bool PatternProcessor::updateTable2(std::vector<bool> mergeRecord, std::vector<bool> patternTable)
-	// {
-	// 	int size = (int)patternVector_.size();
-	// 	typedef std::pair<int, int> Pattern_pair;
-	// 	typedef std::map<Pattern_pair, int> Pattern_table;
-	// 	Pattern_table patternCandidate;
-	// 	std::map<int, int> Node_size;
-
-	// 	// find pattern pair candidate
-	// 	for (int i = 0; i < size - 1; ++i)
-	// 	{
-	// 		for (int j = i + 1; j < size; ++j)
-	// 		{
-	// 			if (patternTable[i * size + j])
-	// 			{
-	// 				Pattern_pair temp_pair(i, j);
-	// 				patternCandidate[temp_pair] = 0;
-	// 			}
-	// 		}
-	// 		Node_size[i] = 1;
-	// 	}
-	// 	// update similarity pattern pair candidate
-	// 	// std::cout<<"FIRST similarity pattern pair candidate"<<std::endl;
-	// 	for (Pattern_table::iterator it = patternCandidate.begin(); it != patternCandidate.end(); ++it)
-	// 	{
-	// 		int i = it->first.first;
-	// 		int j = it->first.second;
-	// 		int similararityCount = 0;
-	// 		for (int k = 0; k < size; ++k)
-	// 		{
-	// 			// if(mergeRecord[k]){continue;}
-	// 			if (patternTable[i * size + k] && patternTable[i * size + k] == patternTable[j * size + k])
-	// 			{
-	// 				++similararityCount;
-	// 			}
-	// 		}
-	// 		it->second = similararityCount;
-	// 		// std::cout<<"PAT "<<i<<" "<<j<<" "<<it->second<<std::endl;
-	// 	}
-
-	// 	while (!patternCandidate.empty())
-	// 	{
-
-	// 		// bool updateSimilarityPattern[size];
-	// 		std::vector<bool> updateSimilarityPattern(size);
-	// 		for (int i = 0; i < size; ++i)
-	// 		{
-	// 			updateSimilarityPattern[i] = false;
-	// 		}
-	// 		int similarityPattern_first = 0;
-	// 		int similarityPattern_second = 0;
-	// 		int maxSimilarity = 0;
-	// 		// martan
-	// 		int max_pair_size = 0;
-	// 		// std::cout<<"--------------begin----------------"<<std::endl;//
-
-	// 		for (Pattern_table::iterator it = patternCandidate.begin(); it != patternCandidate.end(); ++it)
-	// 		{
-
-	// 			// std::cout<<"similarity:"<<it->second<<" pair size:"<<(Node_size[it->first.first]+Node_size[it->first.second])<<std::endl;//
-
-	// 			if (it->second > maxSimilarity)
-	// 			{
-	// 				max_pair_size = 0;
-	// 			}
-
-	// 			if (it->second >= maxSimilarity)
-	// 			{
-	// 				maxSimilarity = it->second;
-	// 				// similarityPattern_first=it->first.first;
-	// 				// similarityPattern_second=it->first.second;
-
-	// 				if ((Node_size[it->first.first] + Node_size[it->first.second]) > max_pair_size)
-	// 				{
-	// 					max_pair_size = Node_size[it->first.first] + Node_size[it->first.second];
-
-	// 					similarityPattern_first = it->first.first;
-	// 					similarityPattern_second = it->first.second;
-
-	// 					// std::cout<<"-->update"<<std::endl;//
-	// 					// std::cout<<"similarity:"<<it->second<<" pair size:"<<(Node_size[it->first.first]+Node_size[it->first.second])<<std::endl;//
-	// 					// std::cout<<"-->update"<<std::endl;//
-	// 				}
-	// 			}
-	// 		}
-	// 		// std::cout<<" pair size:"<<(Node_size[similarityPattern_first]+Node_size[similarityPattern_second])<<std::endl;//
-	// 		// std::cout<<"--------------end----------------"<<std::endl;//
-
-	// 		if (maxSimilarity == 0)
-	// 		{
-	// 			return false;
-	// 		}
-	// 		// std::cout<<"-----MERGE PAIR "<<similarityPattern_first<<" "<<similarityPattern_second<<std::endl;
-	// 		// del_first_pattern
-	// 		std::vector<int> del_first_pattern;
-	// 		if (maxSimilarity != 0)
-	// 		{
-	// 			int i = similarityPattern_first;
-	// 			int j = similarityPattern_second;
-	// 			for (int k = 0; k < size; ++k)
-	// 			{
-	// 				if (mergeRecord[k])
-	// 				{
-	// 					continue;
-	// 				}
-	// 				if (patternTable[i * size + k] == 1 && patternTable[j * size + k] == 0)
-	// 				{
-	// 					// std::cout<<"FUCK "<<i<<" "<<k<<std::endl;
-	// 					del_first_pattern.push_back(k);
-	// 				}
-	// 				updateSimilarityPattern[k] = patternTable[i * size + k] || patternTable[j * size + k];
-	// 				patternTable[i * size + k] = patternTable[i * size + k] && patternTable[j * size + k];
-	// 				patternTable[k * size + i] = patternTable[i * size + k];
-	// 			}
-	// 		}
-	// 		int del_first_pattern_size = (int)del_first_pattern.size();
-	// 		for (int i = 0; i < del_first_pattern_size; ++i)
-	// 		{
-	// 			// std::cout<<del_first_pattern[i]<<"-"<<similarityPattern_first<<std::endl;
-	// 			if (del_first_pattern[i] < similarityPattern_first)
-	// 			{
-	// 				Pattern_pair temp_pair(del_first_pattern[i], similarityPattern_first);
-	// 				patternCandidate.erase(temp_pair);
-	// 			}
-	// 			else
-	// 			{
-	// 				Pattern_pair temp_pair(similarityPattern_first, del_first_pattern[i]);
-	// 				patternCandidate.erase(temp_pair);
-	// 			}
-	// 		}
-	// 		std::vector<int> del_second_pattern;
-	// 		for (int i = 0; i < size; ++i)
-	// 		{
-	// 			if (mergeRecord[i])
-	// 			{
-	// 				continue;
-	// 			}
-	// 			if (similarityPattern_second == i)
-	// 			{
-	// 				continue;
-	// 			}
-	// 			if (patternTable[similarityPattern_second * size + i])
-	// 			{
-	// 				del_second_pattern.push_back(i);
-	// 			}
-	// 		}
-	// 		int del_second_pattern_size = (int)del_second_pattern.size();
-	// 		for (int i = 0; i < del_second_pattern_size; ++i)
-	// 		{
-	// 			// std::cout<<del_second_pattern[i]<<"-"<<similarityPattern_second<<std::endl;
-	// 			if (del_second_pattern[i] < similarityPattern_second)
-	// 			{
-	// 				Pattern_pair temp_pair(del_second_pattern[i], similarityPattern_second);
-	// 				patternCandidate.erase(temp_pair);
-	// 			}
-	// 			else
-	// 			{
-	// 				Pattern_pair temp_pair(similarityPattern_second, del_second_pattern[i]);
-	// 				patternCandidate.erase(temp_pair);
-	// 			}
-	// 		}
-	// 		// merge pattern
-	// 		if (maxSimilarity != 0)
-	// 		{
-	// 			// std::cout<<"MERGE???"<<std::endl;
-	// 			int i = similarityPattern_first;
-	// 			int j = similarityPattern_second;
-	// 			for (int k = 0; k < numPI_; ++k)
-	// 			{
-	// 				patternVector_[i].primaryInputs1st_[k] = (patternVector_[i].primaryInputs1st_[k] < patternVector_[j].primaryInputs1st_[k]) ? patternVector_[i].primaryInputs1st_[k] : patternVector_[j].primaryInputs1st_[k];
-	// 			}
-	// 			if (patternVector_[i].primaryInputs2nd_ != NULL)
-	// 			{
-	// 				for (int k = 0; k < numPI_; ++k)
-	// 				{
-	// 					patternVector_[i].primaryInputs2nd_[k] = (patternVector_[i].primaryInputs2nd_[k] < patternVector_[j].primaryInputs2nd_[k]) ? patternVector_[i].primaryInputs2nd_[k] : patternVector_[j].primaryInputs2nd_[k];
-	// 				}
-	// 			}
-	// 			if (patternVector_[i].pseudoPrimaryInputs_ != NULL)
-	// 			{
-	// 				for (int k = 0; k < numPPI_; ++k)
-	// 				{
-	// 					patternVector_[i].pseudoPrimaryInputs_[k] = (patternVector_[i].pseudoPrimaryInputs_[k] < patternVector_[j].pseudoPrimaryInputs_[k]) ? patternVector_[i].pseudoPrimaryInputs_[k] : patternVector_[j].pseudoPrimaryInputs_[k];
-	// 				}
-	// 			}
-	// 			if (patternVector_[i].shiftIn_ != NULL)
-	// 			{
-	// 				for (int k = 0; k < numSI_; ++k)
-	// 				{
-	// 					patternVector_[i].shiftIn_[k] = (patternVector_[i].shiftIn_[k] < patternVector_[j].shiftIn_[k]) ? patternVector_[i].shiftIn_[k] : patternVector_[j].shiftIn_[k];
-	// 				}
-	// 			}
-
-	// 			for (int k = 0; k < numPO_; ++k)
-	// 			{
-	// 				patternVector_[i].primaryOutputs1st_[k] = (patternVector_[i].primaryOutputs1st_[k] < patternVector_[j].primaryOutputs1st_[k]) ? patternVector_[i].primaryOutputs1st_[k] : patternVector_[j].primaryOutputs1st_[k];
-	// 			}
-	// 			if (patternVector_[i].primaryOutputs2nd_ != NULL)
-	// 			{
-	// 				for (int k = 0; k < numPO_; ++k)
-	// 				{
-	// 					patternVector_[i].primaryOutputs2nd_[k] = (patternVector_[i].primaryOutputs2nd_[k] < patternVector_[j].primaryOutputs2nd_[k]) ? patternVector_[i].primaryOutputs2nd_[k] : patternVector_[j].primaryOutputs2nd_[k];
-	// 				}
-	// 			}
-	// 			if (patternVector_[i].pseudoPrimaryOutputs_ != NULL)
-	// 			{
-	// 				for (int k = 0; k < numPPI_; ++k)
-	// 				{
-	// 					patternVector_[i].pseudoPrimaryOutputs_[k] = (patternVector_[i].pseudoPrimaryOutputs_[k] < patternVector_[j].pseudoPrimaryOutputs_[k]) ? patternVector_[i].pseudoPrimaryOutputs_[k] : patternVector_[j].pseudoPrimaryOutputs_[k];
-	// 				}
-	// 			}
-	// 			mergeRecord[j] = true;
-
-	// 			Node_size[i] += 1;
-	// 			Node_size[j] = 0;
-	// 		}
-	// 		// update similarity pattern pair candidate
-	// 		// std::cout<<"--AFTER-------------------"<<std::endl;
-	// 		/*
-	// 		for(Pattern_table::iterator it = patternCandidate.begin(); it !=patternCandidate.end(); ++it){
-	// 				int i = it->first.first;
-	// 				int j = it->first.second;
-	// 				int similararityCount = 0;
-	// 				for(int k = 0; k<size;++k){
-	// 						if(mergeRecord[k]){continue;}
-	// 						if(patternTable[i*size+k] && patternTable[i*size+k]==patternTable[j*size+k]){++similararityCount;}
-	// 				}
-	// 				it->second = similararityCount;
-	// 				//std::cout<<"PAT "<<i<<" "<<j<<" "<<it->second<<std::endl;
-	// 		}
-	// 		*/
-	// 		// update similarity pattern pair candidate
-	// 		for (int i = 0; i < size; ++i)
-	// 		{
-	// 			if (mergeRecord[i])
-	// 			{
-	// 				continue;
-	// 			}
-	// 			if (updateSimilarityPattern[i])
-	// 			{
-	// 				for (int j = 0; j < size; ++j)
-	// 				{
-	// 					if (i == j)
-	// 					{
-	// 						continue;
-	// 					}
-	// 					if (mergeRecord[j])
-	// 					{
-	// 						continue;
-	// 					}
-	// 					if (patternTable[i * size + j])
-	// 					{
-	// 						Pattern_pair temp_pair;
-	// 						if (i < j)
-	// 						{
-	// 							temp_pair.first = i;
-	// 							temp_pair.second = j;
-	// 						}
-	// 						else
-	// 						{
-	// 							temp_pair.first = j;
-	// 							temp_pair.second = i;
-	// 						}
-	// 						Pattern_table::iterator it = patternCandidate.find(temp_pair);
-	// 						if (it != patternCandidate.end())
-	// 						{
-	// 							int similararityCount = 0;
-	// 							for (int b = 0; b < size; ++b)
-	// 							{
-	// 								if (mergeRecord[b])
-	// 								{
-	// 									continue;
-	// 								}
-	// 								if (patternTable[i * size + b] && patternTable[i * size + b] == patternTable[j * size + b])
-	// 								{
-	// 									++similararityCount;
-	// 								}
-	// 							}
-	// 							it->second = similararityCount;
-	// 						}
-	// 					}
-	// 				}
-	// 			}
-	// 		}
-	// 		// std::cout<<"PCSIZE "<<patternCandidate.size()<<std::endl;
-	// 	}
-
-	// 	return true;
-	// }
-
-	//
-
-	// 	class Vertex
-	// 	{
-	// 	public:
-	// 		Vertex();
-	// 		Vertex(std::vector<Value> data, Fault *fault);
-	// 		~Vertex();
-	// 		std::vector<Value> data_;
-	// 		FaultList fault_;
-	// 	};
-
-	// 	inline ::Vertex()
-	// 	{
-	// 		data_ = NULL;
-	// 	}
-
-	// 	inline Vertex::Vertex(std::vector<Value> data, Fault *fault)
-	// 	{
-	// 		data_ = data;
-	// 		fault_.push_back(fault);
-	// 	}
-
-	// 	inline ::~Vertex()
-	// 	{
-	// 		delete[] data_;
-	// 		fault_.clear();
-	// 	}
-	// 	// end of Vertex
-
 };
 
 #endif
