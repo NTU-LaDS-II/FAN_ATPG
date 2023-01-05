@@ -735,22 +735,30 @@ void Atpg::StuckAtFaultATPG(FaultPtrList &faultPtrListForGen, PatternProcessor *
 
 // **************************************************************************
 // Function   [ Atpg::getGateForFaultActivation ]
-// Commenter  [ CAL ]
+// Commenter  [ CAL WWS ]
 // Synopsis   [ usage:
-//                return the gate need for activation of a fault
-//              in:    void
-//              out:   void
+// 								This function is used in DTC stage.
+//                Find and return the gate needed for fault activation, the
+// 								will then went on to be checked if it is possible to be
+// 								used for DTC stage.
+// 
+// 							arguments:
+//              	[in] faultToActivate: The latter fault selected to be 
+// 								activated in DTC stage.
+// 							output:
+// 								The return of this function is a gate pointer pointing to
+// 								the gate needed to activated the faultToActivate.
 //            ]
-// Date       [ started 2020/07/07    last modified 2020/07/07 ]
+// Date       [ started 2020/07/07    last modified 2023/01/05 ]
 // **************************************************************************
-Gate *Atpg::getGateForFaultActivation(const Fault &fault)
+Gate *Atpg::getGateForFaultActivation(const Fault &faultToActivate)
 {
-	const bool faultIsAtGateOutput = (fault.faultyLine_ == 0);
+	const bool faultIsAtGateOutput = (faultToActivate.faultyLine_ == 0);
 	Gate *pGateForActivation = NULL;
-	Gate *pFaultyGate = &this->pCircuit_->circuitGates_[fault.gateID_];
+	Gate *pFaultyGate = &(this->pCircuit_->circuitGates_[faultToActivate.gateID_]);
 	if (!faultIsAtGateOutput)
 	{
-		pGateForActivation = &this->pCircuit_->circuitGates_[pFaultyGate->faninVector_[fault.faultyLine_ - 1]];
+		pGateForActivation = &(this->pCircuit_->circuitGates_[pFaultyGate->faninVector_[faultToActivate.faultyLine_ - 1]]);
 	}
 	else
 	{
