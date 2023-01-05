@@ -553,35 +553,64 @@ void Atpg::TransitionDelayFaultATPG(FaultPtrList &faultPtrListForGen, PatternPro
 // Function   [ Atpg::StuckAtFaultATPG ]
 // Commenter  [ CAL WWS ]
 // Synopsis   [ usage: Do stuck at fault model ATPG on one fault and do DTC
-// 								on the pattern generated to the single fault if the DTC 
+// 								on the pattern generated to the single fault if the DTC
 // 								flag is set to ON.
-// 
+//
 // 							description:
 // 								The first fault pointed to by the first pointer in
 // 								faultPtrListForGen will be selected as the first target
 // 								fault for single pattern generation in this function.
 // 								There will be three possible scenario after the
 // 								single pattern generation on the first selected fault.
-// 								
-// 								
+// 								1.	PATTERN_FOUND
+// 										If a pattern is found for the first selected fault.
+// 										A pattern will be allocated and push back to
+// 										pPatternProcessor->patternVector and will be updated
+// 										immediately. If the DTC is set to ON for the pattern
+// 										processor. The first selected fault will immediately
+// 										be dropped by fault simulation.
+// 										Then the DTC stage will start officially and select
+// 										other undetected faults one by one for DTC. If the
+// 										latter selected fault can be detected by filling
+// 										some of the X(s) to 1 or 0. The fault state of the
+// 										fault will be set to DT(detected) and the pattern will
+// 										be updated to the original pattern with specific X(s)
+// 										assigned.
+// 										If the latter selected undetected fault is not detected,
+// 										atpgVals will have to be restored to previous atpgVals
+// 										because the single pattern generation will change the
+//										gate atpg values. If there is no more faults for DTC,
+// 										the loop of DTC will be ended. After the loop, we will
+// 										randomly XFill the pattern and perform fault simulation
+// 										with the most recently updated pattern to drop the
+// 										additional faults detected during the DTC phase.
+// 								2.	FAULT_UNTESTABLE
+// 										If the fault is not detected even after all the
+// 										backtracks is done in the single pattern generation
+// 										the fault is then declared as fault untestable.
+// 								3.	ABORT
+// 										If the Atpg is aborted due to the time of backtracks
+// 										exceeding the BACKTRACK_LIMIT 500 (can be changed 
+// 										manually in namespace atpg.h::CoreNs).
+//
 // 							arguments:
 // 								[in, out] faultPtrListForGen : Current list of fault
 // 								pointers that are pointed to undetected faults. If detected
-// 								when seen as the first selected target fault, it will be 
+// 								when seen as the first selected target fault, it will be
 // 								dropped immediately by fault simulation. If detected during
 // 								DTC stage the faults will be dropped altogether after DTC.
-// 
-// 								[in, out] pPatternProcessor : A pointer to pattern 
-// 								processor that contains a pattern vector recording the 
+//
+// 								[in, out] pPatternProcessor : A pointer to pattern
+// 								processor that contains a pattern vector recording the
 // 								whole pattern set. In this function, the pattern processor
-// 								should already possess the patterns generated for the 
+// 								should already possess the patterns generated for the
 // 								faults before the current fault. A new Pattern will be
 // 								pushed back to the the pPatternProcessor->patternVector_
 // 								if the fault first selected in this function is detected.
 // 								It will become pPatternProcessor->patternVector_.back().
 // 								Then it will be determined and random XFilled at end of
 // 								the function.
-// 								
+//
 // 								[in, out] numOfAtpgUntestableFaults : It is a reference
 // 								variable for recording the number of equivalent faults
 // 								untestable. Here untestable faults means this function call
@@ -621,6 +650,7 @@ void Atpg::StuckAtFaultATPG(FaultPtrList &faultPtrListForGen, PatternProcessor *
 				}
 
 				Gate *pGateForActivation = getGateForFaultActivation(*pFault);
+				// the atpgVal_ is already assigned to a value that is not able to detect the fault
 				if (((pGateForActivation->atpgVal_ == L) && (pFault->faultType_ == Fault::SA0)) ||
 						((pGateForActivation->atpgVal_ == H) && (pFault->faultType_ == Fault::SA1)))
 				{
@@ -715,10 +745,10 @@ void Atpg::StuckAtFaultATPG(FaultPtrList &faultPtrListForGen, PatternProcessor *
 // **************************************************************************
 Gate *Atpg::getGateForFaultActivation(const Fault &fault)
 {
-	bool isOutputFault = (fault.faultyLine_ == 0);
+	const bool faultIsAtGateOutput = (fault.faultyLine_ == 0);
 	Gate *pGateForActivation = NULL;
 	Gate *pFaultyGate = &this->pCircuit_->circuitGates_[fault.gateID_];
-	if (!isOutputFault)
+	if (!faultIsAtGateOutput)
 	{
 		pGateForActivation = &this->pCircuit_->circuitGates_[pFaultyGate->faninVector_[fault.faultyLine_ - 1]];
 	}
@@ -2351,13 +2381,13 @@ int Atpg::setFaultyGate(Fault &fault)
 	int backwardImplicationLevel = 0;
 	Gate *pFaultyGate = NULL;
 	Gate *pFaultyLine = NULL;											 // pFaultyLine is the gate before the fault (fanin gate of pFaultyGate)
-	bool isOutputFault = (fault.faultyLine_ == 0); // if the fault is SA0 or STR, then set faulty value to D (1/0)
+	const bool faultIsAtGateOutput = (fault.faultyLine_ == 0); // if the fault is SA0 or STR, then set faulty value to D (1/0)
 	Value FaultyValue = (fault.faultType_ == Fault::SA0 || fault.faultType_ == Fault::STR) ? D : B;
 
 	pFaultyGate = &this->pCircuit_->circuitGates_[fault.gateID_];
 	// if the fault is input fault, the pFaultyLine is decided by fault.faultyLine_
 	// else pFaultyLine is pFaultyGate
-	if (!isOutputFault)
+	if (!faultIsAtGateOutput)
 	{
 		pFaultyLine = &this->pCircuit_->circuitGates_[pFaultyGate->faninVector_[fault.faultyLine_ - 1]];
 	}
@@ -2366,7 +2396,7 @@ int Atpg::setFaultyGate(Fault &fault)
 		pFaultyLine = pFaultyGate;
 	}
 
-	if (!isOutputFault)
+	if (!faultIsAtGateOutput)
 	{
 		if (FaultyValue == D && pFaultyLine->atpgVal_ != L)
 		{
@@ -3495,13 +3525,13 @@ int Atpg::setUpFirstTimeFrame(Fault &fault)
 	int backwardImplicationLevel = 0;
 	Gate *pFaultyGate = NULL;
 	Gate *pFaultyLine = NULL;
-	bool isOutputFault = (fault.faultyLine_ == 0);
+	const bool faultIsAtGateOutput = (fault.faultyLine_ == 0);
 	Value FaultyValue = (fault.faultType_ == Fault::STR) ? L : H;
 	Value valueTemp;
 
 	pFaultyGate = &this->pCircuit_->circuitGates_[fault.gateID_ - this->pCircuit_->numGate_];
 
-	if (!isOutputFault)
+	if (!faultIsAtGateOutput)
 	{
 		pFaultyLine = &this->pCircuit_->circuitGates_[pFaultyGate->faninVector_[fault.faultyLine_ - 1]];
 	}
