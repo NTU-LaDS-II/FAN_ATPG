@@ -1,14 +1,14 @@
 // **************************************************************************
 // File       [ fault.h ]
 // Author     [ littleshamoo ]
-// Synopsis   [ this file defines the faults ]
+// Synopsis   [ This file defines the faults. ]
 // Date       [ 2011/10/04 created ]
 // **************************************************************************
 
 #ifndef _CORE_FAULT_H_
 #define _CORE_FAULT_H_
 
-#include <vector> //added by pan
+#include <vector>
 #include <list>
 #include "circuit.h"
 
@@ -16,7 +16,6 @@ namespace CoreNs
 {
 
 	class Fault;
-	// typedef std::vector<Fault *> FaultVec; ,removed by pan
 	typedef std::list<Fault *> FaultPtrList;
 	typedef std::list<Fault *>::iterator FaultPtrListIter;
 
@@ -40,7 +39,7 @@ namespace CoreNs
 		// *     RE     redundant
 		// *     AB     aborted
 		// ************************************
-		enum FAULT_TYPE // Type => FAULT_TYPE, modified by pan
+		enum FAULT_TYPE
 		{
 			SA0 = 0,
 			SA1,
@@ -48,7 +47,7 @@ namespace CoreNs
 			STF,
 			BR
 		};
-		enum FAULT_STATE // State => FAULT_STATE, modified by pan
+		enum FAULT_STATE
 		{
 			UD = 0,
 			DT,
@@ -61,22 +60,21 @@ namespace CoreNs
 
 		Fault();
 		Fault(int gateID, FAULT_TYPE faultType, int faultyLine, int equivalent = 1, FAULT_STATE faultState = UD);
-		~Fault();
 
-		// int aggr_;            // ID of the aggressor gate ,removed by pan
-		int gateID_;             // ID of the faulty gate. gate_ => gateID_, modified by pan
-		FAULT_TYPE faultType_;   // fault type. type_ => faultType_, modified by pan
-		int faultyLine_;         // faulty line location: 0 means gate output fault. 1+ means gate input fault
-		                         // on the corresponding gate input line. line_ => faultyLine_, modified by pan
-		int detection_;          // number of detection. det_ => detection_, modified by pan
-		FAULT_STATE faultState_; // fault state. state_ => faultState_, modified by pan
-		int equivalent_;         // the number of equivalent faults, used to calculate uncollapsed fault coverage. eq => equivalent, modified by pan
+		// int aggr_;            // ID of the aggressor gate.
+		int gateID_;             // ID of the faulty gate.
+		FAULT_TYPE faultType_;   // Fault type.
+		int faultyLine_;         // Faulty line location: 0 means gate output fault,
+		                         // 1+ means gate input fault on the corresponding gate input line.
+		int detection_;          // Number of detection.
+		FAULT_STATE faultState_; // Fault state.
+		int equivalent_;         // The number of equivalent faults, used to calculate uncollapsed fault coverage.
 	};
 
 	class FaultListExtract
 	{
 	public:
-		enum FAULTLIST_TYPE // Type => FAULTLIST_TYPE, modified by pan
+		enum FAULTLIST_TYPE
 		{
 			SAF = 0,
 			TDF,
@@ -84,15 +82,15 @@ namespace CoreNs
 		};
 
 		FaultListExtract();
-		~FaultListExtract();
 
-		void extractFaultFromCircuit(Circuit *pCircuit); // cir => circuit, modified by pan
+		// Extract faults from the circuit.
+		void extractFaultFromCircuit(Circuit *pCircuit);
 
-		std::vector<int> gateIndexToFaultIndex_; // map gate index to fault list index. int* => std::vector<int>, gateToFault => gateIndexToFaultIndex, modified by pan
-		std::vector<Fault> uncollapsedFaults_;   // record faults without fault collapsing, used for adding part of faults in atpg_cmd.cpp
-		std::vector<Fault> extractedFaults_;     // faults extracted from the circuit. faults => extractedFaults, modified by pan
-		FaultPtrList faultsInCircuit_;           // faults used in the ATPG. current_ => faultsInCircuit_, modified by pan
-		FAULTLIST_TYPE faultListType_;           // fault list type. type_ => faultListType, modified by pan
+		std::vector<int> gateIndexToFaultIndex_; // Map gate index to fault list index.
+		std::vector<Fault> uncollapsedFaults_;   // Record faults without fault collapsing, used for adding part of faults for ATPG.
+		std::vector<Fault> extractedFaults_;     // Faults extracted from the circuit.
+		FaultPtrList faultsInCircuit_;           // Faults used in the ATPG.
+		FAULTLIST_TYPE faultListType_;           // Fault list type.
 	};
 
 	inline Fault::Fault()
@@ -115,14 +113,10 @@ namespace CoreNs
 		equivalent_ = equivalent;
 	}
 
-	inline Fault::~Fault() {}
-
 	inline FaultListExtract::FaultListExtract()
 	{
 		faultListType_ = SAF;
 	}
-
-	inline FaultListExtract::~FaultListExtract() {}
 
 };
 
