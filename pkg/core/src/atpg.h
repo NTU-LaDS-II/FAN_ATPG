@@ -11,8 +11,8 @@
 #include <cmath>
 #include <cstdlib>
 #include <string>
-#include <vector> // added by wang
-#include <stack>	// added by wang
+#include <vector>
+#include <stack>
 #include <algorithm>
 #include "decision_tree.h"
 #include "simulator.h"
@@ -84,7 +84,7 @@ namespace CoreNs
 		std::vector<GATE_LINE_TYPE> gateID_to_lineType_;					// array of line types for all gates, i.e. FREE, HEAD, BOUND
 		std::vector<XPATH_STATE> gateID_to_xPathStatus_;					// gateID to its xPathStatus, i.e. XPATH_EXIST, NO_XPATH_EXIST, UNKNOWN
 		std::vector<std::vector<int>> gateID_to_uniquePath_;			// list of gates on the unique path associated with a D-frontier, when there is only one gate in D-frontier, xPathTracing will update this information.
-		std::vector<std::stack<int>> circuitLevel_to_EventStack_; // every circuit level has its own corresponding event stack
+		std::vector<std::stack<int>> circuitLevel_to_eventStack_; // every circuit level has its own corresponding event stack
 		DecisionTree backtrackDecisionTree_;											// the whole tree store the order for later possible backtracking, DecisionTreeNode store the starting point in backtrackImplicatedGateIDs_
 		std::vector<int> backtrackImplicatedGateIDs_;							// backtrackImplicatedGateIDs_[backTrackPoint] = start point of associated gateID
 		std::vector<int> gateIDsToResetAfterBackTrace_;						// the gate that need to have gate.n0_ and gate.n1_ reset after backtrace
@@ -206,10 +206,10 @@ namespace CoreNs
 		// function not used or removed
 		void checkLevelInfo();																		// for debug use
 		std::string getValStr(Value val);													// for debug use
-		void calSCOAP();																					// heuristic not effective, currently not used, added by Wei-Shen Wang
-		void testClearFaultEffect(FaultPtrList &faultListToTest); // removed from generatePatternSet() for now seems like debug usage
-		void resetIsInEventStack();																// not used
-		void XFill(PatternProcessor *pPatternProcessor);					// redundant function, removed by wang
+		void calSCOAP();																					// heuristic not effective, currently not used, added by WWS
+		void testClearFaultEffect(FaultPtrList &faultListToTest); // removed from generatePatternSet() for now seems like debug usage,by WWS
+		void resetIsInEventStack();																// not used, by WWS
+		void XFill(PatternProcessor *pPatternProcessor);					// redundant function, removed by WWS
 	};
 
 	// --------------inline methods----------------- //
@@ -223,7 +223,7 @@ namespace CoreNs
 				gateID_to_lineType_(pCircuit->totalGate_, FREE_LINE),
 				gateID_to_xPathStatus_(pCircuit->totalGate_),
 				gateID_to_uniquePath_(pCircuit->totalGate_, std::vector<int>()),
-				circuitLevel_to_EventStack_(pCircuit->circuitLvl_)
+				circuitLevel_to_eventStack_(pCircuit->circuitLvl_)
 	{
 		initialObjectives_.reserve(MAX_LIST_SIZE);
 		currentObjectives_.reserve(MAX_LIST_SIZE);
@@ -575,10 +575,6 @@ namespace CoreNs
 
 					if (gate.gateType_ == Gate::XOR2)
 					{
-						// if (faultyLine - 1 == 0)
-						// 	val = cXOR2(pCircuit_->circuitGates_[gate.faninVector_[1]].atpgVal_, val);
-						// else
-						// 	val = cXOR2(pCircuit_->circuitGates_[gate.faninVector_[0]].atpgVal_, val);
 						switch (faultyLine - 1)
 						{
 							case 0:
@@ -594,12 +590,6 @@ namespace CoreNs
 					}
 					else
 					{ // XOR3
-						// if (faultyLine - 1 == 0)
-						// 	val = cXOR3(pCircuit_->circuitGates_[gate.faninVector_[1]].atpgVal_, pCircuit_->circuitGates_[gate.faninVector_[2]].atpgVal_, val);
-						// else if (faultyLine - 1 == 1)
-						// 	val = cXOR3(pCircuit_->circuitGates_[gate.faninVector_[0]].atpgVal_, pCircuit_->circuitGates_[gate.faninVector_[2]].atpgVal_, val);
-						// else
-						// 	val = cXOR3(pCircuit_->circuitGates_[gate.faninVector_[1]].atpgVal_, pCircuit_->circuitGates_[gate.faninVector_[0]].atpgVal_, val);
 						switch (faultyLine - 1)
 						{
 							case 0:
@@ -654,10 +644,6 @@ namespace CoreNs
 
 					if (gate.gateType_ == Gate::XNOR2)
 					{
-						// if (faultyLine - 1 == 0)
-						// 	val = cXNOR2(pCircuit_->circuitGates_[gate.faninVector_[1]].atpgVal_, val);
-						// else
-						// 	val = cXNOR2(pCircuit_->circuitGates_[gate.faninVector_[0]].atpgVal_, val);
 						switch (faultyLine - 1)
 						{
 							case 0:
@@ -673,13 +659,6 @@ namespace CoreNs
 					}
 					else
 					{ // XOR3
-						// change from if else to switch by wang
-						// if (faultyLine - 1 == 0)
-						// 	val = cXNOR3(pCircuit_->circuitGates_[gate.faninVector_[1]].atpgVal_, pCircuit_->circuitGates_[gate.faninVector_[2]].atpgVal_, val);
-						// else if (faultyLine - 1 == 1)
-						// 	val = cXNOR3(pCircuit_->circuitGates_[gate.faninVector_[0]].atpgVal_, pCircuit_->circuitGates_[gate.faninVector_[2]].atpgVal_, val);
-						// else
-						// 	val = cXNOR3(pCircuit_->circuitGates_[gate.faninVector_[1]].atpgVal_, pCircuit_->circuitGates_[gate.faninVector_[0]].atpgVal_, val);
 						switch (faultyLine - 1)
 						{
 							case 0:
@@ -725,7 +704,7 @@ namespace CoreNs
 		{
 			pattern.primaryInputs1st_[i] = pCircuit_->circuitGates_[i].atpgVal_;
 		}
-		// if (pattern.primaryInputs2nd_ != NULL && pCircuit_->numFrame_ > 1)
+
 		if (!(pattern.primaryInputs2nd_.empty()) && pCircuit_->numFrame_ > 1)
 		{
 			for (int i = 0; i < pCircuit_->numPI_; ++i)
@@ -737,7 +716,7 @@ namespace CoreNs
 		{
 			pattern.pseudoPrimaryInputs_[i] = pCircuit_->circuitGates_[pCircuit_->numPI_ + i].atpgVal_;
 		}
-		// if (pattern.shiftIn_ != NULL && pCircuit_->numFrame_ > 1)
+
 		if (!(pattern.shiftIn_.empty()) && pCircuit_->numFrame_ > 1)
 		{
 			pattern.shiftIn_[0] = (pCircuit_->timeFrameConnectType_ == Circuit::SHIFT) ? pCircuit_->circuitGates_[pCircuit_->numGate_ + pCircuit_->numPI_].atpgVal_ : X;
@@ -820,15 +799,15 @@ namespace CoreNs
 		const Gate &gate = pCircuit_->circuitGates_[gateID];
 		if (!gateID_to_valModified_[gateID])
 		{
-			circuitLevel_to_EventStack_[gate.numLevel_].push(gateID);
+			circuitLevel_to_eventStack_[gate.numLevel_].push(gateID);
 			gateID_to_valModified_[gateID] = 1;
 		}
 	}
 
 	inline int Atpg::popEventStack(const int &level)
 	{
-		const int &gateID = circuitLevel_to_EventStack_[level].top();
-		circuitLevel_to_EventStack_[level].pop();
+		const int &gateID = circuitLevel_to_eventStack_[level].top();
+		circuitLevel_to_eventStack_[level].pop();
 		return gateID;
 	}
 
@@ -841,7 +820,7 @@ namespace CoreNs
 			const int &outputGateLevel = pCircuit_->circuitGates_[fanoutID].numLevel_;
 			if (!gateID_to_valModified_[fanoutID])
 			{
-				circuitLevel_to_EventStack_[outputGateLevel].push(fanoutID);
+				circuitLevel_to_eventStack_[outputGateLevel].push(fanoutID);
 				gateID_to_valModified_[fanoutID] = 1;
 				++pushedGateCount;
 			}
@@ -853,7 +832,7 @@ namespace CoreNs
 	{
 		int gateID;
 		// change old for loop to range-based for loop
-		for (std::stack<int> &eventStack : circuitLevel_to_EventStack_)
+		for (std::stack<int> &eventStack : circuitLevel_to_eventStack_)
 		{
 			while (!eventStack.empty())
 			{
@@ -1073,22 +1052,6 @@ namespace CoreNs
 			}
 		}
 	}
-
-	// inline void Atpg::pushGateFanoutsToEventStack(const int &gateID)
-	// {
-	// 	Gate &gate = pCircuit_->circuitGates_[gateID];
-	// 	for (int i = 0; i < gate.numFO_; ++i)
-	// 	{
-	// 		pushGateToEventStack(gate.fanoutVector_[i]);
-	// 	}
-	// } originally duplicate function and implemented for performance but bad readability, removed by wang
-
-	// inline void Atpg::pushInputEvents(const int &gateID, int index)
-	// {
-	// 	Gate &gate = pCircuit_->circuitGates_[gateID];
-	// 	pushGateToEventStack(gate.faninVector_[index]);
-	// 	pushGateFanoutsToEventStack(gate.faninVector_[index]);
-	// }
 };
 
 #endif
