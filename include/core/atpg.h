@@ -112,7 +112,7 @@ namespace CoreNs
 		Gate *getGateForFaultActivation(const Fault &faultToActivate);
 		void setGateAtpgValAndEventDrivenEvaluation(Gate &gate, const Value &val);
 
-		void resetPrevAtpgValStored();
+		void resetPrevAtpgValStoredToX();
 		int storeCurrentAtpgVal();
 		void clearAllFaultEffectByEvaluation();
 		void clearFaultEffectOnGateAtpgVal(Gate &gate);

@@ -628,7 +628,7 @@ void Atpg::StuckAtFaultATPG(FaultPtrList &faultPtrListForGen, PatternProcessor *
 		Pattern pattern(this->pCircuit_);
 		pPatternProcessor->patternVector_.push_back(pattern);
 
-		resetPrevAtpgValStored();
+		resetPrevAtpgValStoredToX();
 		clearAllFaultEffectByEvaluation();
 		storeCurrentAtpgVal();
 		writeAtpgValToPatternPI(pPatternProcessor->patternVector_.back());
@@ -676,7 +676,7 @@ void Atpg::StuckAtFaultATPG(FaultPtrList &faultPtrListForGen, PatternProcessor *
 					// implement DTC here
 					if (generateSinglePatternOnTargetFault(*pFault, true) == PATTERN_FOUND)
 					{
-						resetPrevAtpgValStored();
+						resetPrevAtpgValStoredToX();
 						clearAllFaultEffectByEvaluation();
 						storeCurrentAtpgVal();
 						writeAtpgValToPatternPI(pPatternProcessor->patternVector_.back());
@@ -780,12 +780,12 @@ Gate *Atpg::getGateForFaultActivation(const Fault &faultToActivate)
 // 										event stack if not in the event stack.
 // 								3.	Do event driven evaluation to update all the gates in
 //										the event stack.
-// 
+//
 // 							arguments:
 // 								[in] gate : The gate to set "val" to.
 // 								[in] val : The "val" to assign to gate.atpgVal_.
 //            ]
-// Date       [ started 2020/07/07    last modified 2020/07/07 ]
+// Date       [ started 2020/07/07    last modified 2020/01/05 ]
 // **************************************************************************
 void Atpg::setGateAtpgValAndEventDrivenEvaluation(Gate &gate, const Value &val)
 {
@@ -816,7 +816,7 @@ void Atpg::setGateAtpgValAndEventDrivenEvaluation(Gate &gate, const Value &val)
 				currGate.atpgVal_ = newValue;
 				for (int fanoutGateID : currGate.fanoutVector_)
 				{
-					const Gate& fanoutGate = this->pCircuit_->circuitGates_[fanoutGateID];
+					const Gate &fanoutGate = this->pCircuit_->circuitGates_[fanoutGateID];
 					if (this->isInEventStack_[fanoutGateID] == 0)
 					{
 						this->circuitLevel_to_eventStack_[fanoutGate.numLevel_].push(fanoutGateID);
@@ -829,12 +829,12 @@ void Atpg::setGateAtpgValAndEventDrivenEvaluation(Gate &gate, const Value &val)
 }
 
 // **************************************************************************
-// Function   [ Atpg::resetPrevAtpgValStored ]
-// Commenter  [ CAL ]
+// Function   [ Atpg::resetPrevAtpgValStoredToX ]
+// Commenter  [ CAL WWS ]
 // Synopsis   [ usage: Reset the preV_ of each gate to X. ]
-// Date       [ started 2020/07/07    last modified 2020/07/07 ]
+// Date       [ started 2020/07/07    last modified 2020/01/05 ]
 // **************************************************************************
-void Atpg::resetPrevAtpgValStored()
+void Atpg::resetPrevAtpgValStoredToX()
 {
 	for (Gate &gate : this->pCircuit_->circuitGates_)
 	{
@@ -844,14 +844,16 @@ void Atpg::resetPrevAtpgValStored()
 
 // **************************************************************************
 // Function   [ Atpg::storeCurrentAtpgVal ]
-// Commenter  [ CAL ]
+// Commenter  [ CAL WWS ]
 // Synopsis   [ usage:
-//                Store gate.atpgVal_ to gate.prevAtpgValStored_
-//              in:   void
-//              out:  Count of values which change from H/L to the value which is not
-//                    the same as preV_.
+//                Store all the gate.atpgVal_ to gate.prevAtpgValStored_ in
+// 								the circuit.
+//
+//              output:
+// 								Count of values which change from H/L to the value which is not
+//                the same as preV_.
 //            ]
-// Date       [ started 2020/07/04    last modified 2020/07/04 ]
+// Date       [ started 2020/07/04    last modified 2021/01/05 ]
 // **************************************************************************
 int Atpg::storeCurrentAtpgVal()
 {
@@ -875,14 +877,12 @@ int Atpg::storeCurrentAtpgVal()
 
 // **************************************************************************
 // Function   [ Atpg::clearAllFaultEffectByEvaluation ]
-// Commenter  [ CAL ]
+// Commenter  [ CAL WWS ]
 // Synopsis   [ usage:
 //                Clear all the fault effects before test generation for next
 //                target fault.
-//              in:    void
-//              out:   void
 //            ]
-// Date       [ started 2020/07/04    last modified 2020/07/04 ]
+// Date       [ started 2020/07/04    last modified 2023/01/05 ]
 // **************************************************************************
 void Atpg::clearAllFaultEffectByEvaluation()
 {
@@ -896,7 +896,7 @@ void Atpg::clearAllFaultEffectByEvaluation()
 		}
 		else
 		{
-			// Simulate the whole circuit ( gates were sorted by circuitLvl_ in "this->pCircuit_->circuitGates_" )
+			// Simulate the whole circuit
 			gate.atpgVal_ = evaluateGoodVal(gate);
 		}
 	}
@@ -904,13 +904,13 @@ void Atpg::clearAllFaultEffectByEvaluation()
 
 // **************************************************************************
 // Function   [ Atpg::clearFaultEffectOnGateAtpgVal ]
-// Commenter  [ CAL ]
+// Commenter  [ CAL WWS ]
 // Synopsis   [ usage:
-//                Replace value of a gate from D/B to H/L.
-//              in:    Gate
-//              out:   void
+//                This function replace value of a gate from D/B to H/L.
+//              arguments:
+// 								[in] gate : The gate to have atpgVal_ cleared.
 //            ]
-// Date       [ started 2020/07/04    last modified 2020/07/04 ]
+// Date       [ started 2020/07/04    last modified 2023/01/05 ]
 // **************************************************************************
 void Atpg::clearFaultEffectOnGateAtpgVal(Gate &gate)
 {
@@ -926,63 +926,144 @@ void Atpg::clearFaultEffectOnGateAtpgVal(Gate &gate)
 
 // **************************************************************************
 // Function   [ Atpg::generateSinglePatternOnTargetFault ]
-// Commenter  [ KOREAL ]
-// Synopsis   [ usage: Given a fault, generate the pattern
-//              in:    fault isAtStageDTC
-//              out:   PATTERN_GENERATION_STATUS(PATTERN_FOUND = 0, FAULT_UNTESTABLE, ABORT) //TODO
-//				There are four main atpgStatus while generating the pattern:
+// Commenter  [ KOREAL WWS ]
+// Synopsis   [ usage: Given a target fault, generate a pattern
 //
-//				IMPLY_AND_CHECK: 	Determine as many signal values as possible then check if the backtrace is meaningful or not.
-//				DECISION:			Using the multiple backtrace procedure to determine a final objective.
-//				BACKTRACK:			If the values are incompatible during propagation or implications, backtracking is necessary.
-//				JUSTIFY_FREE:		at the end of the process. Finding values on the primary inputs which justify all the values on the head lines
+// 								There are four main atpgStatus for backtrace while
+// 								generating the pattern:
+//
+//									IMPLY_AND_CHECK: 	Determine as many signal values as
+// 																		possible then check if the backtrace
+//																		is meaningful or not.
+//									DECISION:					Using the multiple backtrace procedure
+// 																		to determine a final objective.
+//									BACKTRACK:				If the values are incompatible during
+// 																		propagation or implications,
+// 																		backtracking is necessary.
+//									JUSTIFY_FREE:			At the end of the process. Finding
+// 																		values on the primary inputs which
+// 																		justify all the values on the head
+// 																		lines.
+//
+// 							description:
+// 								First, call initialize:
+// 									Set the pFaultyLineGate as the gate whose output is
+// 									the target fault.
+// 								Then, set the backtraceFlag to INITIAL.
+// 								Keep calling doImplication() in a while loop, set the
+// 								genStatus for latter return if PATTERN_FOUND,
+//								FAULT_UNTESTABLE, ABORT corresponding to the scenario
+// 								their literal meaning.
+// 								Loop content(while):
+// 									IF number of backtracks exceeds BACKTRACK_LIMIT, ABORT
+// 									IF doImplication() return false(conflicts):
+// 										Clear the event stack and set
+// 										this->gateID_to_valModified to all false.
+// 										Call backtrack()
+// 										If backtrack() successful:
+// 											Reset backtraceFlag to INITIAL for the latter
+// 											findFinalObjectives(), set implicationStatus
+// 											according to the BackImpLevel and reset
+// 											pLastDFrontier to NULL
+// 										Else IF backtrack() failed meaning all backtracks
+// 											have been finished but there is still no pattern
+// 											found.
+// 											=> FAULT_UNTESTABLE
+// 									Else IF doImplication() return true:
+// 										IF continuationMeaningful() false:
+// 											Then reset the backtraceFlag to INITIAL
+// 										IF fault is propagated to any PO/PPO:
+// 											IF there are any unjustified bound lines in circuit
+// 												call findFinalObjective() and
+// 												assignAtpgValToFinalObjectiveGates() and set
+// 												implyStatus to FORWARD
+// 											ELSE
+// 												Justify all the free lines
+// 												=> PATTERN_FOUND
+// 										ELSE:
+// 											IF the number of d-frontiers is 0:
+// 												backtrack()
+// 												IF backtrack successful:
+// 													reset backtraceFlag to INITIAL
+// 													...
+// 												ELSE:
+// 													=> FAULT_UNTESTABLE
+// 											ELSE IF number of d-frontiers is 1:
+// 												do unique sensitization:
+// 													If UNIQUE_PATH_SENSITIZATION_FAIL:
+// 														continue back to the while loop
+// 														(will backtrack, no more dFrontier)
+// 													ELSE IF sensitization successful
+// 														implyStatus = BACKWARD and continue
+// 													ELSE IF back implication level == 0
+// 														continue;
+// 													ELSE IF nothing happened
+// 														call
+// 														findFinalObjective() and
+// 														assignAtpgValToFinalObjectiveGates()
+// 														and set implyStatus to FORWARD
+//
+// 							arguments:
+// 								[in] isAtStageDTC : The flag is true if this function is
+// 								called during the DTC stage see
+// 								Atpg::initializeForSinglePatternGeneration() for more
+// 								of how this flag affect the behavior of this function.
+//
+// 								[in] targetFault : The target fault for this function to
+//
+//              output:
+// 								SINGLE_PATTERN_GENERATION_STATUS,
+// 								PATTERN_FOUND:		Single pattern generation successful.
+// 																	A pattern is found for target fault.
+// 								FAULT_UNTESTABLE:	The target fault is not detected
+// 																	after all backtracks have ended.
+// 								ABORT: The single pattern generation is aborted due to
+// 									the time of backtracks exceeding the BACKTRACK_LIMIT(500).
 //            ]
-// Date       [ KOREAL Ver. 1.0 started 2013/08/10 ]
+// Date       [ KOREAL Ver. 1.0 started 2013/08/10 last modified 2023/01/05 ]
 // **************************************************************************
 Atpg::SINGLE_PATTERN_GENERATION_STATUS Atpg::generateSinglePatternOnTargetFault(Fault targetFault, bool isAtStageDTC)
 {
-
 	int backwardImplicationLevel = 0;														// backward imply level
 	int numOfBacktrack = 0;																			// backtrack times
-	bool Finish = false;																				// Finish is true when whole pattern generation process is done
+	bool singlePatternGenProcessFinished = false;								// singlePatternGenProcessFinished is true when whole pattern generation process is done
 	bool faultHasPropagatedToPO = false;												// faultHasPropagatedToPO is true when the fault is propagate to the PO
-	Gate *pFaultyLine = NULL;																		// the gate pointer, whose fanOut is the target fault
-	Gate *pLastDFrontier = NULL;																// the D-frontier gate which has the highest level of the D-frontier
-	IMPLICATION_STATUS implicationStatus;												// decide implication to go forward or backward
-	BACKTRACE_STATUS backtraceFlag;															// backtrace flag including    { INITIAL, CHECK_AND_SELECT, CURRENT_OBJ_DETERMINE, FAN_OBJ_DETERMINE }
-	SINGLE_PATTERN_GENERATION_STATUS genStatus = PATTERN_FOUND; // the atpgStatus that will be return, including		{ PATTERN_FOUND, FAULT_UNTESTABLE, ABORT }
+	Gate *pFaultyLineGate = NULL;																// The gate pointer, whose output is the target fault
+	Gate *pLastDFrontier = NULL;																// The D-frontier gate which has the highest level of all D-frontiers
+	IMPLICATION_STATUS implicationStatus;												// The flag that decide the implication to go forward or backward
+	BACKTRACE_STATUS backtraceFlag;															// The backtrace status { INITIAL, CHECK_AND_SELECT, CURRENT_OBJ_DETERMINE, FAN_OBJ_DETERMINE }
+	SINGLE_PATTERN_GENERATION_STATUS genStatus = PATTERN_FOUND; // The status that will be return, including { PATTERN_FOUND, FAULT_UNTESTABLE, ABORT }
 
 	// Get the gate whose output is fault line and set the backwardImplicationLevel
 	// SET A FAULT SIGNAL
-	pFaultyLine = initializeForSinglePatternGeneration(targetFault, backwardImplicationLevel, implicationStatus, isAtStageDTC);
+	pFaultyLineGate = initializeForSinglePatternGeneration(targetFault, backwardImplicationLevel, implicationStatus, isAtStageDTC);
 	// If there's no such gate, return FAULT_UNTESTABLE
-	if (!pFaultyLine)
+	if (!pFaultyLineGate)
 	{
 		return FAULT_UNTESTABLE;
 	}
-	// SET BACKTRACE FLAG
+
 	backtraceFlag = INITIAL;
 
-	while (!Finish)
+	while (!singlePatternGenProcessFinished)
 	{
+		// implication inconsistency
 		if (!doImplication(implicationStatus, backwardImplicationLevel))
 		{
-			// implication INCONSISTENCY
-			// record the number of backtrack
 			if (this->backtrackDecisionTree_.lastNodeMarked())
 			{
 				++numOfBacktrack;
 			}
-			// Abort if numOfBacktrack reaching the BACKTRACK_LIMIT
+			// ABORT if numOfBacktrack exceeds the BACKTRACK_LIMIT
 			if (numOfBacktrack > BACKTRACK_LIMIT)
 			{
 				genStatus = ABORT;
-				Finish = true;
+				singlePatternGenProcessFinished = true;
 			}
 
 			clearAllEvents();
 
-			// IS THERE AN UNTRIED COMBINATION OF VALUES ON ASSIGNED HEAD LINES OR FANOUT POINTS?
+			// Is there an untried combination of values on assigned headlines or fanout points?
 			// If yes, SET UNTRIED COMBINATION OF VALUES in the function backtrack
 			if (backtrack(backwardImplicationLevel))
 			{
@@ -997,21 +1078,19 @@ Atpg::SINGLE_PATTERN_GENERATION_STATUS Atpg::generateSinglePatternOnTargetFault(
 				// backtrack fail
 				// EXIT: FAULT_UNTESTABLE FAULT
 				genStatus = FAULT_UNTESTABLE;
-				Finish = true;
+				singlePatternGenProcessFinished = true;
 			}
 			continue;
 		}
 
-		// IS CONTINUATION OF BACKTRACE MEANINGFUL?
 		if (!continuationMeaningful(pLastDFrontier))
 		{
 			backtraceFlag = INITIAL;
 		}
 
-		// FAULT SIGNAL PROPAGATED TO A PRIMARY OUTPUT?
+		// PO here indicating PO/PPO
 		if (checkIfFaultHasPropagatedToPO(faultHasPropagatedToPO))
 		{
-			// IS THERE ANY UNJUSTIFIED BOUND LINE?
 			if (checkForUnjustifiedBoundLines())
 			{
 				// DETERMINE A FINAL OBJECTIVE TO ASSIGN A VALUE
@@ -1028,14 +1107,14 @@ Atpg::SINGLE_PATTERN_GENERATION_STATUS Atpg::generateSinglePatternOnTargetFault(
 				justifyFreeLines(targetFault);
 				// EXIT: TEST GENERATED
 				genStatus = PATTERN_FOUND;
-				Finish = true;
+				singlePatternGenProcessFinished = true;
 			}
 		}
 		else
 		{
 			// not propagate to PO
 			// THE NUMBER OF GATES IN D-FRONTIER?
-			int numGatesInDFrontier = countEffectiveDFrontiers(pFaultyLine);
+			int numGatesInDFrontier = countEffectiveDFrontiers(pFaultyLineGate);
 
 			// ZERO
 			if (numGatesInDFrontier == 0)
@@ -1050,7 +1129,7 @@ Atpg::SINGLE_PATTERN_GENERATION_STATUS Atpg::generateSinglePatternOnTargetFault(
 				if (numOfBacktrack > BACKTRACK_LIMIT)
 				{
 					genStatus = ABORT;
-					Finish = true;
+					singlePatternGenProcessFinished = true;
 				}
 
 				clearAllEvents();
@@ -1070,7 +1149,7 @@ Atpg::SINGLE_PATTERN_GENERATION_STATUS Atpg::generateSinglePatternOnTargetFault(
 					// backtrack fail
 					// EXIT: FAULT_UNTESTABLE FAULT
 					genStatus = FAULT_UNTESTABLE;
-					Finish = true;
+					singlePatternGenProcessFinished = true;
 				}
 			}
 			else if (numGatesInDFrontier == 1)
@@ -1118,15 +1197,26 @@ Atpg::SINGLE_PATTERN_GENERATION_STATUS Atpg::generateSinglePatternOnTargetFault(
 	return genStatus;
 }
 
+// **************************************************************************
+// Function   [ Atpg::initializeForSinglePatternGeneration ]
+// Commenter  [ WWS ]
+// Synopsis   [ usage:
+//                This function replace value of a gate from D/B to H/L.
+// 								
+//              arguments:
+// 								[in] targetFault : The target fault used 
+//            ]
+// Date       [ last modified 2023/01/05 ]
+// **************************************************************************
 Gate *Atpg::initializeForSinglePatternGeneration(Fault &targetFault, int &backwardImplicationLevel, IMPLICATION_STATUS &implicationStatus, const bool &isAtStageDTC)
 {
-	Gate *pFaultyLineGate = &this->pCircuit_->circuitGates_[targetFault.gateID_];
+	Gate *pFaultyLineGate = &(this->pCircuit_->circuitGates_[targetFault.gateID_]); // the gate pointer; whose output is the target fault
 	this->currentTargetFault_ = targetFault;
 
 	// if targetFault at gate's input, change the pFaultyLineGate to the input gate
 	if (targetFault.faultyLine_ != 0)
 	{
-		pFaultyLineGate = &this->pCircuit_->circuitGates_[pFaultyLineGate->faninVector_[targetFault.faultyLine_ - 1]];
+		pFaultyLineGate = &(this->pCircuit_->circuitGates_[pFaultyLineGate->faninVector_[targetFault.faultyLine_ - 1]]);
 	}
 	initializeObjectivesAndFrontiers();
 	initializeCircuitWithFaultyGate(*pFaultyLineGate, isAtStageDTC);
@@ -1188,7 +1278,7 @@ Gate *Atpg::initializeForSinglePatternGeneration(Fault &targetFault, int &backwa
 			implicationStatus = BACKWARD;
 		}
 	}
-	return &this->pCircuit_->circuitGates_[fGate_id];
+	return &(this->pCircuit_->circuitGates_[fGate_id]);
 }
 
 void Atpg::initializeObjectivesAndFrontiers()
