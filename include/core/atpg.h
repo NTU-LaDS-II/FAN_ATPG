@@ -134,12 +134,12 @@ namespace CoreNs
 		void updateDFrontiers();
 		bool checkIfFaultHasPropagatedToPO(bool &faultHasPropagatedToPO);
 		bool checkForUnjustifiedBoundLines();
-		void findFinalObjective(BACKTRACE_STATUS &flag, const bool &faultCanPropToPO, Gate *&pLastDFrontier);
+		void findFinalObjective(BACKTRACE_STATUS &backtraceFlag, const bool &faultCanPropToPO, Gate *&pLastDFrontier);
 		void clearAllObjectives();
 		void assignAtpgValToFinalObjectiveGates();
-		void justifyFreeLines(Fault &originalFault);
-		void restoreFault(Fault &originalFault);
-		int countEffectiveDFrontiers(Gate *pFaultyLine);
+		void justifyFreeLines(const Fault &originalFault);
+		void restoreFault(const Fault &originalFault);
+		int countEffectiveDFrontiers(Gate *pFaultyLineGate);
 		int doUniquePathSensitization(Gate &gate);
 
 		bool xPathExists(Gate *pGate);
@@ -149,7 +149,7 @@ namespace CoreNs
 		Fault setFreeLineFaultyGate(Gate &gate);
 
 		void fanoutFreeBacktrace(Gate *pGate);
-		BACKTRACE_RESULT multipleBacktrace(BACKTRACE_STATUS atpgStatus, int &finalObjectiveId);
+		BACKTRACE_RESULT multipleBacktrace(BACKTRACE_STATUS atpgStatus, int &possibleFinalObjectiveID);
 		Value assignBacktraceValue(int &n0, int &n1, const Gate &gate);
 		void initializeForMultipleBacktrace();
 		Gate *findEasiestInput(Gate *pGate, Value Val);
