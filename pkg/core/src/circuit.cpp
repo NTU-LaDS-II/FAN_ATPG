@@ -1,7 +1,7 @@
 // **************************************************************************
 // File       [ circuit.cpp ]
 // Author     [ littleshamoo ]
-// Synopsis   [ function definitions for circuit.h ]
+// Synopsis   [ Function definitions for circuit.h ]
 // Date       [ 2011/07/05 created ]
 // **************************************************************************
 
@@ -20,9 +20,9 @@ using namespace CoreNs;
 //              arguments:
 //              	[in] pNetlist : The netlist we build the circuit from.
 //              	[in] numFrame : The number of time frames.
-//                [in] timeFrameConnectType : The connection type of time frames.
+//              	[in] timeFrameConnectType : The connection type of time frames.
 //              	[out] bool : Indicate that we have constructed the circuit successfully.
-// 						]
+//            ]
 // Date       [ Ver. 1.0 started 2013/08/11 last modified 2023/01/05 ]
 // **************************************************************************
 bool Circuit::buildCircuit(Netlist *const pNetlist, const int &numFrame,
@@ -74,7 +74,7 @@ bool Circuit::buildCircuit(Netlist *const pNetlist, const int &numFrame,
 //              	|----- ------ ------ ----- ------|----- ------ ------
 //              	| PI1 | PPI1 | gate | PO1 | PPO1 | PI2 | PPI2 | gate | ...
 //              	|----- ------ ------ ----- ------|----- ------ ------
-// 						]
+//            ]
 // Date       [ Ver. 1.0 last modified 2023/01/05 ]
 // **************************************************************************
 void Circuit::mapNetlistToCircuit()
@@ -90,7 +90,7 @@ void Circuit::mapNetlistToCircuit()
 //              description:
 //              	Determine the number of PI, PPI(PPO), PO and combinational
 //              	gates, and determine the mapping from cell and port to gate.
-// 						]
+//            ]
 // Date       [ Ver. 1.0 last modified 2023/01/05 ]
 // **************************************************************************
 void Circuit::calculateNumGate()
@@ -163,7 +163,7 @@ void Circuit::calculateNumGate()
 // Synopsis   [ usage: Calculate the number of nets in circuit.
 //              description:
 //              	Determine the number of nets in the circuit.
-// 						]
+//            ]
 // Date       [ Ver. 1.0 started 2013/08/11 last modified 2023/01/05 ]
 // **************************************************************************
 void Circuit::calculateNumNet()
@@ -211,7 +211,7 @@ void Circuit::calculateNumNet()
 //                     kind of gate's data.
 //              description:
 //              	Call functions to create different types of gates.
-// 						]
+//            ]
 // Date       [ Ver. 1.0 started 2013/08/11 last modified 2023/01/05 ]
 // **************************************************************************
 void Circuit::createCircuitGates()
@@ -229,7 +229,7 @@ void Circuit::createCircuitGates()
 // Synopsis   [ usage: Create PI gates of the circuit.
 //              description:
 //              	Create PI gates of the circuit from the input ports in the netlist.
-// 						]
+//            ]
 // Date       [ Ver. 1.0 started 2013/08/11 last modified 2023/01/05 ]
 // **************************************************************************
 void Circuit::createCircuitPI()
@@ -264,7 +264,7 @@ void Circuit::createCircuitPI()
 // Synopsis   [ usage: Create PPI gates of the circuit.
 //              description:
 //              	Create PPI gates of the circuit from the cells(DFF) in the netlist.
-// 						]
+//            ]
 // Date       [ Ver. 1.0 started 2013/08/11 last modified 2023/01/05 ]
 // **************************************************************************
 void Circuit::createCircuitPPI()
@@ -302,7 +302,7 @@ void Circuit::createCircuitPPI()
 //              description:
 //              	Call createCircuitPmt() to construct the gates. Finally,
 //              	determine the level of the circuit.
-// 						]
+//            ]
 // Date       [ Ver. 1.0 started 2013/08/11 last modified 2023/01/05 ]
 // **************************************************************************
 void Circuit::createCircuitComb()
@@ -343,7 +343,7 @@ void Circuit::createCircuitComb()
 //              	[in] pmt : The primitive. It is an intermediate data type
 //              	           between cell and gate. We create the gate from
 //              	           this primitive.
-// 						]
+//            ]
 // Date       [ Ver. 1.0 started 2013/08/11 last modified 2023/01/05 ]
 // **************************************************************************
 void Circuit::createCircuitPmt(const int &gateID, const Cell *const cell,
@@ -371,12 +371,12 @@ void Circuit::createCircuitPmt(const int &gateID, const Cell *const cell,
 			}
 
 			int faninID = 0;
-			// Internal connection
+			// Internal connection.
 			if (port->type_ == Port::OUTPUT && port->top_ != cell->libc_)
 			{
 				faninID = cellIndexToGateIndex_[cell->id_] + port->top_->id_;
 			}
-			else if (port->type_ == Port::INPUT && port->top_ == cell->libc_) // External connection
+			else if (port->type_ == Port::INPUT && port->top_ == cell->libc_) // External connection.
 			{
 				Net *nex = cell->getPort(port->id_)->exNet_;
 				PortSet ps = cell->top_->getNetPorts(nex->id_);
@@ -454,7 +454,7 @@ void Circuit::createCircuitPmt(const int &gateID, const Cell *const cell,
 //              	[in] cell : The cell which the gate located at.
 //              	[in] pmt : The primitive. It is an intermediate data type
 //              	           between cell and gate. In fact, it is the gate.
-// 						]
+//            ]
 // Date       [ Ver. 1.0 started 2013/08/11 last modified 2023/01/05 ]
 // **************************************************************************
 void Circuit::determineGateType(const int &gateID, const Cell *const cell,
@@ -595,7 +595,7 @@ void Circuit::determineGateType(const int &gateID, const Cell *const cell,
 // Synopsis   [ usage: Create PO gates of the circuit.
 //              description:
 //              	Create PO gates of the circuit from the ports in the netlist.
-// 						]
+//            ]
 // Date       [ Ver. 1.0 started 2013/08/11 last modified 2023/01/05 ]
 // **************************************************************************
 void Circuit::createCircuitPO()
@@ -661,7 +661,7 @@ void Circuit::createCircuitPO()
 // Synopsis   [ usage: Create PPO gates of the circuit.
 //              description:
 //              	Create PPO gates of the circuit from the cells(DFF) in the netlist.
-// 						]
+//            ]
 // Date       [ Ver. 1.0 started 2013/08/11 last modified 2023/01/05 ]
 // **************************************************************************
 void Circuit::createCircuitPPO()
@@ -727,7 +727,7 @@ void Circuit::createCircuitPPO()
 //              	For every new time frame, connect new time frame PPIs with old
 //              	time frame PPOs (CAPTURE) or old time frame PPIs (SHIFT), and copy
 //              	other gates to the new frame. Finally, remove old time PPO if needed.
-// 						]
+//            ]
 // Date       [ Ver. 1.0 started 2013/08/18 last modified 2023/01/05 ]
 // **************************************************************************
 void Circuit::connectMultipleTimeFrame()
@@ -834,7 +834,7 @@ void Circuit::connectMultipleTimeFrame()
 //              	For every gate, find the minimum level from all fanins' level
 //              	and assign it to the gate->MinLevelOfFanins. This is used for
 //              	headLine justification (atpg.h).
-// 						]
+//            ]
 // Date       [ Ver. 1.0 started 2013/08/18 last modified 2023/01/05 ]
 // **************************************************************************
 void Circuit::assignMinLevelOfFanins()

@@ -1,6 +1,6 @@
 // **************************************************************************
 // File       [ fault.cpp ]
-// Author     [ littleshamoo,PYH ]
+// Author     [ littleshamoo, PYH ]
 // Synopsis   [ This program extract faults from the circuit.
 //              Currently there is no fault collapsing yet. 2014/8/26
 //              Implement fault collapsing. 2022/12/1 ]
@@ -26,7 +26,7 @@ using namespace CoreNs;
 //              	with MFO DTC. Wish this problem can be solved for further speedup.
 //              arguments:
 //              	[in] pCircuit : The circuit we want to extract faults from.
-// 						]
+//            ]
 // Date       [ Ver. 2.0 last modified 2023/01/05 ]
 // **************************************************************************
 void FaultListExtract::extractFaultFromCircuit(Circuit *pCircuit)
@@ -89,7 +89,7 @@ void FaultListExtract::extractFaultFromCircuit(Circuit *pCircuit)
 		else // Simple Equivalent Fault Collapsing.
 		{
 			std::vector<int> SA0Equivalent(pCircuit->numGate_, 1), SA1Equivalent(pCircuit->numGate_, 1); // Used to count the number of equivalent faults.
-			int SA0EquivalentOfInput, SA1EquivalentOfInput;																							 // SA0Equivalent, SA1Equivalent of the input(fanin) gates.
+			int SA0EquivalentOfInput, SA1EquivalentOfInput; // SA0Equivalent, SA1Equivalent of the input(fanin) gates.
 			for (int i = 0; i < pCircuit->numGate_; ++i)
 			{
 				// Adding input faults.
