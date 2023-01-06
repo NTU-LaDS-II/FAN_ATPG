@@ -1435,7 +1435,7 @@ void Atpg::initializeCircuitWithFaultyGate(const Gate &faultyGate, const bool &i
 // 								Set this->gateID_to_valModified_ and
 // 								this->isInEventStack_ to 0.
 // 							arguments
-// 								[in] isDebug: Check this->isInEventStack_ correctness if 
+// 								[in] isDebug: Check this->isInEventStack_ correctness if
 // 								the flag is true.
 //            ]
 // Date       [ started 2020/07/07    last modified 2023/01/06 ]
@@ -1474,37 +1474,64 @@ void Atpg::clearEventStack(bool isDebug)
 // **************************************************************************
 // Function   [ Atpg::doImplication ]
 // Commenter  [ CLT WWS ]
-// Synopsis   [ usage:	Do BACKWARD and FORWARD implication to gates in 
-// 											this->circuitLevel_to_eventStack_,
-//                     	also put gates which can't be implied into this->unjustifiedGateIDs_ list.
-//              in:    atpgStatus(BACKWARD or FORWARD), startLevel
-//              output:   bool
+// Synopsis   [ usage:	Do BACKWARD and FORWARD implications to gates in
+// 								this->circuitLevel_to_eventStack_
+//
+// 							description:
+// 								Enter a do while (backward) loop
+// 								Loop content :
+// 									IF the status is backward:
+// 										Do evaluation backward starting from
+//										this->circuitLevel_to_eventStack_[implicationStartLevel]
+// 										to this->circuitLevel_to_eventStack_[0].
+// 									Then, do evaluation() forward from Atpg::eventList_[0]
+// 									to Atpg::eventList_[totalLevel].
+// 								evaluateAndSetGateAtpgVal() will return
+// 									FORWARD : do nothing
+// 									BACKWARD :
+// 										Do nothing if doing evaluations backward.
+// 										If doing evaluations forward,
+// 										immediately break current loop and go back to the loop
+// 										doing backward evaluations in the event stack.
+// 									CONFLICT : any failed evaluations
+//
+//              arguments:
+// 								[in] atpgStatus: Indicating the current atpg implication
+// 								direction (FORWARD or BACKWARD)
+// 								[in] implicationStartLevel: The starting circuit level to do
+// 								implications in this function.
+//
+//              output:
+// 								A boolean,
+// 								Return false if conflict after evaluateAndSetGateAtpgVal()
+// 								Return true if no conflicts for all implications
 //            ]
 // Date       [ Ver. 1.0 started 2013/08/13 2023/01/06 ]
 // **************************************************************************
-bool Atpg::doImplication(IMPLICATION_STATUS atpgStatus, int startLevel)
+bool Atpg::doImplication(IMPLICATION_STATUS atpgStatus, int implicationStartLevel)
 {
-	IMPLICATION_STATUS implicationStatus;
-
+	// A local variable for storing status after evaluateAndSetGateAtpgVal()
+	//
+	IMPLICATION_STATUS implicationStatusOfEval;
 	if (atpgStatus != BACKWARD)
 	{
-		startLevel = 0;
+		implicationStartLevel = 0;
 	}
 
 	do
 	{
 		if (atpgStatus == BACKWARD)
 		{
-			// BACKWARD loop: Do evaluateAndSetGateAtpgVal() to gates in 
-			// this->circuitLevel_to_eventStack_ in BACKWARD order from startLevel.
+			// BACKWARD loop: Do evaluateAndSetGateAtpgVal() to gates in
+			// this->circuitLevel_to_eventStack_ in BACKWARD order from implicationStartLevel.
 			// If one of them returns CONFLICT, returns false.
-			for (int i = startLevel; i >= 0; --i)
+			for (int i = implicationStartLevel; i >= 0; --i)
 			{
 				while (!this->circuitLevel_to_eventStack_[i].empty())
 				{
 					Gate *pGate = &this->pCircuit_->circuitGates_[popEventStack(i)];
-					implicationStatus = evaluateAndSetGateAtpgVal(pGate);
-					if (implicationStatus == CONFLICT)
+					implicationStatusOfEval = evaluateAndSetGateAtpgVal(pGate);
+					if (implicationStatusOfEval == CONFLICT)
 					{
 						return false;
 					}
@@ -1515,23 +1542,24 @@ bool Atpg::doImplication(IMPLICATION_STATUS atpgStatus, int startLevel)
 		atpgStatus = FORWARD;
 		for (int i = 0; i < this->pCircuit_->totalLvl_; ++i)
 		{
-			// FORWARD loop: Do evaluateAndSetGateAtpgVal() to gates in 
-			// this->circuitLevel_to_eventStack_ in FORWARD order till it gets 
+			// FORWARD loop: Do evaluateAndSetGateAtpgVal() to gates in
+			// this->circuitLevel_to_eventStack_ in FORWARD order till it gets
 			// to MaxLevel.
 			// If one of them returns CONFLICT, returns false.
-			// If one of them returns BACKWARD, set startLevel to current level - 1
+			// If one of them returns BACKWARD, set implicationStartLevel 
+			// to current level - 1
 			// break for loop
 			while (!this->circuitLevel_to_eventStack_[i].empty())
 			{
 				Gate *pGate = &this->pCircuit_->circuitGates_[popEventStack(i)];
-				implicationStatus = evaluateAndSetGateAtpgVal(pGate);
-				if (implicationStatus == CONFLICT)
+				implicationStatusOfEval = evaluateAndSetGateAtpgVal(pGate);
+				if (implicationStatusOfEval == CONFLICT)
 				{
 					return false;
 				}
-				else if (implicationStatus == BACKWARD)
+				else if (implicationStatusOfEval == BACKWARD)
 				{
-					startLevel = i - 1;
+					implicationStartLevel = i - 1;
 					atpgStatus = BACKWARD;
 					break;
 				}
