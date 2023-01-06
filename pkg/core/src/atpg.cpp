@@ -1426,6 +1426,7 @@ void Atpg::initializeCircuitWithFaultyGate(const Gate &faultyGate, const bool &i
 //                Clear this->circuitLevel_to_eventStack_.
 // 								Set this->gateID_to_valModified_ and
 // 								this->isInEventStack_ to 0.
+//
 // 							arguments:
 // 								[in] isDebug: Check this->isInEventStack_ correctness if
 // 								the flag is true.
@@ -1490,6 +1491,7 @@ void Atpg::clearEventStack(bool isDebug)
 //              arguments:
 // 								[in] atpgStatus: Indicating the current atpg implication
 // 								direction (FORWARD or BACKWARD)
+//
 // 								[in] implicationStartLevel: The starting circuit level to do
 // 								implications in this function.
 //
@@ -1794,77 +1796,86 @@ Atpg::IMPLICATION_STATUS Atpg::doOneGateBackwardImplication(Gate *pGate)
 // 								a index in this->backtrackImplicatedGateIDs_.
 //
 // 							description:
-// check if the decisionTree_.get(...) is True
-// 		if true : already marked,
-// 		pop it and go back to the first line to check if the decisionTree_.get(...) is True
-// 		else : update the unjustifiedlines()
-// 							 back track the gate from previous decisionTree_.get(),
-// 		reset all the gate in the Atpg::backtrackList_ to
-// 		unmodfied and the value to unknown,
-// 		recalculate the BackImpLevel, reconstruct the Atpg::eventStack_ the Atpg::dFrontier_, Atpg::unjustified_, Atpg xPathStatus return true if no more gate in decision tree to backtrack than return false
-//              in:    backwardImplicationLevel
+// 								Check if the decisionTree_.get(...) is True
+// 								If true : DecisionTreeNode already marked,
+// 									pop it from decision tree and check next bottom node
+// 								Else :
+// 									update the unjustified lines
+// 								Backtrack the gate's atpgVal_ from previous decisionTree_.get(),
+// 								reset all the gate in the Atpg::backtrackList_ to
+// 								not modified and the value to unknown,
+// 								Recalculate the BackImpLevel, reconstruct the event stack,
+// 								this->dFrontier_, this->Atpg::unjustified_, this->xPathStatus
+// 								return true, indicating backtrack successful
+// 								if no more gate(node) in decision tree to backtrack than
+// 								return false, indicating backtrack failed, fault untestable
+//
+// 							arguments:
+// 								[out] backwardImplicationLevel: backward implication level
+// 								of current single pattern generation, will be updated in
+// 								in this function if any backtrack happened
+//
 //              output:
 // 								A boolean indicating whether backtrack has failed, if
 // 								failed the whole current target fault is determined as
 // 								untestable in this atpg algorithm.
 //            ]
-// Date       [ Ver. 1.0 started 2013/08/13 ]
+// Date       [ Ver. 1.0 started 2013/08/13 last modified 2023/01/06 ]
 // **************************************************************************
 //
+// The decision gates are put in the decisionTree
+// The associated implications of corresponding decision gates are put
+// in this->backtrackImplicatedGateIDs_.
 //
-// those decision gates are put in the decisionTree
-// the associated implication are put in the backtrackList
-//
-// when we backtrack a single gate in decision tree,
-// we need to recover all the associated implications
-// starting from the startPoint of backtrackList
+// When we backtrack a single gate in decision tree, we need to recover all
+// the associated implications starting from the startPoint in
+// this->backtrackImplicatedGateIDs_.
 //
 //                       +------+------+
-//  decision tree nodes: | G0=1 | G1=0 |...
+//  DecisionTreeNodes  : | G0=1 | G1=0 |...
 //                       +------+------+
 //       startPoint of G0=1 |        \ startPoint of G1=0
 //                          V         \						.
 //                       +----+----++----+----+----+
 //  backtrackList:       |G4=0|G7=1||G6=1|G9=0|G8=0|...
 //                       +----+----++----+----+----+
-//                       \         /\______ _______/
-//                        \___ ___/        V
-//                            V            associated implications of G1=0
-//         associated implications of G0=1
+//                       \____ ____/\______ _______/
+//                            V            V
+// associated implications of G0=1         associated implications of G1=0
+//
 // **************************************************************************
 bool Atpg::backtrack(int &backwardImplicationLevel)
 {
+	// this->backtrackImplicatedGateIDs_ is allocated for this function
+	int decisionGateID;
 	int backtrackPoint = 0;
-	int mDecisionGateID;
-	Value Val;
 	Gate *pDecisionGate = NULL;
-	// this->backtrackImplicatedGateIDs_ is for backtrack
 
 	while (!this->backtrackDecisionTree_.empty())
 	{
 		// get the last node in this->backtrackDecisionTree_ as backtrackPoint
-		if (this->backtrackDecisionTree_.get(mDecisionGateID, backtrackPoint))
+		if (this->backtrackDecisionTree_.get(decisionGateID, backtrackPoint))
 		{
 			continue;
 		}
-		// pDecisionGate is the bottom node of this->backtrackDecisionTree_
 
 		updateUnjustifiedGateIDs();
-		pDecisionGate = &this->pCircuit_->circuitGates_[mDecisionGateID];
-		Val = cINV(pDecisionGate->atpgVal_);
+		// pDecisionGate is the bottom(last) node of this->backtrackDecisionTree_
+		pDecisionGate = &(this->pCircuit_->circuitGates_[decisionGateID]);
+		Value toggledBacktrackNodeAtpgVal = cINV(pDecisionGate->atpgVal_);
 
 		for (int i = backtrackPoint; i < (int)this->backtrackImplicatedGateIDs_.size(); ++i)
 		{
-			// Reset gates and their ouput in this->backtrackImplicatedGateIDs_, starts from its backtrack point.
+			// Reset gates and their ouput in this->backtrackImplicatedGateIDs_,
+			// starting from its backtrack point.
 			Gate *pGate = &(this->pCircuit_->circuitGates_[this->backtrackImplicatedGateIDs_[i]]);
 
 			pGate->atpgVal_ = X;
 			this->gateID_to_valModified_[pGate->gateId_] = 0;
 
-			for (int j = 0; j < pGate->numFO_; ++j)
+			for (int fanoutGateID : pGate->fanoutVector_)
 			{
-				Gate *pFanoutGate = &this->pCircuit_->circuitGates_[pGate->fanoutVector_[j]];
-				this->gateID_to_valModified_[pFanoutGate->gateId_] = 0;
+				this->gateID_to_valModified_[fanoutGateID] = 0;
 			}
 		}
 
@@ -1872,31 +1883,32 @@ bool Atpg::backtrack(int &backwardImplicationLevel)
 
 		for (int i = backtrackPoint + 1; i < (int)this->backtrackImplicatedGateIDs_.size(); ++i)
 		{
-			// Find MAX level output in this->backtrackImplicatedGateIDs_ and save it to backwardImplicationLevel
+			// Find MAX level output in this->backtrackImplicatedGateIDs_
+			// and save it to backwardImplicationLevel
 			Gate *pGate = &(this->pCircuit_->circuitGates_[this->backtrackImplicatedGateIDs_[i]]);
 
-			for (int j = 0; j < pGate->numFO_; ++j)
+			for (int fanoutGateID : pGate->fanoutVector_)
 			{
-				Gate *pFanoutGate = &(this->pCircuit_->circuitGates_[pGate->fanoutVector_[j]]);
-
-				if (pFanoutGate->atpgVal_ != X)
+				Gate &fanoutGate = this->pCircuit_->circuitGates_[fanoutGateID];
+				if (fanoutGate.atpgVal_ != X)
 				{
-					if (!this->gateID_to_valModified_[pFanoutGate->gateId_])
+					if (!this->gateID_to_valModified_[fanoutGate.gateId_])
 					{
-						this->unjustifiedGateIDs_.push_back(pFanoutGate->gateId_);
+						this->unjustifiedGateIDs_.push_back(fanoutGate.gateId_);
 					}
-					pushGateToEventStack(pFanoutGate->gateId_);
+					pushGateToEventStack(fanoutGate.gateId_);
 				}
 
-				if (pFanoutGate->numLevel_ > backwardImplicationLevel)
+				if (fanoutGate.numLevel_ > backwardImplicationLevel)
 				{
-					backwardImplicationLevel = pFanoutGate->numLevel_;
+					backwardImplicationLevel = fanoutGate.numLevel_;
 				}
 			}
 		}
-
-		this->backtrackImplicatedGateIDs_.resize(backtrackPoint + 1); // cut the last backtracked point and its associated gates
-		pDecisionGate->atpgVal_ = Val;																// toggle its value, do backtrack, ex: 1=>0, 0=>1
+		// cut the last backtracked point and its associated gates
+		this->backtrackImplicatedGateIDs_.resize(backtrackPoint + 1);
+		// toggle its value, do backtrack, ex: 1=>0, 0=>1
+		pDecisionGate->atpgVal_ = toggledBacktrackNodeAtpgVal;
 
 		if (this->gateID_to_lineType_[pDecisionGate->gateId_] == HEAD_LINE)
 		{
@@ -1909,14 +1921,12 @@ bool Atpg::backtrack(int &backwardImplicationLevel)
 
 		pushGateFanoutsToEventStack(pDecisionGate->gateId_);
 
-		Gate *pFaultyGate = &this->pCircuit_->circuitGates_[this->currentTargetFault_.gateID_];
-
 		this->dFrontiers_.clear();
 		this->dFrontiers_.reserve(MAX_LIST_SIZE);
-		this->dFrontiers_.push_back(pFaultyGate->gateId_);
+		this->dFrontiers_.push_back(this->currentTargetFault_.gateID_);
 		updateDFrontiers();
 
-		// Update this->unjustifiedGateIDs_ list
+		// Update this->unjustifiedGateIDs_
 		for (int k = (int)(this->unjustifiedGateIDs_.size()) - 1; k >= 0; --k)
 		{
 			if (this->pCircuit_->circuitGates_[this->unjustifiedGateIDs_[k]].atpgVal_ == X)
@@ -1924,7 +1934,7 @@ bool Atpg::backtrack(int &backwardImplicationLevel)
 				vecDelete(this->unjustifiedGateIDs_, k);
 			}
 		}
-		// Reset xPathStatus
+		// Reset all xPathStatus to unknown
 		std::fill(this->gateID_to_xPathStatus_.begin(), this->gateID_to_xPathStatus_.end(), UNKNOWN);
 		return true;
 	}
@@ -1933,11 +1943,11 @@ bool Atpg::backtrack(int &backwardImplicationLevel)
 
 bool Atpg::continuationMeaningful(Gate *pLastDFrontier)
 {
-	bool fDFrontierChanged; // fDFrontierChanged is true when D-frontier must change
-	// update unjustified lines
+	// fDFrontierChanged is true when D-frontier must change
+	bool fDFrontierChanged;
+
 	updateUnjustifiedGateIDs();
 
-	// if the initial object is modified, delete it from this->initialObjectives_ list
 	for (int k = (int)this->initialObjectives_.size() - 1; k >= 0; --k)
 	{
 		if (this->gateID_to_valModified_[this->initialObjectives_[k]])
