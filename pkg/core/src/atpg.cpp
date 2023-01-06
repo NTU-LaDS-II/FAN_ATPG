@@ -36,7 +36,6 @@ using namespace CoreNs;
 // 								[in] isMFO : A flag specifying whether the MFO mode is
 // 								activated. MFO stands for multiple fault order, which is a
 // 								heuristic with Multiple Fault Orderings.
-//
 // 						]
 // Date       [ Ver. 1.0 started 2013/08/13	last modified 2023/01/05 ]
 // **************************************************************************
@@ -183,12 +182,12 @@ void Atpg::setupCircuitParameter()
 // Synopsis   [ usage:	Calculate the depthFromPo_ of each gate.
 //
 //              description:
-//
 // 								This functions calculates the depth (how many gates) from
 // 								PO/PPO of every gates.
 //
-// 								This function also initializes the this->gateID_to_valModified_.
-// 								It should be moved to other places (TODO) for readability.
+// 								This function also initializes the 
+// 								this->gateID_to_valModified_,
+// 								but should be moved to other places (TODO) for readability.
 //            ]
 // Date       [ started 2020/07/06 last modified 2023/01/05 ]
 // **************************************************************************
@@ -2857,7 +2856,7 @@ int Atpg::setFaultyGate(Fault &fault)
 			case Gate::NOR4:
 				isFaultyGateScanned = false;
 				// scan all fanin gate of pFaultyGate
-				for (int faninGateID: pFaultyGate->faninVector_)
+				for (int faninGateID : pFaultyGate->faninVector_)
 				{
 					Gate *pFaninGate = &this->pCircuit_->circuitGates_[faninGateID];
 					if (pFaninGate != pFaultyLineGate)
@@ -3196,7 +3195,7 @@ void Atpg::fanoutFreeBacktrace(Gate *pGate)
 //                    atpgStatus == FAN_OBJ_DETERMINE means Multiple Backtrace
 //                    from the set of Fanout-Point Objectives
 // 								[out] possibleFinalObjectiveID:
-// 										Reference of possible fanout objective in current 
+// 										Reference of possible fanout objective in current
 // 										single pattern generation.
 //              output:	BACKTRACE_RESULT
 //											return CONTRADICTORY when we find a
@@ -3217,7 +3216,7 @@ Atpg::BACKTRACE_RESULT Atpg::multipleBacktrace(BACKTRACE_STATUS atpgStatus, int 
 	{
 		initializeForMultipleBacktrace();
 		// Get ready to get into the following while loop
-		atpgStatus = CHECK_AND_SELECT; 
+		atpgStatus = CHECK_AND_SELECT;
 	}
 
 	while (true)
@@ -3229,7 +3228,7 @@ Atpg::BACKTRACE_RESULT Atpg::multipleBacktrace(BACKTRACE_STATUS atpgStatus, int 
 				if (this->currentObjectives_.empty())
 				{
 					if (this->fanoutObjectives_.empty())
-					{																		 
+					{
 						return NO_CONTRADICTORY;
 					}
 					else
@@ -3238,12 +3237,12 @@ Atpg::BACKTRACE_RESULT Atpg::multipleBacktrace(BACKTRACE_STATUS atpgStatus, int 
 					}
 				}
 				else
-				{ 
+				{
 					// pop from current objectives
 					pCurrentObjGate = &(this->pCircuit_->circuitGates_[vecPop(this->currentObjectives_)]);
 					atpgStatus = CURRENT_OBJ_DETERMINE;
 				}
-				break; 
+				break;
 			case CURRENT_OBJ_DETERMINE:
 				// IS OBJECTIVE LINE A HEAD LINE?
 				if (this->gateID_to_lineType_[pCurrentObjGate->gateId_] == HEAD_LINE)
@@ -3254,10 +3253,10 @@ Atpg::BACKTRACE_RESULT Atpg::multipleBacktrace(BACKTRACE_STATUS atpgStatus, int 
 				else
 				{
 					// get Val, no and n1 of pCurrentObjGate
-					Value Val = assignBacktraceValue(n0, n1, *pCurrentObjGate); 
+					Value Val = assignBacktraceValue(n0, n1, *pCurrentObjGate);
 
 					// the easiest gate to control value to Val
-					pEasiestFaninGate = findEasiestInput(pCurrentObjGate, Val);
+					pEasiestFaninGate = findEasiestFaninGate(pCurrentObjGate, Val);
 
 					// add next objectives to current objectives and
 					// calculate n0, n1 by rule1~rule6
@@ -3366,7 +3365,7 @@ Atpg::BACKTRACE_RESULT Atpg::multipleBacktrace(BACKTRACE_STATUS atpgStatus, int 
 					}
 				}
 				atpgStatus = CHECK_AND_SELECT;
-				break; 
+				break;
 
 			case FAN_OBJ_DETERMINE:
 				int index;
@@ -3379,20 +3378,20 @@ Atpg::BACKTRACE_RESULT Atpg::multipleBacktrace(BACKTRACE_STATUS atpgStatus, int 
 				if (pCurrentObjGate->atpgVal_ != X)
 				{
 					atpgStatus = CHECK_AND_SELECT;
-					break; 
+					break;
 				}
 
 				if (this->gateID_to_reachableByTargetFault_[pCurrentObjGate->gateId_] == 1)
 				{
 					atpgStatus = CURRENT_OBJ_DETERMINE;
-					break; 
+					break;
 				}
 
 				// if one of numOfZero or numOfOne is equal to 0
 				if (!(this->gateID_to_n0_[pCurrentObjGate->gateId_] != 0 && this->gateID_to_n1_[pCurrentObjGate->gateId_] != 0))
 				{
 					atpgStatus = CURRENT_OBJ_DETERMINE;
-					break; 
+					break;
 				}
 
 				// if three conditions are not set up, then push back pCurrentObjGate to finalObject
@@ -3415,7 +3414,7 @@ Atpg::BACKTRACE_RESULT Atpg::multipleBacktrace(BACKTRACE_STATUS atpgStatus, int 
 // **************************************************************************
 // Function   [ Atpg::assignBacktraceValue ]
 // Commenter  [ CKY WWS ]
-// Synopsis   [ usage:	help to get n0 n1 and Value depend on 
+// Synopsis   [ usage:	help to get n0 n1 and Value depend on
 // 											Gate's controlling value
 //              arguments:
 // 								[out] n0:	n0 (int reference) to be set
@@ -3504,7 +3503,7 @@ Value Atpg::assignBacktraceValue(int &n0, int &n1, const Gate &gate)
 		// when gate is XOR3 or XNOR3
 		case Gate::XOR3:
 		case Gate::XNOR3:
-			for (int faninGateID: gate.faninVector_)
+			for (int faninGateID : gate.faninVector_)
 			{
 				if (this->pCircuit_->circuitGates_[faninGateID].atpgVal_ == H)
 				{
@@ -3564,11 +3563,11 @@ void Atpg::initializeForMultipleBacktrace()
 			setGaten0n1(currentObjectGateID, 1, 0);
 		}
 		else if (currObjGate.atpgVal_ == H || currObjGate.atpgVal_ == D)
-		{ 
+		{
 			setGaten0n1(currentObjectGateID, 0, 1);
 		}
 		else
-		{ 
+		{
 			switch (currObjGate.gateType_)
 			{
 				case Gate::AND2:
@@ -3600,35 +3599,41 @@ void Atpg::initializeForMultipleBacktrace()
 }
 
 // **************************************************************************
-// Function   [ Atpg::findEasiestInput ]
-// Commenter  [ KOREAL ]
+// Function   [ Atpg::findEasiestFaninGate ]
+// Commenter  [ KOREAL WWS ]
 // Synopsis   [ usage: find the EasiestInput by gate::cc0_ or gate::cc1_
-//              in:    1. Target gate (Gate* pGate)
-//					   2. FanOut value of target gate (Value Val)
-//              out:   FanIn of a target gate which is the easiestInput
+// 							description:
+// 								Utilize SCOAP heuristic if addSCOAP is called in
+// 								setupCircuitParameter(),
+// 								Otherwise cc0_ and cc1_ is 0
+// 								SCOAP heuristic is finished and can be found in atpg.cpp
+// 								but is not included in the algorithm because the result
+// 								of SCOAP is even worse.
+// 							arguments:
+// 								[in] pGate:
+// 									The gate to find easiest fanin gate.
+//								[out] vak
+//              output: the easiest fanin gate to assign value
 //            ]
-// Date       [ CPJ Ver. 1.0 started 2013/08/10 ]
+// Date       [ CPJ Ver. 1.0 started 2013/08/10 last modified 2023/01/06]
 // **************************************************************************
-Gate *Atpg::findEasiestInput(Gate *pGate, Value Val)
+Gate *Atpg::findEasiestFaninGate(Gate *pGate, const Value &atpgValOfpGate)
 {
-	// declaration of the return gate pointer
 	Gate *pRetGate = NULL;
-	// easiest input gate's scope(non-select yet)
 	int easyControlVal = INFINITE;
 
-	// if the fanIn amount is 1, just return the only fanIn
 	if (pGate->gateType_ == Gate::PO || pGate->gateType_ == Gate::PPO ||
 			pGate->gateType_ == Gate::BUF || pGate->gateType_ == Gate::INV)
 	{
-		return &this->pCircuit_->circuitGates_[pGate->faninVector_[0]];
+		return &(this->pCircuit_->circuitGates_[pGate->faninVector_[0]]);
 	}
 
-	if (Val == L)
+	if (atpgValOfpGate == L)
 	{
 		// choose the value-undetermined faninGate which has smallest cc0_
-		for (int i = 0; i < pGate->numFI_; ++i)
+		for (const int &faninGateID : pGate->faninVector_)
 		{
-			Gate *pFaninGate = &this->pCircuit_->circuitGates_[pGate->faninVector_[i]];
+			Gate *pFaninGate = &(this->pCircuit_->circuitGates_[faninGateID]);
 			if (pFaninGate->atpgVal_ != X)
 			{
 				continue;
@@ -3644,9 +3649,9 @@ Gate *Atpg::findEasiestInput(Gate *pGate, Value Val)
 	else
 	{
 		// choose the value-undetermined faninGate which has smallest cc1_
-		for (int i = 0; i < pGate->numFI_; ++i)
+		for (const int &faninGateID : pGate->faninVector_)
 		{
-			Gate *pFaninGate = &this->pCircuit_->circuitGates_[pGate->faninVector_[i]];
+			Gate *pFaninGate = &(this->pCircuit_->circuitGates_[faninGateID]);
 			if (pFaninGate->atpgVal_ != X)
 			{
 				continue;
@@ -3664,55 +3669,65 @@ Gate *Atpg::findEasiestInput(Gate *pGate, Value Val)
 
 // **************************************************************************
 // Function   [ Atpg::findClosestToPO ]
-// Commenter  [ CLT ]
-// Synopsis   [ usage: find the gate which is the closest to output
-//              in:    the gate vector to search, the index of the gate
-//              out:   return the gate which is closest to output
+// Commenter  [ CLT WWS ]
+// Synopsis   [ usage:
+// 								Find the gate which is the closest to output.
+// 							arguments:
+// 								[in] gateVec:
+// t									The gate vector to search.
+// 								[out] index:
+// 									The index of the gate closest to PO/PPO.
+//              output:
+// 								The gate which is closest to output.
 //            ]
-// Date       [ Ver. 1.0 started 2013/08/13 ]
+// Date       [ Ver. 1.0 started 2013/08/13 last modified 2023/01/06 ]
 // **************************************************************************
 Gate *Atpg::findClosestToPO(std::vector<int> &gateVec, int &index)
 {
-	Gate *pCloseGate = NULL;
+	Gate *pClosestGate = NULL;
 
 	if (gateVec.empty())
 	{
 		return NULL;
 	}
 
-	pCloseGate = &this->pCircuit_->circuitGates_[gateVec.back()];
+	pClosestGate = &(this->pCircuit_->circuitGates_[gateVec.back()]);
 	index = gateVec.size() - 1;
 	for (int i = gateVec.size() - 2; i >= 0; --i)
 	{
-		if (this->pCircuit_->circuitGates_[gateVec[i]].depthFromPo_ < pCloseGate->depthFromPo_)
+		if (this->pCircuit_->circuitGates_[gateVec[i]].depthFromPo_ < pClosestGate->depthFromPo_)
 		{
 			index = i;
-			pCloseGate = &this->pCircuit_->circuitGates_[gateVec[i]];
+			pClosestGate = &this->pCircuit_->circuitGates_[gateVec[i]];
 		}
 	}
-	return pCloseGate;
+	return pClosestGate;
 }
 
 // **************************************************************************
-// Function   [ Atpg::Evaluation ]
-// Commenter  [ KOREAL ]
-// Synopsis   [ IN:  Gate *pGate
-//              OUT: IMP_STATUS (FORWARD, BACKWARD, CONFLICT)
+// Function   [ Atpg::evaluateAndSetGateAtpgVal ]
+// Commenter  [ KOREAL WWS ]
+// Synopsis   [ usage:
+// 								The literal meaning of function name.
+//							description:
+//              	If pGate is the faulty gate, return FaultEvaluation(pGate);
+//              	else check the relationships between pGate's evaluated value
+//              	and current value.
 //
-//              If pGate is the faulty gate, return FaultEvaluation(pGate);
-//              else check the relationships between pGate's evaluated value
-//              and current value.
-//
-//              If they are the same, set pGate to be modified, return
-//              FORWARD,
-//              else if current value is unknown, set it to the evaluated
-//              value and return FORWARD,
-//              else if the evaluated value is different from current value,
-//              return CONFLICT,
-//              else (only know current value)return
-//              BackwardImplication(pGate).
+//              	If they are the same, set pGate to be modified,
+//              	 return FORWARD,
+//              	else if current value is unknown,
+//              		set it to the evaluated value and return FORWARD,
+//              	else if the evaluated value is different from current value
+//              		return CONFLICT,
+//              	else (only know current value)
+//              		return BackwardImplication(pGate).
+//							arguments:
+// 								[in] pGate: The gate to do evaluation on.
+// 							output:
+// 								The implication status after this function call.
 //            ]
-// Date       [ KOREAL Ver. 1.0 started 2013/08/15 ]
+// Date       [ KOREAL Ver. 1.0 started 2013/08/15 last modifed 2023/01/06 ]
 // **************************************************************************
 Atpg::IMPLICATION_STATUS Atpg::evaluateAndSetGateAtpgVal(Gate *pGate)
 {
@@ -3720,38 +3735,35 @@ Atpg::IMPLICATION_STATUS Atpg::evaluateAndSetGateAtpgVal(Gate *pGate)
 
 	if (this->gateID_to_lineType_[pGate->gateId_] == HEAD_LINE)
 	{
-		// pGate is head line, set modify and return FORWARD
 		this->gateID_to_valModified_[pGate->gateId_] = 1;
 		return FORWARD;
 	}
 
-	// pGate is the faulty gate, see FaultEvaluation();
 	if (pGate->gateId_ == this->currentTargetFault_.gateID_)
 	{
 		return evaluateAndSetFaultyGateAtpgVal(pGate);
 	}
 
-	// pGate is not the faulty gate, see evaluateGoodVal(*pGate)
-	Value Val = evaluateGoodVal(*pGate);
+	Value evaluatedGoodVal = evaluateGoodVal(*pGate);
 
-	if (pGate->atpgVal_ == Val)
+	if (pGate->atpgVal_ == evaluatedGoodVal)
 	{
-		if (Val != X)
-		{ // Good value is equal to the gate output
+		// Good value is equal to the gate output
+		if (evaluatedGoodVal != X)
+		{
 			this->gateID_to_valModified_[pGate->gateId_] = 1;
 		}
 		return FORWARD;
 	}
 	else if (pGate->atpgVal_ == X)
 	{
-		// set it to the evaluated value.
-		pGate->atpgVal_ = Val;
+		pGate->atpgVal_ = evaluatedGoodVal;
 		this->backtrackImplicatedGateIDs_.push_back(pGate->gateId_);
 		this->gateID_to_valModified_[pGate->gateId_] = 1;
 		pushGateFanoutsToEventStack(pGate->gateId_);
 		return FORWARD;
 	}
-	else if (Val != X)
+	else if (evaluatedGoodVal != X)
 	{ // Good value is different to the gate output
 		return CONFLICT;
 	}
@@ -3760,36 +3772,37 @@ Atpg::IMPLICATION_STATUS Atpg::evaluateAndSetGateAtpgVal(Gate *pGate)
 }
 
 // **************************************************************************
-// Function   [ Atpg::FaultEvaluation ]
-// Commenter  [ KOREAL ]
-// Synopsis   [ IN:  Gate *pGate
-//              OUT: IMP_STATUS (FORWARD, BACKWARD, CONFLICT)
+// Function   [ Atpg::evaluateAndSetFaultyGateAtpgVal ]
+// Commenter  [ KOREAL WWS ]
+// Synopsis   [ usage:
+// 								The literal meaning of function name.
 //
 //              Check the relationships between pGate's current value and the
 //              evaluated value of pGate.
 //
-//              If current value of pGate is unknown, set it to the
-//              evaluated value, return FORWARD.
+//              If evaluated value is unknown
+// 								if pGate has current value,
+// 									if only one input has ONE unknown value
+// 										set the input to proper value and return BACKWARD
+// 									else
+// 										push pGate into unjustified_ list
+// 							If they are the same
+// 								set pGate to be modified, return FORWARD
+// 							If the evaluated value is different from current value
+// 								return CONFLICT
 //
-//              If they are the same, set pGate to be modified, return FORWARD.
-//
-//              If pGate has current value, if only one input has an unknown
-//              value, set the input to proper value and return BACKWARD; if
-//              pGate has more than one input with unknown value, push pGate
-//              into this->unjustifiedGateIDs_.
-//
-//              If the evaluated value is different from current value, return
-//              CONFLICT.
-//
+//							arguments:
+// 								[in] pGate: The gate to do evaluation on.
+// 							output:
+// 								The implication status after this function call.
 //            ]
-// Date       [ KOREAL Ver. 1.0 started 2013/08/15 ]
+// Date       [ KOREAL Ver. 1.0 started 2013/08/15 last modified 2023/01/06 ]
 // **************************************************************************
 Atpg::IMPLICATION_STATUS Atpg::evaluateAndSetFaultyGateAtpgVal(Gate *pGate)
 {
-	// get the evaluated value of pGate.
-	Value Val = evaluateFaultyVal(*pGate);
+	Value evaluatedFaultyValOfpGate = evaluateFaultyVal(*pGate);
 	int faninIndex = 0;
-	if (Val == X)
+	if (evaluatedFaultyValOfpGate == X)
 	{ // The evaluated value is X, means the init faulty objective has not achieved yet.
 		if (pGate->atpgVal_ != X)
 		{
@@ -3807,33 +3820,32 @@ Atpg::IMPLICATION_STATUS Atpg::evaluateAndSetFaultyGateAtpgVal(Gate *pGate)
 				}
 			}
 			if (numOfX == 1)
-			{ // The fanin has X value can be set to impl. value
+			{ // The fanin has X value can be set to implication value
 
-				// ImpVal is the pImplicatedGate value
-				Value ImpVal;
+				Value implicatedVal;
 
 				// pImplicatedGate is the pGate's fanIn whose value is X.
-				Gate *pImplicatedGate = &this->pCircuit_->circuitGates_[pGate->faninVector_[faninIndex]];
+				Gate *pImplicatedGate = &(this->pCircuit_->circuitGates_[pGate->faninVector_[faninIndex]]);
 
 				// set ImpVal if pGate is not XOR or XNOR
 				if (pGate->atpgVal_ == D)
 				{
-					ImpVal = H;
+					implicatedVal = H;
 				}
 				else if (pGate->atpgVal_ == B)
 				{
-					ImpVal = L;
+					implicatedVal = L;
 				}
 				else
 				{
-					ImpVal = pGate->atpgVal_;
+					implicatedVal = pGate->atpgVal_;
 				}
 
 				// set ImpVal if pGate is XOR2 or XNOR2
 				if (pGate->gateType_ == Gate::XOR2 || pGate->gateType_ == Gate::XNOR2)
 				{
 					Value temp = (faninIndex == 0) ? this->pCircuit_->circuitGates_[pGate->faninVector_[1]].atpgVal_ : this->pCircuit_->circuitGates_[pGate->faninVector_[0]].atpgVal_;
-					ImpVal = cXOR2(ImpVal, temp);
+					implicatedVal = cXOR2(implicatedVal, temp);
 				}
 				// set ImpVal if pGate is XOR3 or XNOR3
 				if (pGate->gateType_ == Gate::XOR3 || pGate->gateType_ == Gate::XNOR3)
@@ -3851,19 +3863,16 @@ Atpg::IMPLICATION_STATUS Atpg::evaluateAndSetFaultyGateAtpgVal(Gate *pGate)
 					{
 						temp = cXOR2(this->pCircuit_->circuitGates_[pGate->faninVector_[1]].atpgVal_, this->pCircuit_->circuitGates_[pGate->faninVector_[0]].atpgVal_);
 					}
-					ImpVal = cXOR2(ImpVal, temp);
+					implicatedVal = cXOR2(implicatedVal, temp);
 				}
 
 				// if pGate is an inverse function, ImpVal = NOT(ImpVal)
-				Value isInv = pGate->isInverse();
-				ImpVal = cXOR2(ImpVal, isInv);
+				implicatedVal = cXOR2(implicatedVal, pGate->isInverse());
 
 				// set modify and the final value of pImplicatedGate
 				this->gateID_to_valModified_[pGate->gateId_] = 1;
-				pImplicatedGate->atpgVal_ = ImpVal;
+				pImplicatedGate->atpgVal_ = implicatedVal;
 
-				// backward setting
-				// pushInputEvents(pGate->gateId_, faninIndex);
 				pushGateToEventStack(pGate->faninVector_[faninIndex]);
 				pushGateFanoutsToEventStack(pGate->faninVector_[faninIndex]);
 				this->backtrackImplicatedGateIDs_.push_back(pImplicatedGate->gateId_);
@@ -3876,38 +3885,49 @@ Atpg::IMPLICATION_STATUS Atpg::evaluateAndSetFaultyGateAtpgVal(Gate *pGate)
 			}
 		}
 	}
-	else if (pGate->atpgVal_ == Val)
+	else if (pGate->atpgVal_ == evaluatedFaultyValOfpGate)
 	{ // The initial faulty objective has already been achieved
 		this->gateID_to_valModified_[pGate->gateId_] = 1;
 	}
 	else if (pGate->atpgVal_ == X)
 	{
-		// if pGate's value is unknown, set pGate's value
 		this->gateID_to_valModified_[pGate->gateId_] = 1;
-		pGate->atpgVal_ = Val;
-		// forward setting
+		pGate->atpgVal_ = evaluatedFaultyValOfpGate;
 		pushGateFanoutsToEventStack(pGate->gateId_);
 		this->backtrackImplicatedGateIDs_.push_back(pGate->gateId_);
 	}
 	else
 	{
-		return CONFLICT; // If the evaluated value is different from current value, return CONFLICT.
+		// If the evaluated value is different from current value, return CONFLICT.
+		return CONFLICT; 
 	}
 	return FORWARD;
 }
 
 // **************************************************************************
 // Function   [ Atpg::staticTestCompressionByReverseFaultSimulation ]
-// Commenter  [ CAL ]
+// Commenter  [ CAL WWS ]
 // Synopsis   [ usage:
-//                Perform reverse fault simulation
-//              in:    void
-//              out:   void
+//                Perform reverse fault simulation to do static test 
+// 								compression.
+//
+//              arguments:
+// 								[in, out] pPatterProcessor:
+// 									The pattern processor contains
+// 									the complete test pattern set before STC.
+// 									It will then be reassigned to static compressed
+// 									test pattern set.
+// 								[in, out] originalFaultList
+// 									List of faults to be detected. 
+// 									Would be modified after this function call.
+// 								
+//
 //            ]
-// Date       [ started 2020/07/08    last modified 2020/07/08 ]
+// Date       [ started 2020/07/08    last modified 2023/01/06 ]
 // **************************************************************************
 void Atpg::staticTestCompressionByReverseFaultSimulation(PatternProcessor *pPatternProcessor, FaultPtrList &originalFaultList)
 {
+	// reset all the fault to undetected
 	for (Fault *pFault : originalFaultList)
 	{
 		pFault->detection_ = 0;
@@ -3917,18 +3937,19 @@ void Atpg::staticTestCompressionByReverseFaultSimulation(PatternProcessor *pPatt
 		}
 	}
 
-	std::vector<Pattern> tmp = pPatternProcessor->patternVector_;
+	std::vector<Pattern> originalPatternVec = pPatternProcessor->patternVector_;
 	pPatternProcessor->patternVector_.clear();
-	pPatternProcessor->patternVector_.reserve(tmp.capacity());
+	pPatternProcessor->patternVector_.reserve(originalPatternVec.capacity());
 
 	// Perform reverse fault simulation
 	int leftFaultCount = originalFaultList.size();
-	for (std::vector<Pattern>::reverse_iterator rit = tmp.rbegin(); rit != tmp.rend(); ++rit)
+	for (std::vector<Pattern>::reverse_iterator rit = originalPatternVec.rbegin(); rit != originalPatternVec.rend(); ++rit)
 	{
 		this->pSimulator_->parallelFaultFaultSimWithOnePattern((*rit), originalFaultList);
-		if (leftFaultCount > originalFaultList.size())
+		// fault has been detected by the *rit and dropped
+		if (leftFaultCount > (int)originalFaultList.size())
 		{
-			leftFaultCount = originalFaultList.size();
+			leftFaultCount = (int)originalFaultList.size();
 			pPatternProcessor->patternVector_.push_back((*rit));
 		}
 		else if (leftFaultCount < originalFaultList.size())
