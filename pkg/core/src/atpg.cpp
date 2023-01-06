@@ -1473,13 +1473,14 @@ void Atpg::clearEventStack(bool isDebug)
 
 // **************************************************************************
 // Function   [ Atpg::doImplication ]
-// Commenter  [ CLT ]
-// Synopsis   [ usage: Do BACKWARD and FORWARD implication to gates in this->circuitLevel_to_eventStack_,
-//                     also put gates which can't be implied into this->unjustifiedGateIDs_ list.
+// Commenter  [ CLT WWS ]
+// Synopsis   [ usage:	Do BACKWARD and FORWARD implication to gates in 
+// 											this->circuitLevel_to_eventStack_,
+//                     	also put gates which can't be implied into this->unjustifiedGateIDs_ list.
 //              in:    atpgStatus(BACKWARD or FORWARD), startLevel
-//              out:   bool
+//              output:   bool
 //            ]
-// Date       [ Ver. 1.0 started 2013/08/13 ]
+// Date       [ Ver. 1.0 started 2013/08/13 2023/01/06 ]
 // **************************************************************************
 bool Atpg::doImplication(IMPLICATION_STATUS atpgStatus, int startLevel)
 {
@@ -1615,8 +1616,8 @@ Atpg::IMPLICATION_STATUS Atpg::doOneGateBackwardImplication(Gate *pGate)
 		Gate *pInputGate0 = &this->pCircuit_->circuitGates_[pGate->faninVector_[0]];
 		Gate *pInputGate1 = &this->pCircuit_->circuitGates_[pGate->faninVector_[1]];
 		Gate *pInputGate2 = &this->pCircuit_->circuitGates_[pGate->faninVector_[2]];
-		unsigned NumOfX = 0;
-		unsigned ImpPtr = 0;
+		int NumOfX = 0;
+		int ImpPtr = 0;
 		if (pInputGate0->atpgVal_ == X)
 		{
 			++NumOfX;
