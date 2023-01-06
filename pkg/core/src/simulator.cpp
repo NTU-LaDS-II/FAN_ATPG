@@ -102,13 +102,13 @@ void Simulator::parallelFaultFaultSimWithAllPattern(PatternProcessor *pPatternCo
 // **************************************************************************
 // Function   [ Simulator::parallelFaultFaultSimWithOnePattern ]
 // Commenter  [ CJY, CBH, PYH ]
-// Synopsis   [ usage: Perform parallel fault fault simulation on one patterns.
+// Synopsis   [ usage: Perform parallel fault fault simulation on one pattern.
 //              description:
 //              	Set the pattern and call the parallelFaultFaultSim function to
 //              	do the fault simulation for this pattern.
 //              arguments:
 //              	[in] pattern : The test pattern for the fault simulation.
-//              	[in] remaingingFaults : The list of undetected faults.
+//              	[in] remainingFaults : The list of undetected faults.
 //            ]
 // Date       [ Ver. 1.0 started 2013/08/14 last modified 2023/01/06 ]
 // **************************************************************************
@@ -130,7 +130,7 @@ void Simulator::parallelFaultFaultSimWithOnePattern(const Pattern &pattern, Faul
 //              	for the injected faults and try to drop the detected faults.
 //              	Here we can inject at most WORD_SIZE faults in one simulation.
 //              arguments:
-//              	[in] remaingingFaults : The list of undetected faults.
+//              	[in] remainingFaults : The list of undetected faults.
 //            ]
 // Date       [ Ver. 1.0 started 2013/08/14 last modified 2023/01/06 ]
 // **************************************************************************
@@ -423,7 +423,7 @@ void Simulator::parallelFaultCheckDetectionDropFaults(FaultPtrList &remainingFau
 // **************************************************************************
 // Function   [ Simulator::parallelPatternReset ]
 // Commenter  [ Bill, PYH ]
-// Synopsis   [ usage: Reset simulation after doing parallel pattern fault simulation.
+// Synopsis   [ usage: Reset simulation after doing parallel pattern pattern simulation.
 //              description:
 //              	Reset faulty value of the fault gate to good value. Also, reset
 //              	processed flags, activated flags, and fault masks to 0.
@@ -582,7 +582,7 @@ void Simulator::parallelPatternCheckDetection(Fault *const pfault)
 // **************************************************************************
 // Function   [ Simulator::parallelPatternSetPattern  ]
 // Commenter  [ Bill, PYH ]
-// Synopsis   [ usage: Apply patterns to PI and PPI.
+// Synopsis   [ usage: Apply patterns to PIs and PPIs.
 //              description:
 //              	Starting from PatternStartIndex, we apply patterns up to WORD_SIZE
 //              	to PIs and PPIs for further fault simulation.

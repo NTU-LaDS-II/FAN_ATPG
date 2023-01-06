@@ -45,8 +45,8 @@ namespace CoreNs
 	}
 
 	void printValue(const Value &value, std::ostream &out = std::cout);
-	void printValue(const ParallelValue &parallelValue, std::ostream &out = std::cout);
-	void printValue(const ParallelValue &low, const ParallelValue &high, std::ostream &out = std::cout);
+	void printParallelValue(const ParallelValue &parallelValue, std::ostream &out = std::cout);
+	void printSimulationValue(const ParallelValue &low, const ParallelValue &high, std::ostream &out = std::cout);
 
 };
 
