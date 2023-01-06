@@ -122,7 +122,7 @@ namespace CoreNs
 		// initialization at the start of single pattern generation
 		Gate *initializeForSinglePatternGeneration(Fault &targetFault, int &BackImpLevel, IMPLICATION_STATUS &implicationStatus, const bool &isAtStageDTC);
 		void initializeObjectivesAndFrontiers();
-		void initializeCircuitWithFaultyGate(Gate &gFaultyLine, bool isAtStageDTC);
+		void initializeCircuitWithFaultyGate(const Gate &faultyGate, const bool &isAtStageDTC);
 
 		void clearEventStack(bool isDebug);
 		bool doImplication(IMPLICATION_STATUS atpgStatus, int startLevel);

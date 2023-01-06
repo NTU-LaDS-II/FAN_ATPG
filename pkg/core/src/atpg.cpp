@@ -1208,24 +1208,24 @@ Atpg::SINGLE_PATTERN_GENERATION_STATUS Atpg::generateSinglePatternOnTargetFault(
 // 								First, assign fault to this->currentTargetFault_ for the
 //								future use of other functions.
 // 								Then, assign the faulty gate to pFaultyLine. Initialize
-// 								all the objectives and d-frontiers in Atpg. 
+// 								all the objectives and d-frontiers in Atpg.
 // 								Initialize the circuit according to the faulty gate.
 // 								IF gFaultyLine is free line,
 // 									Set the value according to Fault.type_.
 // 									SetFreeFaultyGate() to get the equivalent HEADLINE fault.
 // 									Assign this->currentFault_ to the new fault.
-// 									Set BackImpLevel to 0, implyStatus to FORWARD, 
+// 									Set BackImpLevel to 0, implyStatus to FORWARD,
 // 									faultyGateID to the new fault.gateID.
 // 								ELSE
-// 									setFaultyGate() to assign the BackImpLevel and assign 
+// 									setFaultyGate() to assign the BackImpLevel and assign
 // 									the value of fanin gates of pFaultyLineGate and itself.
 // 									Add the faultyGateID to the this->dFrontier_.
 //									Do unique sensitization to pre assign some values and
 // 									then set implyStatus to BACKWARD.
 // 								Last,
-// 									If fault.type_ is STR or STF, setup time frames for 
+// 									If fault.type_ is STR or STF, setup time frames for
 // 									transition delay faults.
-// 
+//
 //              arguments:
 // 								[in] targetFault : The target fault for single pattern
 // 								generation, the faultyLine_ can be at input or output.
@@ -1319,6 +1319,15 @@ Gate *Atpg::initializeForSinglePatternGeneration(Fault &targetFault, int &backwa
 	return &(this->pCircuit_->circuitGates_[faultyGateID]);
 }
 
+// **************************************************************************
+// Function   [ Atpg::initializeObjectivesAndFrontiers ]
+// Commenter  [ WWS ]
+// Synopsis   [ usage:
+//                This function clear all the objectives,
+// 								and most of the attributes.
+//            ]
+// Date       [ last modified 2023/01/05 ]
+// **************************************************************************
 void Atpg::initializeObjectivesAndFrontiers()
 {
 	this->initialObjectives_.clear();
@@ -1343,7 +1352,40 @@ void Atpg::initializeObjectivesAndFrontiers()
 	this->backtrackImplicatedGateIDs_.reserve(this->pCircuit_->totalGate_);
 }
 
-void Atpg::initializeCircuitWithFaultyGate(Gate &pFaultyLineGate, bool isAtStageDTC)
+// **************************************************************************
+// Function   [ Atpg::initializeCircuitWithFaultyGate ]
+// Commenter  [ WWS ]
+// Synopsis   [ usage:
+//                Initialize the gates' atpgVal_ and vectors in Atpg (Ex:
+// 								gateID_to_...)
+//
+// 							description:
+// 								Traverse through all the gates in the circuit.
+// 								If the gate is free line,
+// 									set gateID_to_valModified_ to true
+// 									(free line doesn't need to be implicated/backtraced)
+// 								else set gateID_to_valModified_ to false.
+// 								Initialize this->gateID_to_reachableByTargetFault_ to all
+// 								 false.(All gate not reachable as default)
+// 								Assign all gates' atpgVal_ to X if isAtStageDTC is false.
+// 								(Keep the atpgVal_ from previous single pattern generation
+// 								on first selected target fault or updated atpgVal_ during
+// 								previous iteration in DTC)
+// 								Initialize the whole Atpg::xPathStatus_ to UNKNOWN for
+// 								future xPathTracing().
+// 								Set this->gateID_to_reachableByTargetFault_ to 1 and
+// 								this->gateID_to_valModified_[gate.gateId_] to 0 for all
+// 								the reachable fanout from the faultyGate.
+//
+// 							arguments:
+// 								[in] faultyGate: The gate whose output is faulty.
+//
+// 								[in] isAtStageDTC: Specifies if the single pattern
+// 								generation is at DTC stage.
+//            ]
+// Date       [ last modified 2023/01/05 ]
+// **************************************************************************
+void Atpg::initializeCircuitWithFaultyGate(const Gate &faultyGate, const bool &isAtStageDTC)
 {
 	for (Gate &gate : this->pCircuit_->circuitGates_)
 	{
@@ -1366,9 +1408,9 @@ void Atpg::initializeCircuitWithFaultyGate(Gate &pFaultyLineGate, bool isAtStage
 		this->gateID_to_xPathStatus_[gate.gateId_] = UNKNOWN;
 	}
 
-	pushGateToEventStack(pFaultyLineGate.gateId_);
+	pushGateToEventStack(faultyGate.gateId_);
 
-	for (int i = pFaultyLineGate.numLevel_; i < this->pCircuit_->totalLvl_; ++i)
+	for (int i = faultyGate.numLevel_; i < this->pCircuit_->totalLvl_; ++i)
 	{
 		while (!this->circuitLevel_to_eventStack_[i].empty())
 		{
