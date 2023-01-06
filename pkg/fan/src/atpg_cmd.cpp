@@ -908,10 +908,10 @@ void ReportValueCmd::reportValue(const int &i) const
 	std::cout << "frame(" << g->frame_ << ")";
 	std::cout << "\n";
 	std::cout << "#    good:   ";
-	printValue(g->goodSimLow_, g->goodSimHigh_);
+	printSimulationValue(g->goodSimLow_, g->goodSimHigh_);
 	std::cout << "\n";
 	std::cout << "#    faulty: ";
-	printValue(g->faultSimLow_, g->faultSimHigh_);
+	printSimulationValue(g->faultSimLow_, g->faultSimHigh_);
 	std::cout << "\n\n";
 }
 

@@ -35,6 +35,19 @@ namespace CoreNs
 				PPI_(pCircuit->numPPI_),
 				PO1_(pCircuit->numPO_),
 				PPO_(pCircuit->numPPI_){};
+
+	// **************************************************************************
+	// Function   [ Pattern::initForTransitionDelayFault ]
+	// Commenter  [ CHT ]
+	// Synopsis   [ usage: Basic setup initialization.
+	//							description:
+	// 								Resize vectors PI2_ and PO2_ to numPI_ and numPO_ of the
+	// 								Circuit, and resize SI_ to 1.
+	//							argument:
+	//								[in] pCircuit : The pointer to the target Circuit.
+	//						]
+	// Date       [ CHT Ver. 1.0 started  2023/01/05 ]
+	// **************************************************************************
 	inline void Pattern::initForTransitionDelayFault(Circuit *pCircuit)
 	{
 		PI2_.resize(pCircuit->numPI_);
@@ -108,7 +121,7 @@ namespace CoreNs
 	// 								3. Increase each element in pPOorder_ by
 	//									 (numGate_ of Circuit - numPO_ - numPPI_).
 	// 								4. Increase each element in pPPIorder_ by numPPI_.
-	//							arguement:
+	//							argument:
 	//								[in] pCircuit : The pointer to the target Circuit.
 	//						]
 	// Date       [ HKY Ver. 1.0 started 2014/09/01 last modified 2023/01/05 ]
@@ -145,7 +158,7 @@ namespace CoreNs
 	// **************************************************************************
 	// Function   [ PatternProcessor::StaticCompression ]
 	// Commenter  [ HKY, CYW, CHT ]
-	// Synopsis   [ usage: do static compression
+	// Synopsis   [ usage: Do static compression.
 	//							description:
 	//								Compare each pair of the patterns and check
 	// 								whether they are compatible.
@@ -254,16 +267,16 @@ namespace CoreNs
 	// **************************************************************************
 	// Function   [ PatternProcessor::updateTable ]
 	// Commenter  [ CHT ]
-	// Synopsis   [ usage: Function called in StaticCompression()
+	// Synopsis   [ usage: Function called in StaticCompression().
 	//										 Try merging patterns according to the information
-	//										 given in the two input arguements.
+	//										 given in the two input arguments.
 	//							description:
 	//										 First stores each pair of compatible patterns,
 	//										 and calculate their similarity.
 	//										 If no patterns can be merged, break and return false.
 	//										 Each time try merging the pairs with max similarity
 	//										 and update the mergeRecord and patternTable.
-	//										 Repeat the procedure until no remainging candidates.
+	//										 Repeat the procedure until no remaining candidates.
 	//							arguments:
 	// 								[in] mergeRecord : Stores whether each pattern can be merged.
 	// 								[in] patternTable : Stores whether each pair of patterns can

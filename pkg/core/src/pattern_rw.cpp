@@ -21,7 +21,7 @@ using namespace CoreNs;
 //								First traverse all PIs to calculate the number of PIs,
 //								then set the order of PIs of the PatternProcessor
 //								according to the gate id of the circuit. The result will be
-//								stored to the vector pPIorder_ of the PatternProcessor.
+//								stored in the vector pPIorder_ of the PatternProcessor.
 //							arguments:
 // 								[in] pPIs : A pointer to the linked structure of
 //														primary inputs.
@@ -77,7 +77,7 @@ void PatternReader::setPiOrder(const PatNames *const pPIs)
 //								First traverse all PPIs to calculate the number of PPIs,
 //								then set the order of PPIs of the PatternProcessor
 //								according to the gate id of the circuit. The result will be
-//								stored to the vector pPPIorder_ of the PatternProcessor.
+//								stored in the vector pPPIorder_ of the PatternProcessor.
 //							arguments:
 // 								[in] pPPIs : A pointer to the linked structure of
 //														pseudo primary inputs.
@@ -132,7 +132,7 @@ void PatternReader::setPpiOrder(const PatNames *const pPPIs)
 //								First traverse all POs to calculate the number of POs,
 //								then set the order of POs of the PatternProcessor
 //								according to the gate id of the circuit. The result will be
-//								stored to the vector pPOorder_ of the PatternProcessor.
+//								stored in the vector pPOorder_ of the PatternProcessor.
 //							arguments:
 // 								[in] pPOs : A pointer to the linked structure of
 //														primary onputs.
@@ -186,7 +186,7 @@ void PatternReader::setPoOrder(const PatNames *const pPOs)
 //								Set type_ of the Pattern Processor according to the input.
 //								If type is LAUNCH_SHIFT, set numSI_ to be 1.
 //							arguments:
-// 								[in] patternType : Pattern Type to be set.
+// 								[in] patternType : Pattern Type to be set to.
 //						]
 // Date       [ CHT started 2023/01/05 ]
 // **************************************************************************
@@ -215,12 +215,12 @@ void PatternReader::setPatternType(const PatType &patternType)
 // **************************************************************************
 // Function   [ PatternReader::setPatternNum ]
 // Commenter  [ CHT ]
-// Synopsis   [ usage: Set the pattern vector according to given size.
+// Synopsis   [ usage: Set the pattern vector according to the given size.
 //							description:
 //								Set each element of patternvector_ of the Pattern Processor
 //								 to be default Pattern() with given input size (patternNum).
 //							arguments:
-// 								[in] patternNum : Pattern Type to be set.
+// 								[in] patternNum : Pattern number to be set.
 //						]
 // Date       [ CHT started 2023/01/05 ]
 // **************************************************************************
@@ -243,7 +243,7 @@ void PatternReader::setPatternNum(const int &patternNum)
 // Commenter  [ CHT ]
 // Synopsis   [ usage: Read in a pattern and assign according values.
 //							description:
-//								For each input arguement, assign according values to the
+//								For each input argument, assign according values to the
 //								corresponding vector of the Pattern Processor if exists.
 //							arguments:
 // 								[in] pPI1 : The pointer to the first primary input pattern.
@@ -344,7 +344,7 @@ void PatternReader::assignValue(std::vector<Value> &valueVector, const char *con
 // **************************************************************************
 // Function   [ PatternWriter::writePattern ]
 // Commenter  [ CHT ]
-// Synopsis   [ usage: Write to LaDS's own *.pattern  pattern format
+// Synopsis   [ usage: Write to LaDS's own *.pattern  pattern format.
 //							description:
 //								Output the pattern to the given input file name
 //								with LaDS's own *.pattern  pattern format.
@@ -510,7 +510,7 @@ bool PatternWriter::writePattern(const char *const fname)
 //										 Not supported now!
 //							description:
 //								Output the pattern to the given input file name
-//								with Ling Hsio-Ting's pattern format
+//								with Ling Hsio-Ting's pattern format.
 // 								Not supported now!
 //							arguments:
 // 								[in] fname : The file name to be written to.
@@ -639,7 +639,7 @@ bool PatternWriter::writeLht(const char *const fname)
 //										 Must be tested with mentor fastscan.
 //							description:
 //								Output the pattern to the given input file name
-//								with Mentor ASCii pattern format
+//								with Mentor ASCii pattern format.
 // 								Should be tested with mentor fastscan.
 //							arguments:
 // 								[in] fname : The file name to be written to.
@@ -1256,8 +1256,8 @@ bool PatternWriter::writeSTIL(const char *const fname)
 // Commenter  [ CHT ]
 // Synopsis   [ usage: Write the procedure setup.
 //							description:
-//								Output the procedure setup to the given
-//								input file name.
+//								Output the procedure setup to the given input file name,
+//								including time scale, strobe_window time, timeplate _default_WFT_ etc.
 //							arguments:
 // 								[in] fname : The file name to be written to.
 //								[out] bool : Output written successfully or not.

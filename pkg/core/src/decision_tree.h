@@ -53,7 +53,8 @@ namespace CoreNs
 	// **************************************************************************
 	// Function   [ DecisionTree::clear ]
 	// Commenter  [ CHT ]
-	// Synopsis   [ usage: clear tree_ of the DecisionTree.
+	// Synopsis   [ usage: Initial assignment of DecisionTree.
+	//										 Clear tree_ of the DecisionTree.
 	//							description:
 	//								tree_ is a vector storing all the DecisionTreeNodes
 	//								of the DecisionTree. Clear the vector tree_.
@@ -68,9 +69,9 @@ namespace CoreNs
 	// **************************************************************************
 	// Function   [ DecisionTree::put ]
 	// Commenter  [ CHT ]
-	// Synopsis   [ usage: Add new DecisionTreeNode to the tree_ of DecisionTree.
+	// Synopsis   [ usage: Add a new DecisionTreeNode to the tree_ of DecisionTree.
 	//							description:
-	//								Create a new DecisionTreeNode initiated with given arguements,
+	//								Create a new DecisionTreeNode initiated with given arguments,
 	//								and push_back to the tree_ vector.
 	//							arguments:
 	// 								[in] gateId : The gate Id to be assigned to the new DecisionTreeNode.
@@ -87,7 +88,7 @@ namespace CoreNs
 	// **************************************************************************
 	// Function   [ DecisionTree::get ]
 	// Commenter  [ CHT ]
-	// Synopsis   [ usage: Get the gateId and startPoint of the last DecisionTreeNode.
+	// Synopsis   [ usage: Get the gateId and startPoint of the last DecisionTreeNode
 	//										 and check if it is marked.
 	//							description:
 	//								Find the last DecisionTreeNode of tree_ and:
@@ -131,7 +132,7 @@ namespace CoreNs
 	//							description:
 	//								Check if the vector tree_ is empty or not.
 	//							arguments:
-	// 								[out] bool : Return whether the tree_ of DecisionTree is empty
+	// 								[out] bool : Return whether the tree_ of DecisionTree is empty.
 	//						]
 	// Date       [ CHT Ver. 1.0 started 2023/01/05 ]
 	// **************************************************************************
@@ -145,10 +146,11 @@ namespace CoreNs
 	// Commenter  [ CHT ]
 	// Synopsis   [ usage: Check if the last element of tree_ is marked or not.
 	//							description:
-	//								First checl if tree_ is empty. If yes, return false.
+	//								First check if tree_ is empty. If yes, return false.
 	//								Check if the last DecisionTreeNode in tree_ is marked or not.
+	//								Used for backtracking in the algorithm.
 	//							arguments:
-	// 								[out] bool : Return whether the last element of tree_ is marked
+	// 								[out] bool : Return whether the last element of tree_ is marked.
 	//						]
 	// Date       [ CHT Ver. 1.0 started 2023/01/05 ]
 	// **************************************************************************

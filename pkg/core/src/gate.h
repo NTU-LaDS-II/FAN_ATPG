@@ -68,7 +68,7 @@ namespace CoreNs
 		std::vector<int> fanoutVector_; // fanout array
 
 		// values
-		Value atpgVal_;					 // single value for ATPG
+		Value atpgVal_;							 // single value for ATPG
 		ParallelValue goodSimLow_;	 // good low
 		ParallelValue goodSimHigh_;	 // good high
 		ParallelValue faultSimLow_;	 // faulty low
@@ -145,11 +145,35 @@ namespace CoreNs
 		prevAtpgValStored_ = X; // Added by Shi-Tang Liu
 	}
 
+	// **************************************************************************
+	// Function   [ Gate::isUnary ]
+	// Commenter  [ CHT ]
+	// Synopsis   [ usage: Check if the gate has only one fanin.
+	//							description:
+	//								If the gate has exactly one fanin, return H (Value).
+	//								Otherwise, return L.
+	//							arguments:
+	// 								[out] Value : Return H if numFI_ == 1, return L otherwise.
+	//						]
+	// Date       [ CHT Ver. 1.0 started 2023/01/05 ]
+	// **************************************************************************
 	inline Value Gate::isUnary() const
 	{
 		return numFI_ == 1 ? H : L;
 	}
 
+	// **************************************************************************
+	// Function   [ Gate::isInverse ]
+	// Commenter  [ CHT ]
+	// Synopsis   [ usage: Check if the gate is an inverse gate.
+	//							description:
+	//								If the gate type is INV, NAND, NOR or XNOR,
+	//								then it is an inverse gate. Otherwise, it is not.
+	//							arguments:
+	// 								[out] Value : Return H if it is inverse gate, return L otherwise.
+	//						]
+	// Date       [ CHT Ver. 1.0 started 2023/01/05 ]
+	// **************************************************************************
 	inline Value Gate::isInverse() const
 	{
 		switch (gateType_)
@@ -169,16 +193,55 @@ namespace CoreNs
 		}
 	}
 
+	// **************************************************************************
+	// Function   [ Gate::getInputNonCtrlValue ]
+	// Commenter  [ CHT ]
+	// Synopsis   [ usage: Get input non-control value of the gate.
+	//							description:
+	//								Determined by comparing the output of isInverse() and the output
+	//								control value of the gate. If identical then the input non-control
+	//								value is L. Otherwise it is H.
+	//								If the gate type is INV, NOR or OR, input non-control value is L.
+	//							arguments:
+	// 								[out] Value : Return H if it is inverse gate, return L otherwise.
+	//						]
+	// Date       [ CHT Ver. 1.0 started 2023/01/05 ]
+	// **************************************************************************
 	inline Value Gate::getInputNonCtrlValue() const
 	{
 		return (isInverse() == getOutputCtrlValue()) ? L : H;
 	}
 
+	// **************************************************************************
+	// Function   [ Gate::getInputCtrlValue ]
+	// Commenter  [ CHT ]
+	// Synopsis   [ usage: Get input control value of the gate.
+	//							description:
+	//								Call getInputNonCtrlValue() to get input non-control value
+	//								and return the inverse value.
+	//							arguments:
+	// 								[out] Value : Return the input control value of the gate.
+	//						]
+	// Date       [ CHT Ver. 1.0 started 2023/01/05 ]
+	// **************************************************************************
 	inline Value Gate::getInputCtrlValue() const
 	{
 		return (getInputNonCtrlValue() == H) ? L : H;
 	}
 
+	// **************************************************************************
+	// Function   [ Gate::getOutputCtrlValue ]
+	// Commenter  [ CHT ]
+	// Synopsis   [ usage: Get output control value of the gate.
+	//							description:
+	//								If the gate type is OR or NAND, output control value is L.
+	//								If the gate type is XOR or XNOR, output control value is X.
+	//								Otherwise, output control value is H.
+	//							arguments:
+	// 								[out] Value : Return the output control value of the gate.
+	//						]
+	// Date       [ CHT Ver. 1.0 started 2023/01/05 ]
+	// **************************************************************************
 	inline Value Gate::getOutputCtrlValue() const
 	{
 		switch (gateType_)

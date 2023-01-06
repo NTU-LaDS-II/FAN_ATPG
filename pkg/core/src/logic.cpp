@@ -38,7 +38,7 @@ void CoreNs::printValue(const Value &value, std::ostream &out)
 	out << std::flush;
 }
 
-void CoreNs::printValue(const ParallelValue &parallelValue, std::ostream &out)
+void CoreNs::printParallelValue(const ParallelValue &parallelValue, std::ostream &out)
 {
 	for (int bit = WORD_SIZE - 1; bit >= 0; --bit)
 	{
@@ -56,7 +56,7 @@ void CoreNs::printValue(const ParallelValue &parallelValue, std::ostream &out)
 	}
 }
 
-void CoreNs::printValue(const ParallelValue &low, const ParallelValue &high,
+void CoreNs::printSimulationValue(const ParallelValue &low, const ParallelValue &high,
 												std::ostream &out)
 {
 	for (int bit = WORD_SIZE - 1; bit >= 0; --bit)
