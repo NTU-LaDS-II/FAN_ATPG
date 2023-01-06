@@ -221,8 +221,7 @@ void Atpg::calculateGateDepthFromPO()
 // **************************************************************************
 // Function   [ Atpg::identifyGateLineType ]
 // Commenter  [ CKY WWS ]
-// Synopsis   [ usage:	This function identify and sets the gates' lineType
-// 								and is called in setupCircuitParameter().
+// Synopsis   [ usage:	Identify and sets the gates' lineType
 //
 // 							description:
 // 								This functions sets this->gateID_to_lineType_ (FREE_LINE,
@@ -296,11 +295,8 @@ void Atpg::identifyGateLineType()
 // **************************************************************************
 // Function   [ Atpg::identifyGateDominator ]
 // Commenter  [ CAL WWS ]
-// Synopsis   [ usage: Identify Dominator of every gate for unique
-// 								sensitization. After this function, each gate has one or
-// 								zero Dominator recorded in this->gateID_to_uniquePath_.
-// 								A Dominator of a gate is the wire that must be passed for
-// 								the dominated gate to reach PO/PPO.
+// Synopsis   [ usage:	
+// 								Identify Dominator of every gate for unique sensitization.
 //
 // 							description:
 // 								Traverse every gate and try to find each gates’ Dominator.
@@ -314,9 +310,9 @@ void Atpg::identifyGateLineType()
 // 								just need to add its Dominator.) Once the event stack has
 // 								only one gate left, we say that all paths will pass this
 // 								gate, so this gate is the Dominator and we push this gate
-// 								in this->gateID_to_uniquePath. We also check the existence of the
-// 								Dominator in the process.
-// 								The dominator doesn’t exist when :
+// 								in this->gateID_to_uniquePath. We also check the existence 
+// 								of the Dominator in the process.
+// 								The dominator doesn’t exist when:
 // 									1.	Event stack isn’t empty but we find the PO/PPO in the
 // 											event stack(numFO_ == 0). This implies more than one
 // 										path to PO/PPO.
@@ -329,6 +325,12 @@ void Atpg::identifyGateLineType()
 // 								event stack and go to next iteration(next gate).
 // 								In addition, we check this->gateID_to_valModified_ to avoid
 // 								repeated assignments.
+// 
+// 								After this function, each gate has one or zero
+// 								Dominator recorded in this->gateID_to_uniquePath_.
+// 								A Dominator of a gate is the wire that must be passed 
+// 								for the dominated gate to reach PO/PPO.
+// 
 // Date       [ Ver. 1.0 started 2013/08/13  last modified 2023/01/05 ]
 // **************************************************************************
 void Atpg::identifyGateDominator()
@@ -412,7 +414,8 @@ void Atpg::identifyGateDominator()
 // **************************************************************************
 // Function   [ Atpg::identifyGateUniquePath ]
 // Commenter  [ CAL WWS ]
-// Synopsis   [ usage: Compute this->gateID_to_uniquePath_(2D vector).
+// Synopsis   [ usage:
+// 								Compute this->gateID_to_uniquePath_(2D vector).
 //                In unique path sensitization phase, we will need to know
 //                if the inputs of a gate is fault reachable. Then, we can
 //                prevent assigning non-controlling value to them.
@@ -442,7 +445,7 @@ void Atpg::identifyGateDominator()
 // 								reachableByDominator of the fanout to current gate.
 // 								Once "count" is 0 (the event stack has only one gate left),
 // 								we should get the Dominator.
-// 								Then we check reachableBtDominator of the fanin of the
+// 								Then we check reachableByDominator of the fanin of the
 // 								Dominator. If it is the current gate, then we push the
 // 								fanin into this->gateID_to_uniquePath.
 // 								Finally, we go to the next iteration (the next gate).
@@ -456,7 +459,7 @@ void Atpg::identifyGateUniquePath()
 	static std::vector<int> reachableByDominator(this->pCircuit_->totalGate_);
 	for (int i = this->pCircuit_->totalGate_ - 1; i >= 0; --i)
 	{
-		Gate &gate = this->pCircuit_->circuitGates_[i];
+		const Gate &gate = this->pCircuit_->circuitGates_[i];
 		// Since we will call identifyGateDominator before this function,
 		// a gate's this->gateID_to_uniquePath_ will contain one Dominator.
 		// Hence, we can skip the gates while their
@@ -500,7 +503,8 @@ void Atpg::identifyGateUniquePath()
 // **************************************************************************
 // Function   [ Atpg::TransitionDelayFaultATPG ]
 // Commenter  [ HKY CYW WWS ]
-// Synopsis   [ usage: Do transition delay fault model ATPG.
+// Synopsis   [ usage: Do transition delay fault model ATPG
+// 
 // 							description:
 // 								This function is implemented very similar to the
 // 								StuckAtFaultATPG() except for the following differences.
@@ -508,6 +512,7 @@ void Atpg::identifyGateUniquePath()
 // 										of stuck at fault.
 // 								2.	Dynamic test compression is not implemented for
 // 										transition delay fault.
+// 
 // 							arguments:
 // 								Please see the documentation of Atpg::StuckAtFaultATPG().
 //            ]
@@ -551,7 +556,8 @@ void Atpg::TransitionDelayFaultATPG(FaultPtrList &faultPtrListForGen, PatternPro
 // **************************************************************************
 // Function   [ Atpg::StuckAtFaultATPG ]
 // Commenter  [ CAL WWS ]
-// Synopsis   [ usage: Do stuck at fault model ATPG on one fault and do DTC
+// Synopsis   [ usage: 
+// 								Do stuck at fault model ATPG on one fault and do DTC
 // 								on the pattern generated to the single fault if the DTC
 // 								flag is set to ON.
 //
