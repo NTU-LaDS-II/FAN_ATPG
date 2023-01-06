@@ -1326,7 +1326,7 @@ Gate *Atpg::initializeForSinglePatternGeneration(Fault &targetFault, int &backwa
 //                This function clear all the objectives,
 // 								and most of the attributes.
 //            ]
-// Date       [ last modified 2023/01/05 ]
+// Date       [ last modified 2023/01/06 ]
 // **************************************************************************
 void Atpg::initializeObjectivesAndFrontiers()
 {
@@ -1383,7 +1383,7 @@ void Atpg::initializeObjectivesAndFrontiers()
 // 								[in] isAtStageDTC: Specifies if the single pattern
 // 								generation is at DTC stage.
 //            ]
-// Date       [ last modified 2023/01/05 ]
+// Date       [ last modified 2023/01/06 ]
 // **************************************************************************
 void Atpg::initializeCircuitWithFaultyGate(const Gate &faultyGate, const bool &isAtStageDTC)
 {
@@ -1429,13 +1429,16 @@ void Atpg::initializeCircuitWithFaultyGate(const Gate &faultyGate, const bool &i
 
 // **************************************************************************
 // Function   [ Atpg::clearEventStack ]
-// Commenter  [ CAL ]
+// Commenter  [ CAL WWS ]
 // Synopsis   [ usage:
-//                Clear this->circuitLevel_to_eventStack_ and reset this->gateID_to_valModified_ and this->isInEventStack_
-//              in:    check this->isInEventStack_ correctness
-//              out:   void
+//                Clear this->circuitLevel_to_eventStack_.
+// 								Set this->gateID_to_valModified_ and
+// 								this->isInEventStack_ to 0.
+// 							arguments
+// 								[in] isDebug: Check this->isInEventStack_ correctness if 
+// 								the flag is true.
 //            ]
-// Date       [ started 2020/07/07    last modified 2020/07/07 ]
+// Date       [ started 2020/07/07    last modified 2023/01/06 ]
 // **************************************************************************
 void Atpg::clearEventStack(bool isDebug)
 {
@@ -1445,7 +1448,7 @@ void Atpg::clearEventStack(bool isDebug)
 	{
 		while (!eventStack.empty())
 		{
-			int gateID = eventStack.top();
+			const int gateID = eventStack.top();
 			eventStack.pop();
 			this->gateID_to_valModified_[gateID] = 0;
 			this->isInEventStack_[gateID] = 0;
@@ -1480,7 +1483,7 @@ void Atpg::clearEventStack(bool isDebug)
 // **************************************************************************
 bool Atpg::doImplication(IMPLICATION_STATUS atpgStatus, int startLevel)
 {
-	IMPLICATION_STATUS impRet;
+	IMPLICATION_STATUS implicationStatus;
 
 	if (atpgStatus != BACKWARD)
 	{
@@ -1491,15 +1494,16 @@ bool Atpg::doImplication(IMPLICATION_STATUS atpgStatus, int startLevel)
 	{
 		if (atpgStatus == BACKWARD)
 		{
-			// BACKWARD loop: Do evaluateAndSetGateAtpgVal() to gates in this->circuitLevel_to_eventStack_ in BACKWARD order from startLevel.
-			// If one of them returns CONFLICT, doImplication() returns false.
+			// BACKWARD loop: Do evaluateAndSetGateAtpgVal() to gates in 
+			// this->circuitLevel_to_eventStack_ in BACKWARD order from startLevel.
+			// If one of them returns CONFLICT, returns false.
 			for (int i = startLevel; i >= 0; --i)
 			{
 				while (!this->circuitLevel_to_eventStack_[i].empty())
 				{
 					Gate *pGate = &this->pCircuit_->circuitGates_[popEventStack(i)];
-					impRet = evaluateAndSetGateAtpgVal(pGate);
-					if (impRet == CONFLICT)
+					implicationStatus = evaluateAndSetGateAtpgVal(pGate);
+					if (implicationStatus == CONFLICT)
 					{
 						return false;
 					}
@@ -1510,18 +1514,21 @@ bool Atpg::doImplication(IMPLICATION_STATUS atpgStatus, int startLevel)
 		atpgStatus = FORWARD;
 		for (int i = 0; i < this->pCircuit_->totalLvl_; ++i)
 		{
-			// FORWARD loop: Do evaluateAndSetGateAtpgVal() to gates in this->circuitLevel_to_eventStack_ in FORWARD order till it gets to MaxLevel.
-			// If one of them returns CONFLICT, doImplication() returns false.
-			// If one of them returns BACKWARD, set startLevel to current level - 1, break for loop
+			// FORWARD loop: Do evaluateAndSetGateAtpgVal() to gates in 
+			// this->circuitLevel_to_eventStack_ in FORWARD order till it gets 
+			// to MaxLevel.
+			// If one of them returns CONFLICT, returns false.
+			// If one of them returns BACKWARD, set startLevel to current level - 1
+			// break for loop
 			while (!this->circuitLevel_to_eventStack_[i].empty())
 			{
 				Gate *pGate = &this->pCircuit_->circuitGates_[popEventStack(i)];
-				impRet = evaluateAndSetGateAtpgVal(pGate);
-				if (impRet == CONFLICT)
+				implicationStatus = evaluateAndSetGateAtpgVal(pGate);
+				if (implicationStatus == CONFLICT)
 				{
 					return false;
 				}
-				else if (impRet == BACKWARD)
+				else if (implicationStatus == BACKWARD)
 				{
 					startLevel = i - 1;
 					atpgStatus = BACKWARD;
