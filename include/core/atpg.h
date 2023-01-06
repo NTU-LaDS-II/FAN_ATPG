@@ -83,7 +83,7 @@ namespace CoreNs
 		std::vector<int> gateID_to_reachableByTargetFault_;				// 1 means this fanout is in fanout cone of target fault, 0 otherwise
 		std::vector<GATE_LINE_TYPE> gateID_to_lineType_;					// array of line types for all gates, i.e. FREE, HEAD, BOUND
 		std::vector<XPATH_STATE> gateID_to_xPathStatus_;					// gateID to its xPathStatus, i.e. XPATH_EXIST, NO_XPATH_EXIST, UNKNOWN
-		std::vector<std::vector<int>> gateID_to_uniquePath_;			// list of gates on the unique path associated with a D-frontier, when there is only one gate in D-frontier, xPathTracing will update this information.
+		std::vector<std::vector<int>> gateID_to_uniquePath_;			// vec of gates on the unique path associated with a D-frontier, when there is only one gate in D-frontier, xPathTracing will update this information.
 		std::vector<std::stack<int>> circuitLevel_to_eventStack_; // every circuit level has its own corresponding event stack
 		DecisionTree backtrackDecisionTree_;											// the whole tree store the order for later possible backtracking, DecisionTreeNode store the starting point in backtrackImplicatedGateIDs_
 		std::vector<int> backtrackImplicatedGateIDs_;							// backtrackImplicatedGateIDs_[backTrackPoint] = start point of associated gateID
@@ -93,8 +93,8 @@ namespace CoreNs
 		std::vector<int> fanoutObjectives_;												// the fanout objectives recorded in atpg
 		std::vector<int> headLineObjectives_;											// objectives at the headlines
 		std::vector<int> finalObjectives_;												// final objectives include fanout objectives and headline objectives.
-		std::vector<int> unjustifiedGateIDs_;											// J-frontier list
-		std::vector<int> dFrontiers_;															// D-frontier list
+		std::vector<int> unjustifiedGateIDs_;											// J-frontier vec
+		std::vector<int> dFrontiers_;															// D-frontier vec
 		std::vector<int> isInEventStack_;													// 1 if a gate is in an event stack, 0 otherwise
 		Gate *firstTimeFrameHeadLine_;														// this parameter is for multiple time frame
 
@@ -178,7 +178,7 @@ namespace CoreNs
 		inline void clearAllEvents();
 
 		inline int vecPop(std::vector<int> &vec);
-		inline void vecDelete(std::vector<int> &list, const int &index);
+		inline void vecDelete(std::vector<int> &vec, const int &index);
 
 		// 5-Value logic evaluation functions
 		inline Value cINV(const Value &i1);
@@ -692,7 +692,7 @@ namespace CoreNs
 	// Function   [ Atpg::writeAtpgValToPatternPI ]
 	// Commenter  [ CAL ]
 	// Synopsis   [ usage: assign primary input pattern value
-	//              in:    Pattern list
+	//              in:    Pattern
 	//              out:   void
 	//              pointer modification: Pattern
 	//            ]
@@ -727,7 +727,7 @@ namespace CoreNs
 	// Function   [ Atpg::writeGoodSimValToPatternPO ]
 	// Commenter  [ CAL ]
 	// Synopsis   [ usage: assign primary output pattern value
-	//              in:    Pattern list
+	//              in:    Pattern
 	//              out:   void
 	//              pointer modification: Pattern
 	//            ]
@@ -850,10 +850,10 @@ namespace CoreNs
 		return lastElement;
 	}
 
-	inline void Atpg::vecDelete(std::vector<int> &list, const int &index)
+	inline void Atpg::vecDelete(std::vector<int> &vec, const int &index)
 	{
-		list[index] = list.back();
-		list.pop_back();
+		vec[index] = vec.back();
+		vec.pop_back();
 	}
 
 	// 5-value logic evaluation functions
