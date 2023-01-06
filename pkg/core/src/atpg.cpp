@@ -1027,7 +1027,7 @@ Atpg::SINGLE_PATTERN_GENERATION_STATUS Atpg::generateSinglePatternOnTargetFault(
 {
 	int backwardImplicationLevel = 0;														// backward imply level
 	int numOfBacktrack = 0;																			// backtrack times
-	bool singlePatternGenProcessFinished = false;								// singlePatternGenProcessFinished is true when whole pattern generation process is done
+	bool singlePatternGenProcessFinished = false;								// This boolean is true when whole pattern generation process is done
 	bool faultHasPropagatedToPO = false;												// faultHasPropagatedToPO is true when the fault is propagate to the PO
 	Gate *pFaultyLineGate = NULL;																// The gate pointer, whose output is the target fault
 	Gate *pLastDFrontier = NULL;																// The D-frontier gate which has the highest level of all D-frontiers
@@ -1036,7 +1036,7 @@ Atpg::SINGLE_PATTERN_GENERATION_STATUS Atpg::generateSinglePatternOnTargetFault(
 	SINGLE_PATTERN_GENERATION_STATUS genStatus = PATTERN_FOUND; // The status that will be return, including { PATTERN_FOUND, FAULT_UNTESTABLE, ABORT }
 
 	// Get the gate whose output is fault line and set the backwardImplicationLevel
-	// SET A FAULT SIGNAL
+	// set a fault signal
 	pFaultyLineGate = initializeForSinglePatternGeneration(targetFault, backwardImplicationLevel, implicationStatus, isAtStageDTC);
 	// If there's no such gate, return FAULT_UNTESTABLE
 	if (!pFaultyLineGate)
@@ -1065,19 +1065,17 @@ Atpg::SINGLE_PATTERN_GENERATION_STATUS Atpg::generateSinglePatternOnTargetFault(
 			clearAllEvents();
 
 			// Is there an untried combination of values on assigned headlines or fanout points?
-			// If yes, SET UNTRIED COMBINATION OF VALUES in the function backtrack
+			// If yes, set untried combination of atpgVals in the function backtrack
 			if (backtrack(backwardImplicationLevel))
 			{
-				// backtrack success and initialize the data
-				// SET BACKTRACE FLAG
+				// backtrack successful and initialize the data
 				backtraceFlag = INITIAL;
 				implicationStatus = (backwardImplicationLevel > 0) ? BACKWARD : FORWARD;
 				pLastDFrontier = NULL;
 			}
 			else
 			{
-				// backtrack fail
-				// EXIT: FAULT_UNTESTABLE FAULT
+				// backtrack failed
 				genStatus = FAULT_UNTESTABLE;
 				singlePatternGenProcessFinished = true;
 			}
@@ -1094,9 +1092,9 @@ Atpg::SINGLE_PATTERN_GENERATION_STATUS Atpg::generateSinglePatternOnTargetFault(
 		{
 			if (checkForUnjustifiedBoundLines())
 			{
-				// DETERMINE A FINAL OBJECTIVE TO ASSIGN A VALUE
+				// determine a final objective to assign atpgVal_
 				findFinalObjective(backtraceFlag, faultHasPropagatedToPO, pLastDFrontier);
-				// ASSIGN A VALUE TO THE FINAL OBJECTIVE LINE
+				// assign a value to the final objective's atpgVal_
 				assignAtpgValToFinalObjectiveGates();
 				implicationStatus = FORWARD;
 				continue;
@@ -1106,26 +1104,23 @@ Atpg::SINGLE_PATTERN_GENERATION_STATUS Atpg::generateSinglePatternOnTargetFault(
 				// Finding values on the primary inputs which justify all the values on the head lines
 				// LINE JUSTIFICATION OF FREE LINES
 				justifyFreeLines(targetFault);
-				// EXIT: TEST GENERATED
 				genStatus = PATTERN_FOUND;
 				singlePatternGenProcessFinished = true;
 			}
 		}
-		else
+		else // fault not propagated to PO/PPO
 		{
-			// not propagate to PO
-			// THE NUMBER OF GATES IN D-FRONTIER?
 			int numGatesInDFrontier = countEffectiveDFrontiers(pFaultyLineGate);
 
-			// ZERO
+			// no frontier can propagate to the PO/PPO
 			if (numGatesInDFrontier == 0)
 			{
-				// no frontier can propagate to the PO
-				// record the number of backtrack
 				if (this->backtrackDecisionTree_.lastNodeMarked())
 				{
+					// record the number of backtrack
 					++numOfBacktrack;
 				}
+
 				// Abort if numOfBacktrack reaching the BACKTRACK_LIMIT
 				if (numOfBacktrack > BACKTRACK_LIMIT)
 				{
@@ -1135,12 +1130,12 @@ Atpg::SINGLE_PATTERN_GENERATION_STATUS Atpg::generateSinglePatternOnTargetFault(
 
 				clearAllEvents();
 
-				// IS THERE AN UNTRIED COMBINATION OF VALUES ON ASSIGNED HEAD LINES OR FANOUT POINTS?
-				// If yes, SET UNTRIED COMBINATION OF VALUES in the function backtrack
+				// Is there any untried combination of values on assigned headlines or fanouts?
+				// If yes, set untried combination of values in the function backtrack
 				if (backtrack(backwardImplicationLevel))
 				{
 					// backtrack success and initializeForSinglePatternGeneration the data
-					// SET BACKTRACE FLAG
+					// set backtrace flag
 					backtraceFlag = INITIAL;
 					implicationStatus = (backwardImplicationLevel > 0) ? BACKWARD : FORWARD;
 					pLastDFrontier = NULL;
@@ -1148,21 +1143,18 @@ Atpg::SINGLE_PATTERN_GENERATION_STATUS Atpg::generateSinglePatternOnTargetFault(
 				else
 				{
 					// backtrack fail
-					// EXIT: FAULT_UNTESTABLE FAULT
 					genStatus = FAULT_UNTESTABLE;
 					singlePatternGenProcessFinished = true;
 				}
 			}
-			else if (numGatesInDFrontier == 1)
+			else if (numGatesInDFrontier == 1) // There exist just one path to the PO/PPO
 			{
-				// There exist just one path to the PO
-				// UNIQUE SENSITIZATION
 				backwardImplicationLevel = doUniquePathSensitization(this->pCircuit_->circuitGates_[this->dFrontiers_[0]]);
 				// Unique Sensitization fail
 				if (backwardImplicationLevel == UNIQUE_PATH_SENSITIZE_FAIL)
 				{
-					// If UNIQUE_PATH_SENSITIZE_FAIL, the number of gates in d-frontier in the next while loop
-					// and will backtrack
+					// If UNIQUE_PATH_SENSITIZE_FAIL, the number of gates in
+					// d-frontier in the next while loop and will backtrack
 					continue;
 				}
 				// Unique Sensitization success
@@ -1186,9 +1178,9 @@ Atpg::SINGLE_PATTERN_GENERATION_STATUS Atpg::generateSinglePatternOnTargetFault(
 			}
 			else
 			{ // more than one
-				// DETERMINE A FINAL OBJECTIVE TO ASSIGN A VALUE
+				// determine a final objective to assign atpgVal_
 				findFinalObjective(backtraceFlag, faultHasPropagatedToPO, pLastDFrontier);
-				// ASSIGN A VALUE TO THE FINAL OBJECTIVE LINE
+				// assign value to the final objective line;s atpgVal_
 				assignAtpgValToFinalObjectiveGates();
 				implicationStatus = FORWARD;
 				continue;
@@ -1434,7 +1426,7 @@ void Atpg::initializeCircuitWithFaultyGate(const Gate &faultyGate, const bool &i
 //                Clear this->circuitLevel_to_eventStack_.
 // 								Set this->gateID_to_valModified_ and
 // 								this->isInEventStack_ to 0.
-// 							arguments
+// 							arguments:
 // 								[in] isDebug: Check this->isInEventStack_ correctness if
 // 								the flag is true.
 //            ]
@@ -1510,8 +1502,7 @@ void Atpg::clearEventStack(bool isDebug)
 // **************************************************************************
 bool Atpg::doImplication(IMPLICATION_STATUS atpgStatus, int implicationStartLevel)
 {
-	// A local variable for storing status after evaluateAndSetGateAtpgVal()
-	//
+	// A local variable for storing status of evaluateAndSetGateAtpgVal()
 	IMPLICATION_STATUS implicationStatusOfEval;
 	if (atpgStatus != BACKWARD)
 	{
@@ -1546,7 +1537,7 @@ bool Atpg::doImplication(IMPLICATION_STATUS atpgStatus, int implicationStartLeve
 			// this->circuitLevel_to_eventStack_ in FORWARD order till it gets
 			// to MaxLevel.
 			// If one of them returns CONFLICT, returns false.
-			// If one of them returns BACKWARD, set implicationStartLevel 
+			// If one of them returns BACKWARD, set implicationStartLevel
 			// to current level - 1
 			// break for loop
 			while (!this->circuitLevel_to_eventStack_[i].empty())
@@ -1575,6 +1566,33 @@ bool Atpg::doImplication(IMPLICATION_STATUS atpgStatus, int implicationStartLeve
 	return true;
 }
 
+// **************************************************************************
+// Function   [ Atpg::doOneGateBackwardImplication ]
+// Commenter  [ WWS ]
+// Synopsis   [ usage:
+// 								Do backward implication on one gate.
+//
+// 							descriptions:
+// 								This function is specific designed for
+//								this->evaluateAndSetGateAtpgVal() to call when pGate's
+// 								atpgVal_ can’t be evaluated due to the lack of determined
+// 								gate inputs’ values.
+// 								This function is aimed to keep doing implication backward
+// 								starting from pGate.
+// 								It will return FORWARD when reach PI/PPI or is unable to
+// 								justify atpgVal_, otherwise it will return BACKWARD.
+// 								Note that this function will never return CONFLICT.
+//
+// 							arguments:
+// 								[in] pGate: The pointer to the gate to do backward
+// 								implication on.
+//
+// 							output:
+// 								IMPLICATION_STATUS,
+// 								Whether to implicate forward or backward
+//            ]
+// Date       [ last modified 2023/01/06 ]
+// **************************************************************************
 Atpg::IMPLICATION_STATUS Atpg::doOneGateBackwardImplication(Gate *pGate)
 {
 	IMPLICATION_STATUS implicationStatus = FORWARD;
@@ -1585,10 +1603,10 @@ Atpg::IMPLICATION_STATUS Atpg::doOneGateBackwardImplication(Gate *pGate)
 
 	if (pGate->gateType_ == Gate::BUF || pGate->gateType_ == Gate::INV || pGate->gateType_ == Gate::PO || pGate->gateType_ == Gate::PPO)
 	{
-		Gate *pImpGate = &this->pCircuit_->circuitGates_[pGate->faninVector_[0]];
+		Gate *pImpGate = &(this->pCircuit_->circuitGates_[pGate->faninVector_[0]]);
 		this->gateID_to_valModified_[pGate->gateId_] = 1;
 
-		Value isINV = pGate->gateType_ == Gate::INV ? H : L;
+		Value isINV = (pGate->gateType_ == Gate::INV) ? H : L;
 		pImpGate->atpgVal_ = cXOR2(pGate->atpgVal_, isINV);
 
 		this->backtrackImplicatedGateIDs_.push_back(pImpGate->gateId_);
@@ -1598,8 +1616,8 @@ Atpg::IMPLICATION_STATUS Atpg::doOneGateBackwardImplication(Gate *pGate)
 	}
 	else if (pGate->gateType_ == Gate::XOR2 || pGate->gateType_ == Gate::XNOR2)
 	{
-		Gate *pInputGate0 = &this->pCircuit_->circuitGates_[pGate->faninVector_[0]];
-		Gate *pInputGate1 = &this->pCircuit_->circuitGates_[pGate->faninVector_[1]];
+		Gate *pInputGate0 = &(this->pCircuit_->circuitGates_[pGate->faninVector_[0]]);
+		Gate *pInputGate1 = &(this->pCircuit_->circuitGates_[pGate->faninVector_[1]]);
 
 		implicationStatus = BACKWARD;
 
@@ -1707,7 +1725,7 @@ Atpg::IMPLICATION_STATUS Atpg::doOneGateBackwardImplication(Gate *pGate)
 
 			for (int i = 0; i < pGate->numFI_; ++i)
 			{
-				Gate *pFaninGate = &this->pCircuit_->circuitGates_[pGate->faninVector_[i]];
+				Gate *pFaninGate = &(this->pCircuit_->circuitGates_[pGate->faninVector_[i]]);
 				if (pFaninGate->atpgVal_ == X)
 				{
 					pFaninGate->atpgVal_ = InputNonControlVal;
@@ -1724,7 +1742,7 @@ Atpg::IMPLICATION_STATUS Atpg::doOneGateBackwardImplication(Gate *pGate)
 			int ImpPtr = 0;
 			for (int i = 0; i < pGate->numFI_; ++i)
 			{
-				Gate *pFaninGate = &this->pCircuit_->circuitGates_[pGate->faninVector_[i]];
+				Gate *pFaninGate = &(this->pCircuit_->circuitGates_[pGate->faninVector_[i]]);
 				if (pFaninGate->atpgVal_ == X)
 				{
 					++NumOfX;
@@ -1754,11 +1772,26 @@ Atpg::IMPLICATION_STATUS Atpg::doOneGateBackwardImplication(Gate *pGate)
 
 // **************************************************************************
 // Function   [ Atpg::backtrack ]
-// Commenter  [ CLT ]
-// Synopsis   [ usage: If this->backtrackDecisionTree_ is not empty, update backwardImplicationLevel.
-//                     If this->backtrackDecisionTree_ is empty, return false.
+// Commenter  [ CLT WWS ]
+// Synopsis   [ usage: When we backtrack a single gate in the decision tree,
+// 								we need to recover all the associated implications
+// 								starting from the startPoint of its DecisionTreeNode as
+// 								a index in this->backtrackImplicatedGateIDs_.
+//
+// 							description:
+// check if the decisionTree_.get(...) is True
+// 		if true : already marked,
+// 		pop it and go back to the first line to check if the decisionTree_.get(...) is True
+// 		else : update the unjustifiedlines()
+// 							 back track the gate from previous decisionTree_.get(),
+// 		reset all the gate in the Atpg::backtrackList_ to
+// 		unmodfied and the value to unknown,
+// 		recalculate the BackImpLevel, reconstruct the Atpg::eventStack_ the Atpg::dFrontier_, Atpg::unjustified_, Atpg xPathStatus return true if no more gate in decision tree to backtrack than return false
 //              in:    backwardImplicationLevel
-//              out:   bool
+//              output:
+// 								A boolean indicating whether backtrack has failed, if
+// 								failed the whole current target fault is determined as
+// 								untestable in this atpg algorithm.
 //            ]
 // Date       [ Ver. 1.0 started 2013/08/13 ]
 // **************************************************************************
@@ -1808,7 +1841,7 @@ bool Atpg::backtrack(int &backwardImplicationLevel)
 		for (int i = backtrackPoint; i < (int)this->backtrackImplicatedGateIDs_.size(); ++i)
 		{
 			// Reset gates and their ouput in this->backtrackImplicatedGateIDs_, starts from its backtrack point.
-			Gate *pGate = &this->pCircuit_->circuitGates_[this->backtrackImplicatedGateIDs_[i]];
+			Gate *pGate = &(this->pCircuit_->circuitGates_[this->backtrackImplicatedGateIDs_[i]]);
 
 			pGate->atpgVal_ = X;
 			this->gateID_to_valModified_[pGate->gateId_] = 0;
@@ -1825,11 +1858,11 @@ bool Atpg::backtrack(int &backwardImplicationLevel)
 		for (int i = backtrackPoint + 1; i < (int)this->backtrackImplicatedGateIDs_.size(); ++i)
 		{
 			// Find MAX level output in this->backtrackImplicatedGateIDs_ and save it to backwardImplicationLevel
-			Gate *pGate = &this->pCircuit_->circuitGates_[this->backtrackImplicatedGateIDs_[i]];
+			Gate *pGate = &(this->pCircuit_->circuitGates_[this->backtrackImplicatedGateIDs_[i]]);
 
 			for (int j = 0; j < pGate->numFO_; ++j)
 			{
-				Gate *pFanoutGate = &this->pCircuit_->circuitGates_[pGate->fanoutVector_[j]];
+				Gate *pFanoutGate = &(this->pCircuit_->circuitGates_[pGate->fanoutVector_[j]]);
 
 				if (pFanoutGate->atpgVal_ != X)
 				{
@@ -1864,11 +1897,12 @@ bool Atpg::backtrack(int &backwardImplicationLevel)
 		Gate *pFaultyGate = &this->pCircuit_->circuitGates_[this->currentTargetFault_.gateID_];
 
 		this->dFrontiers_.clear();
+		this->dFrontiers_.reserve(MAX_LIST_SIZE);
 		this->dFrontiers_.push_back(pFaultyGate->gateId_);
 		updateDFrontiers();
 
 		// Update this->unjustifiedGateIDs_ list
-		for (int k = (int)this->unjustifiedGateIDs_.size() - 1; k >= 0; --k)
+		for (int k = (int)(this->unjustifiedGateIDs_.size()) - 1; k >= 0; --k)
 		{
 			if (this->pCircuit_->circuitGates_[this->unjustifiedGateIDs_[k]].atpgVal_ == X)
 			{
