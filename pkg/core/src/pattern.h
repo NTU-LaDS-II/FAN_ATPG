@@ -98,6 +98,21 @@ namespace CoreNs
 		numPO_ = 0;
 	}
 
+	// **************************************************************************
+	// Function   [ PatternProcessor::init ]
+	// Commenter  [ CHT ]
+	// Synopsis   [ usage: Basic setup initialization.
+	//							description:
+	// 								1. Set numPI_, numPO_ and numPPI_ from the Circuit.
+	// 								2. Set pPIorder_, pPPIorder_ and pPOorder_ = {0, 1,..., numPI_-1}.
+	// 								3. Increase each element in pPOorder_ by
+	//									 (numGate_ of Circuit - numPO_ - numPPI_).
+	// 								4. Increase each element in pPPIorder_ by numPPI_.
+	//							arguement:
+	//								[in] pCircuit : The pointer to the target Circuit.
+	//						]
+	// Date       [ HKY Ver. 1.0 started 2014/09/01 last modified 2023/01/05 ]
+	// **************************************************************************
 	inline void PatternProcessor::init(Circuit *pCircuit)
 	{
 		pPIorder_.clear();
@@ -143,11 +158,11 @@ namespace CoreNs
 	inline void PatternProcessor::StaticCompression()
 	{
 		const size_t &size = patternVector_.size();
-		std::vector<bool> mergeRecord(size);
-		for (size_t i = 0; i < size; ++i)
-		{
-			mergeRecord[i] = false;
-		}
+		std::vector<bool> mergeRecord(size, false);
+		// for (size_t i = 0; i < size; ++i)
+		// {
+		// 	mergeRecord[i] = false;
+		// }
 		std::vector<bool> patternTable(size * size);
 		for (size_t i = 0; i < size; ++i)
 		{
@@ -294,11 +309,11 @@ namespace CoreNs
 
 		while (!patternCandidate.empty())
 		{
-			std::vector<bool> updateSimilarityPattern(size);
-			for (size_t i = 0; i < size; ++i)
-			{
-				updateSimilarityPattern[i] = false;
-			}
+			std::vector<bool> updateSimilarityPattern(size, false);
+			// for (size_t i = 0; i < size; ++i)
+			// {
+			// 	updateSimilarityPattern[i] = false;
+			// }
 			int similarityPattern_first = 0;
 			int similarityPattern_second = 0;
 			int maxSimilarity = 0;
