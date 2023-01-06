@@ -1595,169 +1595,133 @@ bool Atpg::doImplication(IMPLICATION_STATUS atpgStatus, int implicationStartLeve
 // **************************************************************************
 Atpg::IMPLICATION_STATUS Atpg::doOneGateBackwardImplication(Gate *pGate)
 {
+	int numOfX = 0;
+	int faninIndex = 0;
+	Gate *pFaninGate0 = NULL;
+	Gate *pFaninGate1 = NULL;
+	Gate *pFaninGate2 = NULL;
+	Gate *pImplicatedGate = NULL;
 	IMPLICATION_STATUS implicationStatus = FORWARD;
-	if (pGate->gateType_ == Gate::PI || pGate->gateType_ == Gate::PPI)
+	const Value inputControlVal = pGate->getInputCtrlValue();
+	const Value outputControlVal = pGate->getOutputCtrlValue();
+	const Value inputNonControlVal = pGate->getInputNonCtrlValue();
+
+	switch (pGate->gateType_)
 	{
-		return FORWARD;
-	}
+		case Gate::PI:
+		case Gate::PPI:
+			return FORWARD;
+		case Gate::BUF:
+		case Gate::INV:
+		case Gate::PO:
+		case Gate::PPO:
+			pImplicatedGate = &(this->pCircuit_->circuitGates_[pGate->faninVector_[0]]);
+			this->gateID_to_valModified_[pGate->gateId_] = 1;
 
-	if (pGate->gateType_ == Gate::BUF || pGate->gateType_ == Gate::INV || pGate->gateType_ == Gate::PO || pGate->gateType_ == Gate::PPO)
-	{
-		Gate *pImpGate = &(this->pCircuit_->circuitGates_[pGate->faninVector_[0]]);
-		this->gateID_to_valModified_[pGate->gateId_] = 1;
-
-		Value isINV = (pGate->gateType_ == Gate::INV) ? H : L;
-		pImpGate->atpgVal_ = cXOR2(pGate->atpgVal_, isINV);
-
-		this->backtrackImplicatedGateIDs_.push_back(pImpGate->gateId_);
-		pushGateToEventStack(pGate->faninVector_[0]);
-		pushGateFanoutsToEventStack(pGate->faninVector_[0]);
-		implicationStatus = BACKWARD;
-	}
-	else if (pGate->gateType_ == Gate::XOR2 || pGate->gateType_ == Gate::XNOR2)
-	{
-		Gate *pInputGate0 = &(this->pCircuit_->circuitGates_[pGate->faninVector_[0]]);
-		Gate *pInputGate1 = &(this->pCircuit_->circuitGates_[pGate->faninVector_[1]]);
-
-		implicationStatus = BACKWARD;
-
-		if (pInputGate0->atpgVal_ == X && pInputGate1->atpgVal_ != X)
-		{
-			if (pGate->gateType_ == Gate::XOR2)
+			if (pGate->gateType_ == Gate::INV)
 			{
-				pInputGate0->atpgVal_ = cXOR2(pGate->atpgVal_, pInputGate1->atpgVal_);
+				pImplicatedGate->atpgVal_ = cXOR2(pGate->atpgVal_, H);
 			}
 			else
 			{
-				pInputGate0->atpgVal_ = cXNOR2(pGate->atpgVal_, pInputGate1->atpgVal_);
+				pImplicatedGate->atpgVal_ = cXOR2(pGate->atpgVal_, L);
 			}
-			this->gateID_to_valModified_[pGate->gateId_] = 1;
-			this->backtrackImplicatedGateIDs_.push_back(pInputGate0->gateId_);
+
+			this->backtrackImplicatedGateIDs_.push_back(pImplicatedGate->gateId_);
 			pushGateToEventStack(pGate->faninVector_[0]);
 			pushGateFanoutsToEventStack(pGate->faninVector_[0]);
-		}
-		else if (pInputGate1->atpgVal_ == X && pInputGate0->atpgVal_ != X)
-		{
-			if (pGate->gateType_ == Gate::XOR2)
-			{
-				pInputGate1->atpgVal_ = cXOR2(pGate->atpgVal_, pInputGate0->atpgVal_);
-			}
-			else
-			{
-				pInputGate1->atpgVal_ = cXNOR2(pGate->atpgVal_, pInputGate0->atpgVal_);
-			}
-			this->gateID_to_valModified_[pGate->gateId_] = 1;
-			this->backtrackImplicatedGateIDs_.push_back(pInputGate1->gateId_);
-			pushGateToEventStack(pGate->faninVector_[1]);
-			pushGateFanoutsToEventStack(pGate->faninVector_[1]);
-		}
-		else
-		{
-			implicationStatus = FORWARD;
-			this->unjustifiedGateIDs_.push_back(pGate->gateId_);
-		}
-	}
-	else if (pGate->gateType_ == Gate::XOR3 || pGate->gateType_ == Gate::XNOR3)
-	{
-		Gate *pInputGate0 = &this->pCircuit_->circuitGates_[pGate->faninVector_[0]];
-		Gate *pInputGate1 = &this->pCircuit_->circuitGates_[pGate->faninVector_[1]];
-		Gate *pInputGate2 = &this->pCircuit_->circuitGates_[pGate->faninVector_[2]];
-		int NumOfX = 0;
-		int ImpPtr = 0;
-		if (pInputGate0->atpgVal_ == X)
-		{
-			++NumOfX;
-			ImpPtr = 0;
-		}
-		if (pInputGate1->atpgVal_ == X)
-		{
-			++NumOfX;
-			ImpPtr = 1;
-		}
-		if (pInputGate2->atpgVal_ == X)
-		{
-			++NumOfX;
-			ImpPtr = 2;
-		}
-		if (NumOfX == 1)
-		{
-			Gate *pImpGate = &this->pCircuit_->circuitGates_[pGate->faninVector_[ImpPtr]];
-			Value temp;
-			if (ImpPtr == 0)
-			{
-				temp = cXOR3(pGate->atpgVal_, pInputGate1->atpgVal_, pInputGate2->atpgVal_);
-			}
-			else if (ImpPtr == 1)
-			{
-				temp = cXOR3(pGate->atpgVal_, pInputGate0->atpgVal_, pInputGate2->atpgVal_);
-			}
-			else
-			{
-				temp = cXOR3(pGate->atpgVal_, pInputGate1->atpgVal_, pInputGate0->atpgVal_);
-			}
-
-			if (pGate->gateType_ == Gate::XNOR3)
-			{
-				temp = cINV(temp);
-			}
-			pImpGate->atpgVal_ = temp;
-			this->gateID_to_valModified_[pGate->gateId_] = 1;
-			this->backtrackImplicatedGateIDs_.push_back(pImpGate->gateId_);
-			pushGateToEventStack(pGate->faninVector_[ImpPtr]);
-			pushGateFanoutsToEventStack(pGate->faninVector_[ImpPtr]);
 			implicationStatus = BACKWARD;
-		}
-		else
-		{
-			this->unjustifiedGateIDs_.push_back(pGate->gateId_);
-			implicationStatus = FORWARD;
-		}
-	}
-	else
-	{
-		Value OutputControlVal = pGate->getOutputCtrlValue();
-		Value InputControlVal = pGate->getInputCtrlValue();
-
-		if (pGate->atpgVal_ == OutputControlVal)
-		{
-			this->gateID_to_valModified_[pGate->gateId_] = 1;
-			Value InputNonControlVal = pGate->getInputNonCtrlValue();
-
-			for (int i = 0; i < pGate->numFI_; ++i)
-			{
-				Gate *pFaninGate = &(this->pCircuit_->circuitGates_[pGate->faninVector_[i]]);
-				if (pFaninGate->atpgVal_ == X)
-				{
-					pFaninGate->atpgVal_ = InputNonControlVal;
-					this->backtrackImplicatedGateIDs_.push_back(pFaninGate->gateId_);
-					pushGateToEventStack(pGate->faninVector_[i]);
-					pushGateFanoutsToEventStack(pGate->faninVector_[i]);
-				}
-			}
+			break;
+		case Gate::XOR2:
+		case Gate::XNOR2:
 			implicationStatus = BACKWARD;
-		}
-		else
-		{
-			int NumOfX = 0;
-			int ImpPtr = 0;
-			for (int i = 0; i < pGate->numFI_; ++i)
-			{
-				Gate *pFaninGate = &(this->pCircuit_->circuitGates_[pGate->faninVector_[i]]);
-				if (pFaninGate->atpgVal_ == X)
-				{
-					++NumOfX;
-					ImpPtr = i;
-				}
-			}
+			pFaninGate0 = &(this->pCircuit_->circuitGates_[pGate->faninVector_[0]]);
+			pFaninGate1 = &(this->pCircuit_->circuitGates_[pGate->faninVector_[1]]);
 
-			if (NumOfX == 1)
+			if (pFaninGate0->atpgVal_ == X && pFaninGate1->atpgVal_ != X)
 			{
-				Gate *pImpGate = &this->pCircuit_->circuitGates_[pGate->faninVector_[ImpPtr]];
-				pImpGate->atpgVal_ = InputControlVal;
+				if (pGate->gateType_ == Gate::XOR2)
+				{
+					pFaninGate0->atpgVal_ = cXOR2(pGate->atpgVal_, pFaninGate1->atpgVal_);
+				}
+				else
+				{
+					pFaninGate0->atpgVal_ = cXNOR2(pGate->atpgVal_, pFaninGate1->atpgVal_);
+				}
 				this->gateID_to_valModified_[pGate->gateId_] = 1;
-				this->backtrackImplicatedGateIDs_.push_back(pImpGate->gateId_);
-				pushGateToEventStack(pGate->faninVector_[ImpPtr]);
-				pushGateFanoutsToEventStack(pGate->faninVector_[ImpPtr]);
+				this->backtrackImplicatedGateIDs_.push_back(pFaninGate0->gateId_);
+				pushGateToEventStack(pGate->faninVector_[0]);
+				pushGateFanoutsToEventStack(pGate->faninVector_[0]);
+			}
+			else if (pFaninGate1->atpgVal_ == X && pFaninGate0->atpgVal_ != X)
+			{
+				if (pGate->gateType_ == Gate::XOR2)
+				{
+					pFaninGate1->atpgVal_ = cXOR2(pGate->atpgVal_, pFaninGate0->atpgVal_);
+				}
+				else
+				{
+					pFaninGate1->atpgVal_ = cXNOR2(pGate->atpgVal_, pFaninGate0->atpgVal_);
+				}
+				this->gateID_to_valModified_[pGate->gateId_] = 1;
+				this->backtrackImplicatedGateIDs_.push_back(pFaninGate1->gateId_);
+				pushGateToEventStack(pGate->faninVector_[1]);
+				pushGateFanoutsToEventStack(pGate->faninVector_[1]);
+			}
+			else
+			{
+				implicationStatus = FORWARD;
+				this->unjustifiedGateIDs_.push_back(pGate->gateId_);
+			}
+			break;
+		case Gate::XOR3:
+		case Gate::XNOR3:
+			numOfX = 0;
+			faninIndex = 0;
+			pFaninGate0 = &(this->pCircuit_->circuitGates_[pGate->faninVector_[0]]);
+			pFaninGate1 = &(this->pCircuit_->circuitGates_[pGate->faninVector_[1]]);
+			pFaninGate2 = &(this->pCircuit_->circuitGates_[pGate->faninVector_[2]]);
+			if (pFaninGate0->atpgVal_ == X)
+			{
+				++numOfX;
+				faninIndex = 0;
+			}
+			if (pFaninGate1->atpgVal_ == X)
+			{
+				++numOfX;
+				faninIndex = 1;
+			}
+			if (pFaninGate2->atpgVal_ == X)
+			{
+				++numOfX;
+				faninIndex = 2;
+			}
+			if (numOfX == 1)
+			{
+				pImplicatedGate = &this->pCircuit_->circuitGates_[pGate->faninVector_[faninIndex]];
+				Value temp;
+				if (faninIndex == 0)
+				{
+					temp = cXOR3(pGate->atpgVal_, pFaninGate1->atpgVal_, pFaninGate2->atpgVal_);
+				}
+				else if (faninIndex == 1)
+				{
+					temp = cXOR3(pGate->atpgVal_, pFaninGate0->atpgVal_, pFaninGate2->atpgVal_);
+				}
+				else
+				{
+					temp = cXOR3(pGate->atpgVal_, pFaninGate1->atpgVal_, pFaninGate0->atpgVal_);
+				}
+
+				if (pGate->gateType_ == Gate::XNOR3)
+				{
+					temp = cINV(temp);
+				}
+				pImplicatedGate->atpgVal_ = temp;
+				this->gateID_to_valModified_[pGate->gateId_] = 1;
+				this->backtrackImplicatedGateIDs_.push_back(pImplicatedGate->gateId_);
+				pushGateToEventStack(pGate->faninVector_[faninIndex]);
+				pushGateFanoutsToEventStack(pGate->faninVector_[faninIndex]);
 				implicationStatus = BACKWARD;
 			}
 			else
@@ -1765,7 +1729,58 @@ Atpg::IMPLICATION_STATUS Atpg::doOneGateBackwardImplication(Gate *pGate)
 				this->unjustifiedGateIDs_.push_back(pGate->gateId_);
 				implicationStatus = FORWARD;
 			}
-		}
+			break;
+		default:
+			if (pGate->atpgVal_ == outputControlVal)
+			{
+				this->gateID_to_valModified_[pGate->gateId_] = 1;
+
+				for (int faninGateID : pGate->faninVector_)
+				{
+					Gate &faninGate = this->pCircuit_->circuitGates_[faninGateID];
+					if (faninGate.atpgVal_ == X)
+					{
+						faninGate.atpgVal_ = inputNonControlVal;
+						this->backtrackImplicatedGateIDs_.push_back(faninGateID);
+						pushGateToEventStack(faninGateID);
+						pushGateFanoutsToEventStack(faninGateID);
+					}
+				}
+				implicationStatus = BACKWARD;
+			}
+			else
+			{
+				numOfX = 0;
+				faninIndex = 0;
+				int index = 0;
+				for (int faninGateID : pGate->faninVector_)
+				{
+					Gate &faninGate = this->pCircuit_->circuitGates_[faninGateID];
+					if (faninGate.atpgVal_ == X)
+					{
+						++numOfX;
+						faninIndex = index;
+					}
+					++index;
+				}
+
+				if (numOfX == 1)
+				{
+					pImplicatedGate = &(this->pCircuit_->circuitGates_[pGate->faninVector_[faninIndex]]);
+					pImplicatedGate->atpgVal_ = inputControlVal;
+					this->gateID_to_valModified_[pGate->gateId_] = 1;
+					this->backtrackImplicatedGateIDs_.push_back(pImplicatedGate->gateId_);
+					pushGateToEventStack(pGate->faninVector_[faninIndex]);
+					pushGateFanoutsToEventStack(pGate->faninVector_[faninIndex]);
+					implicationStatus = BACKWARD;
+				}
+				else
+				{
+					this->unjustifiedGateIDs_.push_back(pGate->gateId_);
+					implicationStatus = FORWARD;
+				}
+			}
+			break;
 	}
 	return implicationStatus;
 }
@@ -2059,7 +2074,7 @@ bool Atpg::checkForUnjustifiedBoundLines()
 //                     Choose a value and a line such that the chosen value assigned
 //                     to the chosen line can meet the initial objectives.
 //              in:    BACKTRACE_STATUS& flag: The flag indicates the backtrace atpgStatus.
-//                     const bool& FaultCanPropToPO: The FaultPropPo indicates whether the
+//                     const bool& faultCanPropToPO: The FaultPropPo indicates whether the
 //                     fault signal can propagate to PO or not.
 //                     Gate* pLastDFrontier: The pLastDFrontier indicates the closest
 //                     DFrontier to PO
@@ -2068,7 +2083,7 @@ bool Atpg::checkForUnjustifiedBoundLines()
 //            ]
 // Date       [ WYH Ver. 1.0 started 2013/08/15 ]
 // **************************************************************************
-void Atpg::findFinalObjective(BACKTRACE_STATUS &flag, const bool &FaultCanPropToPO, Gate *&pLastDFrontier)
+void Atpg::findFinalObjective(BACKTRACE_STATUS &flag, const bool &faultCanPropToPO, Gate *&pLastDFrontier)
 {
 	int index;
 	Gate *pGate = NULL;
@@ -2088,17 +2103,17 @@ void Atpg::findFinalObjective(BACKTRACE_STATUS &flag, const bool &FaultCanPropTo
 			{
 				setGaten0n1(gateID, 0, 0);
 			}
-			this->gateIDsToResetAfterBackTrace_.clear();
 			clearAllObjectives();
+			this->gateIDsToResetAfterBackTrace_.clear();
+			this->gateIDsToResetAfterBackTrace_.reserve(this->pCircuit_->totalGate_);
 
-			// IS THERE ANY UNJUSTIFIED LINE?
 			if (!this->unjustifiedGateIDs_.empty())
-			{ // YES
+			{
 				// LET ALL THE UNJUSTIFIED LINES BE THE SET OF INITIAL OBJECTIVES
 				this->initialObjectives_ = this->unjustifiedGateIDs_;
 
 				// FAULT SIGNAL PROPAGATED TO A PRIMARY OUTPUT?
-				if (FaultCanPropToPO) // YES
+				if (faultCanPropToPO) // YES
 				{											// do not add any gates
 					pLastDFrontier = NULL;
 				}
@@ -2110,7 +2125,7 @@ void Atpg::findFinalObjective(BACKTRACE_STATUS &flag, const bool &FaultCanPropTo
 				}
 			}
 			else
-			{ // NO
+			{
 				// ADD A GATE IN D-FRONTIER TO THE SET OF INITIAL OBJECTIVES
 				pLastDFrontier = findClosestToPO(this->dFrontiers_, index);
 				this->initialObjectives_.push_back(pLastDFrontier->gateId_);
@@ -2282,14 +2297,16 @@ void Atpg::restoreFault(Fault &originalFault)
 	Gate *pFaultPropGate = NULL;
 
 	this->fanoutObjectives_.clear();
-	pFaultPropGate = &this->pCircuit_->circuitGates_[originalFault.gateID_];
+	this->fanoutObjectives_.reserve(MAX_LIST_SIZE);
+	pFaultPropGate = &(this->pCircuit_->circuitGates_[originalFault.gateID_]);
 
 	if (originalFault.faultyLine_ == 0)
 	{
 		this->fanoutObjectives_.push_back(pFaultPropGate->gateId_);
 	}
 
-	// To fix bugs of free line fault which is at gate input
+	// Restore the free line faults which is at gate input because the faults
+	// are all rearranged to equivalent at gate output in previous atpg functions
 	for (int i = 0; i < pFaultPropGate->numFI_; ++i)
 	{
 		Gate *pFaninGate = &this->pCircuit_->circuitGates_[pFaultPropGate->faninVector_[i]];
@@ -2356,12 +2373,11 @@ void Atpg::restoreFault(Fault &originalFault)
 
 int Atpg::countEffectiveDFrontiers(Gate *pFaultyLine)
 {
-	// update the frontier
 	updateDFrontiers();
 
 	// Change the xPathStatus from XPATH_EXIST to UNKNOWN of a gate
 	// which has equal or higher level than the faulty gate
-	//(the gate array has been given its level already)
+	// (the gate array has been given its level already)
 	// This is to clear the xPathStatus of previous xPathTracing
 	for (int i = pFaultyLine->gateId_; i < this->pCircuit_->totalGate_; ++i)
 	{
@@ -2372,9 +2388,9 @@ int Atpg::countEffectiveDFrontiers(Gate *pFaultyLine)
 		}
 	}
 
-	// if D-frontier can't propagate to the PO, erase it
 	for (int k = this->dFrontiers_.size() - 1; k >= 0; --k)
 	{
+		// if D-frontier can't propagate to the PO, erase it
 		if (!xPathTracing(&this->pCircuit_->circuitGates_[this->dFrontiers_[k]]))
 		{
 			vecDelete(this->dFrontiers_, k);
@@ -3600,32 +3616,32 @@ Atpg::IMPLICATION_STATUS Atpg::evaluateAndSetFaultyGateAtpgVal(Gate *pGate)
 {
 	// get the evaluated value of pGate.
 	Value Val = evaluateFaultyVal(*pGate);
-	int ImpPtr = 0;
+	int faninIndex = 0;
 	if (Val == X)
 	{ // The evaluated value is X, means the init faulty objective has not achieved yet.
 		if (pGate->atpgVal_ != X)
 		{
-			int NumOfX = 0;
+			int numOfX = 0;
 
-			// Count NumOfX, the amount of fanIn whose value is X.
-			// set ImpPtr to be one of the fanIn whose value is X.
+			// Count numOfX, the amount of fanIn whose value is X.
+			// set faninIndex to be one of the fanIn whose value is X.
 			for (int i = 0; i < pGate->numFI_; ++i)
 			{
 				Gate *pFaninGate = &this->pCircuit_->circuitGates_[pGate->faninVector_[i]];
 				if (pFaninGate->atpgVal_ == X)
 				{
-					++NumOfX;
-					ImpPtr = i;
+					++numOfX;
+					faninIndex = i;
 				}
 			}
-			if (NumOfX == 1)
+			if (numOfX == 1)
 			{ // The fanin has X value can be set to impl. value
 
-				// ImpVal is the pGate pImpGate value
+				// ImpVal is the pImplicatedGate value
 				Value ImpVal;
 
-				// pImpGate is the pGate's fanIn whose value is X.
-				Gate *pImpGate = &this->pCircuit_->circuitGates_[pGate->faninVector_[ImpPtr]];
+				// pImplicatedGate is the pGate's fanIn whose value is X.
+				Gate *pImplicatedGate = &this->pCircuit_->circuitGates_[pGate->faninVector_[faninIndex]];
 
 				// set ImpVal if pGate is not XOR or XNOR
 				if (pGate->atpgVal_ == D)
@@ -3644,18 +3660,18 @@ Atpg::IMPLICATION_STATUS Atpg::evaluateAndSetFaultyGateAtpgVal(Gate *pGate)
 				// set ImpVal if pGate is XOR2 or XNOR2
 				if (pGate->gateType_ == Gate::XOR2 || pGate->gateType_ == Gate::XNOR2)
 				{
-					Value temp = (ImpPtr == 0) ? this->pCircuit_->circuitGates_[pGate->faninVector_[1]].atpgVal_ : this->pCircuit_->circuitGates_[pGate->faninVector_[0]].atpgVal_;
+					Value temp = (faninIndex == 0) ? this->pCircuit_->circuitGates_[pGate->faninVector_[1]].atpgVal_ : this->pCircuit_->circuitGates_[pGate->faninVector_[0]].atpgVal_;
 					ImpVal = cXOR2(ImpVal, temp);
 				}
 				// set ImpVal if pGate is XOR3 or XNOR3
 				if (pGate->gateType_ == Gate::XOR3 || pGate->gateType_ == Gate::XNOR3)
 				{
 					Value temp;
-					if (ImpPtr == 0)
+					if (faninIndex == 0)
 					{
 						temp = cXOR2(this->pCircuit_->circuitGates_[pGate->faninVector_[1]].atpgVal_, this->pCircuit_->circuitGates_[pGate->faninVector_[2]].atpgVal_);
 					}
-					else if (ImpPtr == 1)
+					else if (faninIndex == 1)
 					{
 						temp = cXOR2(this->pCircuit_->circuitGates_[pGate->faninVector_[0]].atpgVal_, this->pCircuit_->circuitGates_[pGate->faninVector_[2]].atpgVal_);
 					}
@@ -3670,15 +3686,15 @@ Atpg::IMPLICATION_STATUS Atpg::evaluateAndSetFaultyGateAtpgVal(Gate *pGate)
 				Value isInv = pGate->isInverse();
 				ImpVal = cXOR2(ImpVal, isInv);
 
-				// set modify and the final value of pImpGate
+				// set modify and the final value of pImplicatedGate
 				this->gateID_to_valModified_[pGate->gateId_] = 1;
-				pImpGate->atpgVal_ = ImpVal;
+				pImplicatedGate->atpgVal_ = ImpVal;
 
 				// backward setting
-				// pushInputEvents(pGate->gateId_, ImpPtr);
-				pushGateToEventStack(pGate->faninVector_[ImpPtr]);
-				pushGateFanoutsToEventStack(pGate->faninVector_[ImpPtr]);
-				this->backtrackImplicatedGateIDs_.push_back(pImpGate->gateId_);
+				// pushInputEvents(pGate->gateId_, faninIndex);
+				pushGateToEventStack(pGate->faninVector_[faninIndex]);
+				pushGateFanoutsToEventStack(pGate->faninVector_[faninIndex]);
+				this->backtrackImplicatedGateIDs_.push_back(pImplicatedGate->gateId_);
 
 				return BACKWARD;
 			}
@@ -3731,6 +3747,7 @@ void Atpg::staticTestCompressionByReverseFaultSimulation(PatternProcessor *pPatt
 
 	std::vector<Pattern> tmp = pPatternProcessor->patternVector_;
 	pPatternProcessor->patternVector_.clear();
+	pPatternProcessor->patternVector_.reserve(tmp.capacity());
 
 	// Perform reverse fault simulation
 	int leftFaultCount = originalFaultList.size();

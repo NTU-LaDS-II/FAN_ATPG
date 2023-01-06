@@ -134,7 +134,7 @@ namespace CoreNs
 		void updateDFrontiers();
 		bool checkIfFaultHasPropagatedToPO(bool &faultHasPropagatedToPO);
 		bool checkForUnjustifiedBoundLines();
-		void findFinalObjective(BACKTRACE_STATUS &flag, const bool &FaultCanPropToPO, Gate *&pLastDFrontier);
+		void findFinalObjective(BACKTRACE_STATUS &flag, const bool &faultCanPropToPO, Gate *&pLastDFrontier);
 		void clearAllObjectives();
 		void assignAtpgValToFinalObjectiveGates();
 		void justifyFreeLines(Fault &originalFault);
