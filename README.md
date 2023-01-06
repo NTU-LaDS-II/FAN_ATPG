@@ -51,7 +51,7 @@
 
 Hsu Po-Ya, Chen Yu-Chen <br />
 Han Cheng-You, Chen Ching-Yu, Chiang Kuan-Ying, Wang Ying-Hsu, Chen Po-Hao, Lin Kuo-Yu, Pan Chun-Han, Li Chia-An, Tsai Chia-Ling, Hsu Ling-Yun <br />
-Wan Wei-Shen, Chang Hsin-Tzu, Pan Yu-Hung <br />
+Wang Wei-Shen, Chang Hsin-Tzu, Pan Yu-Hung <br />
 
 
 ***Copyright (c) 2013 LaDS. All Rights Reserved.***
