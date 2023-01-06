@@ -53,6 +53,7 @@ namespace CoreNs
 	inline void DecisionTree::clear()
 	{
 		tree_.clear();
+		tree_.reserve(InitSize);
 	}
 
 	inline void DecisionTree::put(const int &gateId, const int &startPoint)
