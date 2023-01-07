@@ -315,6 +315,7 @@ namespace CoreNs
 	// Commenter  [ CAL WWS ]
 	// Synopsis   [ usage: Given the gate with fault, and generate the output,
 	//                     and return.
+	// 
 	//              arguments:
 	// 								[in] gate: The gate to evaluate.
 	//
@@ -702,10 +703,10 @@ namespace CoreNs
 	// **************************************************************************
 	// Function   [ Atpg::writeAtpgValToPatternPI ]
 	// Commenter  [ CAL WWS ]
-	// Synopsis   [ usage: assign atpgVal_ of PI/PPI to PI/PPI in pattern
+	// Synopsis   [ usage: Assign atpgVal_ of PI/PPI to PI/PPI in pattern.
+	// 
 	// 							arguments:
-	// 								[out] pattern:
-	// 									A empty pattern to be set.
+	// 								[in, out] pattern: An empty pattern to be set.
 	//            ]
 	// Date       [ Ver. 1.0 started 2013/08/13  last modified 2023/01/06 ]
 	// **************************************************************************
@@ -738,11 +739,12 @@ namespace CoreNs
 	// Function   [ Atpg::writeGoodSimValToPatternPO ]
 	// Commenter  [ CAL WWS ]
 	// Synopsis   [ usage: assign atpgVal_ of PO/PPO to PP/PPO in pattern
+	// 
 	// 							arguments:
-	// 								[out] pattern:
-	// 									A empty pattern to be set.
+	// 								[in, out] pattern:
+	// 									An empty pattern to be set.
 	//            ]
-	// Date       [ Ver. 1.0 started 2013/08/13 ]
+	// Date       [ Ver. 1.0 started 2013/08/13 last modified 2023/01/06]
 	// **************************************************************************
 	inline void Atpg::writeGoodSimValToPatternPO(Pattern &pattern)
 	{
