@@ -1,4 +1,4 @@
-# LaDS   &emsp; &emsp; &emsp;   ATPG v2023     &emsp; &emsp; &emsp; JAN 2023
+# LaDS   &emsp;   ATPG v2023     &emsp; JAN 2023
 
 ## CONTENTS
 
@@ -44,14 +44,16 @@
 ## IV. REVISION HISTORY
 
 **v2013 - Initial release.** <br />
-**v2023 - Code refactor.**
+**v2014 - Code Modifications.** <br />
+**v2023 - Code refactor for open source project.** <br />
 
 
 ## V. AUTHORS
 
-Hsu Po-Ya, Chen Yu-Chen <br />
-Han Cheng-You, Chen Ching-Yu, Chiang Kuan-Ying, Wang Ying-Hsu, Chen Po-Hao, Lin Kuo-Yu, Pan Chun-Han, Li Chia-An, Tsai Chia-Ling, Hsu Ling-Yun <br />
-Wang Wei-Shen, Chang Hsin-Tzu, Pan Yu-Hung <br />
+**Original Authors-** Lin Hio-Ting, Hsu Po-Ya, Liao Kuan-Yu  <br />
+**v2013 -** Han Cheng-You, Chen Ching-Yu, Chiang Kuan-Ying, Wang Ying-Hsu, Chen Po-Hao, Lin Kuo-Yu, Pan Chun-Han, Li Chia-An, Tsai Chia-Ling, Hsu Ling-Yun <br />
+**v2014 -** He Yu-Hao, Cai Zong-Yan, How Bo-Fan, Li Yu-Qing, Huang Guan-Yan, Xiao Zhi-Long, Lin Kun-Wei, Lin Shi-Yao, Chen You-Wei, Li Guan-De <br />
+**v2023 -** Wang Wei-Shen, Chang Hsin-Tzu, Pan Yu-Hung, Liang Zhe-Jia <br />
 
 
 ***Copyright (c) 2013 LaDS. All Rights Reserved.***
