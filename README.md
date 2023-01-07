@@ -50,7 +50,7 @@
 
 ## V. AUTHORS
 
-**Original Authors-** Lin Hio-Ting, Hsu Po-Ya, Liao Kuan-Yu  <br />
+**Original Authors -** Lin Hio-Ting, Hsu Po-Ya, Liao Kuan-Yu  <br />
 **v2013 -** Han Cheng-You, Chen Ching-Yu, Chiang Kuan-Ying, Wang Ying-Hsu, Chen Po-Hao, Lin Kuo-Yu, Pan Chun-Han, Li Chia-An, Tsai Chia-Ling, Hsu Ling-Yun <br />
 **v2014 -** He Yu-Hao, Cai Zong-Yan, How Bo-Fan, Li Yu-Qing, Huang Guan-Yan, Xiao Zhi-Long, Lin Kun-Wei, Lin Shi-Yao, Chen You-Wei, Li Guan-De <br />
 **v2023 -** Wang Wei-Shen, Chang Hsin-Tzu, Pan Yu-Hung, Liang Zhe-Jia <br />
