@@ -1,5 +1,5 @@
-# LaDS   &emsp;   ATPG v2023     &emsp; JAN 2023
-
+# ATPG FAN
+## v2023   &emsp; LaDSII
 ## CONTENTS
 
 > **I.    Introduction**<br />
@@ -12,33 +12,32 @@
 ## I. INTRODUCTION
 
 **ATPG and fault simulation tool based on the FAN algorithm.** <br />
-**Has Fault Collapsing, STC, and DTC with multiple fault orders.** <br />
+**Has Fault Collapsing, Staitc Test Compression, Dynamic Test Compression and Multiple Fault Orderings.** <br />
 
 ## II. DIRECTORY STRUCTURE
 
-> **Main files :** pkg/core<br />
-> **Fan's commands files :** pkg/fan<br />
-> **Interface files :** pkg/interface<br />
-> **Commands, options and arguments manager files :** pkg/common<br />
-> **Circuit files :** netlist<br />
-> **Pattern files :** pat<br />
-> **Script files :** script<br />
+> **Main files :** ```pkg/core/```<br />
+> **FAN's commands files :** ```pkg/fan/```<br />
+> **Interface files :** ```pkg/interface/```<br />
+> **Commands, options and arguments manager files :** ```pkg/common/```<br />
+> **Circuit files :** ```netlist/```<br />
+> **Pattern files :** ```pat/```<br />
+> **Script files :** ```script/```<br />
 
 
 ## III. USAGE
 
 > **Compile:**<br />
-> &emsp;	make <br />
+> &emsp;	```make clean``` <br />
+> &emsp;	```make``` <br />
 <br />
 
 > **Run ATPG:**<br />
-> &emsp;	./bin/opt/fan <br />
-> &emsp;	source script/atpg.script <br />
+> Command: &emsp;	```./bin/opt/fan -f script/atpg.script``` <br />
 <br />
 
 > **Run fault simulation:**<br />
-> &emsp;	./bin/opt/fan <br />
-> &emsp;	source script/fsim.script <br />
+> Command: &emsp;	```./bin/opt/fan -f script/fsim.script``` <br />
 
 
 ## IV. REVISION HISTORY
