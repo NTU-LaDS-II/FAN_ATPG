@@ -33,7 +33,6 @@ namespace CoreNs
 	// determine word size
 	constexpr int BYTE_SIZE = 8;
 	constexpr int WORD_SIZE = sizeof(ParallelValue) * BYTE_SIZE;
-
 	inline void setBitValue(ParallelValue &parallelValue, const size_t &bit, const Value &value)
 	{
 		parallelValue = value == L ? parallelValue & ~((ParallelValue)0x01 << bit) : parallelValue | ((ParallelValue)0x01 << bit);

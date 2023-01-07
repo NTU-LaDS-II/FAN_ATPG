@@ -44,12 +44,12 @@ namespace CoreNs
 
 	private:
 		// Used by both parallel fault and parallel pattern simulation.
-		Circuit *pCircuit_;										// The circuit use in simulator.
-		int numDetection_;										// For n-detect.
-		int numRecover_;											// Number of recovers needed.
+		Circuit *pCircuit_;                   // The circuit use in simulator.
+		int numDetection_;                    // For n-detect.
+		int numRecover_;                      // Number of recovers needed.
 		std::vector<std::stack<int>> events_; // The event stacks for every circuit levels.
-		std::vector<int> processed_;					// Array of processed flags. 1 means this gate is processed.
-		std::vector<int> recoverGates_;				// Array of gates to be recovered from the last fault injection.
+		std::vector<int> processed_;          // Array of processed flags. 1 means this gate is processed.
+		std::vector<int> recoverGates_;       // Array of gates to be recovered from the last fault injection.
 		// This is to inject fault into the circuit.
 		// faultInjectLow_ = 1 faultInjectHigh_ = 0 means we inject a stuck-at zero fault.
 		// faultInjectLow_ = 0 faultInjectHigh_ = 1 means we inject a stuck-at one fault.
@@ -59,7 +59,7 @@ namespace CoreNs
 
 		// Used by parallel fault simulation.
 		FaultPtrListIter injectedFaults_[WORD_SIZE]; // The injected faults, used for erase detected faults.
-		int numInjectedFaults_;											 // The number of injected faults.
+		int numInjectedFaults_;                      // The number of injected faults.
 		// Used by parallel pattern simulation.
 		ParallelValue activated_; // Record which pattern is activated.
 

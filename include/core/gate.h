@@ -203,7 +203,7 @@ namespace CoreNs
 	//								value is L. Otherwise it is H.
 	//								If the gate type is INV, NOR or OR, input non-control value is L.
 	//							arguments:
-	// 								[out] Value : Return the input non-control value of the gate.
+	// 								[out] Value : Return H if it is inverse gate, return L otherwise.
 	//						]
 	// Date       [ CHT Ver. 1.0 started 2023/01/05 ]
 	// **************************************************************************

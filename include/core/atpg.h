@@ -106,7 +106,7 @@ namespace CoreNs
 		void identifyGateDominator();
 		void identifyGateUniquePath();
 
-		void TransitionDelayFaultATPG(FaultPtrList &faultListToGen, PatternProcessor *pPatternProcessor, int &numOfAtpgUntestableFaults);
+		void TransitionDelayFaultATPG(FaultPtrList &faultPtrListForGen, PatternProcessor *pPatternProcessor, int &numOfAtpgUntestableFaults);
 		void StuckAtFaultATPG(FaultPtrList &faultListToGen, PatternProcessor *pPatternProcessor, int &numOfAtpgUntestableFaults);
 
 		Gate *getGateForFaultActivation(const Fault &fault);
@@ -134,12 +134,12 @@ namespace CoreNs
 		void updateDFrontiers();
 		bool checkIfFaultHasPropagatedToPO(bool &faultHasPropagatedToPO);
 		bool checkForUnjustifiedBoundLines();
-		void findFinalObjective(BACKTRACE_STATUS &flag, const bool &FaultCanPropToPO, Gate *&pLastDFrontier);
+		void findFinalObjective(BACKTRACE_STATUS &backtraceFlag, const bool &faultCanPropToPO, Gate *&pLastDFrontier);
 		void clearAllObjectives();
 		void assignAtpgValToFinalObjectiveGates();
 		void justifyFreeLines(Fault &originalFault);
 		void restoreFault(Fault &originalFault);
-		int countEffectiveDFrontiers(Gate *pFaultyLine);
+		int countEffectiveDFrontiers(Gate *pFaultyLineGate);
 		int doUniquePathSensitization(Gate &gate);
 
 		bool xPathExists(Gate *pGate);
@@ -149,10 +149,10 @@ namespace CoreNs
 		Fault setFreeLineFaultyGate(Gate &gate);
 
 		void fanoutFreeBacktrace(Gate *pGate);
-		BACKTRACE_RESULT multipleBacktrace(BACKTRACE_STATUS atpgStatus, int &finalObjectiveId);
+		BACKTRACE_RESULT multipleBacktrace(BACKTRACE_STATUS atpgStatus, int &possibleFinalObjectiveID);
 		Value assignBacktraceValue(int &n0, int &n1, const Gate &gate);
 		void initializeForMultipleBacktrace();
-		Gate *findEasiestInput(Gate *pGate, Value Val);
+		Gate *findEasiestInput(Gate *pGate, Value atpgValOfpGate);
 		Gate *findClosestToPO(std::vector<int> &gateVec, int &index);
 
 		IMPLICATION_STATUS evaluateAndSetGateAtpgVal(Gate *pGate);
@@ -240,13 +240,16 @@ namespace CoreNs
 
 	// **************************************************************************
 	// Function   [ Atpg::evaluateGoodVal ]
-	// Commenter  [ WYH ]
+	// Commenter  [ WYH WWS ]
 	// Synopsis   [ usage: Given the gate without fault, and generate the output,
 	//                     and return.
-	//              in:    Gate& gate
-	//              out:   Value
+	//
+	//              arguments:
+	// 								[in] gate: The gate to evaluate.
+	//
+	//              output: Evaluated value.
 	//            ]
-	// Date       [ WYH Ver. 1.0 started 2013/08/15]
+	// Date       [ WYH Ver. 1.0 started 2013/08/15 last modified 2023/01/06]
 	// **************************************************************************
 	inline Value Atpg::evaluateGoodVal(Gate &gate)
 	{
@@ -309,12 +312,16 @@ namespace CoreNs
 
 	// **************************************************************************
 	// Function   [ Atpg::evaluateFaultyVal ]
-	// Commenter  [ CAL ]
-	// Synopsis   [ usage: deal with 2 frame PPI, check it's D or D' logic
-	//              in:    gate
-	//              out:   value
+	// Commenter  [ CAL WWS ]
+	// Synopsis   [ usage: Given the gate with fault, and generate the output,
+	//                     and return.
+	//
+	//              arguments:
+	// 								[in] gate: The gate to evaluate.
+	//
+	//              output: Evaluated value.
 	//            ]
-	// Date       [ Ver. 1.0 started 2013/08/13 ]
+	// Date       [ Ver. 1.0 started 2013/08/13 last modified 2023/01/06 ]
 	// **************************************************************************
 	inline Value Atpg::evaluateFaultyVal(Gate &gate)
 	{
@@ -711,13 +718,13 @@ namespace CoreNs
 
 	// **************************************************************************
 	// Function   [ Atpg::writeAtpgValToPatternPI ]
-	// Commenter  [ CAL ]
-	// Synopsis   [ usage: assign primary input pattern value
-	//              in:    Pattern list
-	//              out:   void
-	//              pointer modification: Pattern
+	// Commenter  [ CAL WWS ]
+	// Synopsis   [ usage: Assign atpgVal_ of PI/PPI to PI/PPI in pattern.
+	//
+	// 							arguments:
+	// 								[in, out] pattern: An empty pattern to be set.
 	//            ]
-	// Date       [ Ver. 1.0 started 2013/08/13 ]
+	// Date       [ Ver. 1.0 started 2013/08/13  last modified 2023/01/06 ]
 	// **************************************************************************
 	inline void Atpg::writeAtpgValToPatternPI(Pattern &pattern)
 	{
@@ -746,13 +753,14 @@ namespace CoreNs
 
 	// **************************************************************************
 	// Function   [ Atpg::writeGoodSimValToPatternPO ]
-	// Commenter  [ CAL ]
-	// Synopsis   [ usage: assign primary output pattern value
-	//              in:    Pattern list
-	//              out:   void
-	//              pointer modification: Pattern
+	// Commenter  [ CAL WWS ]
+	// Synopsis   [ usage: assign atpgVal_ of PO/PPO to PP/PPO in pattern
+	//
+	// 							arguments:
+	// 								[in, out] pattern:
+	// 									An empty pattern to be set.
 	//            ]
-	// Date       [ Ver. 1.0 started 2013/08/13 ]
+	// Date       [ Ver. 1.0 started 2013/08/13 last modified 2023/01/06 ]
 	// **************************************************************************
 	inline void Atpg::writeGoodSimValToPatternPO(Pattern &pattern)
 	{
@@ -982,16 +990,15 @@ namespace CoreNs
 		return cINV(cXOR3(i1, i2, i3));
 	}
 
-	// should be moved to pattern.h
+	// TODO: should be moved to pattern.h
 	// **************************************************************************
 	// Function   [ Atpg::randomFill ]
-	// Commenter  [ CAL ]
-	// Synopsis   [ usage: random to set the don't care pattern 1 or 0
-	//              in:    Pattern
-	//              out:   void
-	//              pointer modification: Pattern
+	// Commenter  [ CAL WWS ]
+	// Synopsis   [ usage: Randomly set the don't care pattern to 1 or 0
+	// 							arguments:
+	// 								[in] pattern: Atpg generated test pattern with don't cares.
 	//            ]
-	// Date       [ Ver. 1.0 started 2013/08/13 ]
+	// Date       [ Ver. 1.0 started 2013/08/13 last modified 2023/01/06 ]
 	// **************************************************************************
 	inline void Atpg::randomFill(Pattern &pattern)
 	{
@@ -1073,22 +1080,6 @@ namespace CoreNs
 			}
 		}
 	}
-
-	// inline void Atpg::pushGateFanoutsToEventStack(const int &gateID)
-	// {
-	// 	Gate &gate = pCircuit_->circuitGates_[gateID];
-	// 	for (int i = 0; i < gate.numFO_; ++i)
-	// 	{
-	// 		pushGateToEventStack(gate.fanoutVector_[i]);
-	// 	}
-	// } originally duplicate function and implemented for performance but bad readability, removed by wang
-
-	// inline void Atpg::pushInputEvents(const int &gateID, int index)
-	// {
-	// 	Gate &gate = pCircuit_->circuitGates_[gateID];
-	// 	pushGateToEventStack(gate.faninVector_[index]);
-	// 	pushGateFanoutsToEventStack(gate.faninVector_[index]);
-	// }
 };
 
 #endif
