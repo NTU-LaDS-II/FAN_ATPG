@@ -171,14 +171,14 @@ namespace CoreNs
 		inline void writeAtpgValToPatternPI(Pattern &pattern);		// write PI values to pattern
 		inline void writeGoodSimValToPatternPO(Pattern &pattern); // write PO values to pattern
 
-		inline void pushGateToEventStack(const int &gateID);			 // push events to the event stack of corresponding level
+		inline void pushGateToEventStack(const int gateID);			 // push events to the event stack of corresponding level
 		inline int popEventStack(const int &level);								 // pop and return from eventStack[level]
-		inline int pushGateFanoutsToEventStack(const int &gateID); // push all the gate's output to event stack and return pushed gate count
+		inline int pushGateFanoutsToEventStack(const int gateID); // push all the gate's output to event stack and return pushed gate count
 
 		inline void clearAllEvents();
 
 		inline int vecPop(std::vector<int> &vec);
-		inline void vecDelete(std::vector<int> &vec, const int &index);
+		inline void vecDelete(std::vector<int> &vec, const int index);
 
 		// 5-Value logic evaluation functions
 		inline Value cINV(const Value &i1);
@@ -807,7 +807,7 @@ namespace CoreNs
 		}
 	}
 
-	inline void Atpg::pushGateToEventStack(const int &gateID)
+	inline void Atpg::pushGateToEventStack(const int gateID)
 	{
 		const Gate &gate = pCircuit_->circuitGates_[gateID];
 		if (!gateID_to_valModified_[gateID])
@@ -824,11 +824,11 @@ namespace CoreNs
 		return gateID;
 	}
 
-	inline int Atpg::pushGateFanoutsToEventStack(const int &gateID)
+	inline int Atpg::pushGateFanoutsToEventStack(const int gateID)
 	{
 		int pushedGateCount = 0;
 		const Gate &gate = pCircuit_->circuitGates_[gateID];
-		for (const int &fanoutID : gate.fanoutVector_)
+		for (const int fanoutID : gate.fanoutVector_)
 		{
 			const int &outputGateLevel = pCircuit_->circuitGates_[fanoutID].numLevel_;
 			if (!gateID_to_valModified_[fanoutID])
@@ -862,7 +862,7 @@ namespace CoreNs
 		return lastElement;
 	}
 
-	inline void Atpg::vecDelete(std::vector<int> &vec, const int &index)
+	inline void Atpg::vecDelete(std::vector<int> &vec, const int index)
 	{
 		vec[index] = vec.back();
 		vec.pop_back();

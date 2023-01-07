@@ -2573,7 +2573,7 @@ int Atpg::doUniquePathSensitization(Gate &gate)
 		// if gate has an NonControlVal (1 or 0)
 		if (NonControlVal != X)
 		{
-			for (const int &faninGateID : gate.faninVector_)
+			for (const int faninGateID : gate.faninVector_)
 			{
 				Gate *pFaninGate = &this->pCircuit_->circuitGates_[faninGateID];
 				if (pFaninGate->atpgVal_ == X)
@@ -3585,7 +3585,7 @@ void Atpg::initializeForMultipleBacktrace()
 {
 	this->currentObjectives_ = this->initialObjectives_;
 
-	for (const int &currentObjectGateID : this->currentObjectives_)
+	for (const int currentObjectGateID : this->currentObjectives_)
 	{
 		const Gate &currObjGate = this->pCircuit_->circuitGates_[currentObjectGateID];
 
