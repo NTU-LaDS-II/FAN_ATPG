@@ -3,10 +3,12 @@
 ## CONTENTS
 
 > **I.    Introduction**<br />
-> **II.   Directory Structure**<br />
-> **III.  Usage**<br />
-> **IV.   Revision History**<br />
-> **V.    Authors**<br />
+> **II.   File Structure**<br />
+> **III.  Requisites**<br />
+> **IV.   Usage**<br />
+> **V.    Revision History**<br />
+> **VI.   Authors**<br />
+> **VII.  References**<br />
 
 
 ## I. INTRODUCTION
@@ -14,7 +16,7 @@
 **This package is an Automatic Test Pattern Generation(ATPG) and fault simulation tool based on the FAN algorithm[1].** <br />
 **This package includes the implementation of  Fault Collapsing, Static Test Compression, Dynamic Test Compression and Multiple Fault Orderings.** <br />
 
-## II. FILES STRUCTURE
+## II. FILE STRUCTURE
 
 > **```./ATPG_UserGuide_20230108.pdf``` : The User Manual** <br />
 > **```./bin/``` : Binary Files After Compilation** <br />
@@ -47,7 +49,6 @@
 
 > **Run ATPG:**<br />
 > &emsp;	```./bin/opt/fan -f script/atpg.script``` <br />
-<br />
 
 > **Run fault simulation:**<br />
 > &emsp;	```./bin/opt/fan -f script/fsim.script``` <br />
