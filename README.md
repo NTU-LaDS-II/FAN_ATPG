@@ -12,7 +12,7 @@
 ## I. INTRODUCTION
 
 **This package is an Automatic Test Pattern Generation(ATPG) and fault simulation tool based on the FAN algorithm[1].** <br />
-**This package includes the implementation of  Fault Collapsing, Staitc Test Compression, Dynamic Test Compression and Multiple Fault Orderings.** <br />
+**This package includes the implementation of  Fault Collapsing, Static Test Compression, Dynamic Test Compression and Multiple Fault Orderings.** <br />
 
 ## II. FILES STRUCTURE
 
