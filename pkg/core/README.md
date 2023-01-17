@@ -1,6 +1,6 @@
-    Common package                                     last commented Jan 2023
+    Core package                                          last commented Jan 2023
 
-                                                                 Wei-Shen Wang
+                                                                    Wei-Shen Wang
 
     I. Content
 
@@ -30,10 +30,10 @@
                 |-- circuit.h           # Verilog file into a Circuit
                 |
                 |-- decision_tree.h     # The data structure for backtracking
-                |                       # in the ATPG algorithm
+                |                       # in the FAN algorithm
                 |
                 |-- fault.cpp           # Extract all necessary Faults for
-                |-- fault.h             # ATPG algorithm
+                |-- fault.h             # ATPG
                 |
                 |-- gate.h              # Define class Gate with attributes
                 |                       # for ATPG and good/fault simulation
@@ -45,7 +45,7 @@
                 |-- pattern_rw.h
                 |
                 |-- pattern.h           # Define PatternProcessor as a container
-                |                       # for ATPG pattern
+                |                       # for ATPG patterns
                 |
                 |-- simulator.cpp       # Contains the algorithm for good/fault
                 `-- simulator.h         # simulation
@@ -64,14 +64,16 @@
 
         PatternProcessor:
         Atpg:
-            # atpg is a Atpg object, the following function will take generate a
-            # test pattern set for according to the fListExtract, the true indicating
+            # atpg is a Atpg object, the following function will generate a
+            # test pattern set for according to the fListExtract and store 
+            # them into pcoll, the last parameter is true indicating that
             # Multiple Fault Orderings is turned ON
             e.g. atpg->generatePatternSet(fanMgr_->pcoll, fanMgr_->fListExtract, true);
 
         Simulator:
-            # sim is a Simulator object, the following function will do parallel pattern
-            # fault simulation with all the patterns in pcoll on all the faults in fListExtract
+            # sim is a Simulator object, the following function will do 
+            # parallel pattern fault simulation with all the patterns in 
+            # pcoll on all the faults in fListExtract
             e.g. sim->parallelPatternFaultSimWithAllPattern(fanMgr_->pcoll, fanMgr_->fListExtract);
 
 
