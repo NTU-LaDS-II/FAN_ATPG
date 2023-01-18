@@ -5,10 +5,9 @@
   <h1 align="center"><b>ATPG FAN</b></h1>
   <p align="center">v2023 NTU LaDS-II</p>
   <p align="center">
-    <strong>An Automatic Test Pattern Generation open source project</strong>
+    <strong>An Automatic Test Pattern Generation Open Source Project</strong>
     <a href="https://github.com/NTU-LaDS-II/ATPG_FAN/blob/main/ATPG_UserGuide_20230108.pdf"><br />
     <strong>User Guide »</strong></a>
-    <!-- <a href="https://github.com/othneildrew/Best-README-Template">View Demo</a> -->
   </p>
 </div>
 
@@ -24,13 +23,19 @@
 <li><a href="#usage">Usage</a></li>
 <li><a href="#revision-history">Revision History</a></li>
 <li><a href="#authors">Authors</a></li>
+<li><a href="#license">License</a></li>
+<li><a href="#contact">Contact</a></li>
 <li><a href="#references">References</a></li>
 
 ## Introduction
 
-This project is an Automatic Test Pattern Generation(ATPG) and fault simulation command line tool based on the FAN algorithm[1].
+This project is an Automatic Test Pattern Generation (ATPG) and fault simulation command line tool based on the FAN algorithm[1].
 
 This project includes the implementation of Fault Collapsing, Static Test Compression, Dynamic Test Compression and Multiple Fault Orderings.
+
+We make this project an open source project in the hope of helping anyone who is learning ATPG. If you have any thoughts on the source code or new features for this project, feel free to fork this repo and create a pull request. Any contributions to this project would be very much appreciated!
+
+We would also be extremely grateful if you star this project!
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 
@@ -128,6 +133,18 @@ make clean
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 
+## License
+Distributed under the MIT License. See `./LICENSE` for more information.
+
+<p align="right">(<a href="#readme-top">back to top</a>)</p>
+
+## Contact
+Wang, Wei-Shen - b08901051@ntu.edu.tw
+
+Project Link:
+https://github.com/NTU-LaDS-II/ATPG_FAN
+
+<p align="right">(<a href="#readme-top">back to top</a>)</p>
 
 ## References
 
