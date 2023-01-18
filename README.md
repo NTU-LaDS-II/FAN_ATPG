@@ -1,5 +1,5 @@
 
-<!-- <a name="readme-top"></a> -->
+<a name="readme-top"></a>
 
 <div align="center">
   <h1 align="center"><b>ATPG FAN</b></h1>
@@ -32,7 +32,7 @@ This project is an Automatic Test Pattern Generation(ATPG) and fault simulation 
 
 This project includes the implementation of Fault Collapsing, Static Test Compression, Dynamic Test Compression and Multiple Fault Orderings.
 
-<!-- <p align="right">(<a href="#readme-top">back to top</a>)</p> -->
+<p align="right">(<a href="#readme-top">back to top</a>)</p>
 
 ## File Structure
 
