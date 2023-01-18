@@ -53,6 +53,8 @@ This project includes the implementation of Fault Collapsing, Static Test Compre
 - `./copyHeader.sh` : Copy header files from `pkg/` to `include/`
 - `./*.mk` : Included in other makefiles
 
+<p align="right">(<a href="#readme-top">back to top</a>)</p>
+
 
 ## Environment Requisites
 
@@ -71,6 +73,7 @@ sudo apt install lex
 bison --version
 lex --version
 ```
+<p align="right">(<a href="#readme-top">back to top</a>)</p>
 
 ## Usage
 
@@ -104,12 +107,16 @@ make clean
 ./bin/opt/fan -f script/fsim_s27.script
 ```
 
+<p align="right">(<a href="#readme-top">back to top</a>)</p>
+
 
 ## Revision History
 
 * v2013 - Initial release
 * v2014 - Code modifications
 * v2023 - Code refactor for open source project
+
+<p align="right">(<a href="#readme-top">back to top</a>)</p>
 
 
 ## Authors
@@ -119,10 +126,15 @@ make clean
 * v2014 - He Yu-Hao, Cai Zong-Yan, How Bo-Fan, Li Yu-Qing, Huang Guan-Yan, Xiao Zhi-Long, Lin Kun-Wei, Lin Shi-Yao, Chen You-Wei, Li Guan-De
 * v2023 - Wang Wei-Shen, Chang Hsin-Tzu, Pan Yu-Hung, Liang Zhe-Jia
 
+<p align="right">(<a href="#readme-top">back to top</a>)</p>
+
+
 ## References
 
 * [1] FAN algorithms - Fujiwara and Shimono, "On the Acceleration of Test Generation Algorithms," in IEEE Transactions on Computers, vol. C-32, no. 12, pp. 1137-1144, Dec. 1983.
 * [2] Benchmark circuits - Brglez, Franc, David Bryan, and Krzysztof Kozminski. "Combinational profiles of sequential benchmark circuits." 1989 IEEE International Symposium on Circuits and Systems (ISCAS). IEEE, 1989.
 * [3] Cell Library - Both `./techlib/mod_nangate45.mdt` and `./techlib/NangateOpenCellLibrary.v` are under `./TECHLIB_LICENSE`
+
+<p align="right">(<a href="#readme-top">back to top</a>)</p>
 
 *Copyright (c) 2013 LaDS. All Rights Reserved.*
