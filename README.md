@@ -3,19 +3,9 @@
 
 <div align="center">
   <h1 align="center"><b>ATPG FAN</b></h1>
-  <style>
-  LR {
-    display: flex;
-    justify-content: space-between;
-  }
-  </style>
-  <LR>
-    <span>v2023</span>
-    <span>NTU LaDS-II</span>
-  </LR>
-  <br />
+  <p align="center">v2023 NTU LaDS-II</p>
   <p align="center">
-    An Automatic Test Pattern Generation open source project!
+    <strong>An Automatic Test Pattern Generation open source project</strong>
     <a href="https://github.com/NTU-LaDS-II/ATPG_FAN/blob/main/ATPG_UserGuide_20230108.pdf"><br />
     <strong>User Guide »</strong></a>
     <!-- <a href="https://github.com/othneildrew/Best-README-Template">View Demo</a> -->
