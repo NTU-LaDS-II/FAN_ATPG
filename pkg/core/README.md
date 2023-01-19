@@ -4,10 +4,10 @@
 
     I. Content
 
-        This package contains the core algorithm of the whole ATPG FAN project.
+        This package contains the core algorithm of the whole FAN ATPG project.
 
         The following is currently supported:
-            1. ATPG FAN algorithm
+            1. FAN ATPG algorithm
             2. Static Test Compression
             3. Dynamic Test Compression
             4. Multiple Fault Orderings
