@@ -108,7 +108,7 @@ make clean
 ./bin/opt/fan -f script/fanScripts/atpg_s27.script
 ```
 
-### Run fault simulation:
+### Run Fault Simulation
 ```sh
 ./bin/opt/fan -f script/fanScripts/fsim_s27.script
 ```
