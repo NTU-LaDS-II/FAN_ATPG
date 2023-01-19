@@ -42,7 +42,7 @@ We would also be extremely grateful if you star this project!
 
 ## File Structure
 
-- `./ATPG_UserGuide_20230108.pdf` : The User Guide
+- `./ATPG_UserGuide.pdf` : The User Guide
 - `./bin/` : Store binaries after compilation
 - `./include/` : Store header files included in and copied from `./pkg` 
 - `./lib/` : Store library binaries after compilation
