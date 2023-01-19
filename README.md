@@ -6,7 +6,7 @@
   <p align="center">v2023 NTU LaDS-II</p>
   <p align="center">
     <strong>An Automatic Test Pattern Generation Open Source Project</strong>
-    <a href="https://github.com/NTU-LaDS-II/ATPG_FAN/blob/main/ATPG_UserGuide_20230108.pdf"><br />
+    <a href="https://github.com/NTU-LaDS-II/FAN_ATPG/blob/main/ATPG_UserGuide_20230108.pdf"><br />
     <strong>User Guide »</strong></a>
   </p>
 </div>
@@ -86,11 +86,11 @@ lex --version
 _After the following commands are executed, an executable binary `fan` will be generated under `./bin/opt/`_
 1. Clone the repo
     ```sh
-    git clone https://github.com/NTU-LaDS-II/ATPG_FAN.git
+    git clone https://github.com/NTU-LaDS-II/FAN_ATPG.git
     ```
 2. Change directory
     ```sh
-    cd ATPG_FAN/
+    cd FAN_ATPG/
     ```
 3. Compile
     ```sh
@@ -142,7 +142,7 @@ Distributed under the MIT License. See `./LICENSE` for more information.
 Wang, Wei-Shen - b08901051@ntu.edu.tw
 
 Project Link:
-https://github.com/NTU-LaDS-II/ATPG_FAN
+https://github.com/NTU-LaDS-II/FAN_ATPG
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 
