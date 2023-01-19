@@ -3,9 +3,10 @@
 
 <div align="center">
   <h1 align="center"><b>FAN ATPG</b></h1>
-  <p align="center">v2023 NTU LaDS-II</p>
+  <h3 align="center">v2023 LaDS-II</h3>
+  </br>
+  <h3><strong>An Automatic Test Pattern Generation Open Source Project</strong></h3>
   <p align="center">
-    <strong>An Automatic Test Pattern Generation Open Source Project</strong>
     <a href="https://github.com/NTU-LaDS-II/FAN_ATPG/blob/main/ATPG_UserGuide_20230108.pdf"><br />
     <strong>User Guide »</strong></a>
   </p>
@@ -104,12 +105,12 @@ make clean
 
 ### Run ATPG
 ```sh
-./bin/opt/fan -f script/atpg_s27.script
+./bin/opt/fan -f script/fanScripts/atpg_s27.script
 ```
 
 ### Run fault simulation:
 ```sh
-./bin/opt/fan -f script/fsim_s27.script
+./bin/opt/fan -f script/fanScripts/fsim_s27.script
 ```
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
@@ -154,4 +155,4 @@ https://github.com/NTU-LaDS-II/FAN_ATPG
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 
-*Copyright (c) 2013 LaDS. All Rights Reserved.*
+*Copyright(c) Laboratory of Dependable Systems(II), Graduate Institute of Electronics Engineering,  National Taiwan University, Taiwan. All Rights Reserved.*

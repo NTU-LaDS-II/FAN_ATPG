@@ -75,44 +75,47 @@ int main(int argc, char **argv)
 
 void printWelcome()
 {
-	std::cout << "#  LaDS FAN v1.0a                      ";
-	std::cout << "                               Oct 2011" << "\n";
-	std::cout << "#                     Copyright(c) LaDS";
-	std::cout << "(II) GIEE NTU TAIWAN" << "\n";
+	std::cout << "#  ==========================================================================" << "\n";
 	std::cout << "#" << "\n";
-	std::cout << "#                              All Righ";
-	std::cout << "ts Reserved." << "\n";
+	std::cout << "#                                   FAN ATPG" << "\n";
+	std::cout << "#" << "\n";
+	std::cout << "#              Copyright(c) Laboratory of Dependable Systems(II)," << "\n";
+	std::cout << "#                Graduate Institute of Electronics Engineering," << "\n";
+	std::cout << "#                          National Taiwan University" << "\n";
+	std::cout << "#                             All Rights Reserved." << "\n";
+	std::cout << "#" << "\n";
+	std::cout << "#  ==========================================================================" << "\n";
 	std::cout << "#" << "\n";
 
 	// system information
 	// OS kernel
-	FILE *sysout;
-	sysout = popen("uname -s 2> /dev/null", "r");
+	FILE *systemOutput;
+	systemOutput = popen("uname -s 2> /dev/null", "r");
 	char buf[128];
 	std::cout << "#  Kernel:   ";
-	if (!sysout)
+	if (!systemOutput)
 		std::cout << "UNKNOWN" << "\n";
 	else
 	{
-		if (fgets(buf, sizeof(buf), sysout))
+		if (fgets(buf, sizeof(buf), systemOutput))
 			std::cout << buf;
 		else
 			std::cout << "UNKNOWN" << "\n";
-		pclose(sysout);
+		pclose(systemOutput);
 	}
 
 	// platform
-	sysout = popen("uname -i 2> /dev/null", "r");
+	systemOutput = popen("uname -i 2> /dev/null", "r");
 	std::cout << "#  Platform: ";
-	if (!sysout)
+	if (!systemOutput)
 		std::cout << "UNKNOWN" << "\n";
 	else
 	{
-		if (fgets(buf, sizeof(buf), sysout))
+		if (fgets(buf, sizeof(buf), systemOutput))
 			std::cout << buf;
 		else
 			std::cout << "UNKNOWN" << "\n";
-		pclose(sysout);
+		pclose(systemOutput);
 	}
 
 	// memory

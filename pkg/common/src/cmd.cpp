@@ -308,7 +308,7 @@ CmdMgr::Result CmdMgr::read()
 					}
 					break;
 				case ASCII_HT:
-					autoCmplt();
+					autoComplete();
 					refresh();
 					break;
 				case ASCII_ESC:
@@ -585,12 +585,12 @@ std::vector<std::string> CmdMgr::parse(const std::string &cmdStr) const
 }
 
 // **************************************************************************
-// Function   [ void CmdMgr::autoCmplt() ]
+// Function   [ void CmdMgr::autoComplete() ]
 // Author     [ littleshamoo ]
 // Synopsis   [ performs command and file auto completion and show possible
 //              candidates ]
 // **************************************************************************
-void CmdMgr::autoCmplt()
+void CmdMgr::autoComplete()
 {
 	std::vector<std::string> argv = parse(cmdStr_.substr(0, csrPos_));
 
