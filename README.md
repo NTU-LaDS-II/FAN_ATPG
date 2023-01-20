@@ -4,10 +4,10 @@
 <div align="center">
   <h1 align="center"><b>FAN ATPG</b></h1>
   <h3 align="center">v2023 LaDS-II</h3>
-  </br>
-  <h3><strong>An Automatic Test Pattern Generation Open Source Project</strong></h3>
+  <br>
+  <h2><b>An Automatic Test Pattern Generation Open Source Project</b></h2>
   <p align="center">
-    <a href="https://github.com/NTU-LaDS-II/FAN_ATPG/blob/main/ATPG_UserGuide_20230108.pdf"><br />
+    <a href="https://github.com/NTU-LaDS-II/FAN_ATPG/blob/main/ATPG_UserGuide_20230108.pdf"><br>
     <strong>User Guide »</strong></a>
   </p>
 </div>
@@ -27,6 +27,7 @@
 <li><a href="#license">License</a></li>
 <li><a href="#contact">Contact</a></li>
 <li><a href="#references">References</a></li>
+<br/>
 
 ## Introduction
 
@@ -65,9 +66,9 @@ We would also be extremely grateful if you star this project!
 ## Environment Requisites
 
 ### Prerequisites
-* Operating System: _Linux_
-* Compiler: _Support std C++11_
-* Other tools: _Bison, Lex_
+* Operating System: *Linux*
+* Compiler: *Support std C++11*
+* Other tools: *Bison, Lex*
 
 ### Requisites Installation
 ```sh
@@ -127,10 +128,16 @@ make clean
 
 ## Authors
 
-* Original Authors - Lin Hio-Ting, Hsu Po-Ya, Liao Kuan-Yu 
-* v2013 - Han Cheng-You, Chen Ching-Yu, Chiang Kuan-Ying, Wang Ying-Hsu, Chen Po-Hao, Lin Kuo-Yu, Pan Chun-Han, Li Chia-An, Tsai Chia-Ling, Hsu Ling-Yun
-* v2014 - He Yu-Hao, Cai Zong-Yan, How Bo-Fan, Li Yu-Qing, Huang Guan-Yan, Xiao Zhi-Long, Lin Kun-Wei, Lin Shi-Yao, Chen You-Wei, Li Guan-De
-* v2023 - Wang Wei-Shen, Chang Hsin-Tzu, Pan Yu-Hung, Liang Zhe-Jia
+>Original Authors<br>
+>\- **Lin Hio-Ting**, Hsu Po-Ya, Liao Kuan-Yu<br><br>
+> v2013<br>
+>\- Han Cheng-You, Chen Ching-Yu, Chiang Kuan-Ying, Wang Ying-Hsu, Chen Po-Hao, Lin Kuo-Yu, Pan Chun-Han, Li Chia-An, Tsai Chia-Ling, Hsu Ling-Yun<br><br>
+> v2014<br>
+>\- He Yu-Hao, Cai Zong-Yan, How Bo-Fan, Li Yu-Qing, Huang Guan-Yan, Xiao Zhi-Long, Lin Kun-Wei, Lin Shi-Yao, Chen You-Wei, Li Guan-De<br><br>
+> v2023<br>
+>\- Wang Wei-Shen, Chang Hsin-Tzu, Pan Yu-Hung, Liang Zhe-Jia<br><br>
+> Advisor<br>
+>\- **Professor James Chien-Mo Li**
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 
