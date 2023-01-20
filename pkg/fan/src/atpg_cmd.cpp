@@ -219,7 +219,7 @@ AddFaultCmd::AddFaultCmd(const std::string &name, FanMgr *fanMgr) : Cmd(name)
 	optMgr_.setDes("adds faults either by extract from circuit or from file");
 	Arg *arg = new Arg(Arg::OPT, "fault type. Can be SA0, SA1, STR, STF", "TYPE");
 	optMgr_.regArg(arg);
-	arg = new Arg(Arg::OPT, "pin location. Hierachy separated by '/'", "PIN");
+	arg = new Arg(Arg::OPT, "pin location. Hierarchy separated by '/'", "PIN");
 	optMgr_.regArg(arg);
 	Opt *opt = new Opt(Opt::BOOL, "print usage", "");
 	opt->addFlag("h");
@@ -1076,7 +1076,7 @@ AddPinConsCmd::AddPinConsCmd(const std::string &name, FanMgr *fanMgr) : Cmd(name
 	optMgr_.setName(name);
 	optMgr_.setShortDes("add pin constraint");
 	optMgr_.setDes("constraint PI(s) to 0 or 1");
-	Arg *arg = new Arg(Arg::REQ_INF, "PIs to be constrainted", "PI");
+	Arg *arg = new Arg(Arg::REQ_INF, "PIs to be constrained", "PI");
 	optMgr_.regArg(arg);
 	arg = new Arg(Arg::REQ, "constraint value, 0 or 1", "<0|1>");
 	optMgr_.regArg(arg);
@@ -1116,18 +1116,18 @@ bool AddPinConsCmd::exec(const std::vector<std::string> &argv)
 	int cons = atoi(optMgr_.getParsedArg(npi).c_str());
 	for (int i = 0; i < npi; ++i)
 	{
-		std::string piname = optMgr_.getParsedArg(i);
-		Port *p = fanMgr_->nl->getTop()->getPort(piname.c_str());
+		std::string pinName = optMgr_.getParsedArg(i);
+		Port *p = fanMgr_->nl->getTop()->getPort(pinName.c_str());
 		if (!p)
 		{
-			std::cerr << "**ERROR AddPinConsCmd::exec(): Port `" << piname;
+			std::cerr << "**ERROR AddPinConsCmd::exec(): Port `" << pinName;
 			std::cerr << "' not found\n";
 			continue;
 		}
 		int gid = fanMgr_->cir->portIndexToGateIndex_[p->id_];
 		if (fanMgr_->cir->circuitGates_[gid].gateType_ != Gate::PI)
 		{
-			std::cerr << "**ERROR AddPinConsCmd::exec(): Port `" << piname;
+			std::cerr << "**ERROR AddPinConsCmd::exec(): Port `" << pinName;
 			std::cerr << "' is not PI\n";
 			continue;
 		}
