@@ -2,13 +2,13 @@
 <a name="readme-top"></a>
 
 <h1 align="center">FAN ATPG</h1>
-<h6><i>version 2023</i></h6>
-<h6><i>Laboratory of Dependable Systems(II), Graduate Institute of Electronics Engineering,  National Taiwan University, Taiwan</i></h6>
+<h6 align="center"><i>version 2023<br>
+Laboratory of Dependable Systems(II), Graduate Institute of Electronics Engineering,  National Taiwan University, Taiwan</i></h6>
 <br>
 <div align="center">
   <h4>An Automatic Test Pattern Generation Open Source Project</h4>
   <p align="center">
-    <a href="https://github.com/NTU-LaDS-II/FAN_ATPG/blob/main/ATPG_UserGuide_20230108.pdf">
+    <a href="https://github.com/NTU-LaDS-II/FAN_ATPG/blob/main/ATPG_UserGuide.pdf">
     <strong>User Guide »</strong></a>
   </p>
 </div>
