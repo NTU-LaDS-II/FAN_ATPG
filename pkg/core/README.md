@@ -62,7 +62,7 @@ Contents of this package are listed here
     Netlist netlist;
     ...
     Circuit circuit;
-    circuit.buildCircuit(netlist, nframe);
+    circuit.buildCircuit(&netlist, nframe);
     ```
 
 - FaultListExtract
@@ -74,27 +74,44 @@ Contents of this package are listed here
     Circuit circuit;
     ...
     FaultListExtract fListExtract;
-    fListExtract.extractFaultFromCircuit(circuit);
+    fListExtract.extractFaultFromCircuit(&circuit);
     ```
 
-- Simulator
+- Simulator, PatternProcessor
 
     ```cpp
-    // sim is a Simulator object, the following function will do 
-    // parallel pattern fault simulation with all the patterns in 
-    // pcoll on all the faults in fListExtract
-    sim->parallelPatternFaultSimWithAllPattern(fanMgr_->pcoll, fanMgr_->fListExtract);
-    ```
-
-- PatternProcessor, Atpg
-
-    ```cpp
+    #include "circuit.h"
     #include "fault.h"
-    #include "atpg.h"
+    #include "pattern.h"
+    #include "simulator.h"
 
+    Circuit circuit;
     FaultListExtract fListExtract;
-    Atpg atpg();
-    atpg->generatePatternSet(fanMgr_->pcoll, fanMgr_->fListExtract, true);
+    ...
+    PatternProcessor patternCollector(&circuit);
+    ...
+    Simulator simulator(&circuit);
+    simulator.parallelPatternFaultSimWithAllPattern(&patternCollector, &fListExtract);
+    ```
+
+- Atpg
+
+    ```cpp
+    #include "atpg.h"
+    #include "circuit.h"
+    #include "fault.h"
+    #include "pattern.h"
+    #include "simulator.h"
+
+    Circuit circuit;
+    FaultListExtract fListExtract;
+    ...
+    PatternProcessor patternCollector(&circuit);
+    ...
+    Simulator simulator(&circuit);
+    ...
+    Atpg atpg(&circuit, &simulator);
+    atpg.generatePatternSet(&patternCollector, &fListExtract, true);
     ```
 
 ## III. Build

@@ -13,21 +13,22 @@ Laboratory of Dependable Systems(II), Graduate Institute of Electronics Engineer
   </p>
 </div>
 
-## Contents
-
-<li>
-  <a href="#introduction">Introduction</a>
-</li>
-<li>
-  <a href="#file-structure">File Structure</a>
-</li>
-<li><a href="#environment-requisites">Environment Requisites</a></li>
-<li><a href="#usage">Usage</a></li>
-<li><a href="#revision-history">Revision History</a></li>
-<li><a href="#authors">Authors</a></li>
-<li><a href="#references">References</a></li>
-<li><a href="#contact">Contact</a></li>
-<li><a href="#license">License</a></li>
+<details>
+  <summary><b>Table Contents</b></summary>
+    <li>
+      <a href="#introduction">Introduction</a>
+    </li>
+    <li>
+      <a href="#file-structure">File Structure</a>
+    </li>
+    <li><a href="#environment-requisites">Environment Requisites</a></li>
+    <li><a href="#usage">Usage</a></li>
+    <li><a href="#revision-history">Revision History</a></li>
+    <li><a href="#authors">Authors</a></li>
+    <li><a href="#references">References</a></li>
+    <li><a href="#contact">Contact</a></li>
+    <li><a href="#license">License</a></li>
+</details>
 <br/>
 
 ## Introduction
@@ -160,6 +161,8 @@ make clean
 > [1] Fujiwara and Shimono, "On the Acceleration of Test Generation Algorithms," in IEEE Transactions on Computers, vol. C-32, no. 12, pp. 1137-1144, Dec. 1983.<br>
 > [2] Brglez, Franc, David Bryan, and Krzysztof Kozminski. "Combinational profiles of sequential benchmark circuits." 1989 IEEE International Symposium on Circuits and Systems (ISCAS). IEEE, 1989.<br>
 > [3] Both `techlib/mod_nangate45.mdt` and `techlib/NangateOpenCellLibrary.v` are under `TECHLIB_LICENSE`<br>
+
+<p align="right">(<a href="#readme-top">back to top</a>)</p>
 
 ## Contact
 > Wang, Wei-Shen - b08901051@ntu.edu.tw<br>
