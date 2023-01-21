@@ -32,11 +32,21 @@ Laboratory of Dependable Systems(II), Graduate Institute of Electronics Engineer
 
 ## Introduction
 
-This project is an Automatic Test Pattern Generation (ATPG) and fault simulation command line tool based on the FAN algorithm[1].
+This project is an FAN[1] based Automatic Test Pattern Generation (ATPG) and Fault Simulation command line tool.
 
-This project includes the implementation of Fault Collapsing, Static Test Compression, Dynamic Test Compression and Multiple Fault Orderings.
+This project includes the implementation of 
+1. Fault Collapsing
+2. Parallel Fault Fault Simulation
+3. Parallel Pattern Fault Simulation 
+4. Automatic Test Pattern Generation
+5. Static Test Compression
+6. Dynamic Test Compression
+7. Writing pattern in different format:
+    > STIL : For supporting Fault Simulation with the commercial tool TetraMAX <br>
+    > ASCII : For supporting Fault Simulation with the commercial tool FastScan <br>
+    > .pat : For supporting Fault Simulation with this tool FAN_ATPG
 
-We make this project an open source project in the hope of helping anyone who is learning ATPG. If you have any thoughts on the source code or new features for this project, feel free to fork this repo and create a pull request. Any contributions to this project would be very much appreciated!
+We make this project an open source project in the hope of helping anyone who is learning ATPG. If you have any suggestion for the source code or new features for this project, feel free to fork this repo and create a pull request. Any contribution to this project would be very much appreciated!
 
 We would also be extremely grateful if you star this project!
 
@@ -147,13 +157,13 @@ make clean
 
 ## References
 
->[1] Fujiwara and Shimono, "On the Acceleration of Test Generation Algorithms," in IEEE Transactions on Computers, vol. C-32, no. 12, pp. 1137-1144, Dec. 1983.<br>
+> [1] Fujiwara and Shimono, "On the Acceleration of Test Generation Algorithms," in IEEE Transactions on Computers, vol. C-32, no. 12, pp. 1137-1144, Dec. 1983.<br>
 > [2] Brglez, Franc, David Bryan, and Krzysztof Kozminski. "Combinational profiles of sequential benchmark circuits." 1989 IEEE International Symposium on Circuits and Systems (ISCAS). IEEE, 1989.<br>
 > [3] Both `techlib/mod_nangate45.mdt` and `techlib/NangateOpenCellLibrary.v` are under `TECHLIB_LICENSE`<br>
 
 ## Contact
->Wang, Wei-Shen - b08901051@ntu.edu.tw<br>
->Project Link : https://github.com/NTU-LaDS-II/FAN_ATPG
+> Wang, Wei-Shen - b08901051@ntu.edu.tw<br>
+> Project Link : https://github.com/NTU-LaDS-II/FAN_ATPG
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 

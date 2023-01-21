@@ -1,108 +1,115 @@
-    Common package                                                    Aug 2011
+<h1>Common Package</h1>
+<h6><i>Kuan-Yu Liao Started in Aug 2011</i></h6>
+<h6><i>Wei-Shen Wang Last Modified in Jan 2023</i></h6>
 
-                                                                  Kuan-Yu Liao
+## I. Content
 
-    I. Content
+This package contains common tools that are frequently used. 
+The following is currently supported:
+1. resource usage (CPU runtime and memory)
+2. option parser
+3. command line interface
 
-        This package contains common tools that are frequently used. 
-        The following is currently supported:
-            1. resource usage (CPU runtime and memory)
-            2. option parser
-            3. command line interface
+Contents of this package are listed here:
 
-        Contents of this package are listed here
-            .
-            |-- Makefile                # the makefile for this package
-            |-- README                  # this README
-            |-- bin/                    # the folder to store the executable
-            |-- lib/                    # the folder to store the library
-            `-- src/                    # the source code
-                |-- ascii.h
-                |
-                |-- cmd.cpp
-                |-- cmd.h
-                |
-                |-- get_opt.cpp         # option parser
-                |-- get_opt.h
-                |
-                |-- sys_cmd.cpp
-                |-- sys_cmd.h
-                |
-                |-- tm_usage.cpp        # resource usage
-                |-- tm_usage.h
-                |
-                |-- vt100.h             # command line interface
-                |
-                `-- common_test.cpp     # test binary for this package
+    .
+    |-- Makefile                # the makefile for this package
+    |-- README                  # this README
+    |-- bin/                    # the folder to store the executable
+    |-- lib/                    # the folder to store the library
+    `-- src/                    # the source code
+        |-- ascii.h
+        |
+        |-- cmd.cpp
+        |-- cmd.h
+        |
+        |-- get_opt.cpp         # option parser
+        |-- get_opt.h
+        |
+        |-- sys_cmd.cpp
+        |-- sys_cmd.h
+        |
+        |-- tm_usage.cpp        # resource usage
+        |-- tm_usage.h
+        |
+        |-- vt100.h             # command line interface
+        |
+        `-- common_test.cpp     # test binary for this package
 
-    II. Usage
+## II. Usage
 
-        1. resource usage
-            Include `tm_usage.h'. Call totalStart() or periodStart() to start
-            a total or period resource calculator respectively. Call
-            getTotalUsage() to get total usage, getPeriodUsage() to get
-            period usage.
+1. resource usage
 
-            e.g.
-                #include "tm_usage.h"
-                TmUsage usg;
-                usg.totalStart();
-                TmStat stat;
-                usg.getTotalUsage(stat);
+    Include `tm_usage.h`. Call `totalStart()` or `periodStart()` to start a total or period resource calculator respectively. Call `getTotalUsage()` to get total usage, `getPeriodUsage()` to get period usage.
 
-        2. option parser
-            Include `get_opt.h'. Register options or arguments using
-            regOpt() or regArg() respectively. Call parse() to parse the
-            command line. Call getParsedArgs() to get parsed arguments and
-            call isFlagSet() and getFlagVar() to check options.
+    ```cpp
+    #include "tm_usage.h"
 
-            e.g.
-                #include "get_opt.h"
-                OptMgr mgr;
-                Option opt(Opt::BOOL, "netlist", "file");
-                opt.addFlag("f");
-                opt.addFlag("file");
-                mgr.regOpt(&opt);
-                mgr.parse();
+    TmUsage usg;
+    usg.totalStart();
+    TmStat stat;
+    usg.getTotalUsage(stat);
+    ```
 
-        3. command line interface
-            Include `cmd.h'. Call regCmd() to register commands. Call read()
-            to read commands from stdin. Call exec() to execute a command
-            string.
+2. option parser
 
-            e.g.
-                #include "cmd.h"
-                CmdMgr mgr;
-                Cmd cmd("read_file");
-                mgr.regCmd("I/O", &cmd);
-                mgr.read();
+    Include `get_opt.h`. Register options or arguments using
+    `regOpt()` or `regArg()` respectively. Call `parse()` to parse the
+    command line. Call `getParsedArgs()` to get parsed arguments and
+    call `isFlagSet()` and `getFlagVar()` to check options.
 
-        `common_test.cpp' is an example that shows how to use this package.
+    ```cpp
+    #include "get_opt.h"
 
-    III. Build
+    OptMgr mgr;
+    Option opt(Opt::BOOL, "netlist", "file");
+    opt.addFlag("f");
+    opt.addFlag("file");
+    mgr.regOpt(&opt);
+    mgr.parse();
+    ```
 
-        Type `make' to install the package.
+3. command line interface
 
-            $ make
+    Include `cmd.h`. Call `regCmd()` to register commands. Call `read()` to read commands from `stdin`. Call `exec()` to execute a command string.
 
+    ```cpp
+    #include "cmd.h"
 
-        Type `make clean' to cleanup the installed files.
+    CmdMgr mgr;
+    Cmd cmd("read_file");
+    mgr.regCmd("I/O", &cmd);
+    mgr.read();
+    ```
 
-            $ make clean
+*`common_test.cpp` is an example that shows how to use this package.*
 
+## III. Build
 
-        There are two modes to compile the source code. One is the optimized
-        mode which comes with the `-O3' flag and the other one is the debug
-        mode which can be used with debuggers. To choose between the two
-        modes, additional flag `MODE' is needed when making the package.
+Install the package
+```sh
+make
+```
 
-            $ make MODE=opt         # compile the code using optimize flags
-            $ make MODE=dbg         # compile the code using debug flags
-            $ make clean MODE=opt   # clean the optimized version
-            $ make clean MODE=dbg   # clean the debug version
+Cleanup the installed files
+```sh
+make clean
+```
 
 
-    IV. Contact
+There are two modes to compile the source code. One is the optimized
+mode which comes with the `-O3` flag and the other one is the debug
+mode which can be used with debuggers. To choose between the two
+modes, additional flag `MODE` is needed when making the package.
 
-        Please direct your questions to Kuan-Yu Liao (f97943076@ntu.edu.tw)
-        or Wei-Shen Wang (b08901051@ntu.edu.tw)
+```makefile
+make MODE=opt         # compile the code using optimize flags
+make MODE=dbg         # compile the code using debug flags
+make clean MODE=opt   # clean the optimized version
+make clean MODE=dbg   # clean the debug version
+```
+
+## IV. Contact
+
+> Kuan-Yu Liao - f97943076@ntu.edu.tw<br>
+> Wei-Shen Wang - b08901051@ntu.edu.tw
