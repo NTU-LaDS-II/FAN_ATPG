@@ -1,6 +1,6 @@
-<h1>Common Package</h1>
-<h6><i>Kuan-Yu Liao Started in Aug 2011</i></h6>
-<h6><i>Wei-Shen Wang Last Modified in Jan 2023</i></h6>
+# Common Package
+###### *Kuan-Yu Liao Started in Aug 2011*
+###### *Wei-Shen Wang Last Modified in Jan 2023*
 
 ## I. Content
 
@@ -14,27 +14,28 @@ Contents of this package are listed here:
 
     .
     |-- Makefile                # the makefile for this package
-    |-- README                  # this README
+    |-- README.md               # this README
     |-- bin/                    # the folder to store the executable
     |-- lib/                    # the folder to store the library
     `-- src/                    # the source code
-        |-- ascii.h
+        |
+        |-- ascii.h             # define ascii code of some characters
         |
         |-- cmd.cpp
-        |-- cmd.h
+        |-- cmd.h               # define class CmdMgr (Command Manager)
         |
-        |-- get_opt.cpp         # option parser
-        |-- get_opt.h
+        |-- get_opt.cpp         
+        |-- get_opt.h           # parse options and arguments from command line, e.g. -h
         |
         |-- sys_cmd.cpp
-        |-- sys_cmd.h
+        |-- sys_cmd.h           # support basic command for shell, e.g. pwd
         |
         |-- tm_usage.cpp        # resource usage
         |-- tm_usage.h
         |
-        |-- vt100.h             # command line interface
+        |-- vt100.h             # command line interface interactions
         |
-        `-- common_test.cpp     # test binary for this package
+        `-- common_test.cpp     # software testing for this package
 
 ## II. Usage
 

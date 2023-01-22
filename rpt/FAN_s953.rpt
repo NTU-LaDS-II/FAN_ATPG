@@ -1,0 +1,29 @@
+#                 Statistics Report
+#  Circuit name                                 s953
+#  Fault model                                   SAF
+#  Pattern type                                BASIC
+#  -------------------------------------------------
+#  Fault classes                             #faults
+#  ----------------------------  -------------------
+#    FU (full)                                  2702
+#    FU (collapsed)                             1877
+#    --------------------------  -------------------
+#    UD (undetected)                              58
+#    PT (possibly testable)                        0
+#    AU (atpg untestable)                          0
+#    RE (redundant)                                0
+#    AB (atpg abort)                               0
+#    TI (tied)                                     0
+#    --------------------------  -------------------
+#    DT (detected)                              2644
+#  -------------------------------------------------
+#  Coverage                               percentage
+#    --------------------------  -------------------
+#    test coverage                            97.85%
+#    fault coverage                           97.85%
+#    atpg effectiveness                       97.85%
+#  -------------------------------------------------
+#  #Patterns                                      83
+#  -------------------------------------------------
+#  ATPG runtime                             0.1939 s
+#  -------------------------------------------------

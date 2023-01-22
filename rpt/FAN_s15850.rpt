@@ -1,0 +1,29 @@
+#                 Statistics Report
+#  Circuit name                               s15850
+#  Fault model                                   SAF
+#  Pattern type                                BASIC
+#  -------------------------------------------------
+#  Fault classes                             #faults
+#  ----------------------------  -------------------
+#    FU (full)                                 31456
+#    FU (collapsed)                            22524
+#    --------------------------  -------------------
+#    UD (undetected)                            1068
+#    PT (possibly testable)                        0
+#    AU (atpg untestable)                        625
+#    RE (redundant)                                0
+#    AB (atpg abort)                               0
+#    TI (tied)                                     0
+#    --------------------------  -------------------
+#    DT (detected)                             29763
+#  -------------------------------------------------
+#  Coverage                               percentage
+#    --------------------------  -------------------
+#    test coverage                            96.54%
+#    fault coverage                           94.62%
+#    atpg effectiveness                        96.6%
+#  -------------------------------------------------
+#  #Patterns                                     104
+#  -------------------------------------------------
+#  ATPG runtime                              29.01 s
+#  -------------------------------------------------

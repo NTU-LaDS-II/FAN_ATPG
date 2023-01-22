@@ -1,58 +1,56 @@
-<h1>Core Package</h1>                     
-<h6><i>Wei-Shen Wang Last modified in Jan 2023</i></h6>
+# Core Package                 
+###### *Wei-Shen Wang Last modified in Jan 2023*
 
 ## I. Content
 
 This package contains the core algorithm of the whole FAN ATPG project.
 
-The following is currently supported:
-1. FAN ATPG algorithm
-2. Static Test Compression
-3. Dynamic Test Compression
-4. Multiple Fault Orderings
-5. Parallel Fault Fault Simulation
-6. Parallel Pattern Fault Simulation
-7. Fault collapsing
-8. Netlist to Circuit Conversion
+Currently support:
+> 1. Fault Collapsing
+> 2. Parallel Fault Fault Simulation
+> 3. Parallel Pattern Fault Simulation
+> 4. FAN ATPG algorithm
+> 5. Static Test Compression
+> 6. Dynamic Test Compression
+> 7. Multiple Fault Orderings
+> 8. Netlist to Circuit Conversion
 
-Contents of this package are listed here
+Contents of this package are listed here:
 
     .
-    |-- Makefile                # the makefile for this package
-    |-- README                  # this README
-    |-- bin/                    # the folder to store the executable
-    |-- lib/                    # the folder to store the library
-    `-- src/                    # the source code
-        |-- atpg.cpp            # The main ATPG algorithm including
-        |-- atpg.h              # STC, DTC, MFO
+    |-- Makefile                # the Makefile for this package
+    |-- README.md               # this README.md
+    |-- bin/                    # store the executable
+    |-- lib/                    # store the library
+    `-- src/                    # source code
         |
-        |-- circuit.cpp         # Transform the Netlist parsed from
-        |-- circuit.h           # Verilog file into a Circuit
+        |-- atpg.cpp
+        |-- atpg.h              # The main ATPG algorithm including STC, DTC
         |
-        |-- decision_tree.h     # The data structure for backtracking
-        |                       # in the FAN algorithm
+        |-- circuit.cpp
+        |-- circuit.h           # Transform the Netlist parsed from Verilog file into a Circuit
         |
-        |-- fault.cpp           # Extract all necessary Faults for
-        |-- fault.h             # ATPG
+        |-- decision_tree.h     # The data structure for backtracking in the FAN algorithm
         |
-        |-- gate.h              # Define class Gate with attributes
-        |                       # for ATPG and good/fault simulation
+        |-- fault.cpp           
+        |-- fault.h             # Extract all necessary Faults for ATPG
         |
-        |-- logic.cpp           # Set, get, print, the logic values
-        |-- logic.h
+        |-- gate.h              # Define class Gate with attributes for ATPG and good/fault simulation
         |
-        |-- pattern_rw.cpp      # Define pattern reader and writer
-        |-- pattern_rw.h
+        |-- logic.cpp
+        |-- logic.h             # Set, get, print, the logic values
         |
-        |-- pattern.h           # Define PatternProcessor as a 
-        |                       # container for ATPG patterns
+        |-- pattern_rw.cpp
+        |-- pattern_rw.h        # Define pattern reader and writer
         |
-        |-- simulator.cpp       # Contains the algorithm for 
-        `-- simulator.h         # good/fault simulation
+        |-- pattern.h           # Define PatternProcessor as a container for ATPG patterns
+        |
+        |-- simulator.cpp
+        `-- simulator.h         # Contains the procedure for good/fault simulation
 
 ## II. Usage
 
-- Circuit
+* Circuit
 
     ```cpp
     #include "circuit.h"
@@ -65,7 +63,7 @@ Contents of this package are listed here
     circuit.buildCircuit(&netlist, nframe);
     ```
 
-- FaultListExtract
+* FaultListExtract
 
     ```cpp
     #include "circuit.h"
@@ -77,7 +75,7 @@ Contents of this package are listed here
     fListExtract.extractFaultFromCircuit(&circuit);
     ```
 
-- Simulator, PatternProcessor
+* Simulator, PatternProcessor
 
     ```cpp
     #include "circuit.h"
@@ -94,7 +92,7 @@ Contents of this package are listed here
     simulator.parallelPatternFaultSimWithAllPattern(&patternCollector, &fListExtract);
     ```
 
-- Atpg
+* Atpg
 
     ```cpp
     #include "atpg.h"
@@ -138,7 +136,6 @@ make MODE=dbg         # compile the code using debug flags
 make clean MODE=opt   # clean the optimized version
 make clean MODE=dbg   # clean the debug version
 ```
-
 
 ## IV. Contact
 > Wei-Shen Wang - b08901051@ntu.edu.tw

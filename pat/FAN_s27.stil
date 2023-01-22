@@ -1,0 +1,152 @@
+STIL 1.0;
+
+Signals {
+   "CK" In;
+   "test_si" In { ScanIn; }
+   "test_se" In;
+   "G0" In;
+   "G1" In;
+   "G2" In;
+   "G3" In;
+   "test_so" Out { ScanOut; }
+   "G17" Out;
+}
+
+SignalGroups {
+   "_pi" = '"CK" + "test_si" + "test_se" + "G0" + "G1" + "G2" + "G3"';
+   "_in" = '"CK" + "test_si" + "test_se" + "G0" + "G1" + "G2" + "G3"';
+   "_si" = '"test_si"' { ScanIn; }
+   "_po" = '"test_so" + "G17"';
+   "_out" = '"test_so" + "G17"';
+   "_so" = '"test_so"' { ScanOut; }
+   "_default_In_Timing_" = '"test_si" + "test_se" + "G0" + "G1" + "G2" + "G3"';
+   "_default_Out_Timing_" = '"test_so" + "G17"';
+}
+
+Timing {
+   WaveformTable "_default_WFT_" {
+       Period '100ns';
+       Waveforms {
+           "CK" { 0 { '0ns' D; } }
+           "CK" { P { '0ns' D; '50ns' U; '75ns' D; } }
+           "CK" { 1 { '0ns' U; } }
+           "CK" { Z { '0ns' Z; } }
+           "_default_In_Timing_" { 0 { '0ns' D; } }
+           "_default_In_Timing_" { 1 { '0ns' U; } }
+           "_default_In_Timing_" { Z { '0ns' Z; } }
+           "_default_In_Timing_" { N { '0ns' N; } }
+           "_default_Out_Timing_" { X { '0ns' X; } }
+           "_default_Out_Timing_" { H { '0ns' X; ' 90 ns' H; } }
+           "_default_Out_Timing_" { T { '0ns' X; ' 90 ns' T; } }
+           "_default_Out_Timing_" { L { '0ns' X; ' 90 ns' L; } }
+       }
+   }
+}
+
+ScanStructures {
+   ScanChain "chain1" {
+       ScanLength 3;
+       ScanIn "test_si";
+       ScanOut "test_so";
+       ScanInversion 0;
+       ScanCells "TOP.U_G5.SI" "TOP.U_G6.SI" "TOP.U_G7.SI";
+       ScanMasterClock "CK" ;
+   }
+}
+
+PatternBurst "_burst_" {
+   PatList { "_pattern_" { } }
+}
+
+PatternExec {
+   PatternBurst "_burst_";
+}
+
+Procedures {
+   "load_unload" {
+       W "_default_WFT_";
+       C { "test_si"=0; "CK"=0; "test_se"=1; }
+       V { "_so"=#; }
+       Shift {
+           W "_default_WFT_";
+           V { "_si"=#; "_so"=#; "CK"=P; }
+       }
+   }
+   "capture_CK" {
+       W "_default_WFT_";
+       F { "test_se"=0; }
+       C { "_po"=\r2 X ; }
+       "forcePI": V { "_pi"=\r7 # ; }
+       "measurePO": V { "_po"=\r2 # ; }
+       C { "_po"=\r2 X ; }
+       "pulse": V { "CK"=P; }
+   }
+   "capture" {
+       W "_default_WFT_";
+       F { "test_se"=0; }
+       C { "_po"=\r2 X ; }
+       "forcePI": V { "_pi"=\r7 # ; }
+       "measurePO": V { "_po"=\r2 # ; }
+   }
+}
+
+MacroDefs {
+   "test_setup" {
+       W "_default_WFT_";
+       V { "test_se"=0; "CK"=0; }
+   }
+}
+
+Pattern "_pattern_" {
+   W "_default_WFT_";
+   "precondition all Signals": C { "_pi"=\r7 0 ; "_po"=\r2 X ; }
+   Macro "test_setup";
+   "pattern 0":
+       Call "load_unload" {
+           "test_si"=110;
+       }
+       Call "capture_CK" {
+           "_pi"=0000000;
+           "_po"=LL;
+       }
+   "pattern 1":
+       Call "load_unload" {
+           "test_so"=HHL;
+           "test_si"=000;
+       }
+       Call "capture_CK" {
+           "_pi"=0000111;
+           "_po"=LH;
+       }
+   "pattern 2":
+       Call "load_unload" {
+           "test_so"=LLL;
+           "test_si"=010;
+       }
+       Call "capture_CK" {
+           "_pi"=0001010;
+           "_po"=LH;
+       }
+   "pattern 3":
+       Call "load_unload" {
+           "test_so"=LLH;
+           "test_si"=000;
+       }
+       Call "capture_CK" {
+           "_pi"=0001011;
+           "_po"=LL;
+       }
+   "pattern 4":
+       Call "load_unload" {
+           "test_so"=LHL;
+           "test_si"=011;
+       }
+       Call "capture_CK" {
+           "_pi"=0000001;
+           "_po"=LH;
+       }
+   "end 4 unload":
+       Call "load_unload" {
+           "test_so"=LLL;
+       }
+}
