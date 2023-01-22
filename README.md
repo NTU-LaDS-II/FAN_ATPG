@@ -15,21 +15,19 @@ Laboratory of Dependable Systems(II), Graduate Institute of Electronics Engineer
 
 <details>
   <summary><b>Table Contents</b></summary>
-    <li>
-      <a href="#introduction">Introduction</a>
-    </li>
-    <li>
-      <a href="#file-structure">File Structure</a>
-    </li>
+  <ol>
+    <li><a href="#introduction">Introduction</a></li>
+    <li><a href="#file-structure">File Structure</a></li>
     <li><a href="#environment-requisites">Environment Requisites</a></li>
     <li><a href="#usage">Usage</a></li>
+    <li><a href="#experimental-result">Experimental Result</a></li>
     <li><a href="#revision-history">Revision History</a></li>
     <li><a href="#authors">Authors</a></li>
     <li><a href="#references">References</a></li>
     <li><a href="#contact">Contact</a></li>
     <li><a href="#license">License</a></li>
+  </ol>
 </details>
-<br/>
 
 ## Introduction
 
@@ -43,9 +41,11 @@ This project includes the implementation of
 5. Static Test Compression
 6. Dynamic Test Compression
 7. Writing pattern in different format:
-    > STIL : For supporting Fault Simulation with the commercial tool TetraMAX <br>
-    > ASCII : For supporting Fault Simulation with the commercial tool FastScan <br>
-    > .pat : For supporting Fault Simulation with this tool FAN_ATPG
+    > STIL : Support Fault Simulation with the commercial tool TetraMAX <br>
+    > ASCII : Support Fault Simulation with the commercial tool FastScan <br>
+    > .pat : Support Fault Simulation with this tool FAN_ATPG
+8. Multiple Fault Orderings
+    > This is a heuristic we implemented in v2023. It tries a rational number of fault list orderings that differ to one another as much as possible with rational run time. We further compressed the Test Length of the generated pattern set after implementing this heuristic and achieve the <a href="#experimental-result">Experimental Result</a>.
 
 We make this project an open source project in the hope of helping anyone who is learning ATPG. If you have any suggestion for the source code or new features for this project, feel free to fork this repo and create a pull request. Any contribution to this project would be very much appreciated!
 
@@ -98,6 +98,7 @@ lex --version
 
 ### Installation
 _After the following commands are executed, an executable binary `fan` will be generated under `./bin/opt/`_
+
 1. Clone the repo
     ```sh
     git clone https://github.com/NTU-LaDS-II/FAN_ATPG.git
@@ -128,6 +129,24 @@ make clean
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 
+## Experimental Result
+
+| Circuits | Fault Coverage (%) | Test Length | Run Time (sec) |
+| :----:   | :----:             | :----:      | :----:         |
+| s27      | 94.55              | 5           | 0.0009         |
+| s208     | 97.43              | 28          | 0.0137         |
+| s510     | 99.14              | 57          | 0.0624         |
+| s953     | 97.85              | 83          | 0.1939         |
+| s1196    | 98.84              | 134         | 0.5268         |
+| s1238    | 96.36              | 138         | 0.8281         |
+| s5378    | 96.04              | 112         | 3.222          |
+| s9234    | 94.14              | 155         | 15.24          |
+| s15850   | 94.62              | 104         | 29.01          |
+| s35932   | 87.58              | 21          | 177.9          |
+| s38417   | 96.00              | 100         | 175.4          |
+| s38584   | 93.33              | 119         | 309.8          |
+
+<p align="right">(<a href="#readme-top">back to top</a>)</p>
 
 ## Revision History
 
@@ -139,7 +158,6 @@ make clean
 >\- Code refactor for open source project<br>
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
-
 
 ## Authors
 
