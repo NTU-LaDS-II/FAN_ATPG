@@ -20,7 +20,6 @@ Contents of this package are listed here:
     .
     |-- Makefile                # the Makefile for this package
     |-- README.md               # this README.md
-    |-- bin/                    # store the executable
     |-- lib/                    # store the library
     `-- src/                    # source code
         |

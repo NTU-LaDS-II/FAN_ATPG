@@ -4,7 +4,8 @@
 
 ## I. Content
 
-This package contains common tools that are frequently used. 
+This package contains common tools that are frequently used.
+
 The following is currently supported:
 1. resource usage (CPU runtime and memory)
 2. option parser
