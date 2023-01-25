@@ -1,4 +1,4 @@
-# pkg
+# Package
 ###### *Wei-Shen Wang Last modified in Jan 2023*
 
 Contains all the packages and their source code for this command line tool. Every package corresponds to a namespace.
