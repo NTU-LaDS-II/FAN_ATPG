@@ -17,7 +17,7 @@ Laboratory of Dependable Systems(II), Graduate Institute of Electronics Engineer
   <summary><b>Table Contents</b></summary>
   <ol>
     <li><a href="#introduction">Introduction</a></li>
-    <li><a href="#file-structure">File Structure</a></li>
+    <li><a href="#directory-structure">Directory Structure</a></li>
     <li><a href="#environment-requisites">Environment Requisites</a></li>
     <li><a href="#usage">Usage</a></li>
     <li><a href="#experimental-result">Experimental Result</a></li>
@@ -40,12 +40,12 @@ This project includes the implementation of
 4. Automatic Test Pattern Generation
 5. Static Test Compression
 6. Dynamic Test Compression
-7. Writing pattern in different format:
-    - STIL : Support Fault Simulation with the commercial tool TetraMAX <br>
-    - ASCII : Support Fault Simulation with the commercial tool FastScan <br>
-    - .pat : Support Fault Simulation with this tool FAN_ATPG
+7. Writing pattern in different format:<br>
+  \- `STIL` : Support Fault Simulation with the commercial tool `TetraMAX` <br>
+  \- `ASCII` : Support Fault Simulation with the commercial tool `FastScan` <br>
+  \- `.pat` : Support Fault Simulation with this tool `FAN_ATPG`
 8. Multiple Fault Orderings <br>
-    This is a heuristic we implemented in v2023. It tries a rational number of fault list orderings that differ to one another as much as possible with rational run time. We further compressed the Test Length of the generated pattern set after implementing this heuristic and achieve the <a href="#experimental-result">Experimental Result</a>.
+  This is a heuristic we implemented in v2023. It tries a rational number of fault list orderings that differ to one another as much as possible with rational run time. We further compressed the Test Length of the generated pattern set after implementing this heuristic and achieve the <a href="#experimental-result">Experimental Result</a>.
 
 We make this project an open source project in the hope of helping anyone who is learning ATPG. If you have any suggestion for the source code or new features for this project, feel free to fork this repo and create a pull request. Any contribution to this project would be very much appreciated!
 
@@ -53,7 +53,7 @@ We would also be extremely grateful if you star this project!
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 
-## File Structure
+## Directory Structure
 
 - `bin/` : Binary - Store binaries after compilation
 - `include/` : Store header files included in and copied from `pkg/` 
@@ -79,9 +79,10 @@ We would also be extremely grateful if you star this project!
 ## Environment Requisites
 
 ### Prerequisites
-* Operating System: *Linux*
-* Compiler: *Support std C++11*
-* Other tools: *Bison, Lex*
+
+- Operating System : *Linux*<br>
+- Compiler : *Support std C++11*<br>
+- Other tools : *Bison, Lex*<br>
 
 ### Requisites Installation
 ```sh
@@ -132,7 +133,7 @@ make clean
 
 ## Experimental Result
 
-- Without Dynamic Test Compression
+### Dynamic Test Compression : **OFF**
 
   | Circuits | Fault Coverage (%) | Test Length |
   | :----:   | :----:             | :----:      |
@@ -150,7 +151,7 @@ make clean
   | s38584   | 93.26              | 1177        |
 <br>
 
-- **With Dynamic Test Compression**
+### Dynamic Test Compression : **ON**
 
   | Circuits | Fault Coverage (%) | Test Length |
   | :----:   | :----:             | :----:      |
@@ -167,7 +168,7 @@ make clean
   | s38417   | 96.00              | 100         |
   | s38584   | 93.33              | 119         |
 
-<p align="right">(<a href="#readme-top">back to t
+<p align="right">(<a href="#readme-top">back to top</a>)</p>
 
 ## Revision History
 
@@ -180,7 +181,7 @@ make clean
 ## Authors
 
 - Original Authors<br>
-  \- <mark>Lin Hio-Ting</mark>, Hsu Po-Ya, Liao Kuan-Yu<br><br>
+  \- <b>Lin Hio-Ting</b>, Hsu Po-Ya, Liao Kuan-Yu<br><br>
 - v2013<br>
   \- Han Cheng-You, Chen Ching-Yu, Chiang Kuan-Ying, Wang Ying-Hsu, Chen Po-Hao, Lin Kuo-Yu, Pan Chun-Han, Li Chia-An, Tsai Chia-Ling, Hsu Ling-Yun<br><br>
 - v2014<br>
@@ -188,25 +189,27 @@ make clean
 - v2023<br>
   \- Wang Wei-Shen, Chang Hsin-Tzu, Pan Yu-Hung, Liang Zhe-Jia<br><br>
 - Advisor<br>
-  \- <mark>Professor James Chien-Mo Li</mark>
+  \- <b>Professor James Chien-Mo Li</b>
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 
 ## References
 
-- [1] <cite>Fujiwara and Shimono, "On the Acceleration of Test Generation Algorithms," in IEEE Transactions on Computers, vol. C-32, no. 12, pp. 1137-1144, Dec. 1983.</cite><br>
-- [2] <cite>Brglez, Franc, David Bryan, and Krzysztof Kozminski. "Combinational profiles of sequential benchmark circuits." 1989 IEEE International Symposium on Circuits and Systems (ISCAS). IEEE, 1989.</cite><br>
-- [3] Both `techlib/mod_nangate45.mdt` and `techlib/NangateOpenCellLibrary.v` are under `TECHLIB_LICENSE`<br>
+- [1] <i>Fujiwara and Shimono, "On the Acceleration of Test Generation Algorithms," in IEEE Transactions on Computers, vol. C-32, no. 12, pp. 1137-1144, Dec. 1983.</i><br>
+- [2] <i>Brglez, Franc, David Bryan, and Krzysztof Kozminski. "Combinational profiles of sequential benchmark circuits." 1989 IEEE International Symposium on Circuits and Systems (ISCAS). IEEE, 1989.</i><br>
+- [3] `techlib/mod_nangate45.mdt` and `techlib/NangateOpenCellLibrary.v` are under `TECHLIB_LICENSE`<br>
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 
 ## Contact
-<address> Wang, Wei-Shen - b08901051@ntu.edu.tw</address>
+Wang Wei-Shen - b08901051@ntu.edu.tw
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 
 ## License
-Distributed under the MIT License. See `LICENSE` for more information.<br><br>
+Distributed under the MIT License. See `LICENSE` for more information.<br>
+<hr>
 
-*Copyright (c) Laboratory of Dependable Systems (II), Graduate Institute of Electronics Engineering,  National Taiwan University, Taiwan. All Rights Reserved.*
+<small><i>Copyright (c) Laboratory of Dependable Systems (II), Graduate Institute of Electronics Engineering,  National Taiwan University, Taiwan. All Rights Reserved.</i></small>
+
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
