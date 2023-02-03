@@ -344,10 +344,10 @@ void PatternReader::assignValue(std::vector<Value> &valueVector, const char *con
 // **************************************************************************
 // Function   [ PatternWriter::writePattern ]
 // Commenter  [ CHT ]
-// Synopsis   [ usage: Write to LaDS's own *.pattern  pattern format.
+// Synopsis   [ usage: Write to LaDS's own *.pat pattern format.
 //							description:
 //								Output the pattern to the given input file name
-//								with LaDS's own *.pattern  pattern format.
+//								with LaDS's own *.pat pattern format.
 // 								Support at most 2 time frames.
 //							arguments:
 // 								[in] fname : The file name to be written to.

@@ -103,7 +103,7 @@ namespace CommonNs
 
 		// user interface printing
 		void refresh();
-		void autoCmplt();
+		void autoComplete();
 		int getTermCol() const;
 		std::vector<std::string> getDirCts(const std::string &dirStr) const;
 		std::vector<std::string> parse(const std::string &cmdStr) const;

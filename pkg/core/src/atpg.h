@@ -206,7 +206,7 @@ namespace CoreNs
 		// function not used or removed
 		void checkLevelInfo();																		// for debug use
 		std::string getValStr(Value val);													// for debug use
-		void calSCOAP();																					// heuristic not effective, currently not used, added by Wei-Shen Wang
+		void calSCOAP();																					// heuristic not effective, currently not used, added by Wang Wei-Shen
 		void testClearFaultEffect(FaultPtrList &faultListToTest); // removed from generatePatternSet() for now seems like debug usage
 		void resetIsInEventStack();																// not used
 		void XFill(PatternProcessor *pPatternProcessor);					// redundant function, removed by wang

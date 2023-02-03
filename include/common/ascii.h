@@ -51,7 +51,7 @@ const int ASCII_DEL    = 0x7f;  // delete                    '^?'
 
 // printable character
 const int ASCII_SPACE  = 0x20;  // space                     ' '
-const int ASCII_EXCLM  = 0x21;  // exclaimation mark         '?'
+const int ASCII_EXCLM  = 0x21;  // exclamation mark         '?'
 const int ASCII_QUOT   = 0x22;  // quotation mark            '"'
 const int ASCII_HASH   = 0x23;  // hash sign                 '#'
 const int ASCII_DOLLR  = 0x24;  // dollar sign               '$'
@@ -81,7 +81,7 @@ const int ASCII_SEMI   = 0x3b;  // semi-colon                ';'
 const int ASCII_L_ANG  = 0x3c;  // left angle bracket        '<'
 const int ASCII_EQUAL  = 0x3d;  // equal sign                '='
 const int ASCII_R_ANG  = 0x3e;  // right angle bracket       '>'
-const int ASCII_QUES   = 0x3f;  // questioni mark            '?'
+const int ASCII_QUES   = 0x3f;  // question mark             '?'
 const int ASCII_AT     = 0x40;  // at sign                   '@'
 const int ASCII_A      = 0x41;  //                           'A'
 const int ASCII_B      = 0x42;  //                           'B'
@@ -149,4 +149,3 @@ const int ASCII_TILDE  = 0x7e;  // tilde                     '~'
 };
 
 #endif
-

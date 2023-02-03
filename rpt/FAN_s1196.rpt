@@ -1,0 +1,29 @@
+#                 Statistics Report
+#  Circuit name                                s1196
+#  Fault model                                   SAF
+#  Pattern type                                BASIC
+#  -------------------------------------------------
+#  Fault classes                             #faults
+#  ----------------------------  -------------------
+#    FU (full)                                  3104
+#    FU (collapsed)                             2080
+#    --------------------------  -------------------
+#    UD (undetected)                              36
+#    PT (possibly testable)                        0
+#    AU (atpg untestable)                          0
+#    RE (redundant)                                0
+#    AB (atpg abort)                               0
+#    TI (tied)                                     0
+#    --------------------------  -------------------
+#    DT (detected)                              3068
+#  -------------------------------------------------
+#  Coverage                               percentage
+#    --------------------------  -------------------
+#    test coverage                            98.84%
+#    fault coverage                           98.84%
+#    atpg effectiveness                       98.84%
+#  -------------------------------------------------
+#  #Patterns                                     134
+#  -------------------------------------------------
+#  ATPG runtime                             0.5268 s
+#  -------------------------------------------------
