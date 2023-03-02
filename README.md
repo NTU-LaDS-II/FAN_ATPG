@@ -11,6 +11,10 @@ Laboratory of Dependable Systems(II), Graduate Institute of Electronics Engineer
     <a href="https://github.com/NTU-LaDS-II/FAN_ATPG/blob/main/ATPG_UserGuide.pdf">
     <strong>User Guide »</strong></a>
   </p>
+  <p>
+    <a href="https://youtu.be/YVTEh4qM6yE">
+    <strong>Youtube Tutorial »</strong></a>
+  </p>
 </div>
 
 ## Table Contents
