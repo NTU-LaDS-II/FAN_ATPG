@@ -7,6 +7,8 @@ Laboratory of Dependable Systems(II), Graduate Institute of Electronics Engineer
 <br><br>
 <div align="center">
   <p><b>FAN (fan-out-oriented) ATPG (Automatic Test Pattern Generation) and Fault Simulation command line tool</b></p>
+  <p>This tool's main algorithm is implemented based on the following paper: <br>
+  <i>Fujiwara and Shimono, "On the Acceleration of Test Generation Algorithms," in IEEE Transactions on Computers, vol. C-32, no. 12, pp. 1137-1144, Dec. 1983.</i></p>
   <p>
     <a href="https://github.com/NTU-LaDS-II/FAN_ATPG/blob/main/ATPG_UserGuide.pdf">
     <strong>User Guide »</strong></a>
