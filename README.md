@@ -48,9 +48,8 @@ This project includes the implementation of
   \- `STIL` : Support Fault Simulation with the commercial tool `TetraMAX` <br>
   \- `ASCII` : Support Fault Simulation with the commercial tool `FastScan` <br>
   \- `.pat` : Support Fault Simulation with this tool `FAN_ATPG`
-8. Multiple Fault Orderings <br>
-  This is a heuristic we implemented in v2023. It tries a rational number of fault list orderings that differ to one another as much as possible with rational run time. With different fault list orderings, we choose the fault list ordering that generate test pattern set with the highest Fault Coverage and the lowest Test Length (if same Fault Coverage). Note that this heuristic will only be activated if the Dynamic Test Compression flag is turned ON.<br> 
-  We then significantly reduced the Test Length after implementing Multiple Fault Orderings and achieve the <a href="#experimental-result">Experimental Result</a>.
+8. Multiple Fault Orderings <br> ***Note: This feature is now moved to branch `MFO`, should be integrated as an additional command line opption in the future.***<br>
+  This is a heuristic we implemented in v2023. It tries a rational number of fault list orderings that differ to one another as much as possible with rational run time. With different fault list orderings, we choose the fault list ordering that generate test pattern set with the highest Fault Coverage and the lowest Test Length (if same Fault Coverage).<br>
 
 We make this project open source in the hope of helping anyone who is learning ATPG. If you have any suggestion for the source code or new features for this project, feel free to fork this repo and create a pull request. Any contribution to this project would be very much appreciated!
 
@@ -163,11 +162,11 @@ Under the same Fault Coverage, it is essential to compress the Test Length. The 
   | s953   | 97.85  | 93     |
   | s1196  | 98.84  | 155    |
   | s1238  | 96.36  | 163    |
-  | s5378  | 96.04  | 327    |
+  | s5378  | 95.61  | 327    |
   | s9234  | 93.8   | 475    |
   | s15850 | 94.17  | 583    |
   | s35932 | 87.3   | 512    |
-  | s38417 | 95.65  | 1562   |
+  | s38417 | 95.65  | 1565   |
   | s38584 | 93.26  | 1177   |
 <br>
 
@@ -176,17 +175,17 @@ Under the same Fault Coverage, it is essential to compress the Test Length. The 
   | Benchmark Circuit  | Fault Coverage (%) | Test Length (#) |
   | :----: | :----: | :----: |
   | s27    | 94.55  | 5      |
-  | s208   | 97.43  | 28     |
-  | s510   | 99.14  | 57     |
-  | s953   | 97.85  | 83     |
+  | s208   | 97.43  | 29     |
+  | s510   | 99.14  | 59     |
+  | s953   | 97.85  | 89     |
   | s1196  | 98.84  | 134    |
-  | s1238  | 96.36  | 138    |
-  | s5378  | 96.04  | 112    |
-  | s9234  | 94.14  | 155    |
-  | s15850 | 94.62  | 104    |
+  | s1238  | 96.36  | 145    |
+  | s5378  | 96.04  | 117    |
+  | s9234  | 94.14  | 156    |
+  | s15850 | 94.62  | 133    |
   | s35932 | 87.58  | 21     |
-  | s38417 | 96.00  | 100    |
-  | s38584 | 93.33  | 119    |
+  | s38417 | 96.00  | 105    |
+  | s38584 | 93.33  | 133    |
 
 <p align="right">[<a href="#readme-top">back to top</a>]</p>
 

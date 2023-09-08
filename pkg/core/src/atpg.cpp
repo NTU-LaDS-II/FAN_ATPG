@@ -42,7 +42,7 @@ using namespace CoreNs;
 void Atpg::generatePatternSet(PatternProcessor *pPatternProcessor, FaultListExtract *pFaultListExtractor, bool isMFO)
 {
 	Fault *pCurrentFault = NULL;
-	FaultPtrList prevOrderFaultPtrList, newOrderFaultPtrList, newOrderFaultPtrListForSTC;
+	FaultPtrList originalFaultPtrList, faultPtrListForSTC;
 	setupCircuitParameter();
 	pPatternProcessor->init(pCircuit_);
 
@@ -52,110 +52,60 @@ void Atpg::generatePatternSet(PatternProcessor *pPatternProcessor, FaultListExtr
 		const bool faultIsQualified = (pFault->faultState_ != Fault::DT && pFault->faultState_ != Fault::RE && pFault->faultyLine_ >= 0);
 		if (faultIsQualified)
 		{
-			prevOrderFaultPtrList.push_back(pFault);
-			newOrderFaultPtrList.push_back(pFault);
-			newOrderFaultPtrListForSTC.push_back(pFault);
+			originalFaultPtrList.push_back(pFault);
+			faultPtrListForSTC.push_back(pFault);
 		}
 	}
 
-	// testClearFaultEffect(prevOrderFaultPtrList); // only used for debug
+	// testClearFaultEffect(originalFaultPtrList); // only used for debug
 
-	const double faultPtrListSize = (double)(prevOrderFaultPtrList.size());
-	const int halfListSize = faultPtrListSize / 2.0;
-	// isMFO is always false if DTC is not turned on
-	isMFO = (pPatternProcessor->dynamicCompression_ == PatternProcessor::ON) ? isMFO : false;
-	const int faultListReorderTimes = isMFO ? (log2(faultPtrListSize) + 1) : 1;
+	const double faultPtrListSize = (double)(originalFaultPtrList.size());
 	int numOfAtpgUntestableFaults = 0;
-	int minNumOfFaultsLeft = INFINITE;
 	// record pattern set when lower undetected fault/ lower test length with same undetected fault
-	std::vector<Pattern> bestTestPatternSet;
-	for (int i = 0; i < faultListReorderTimes; ++i)
+	numOfAtpgUntestableFaults = 0;
+
+	pPatternProcessor->patternVector_.clear();
+	pPatternProcessor->patternVector_.reserve(MAX_LIST_SIZE);
+
+	// start ATPG
+	while (!originalFaultPtrList.empty())
 	{
-		numOfAtpgUntestableFaults = 0;
-		// no need to reorder for the first iteration
-		if (i != 0)
+		// meaning the originalFaultPtrList is already left with aborted fault
+		if (originalFaultPtrList.front()->faultState_ == Fault::AB)
 		{
-			// set up new fault list order
-			newOrderFaultPtrList.assign(prevOrderFaultPtrList.begin(), prevOrderFaultPtrList.end());
-			FaultPtrListIter it = newOrderFaultPtrList.begin();
-			// start folding the fault list
-			for (int j = 0; j < halfListSize; ++j)
-			{
-				newOrderFaultPtrList.insert(it, newOrderFaultPtrList.back());
-				newOrderFaultPtrList.pop_back();
-				++it;
-			}
-			// reinitialize the faults in fault list
-			for (Fault *pFault : newOrderFaultPtrList)
-			{
-				pFault->detection_ = 0;
-				pFault->faultState_ = Fault::UD;
-			}
-
-			// save the fault order for next new fault list order generation
-			prevOrderFaultPtrList.assign(newOrderFaultPtrList.begin(), newOrderFaultPtrList.end());
-			// save a fault list order for static test compression for this iteration
-			newOrderFaultPtrListForSTC.assign(newOrderFaultPtrList.begin(), newOrderFaultPtrList.end());
-		}
-		pPatternProcessor->patternVector_.clear();
-		pPatternProcessor->patternVector_.reserve(MAX_LIST_SIZE);
-
-		// start ATPG
-		while (!newOrderFaultPtrList.empty())
-		{
-			// meaning the newOrderFaultPtrList is already left with aborted fault
-			if (newOrderFaultPtrList.front()->faultState_ == Fault::AB)
-			{
-				break;
-			}
-
-			// the fault is not popped in previous call of StuckAtFaultATPG()
-			// => the fault is neither aborted nor untestable => a pattern was found => detected fault
-			if (pCurrentFault == newOrderFaultPtrList.front())
-			{
-				newOrderFaultPtrList.front()->faultState_ = Fault::DT;
-				newOrderFaultPtrList.pop_front();
-				continue;
-			}
-
-			pCurrentFault = newOrderFaultPtrList.front();
-			const bool isTransitionDelayFault = (pCurrentFault->faultType_ == Fault::STR || pCurrentFault->faultType_ == Fault::STF);
-			if (isTransitionDelayFault)
-			{
-				TransitionDelayFaultATPG(newOrderFaultPtrList, pPatternProcessor, numOfAtpgUntestableFaults);
-			}
-			else
-			{
-				StuckAtFaultATPG(newOrderFaultPtrList, pPatternProcessor, numOfAtpgUntestableFaults);
-			}
-		}
-		if (pPatternProcessor->staticCompression_ == PatternProcessor::ON)
-		{
-			staticTestCompressionByReverseFaultSimulation(pPatternProcessor, newOrderFaultPtrListForSTC);
+			break;
 		}
 
-		// finsh calculation equivalent faults left
-		for (Fault *pFault : newOrderFaultPtrList)
+		// the fault is not popped in previous call of StuckAtFaultATPG()
+		// => the fault is neither aborted nor untestable => a pattern was found => detected fault
+		if (pCurrentFault == originalFaultPtrList.front())
 		{
-			numOfAtpgUntestableFaults += pFault->equivalent_;
+			originalFaultPtrList.front()->faultState_ = Fault::DT;
+			originalFaultPtrList.pop_front();
+			continue;
 		}
 
-		if (numOfAtpgUntestableFaults < minNumOfFaultsLeft)
-		{// better fault coverage
-			bestTestPatternSet = pPatternProcessor->patternVector_;
-			minNumOfFaultsLeft = numOfAtpgUntestableFaults;
-		}
-		else if (numOfAtpgUntestableFaults == minNumOfFaultsLeft)
+		pCurrentFault = originalFaultPtrList.front();
+		const bool isTransitionDelayFault = (pCurrentFault->faultType_ == Fault::STR || pCurrentFault->faultType_ == Fault::STF);
+		if (isTransitionDelayFault)
 		{
-			// less test length with same fault coverage
-			if (pPatternProcessor->patternVector_.size() < bestTestPatternSet.size())
-			{
-				bestTestPatternSet = pPatternProcessor->patternVector_;
-			}
+			TransitionDelayFaultATPG(originalFaultPtrList, pPatternProcessor, numOfAtpgUntestableFaults);
+		}
+		else
+		{
+			StuckAtFaultATPG(originalFaultPtrList, pPatternProcessor, numOfAtpgUntestableFaults);
 		}
 	}
-	// assign the patternset to the best one at last
-	pPatternProcessor->patternVector_ = bestTestPatternSet;
+	if (pPatternProcessor->staticCompression_ == PatternProcessor::ON)
+	{
+		staticTestCompressionByReverseFaultSimulation(pPatternProcessor, faultPtrListForSTC);
+	}
+
+	// finsh calculation equivalent faults left
+	for (Fault *pFault : faultPtrListForSTC)
+	{
+		numOfAtpgUntestableFaults += pFault->equivalent_;
+	}
 }
 
 // **************************************************************************
@@ -661,7 +611,7 @@ void Atpg::StuckAtFaultATPG(FaultPtrList &faultPtrListForGen, PatternProcessor *
 
 				Gate *pGateForActivation = getGateForFaultActivation(*pFault);
 				if (((pGateForActivation->atpgVal_ == L) && (pFault->faultType_ == Fault::SA0)) ||
-						((pGateForActivation->atpgVal_ == H) && (pFault->faultType_ == Fault::SA1)))
+					((pGateForActivation->atpgVal_ == H) && (pFault->faultType_ == Fault::SA1)))
 				{
 					continue;
 				}
@@ -1036,14 +986,14 @@ void Atpg::clearFaultEffectOnGateAtpgVal(Gate &gate)
 Atpg::SINGLE_PATTERN_GENERATION_STATUS Atpg::generateSinglePatternOnTargetFault(Fault targetFault, bool isAtStageDTC)
 {
 
-	int backwardImplicationLevel = 0;														// backward imply level
-	int numOfBacktrack = 0;																			// backtrack times
-	bool Finish = false;																				// Finish is true when whole pattern generation process is done
-	bool faultHasPropagatedToPO = false;												// faultHasPropagatedToPO is true when the fault is propagate to the PO
-	Gate *pFaultyLine = NULL;																		// the gate pointer, whose fanOut is the target fault
-	Gate *pLastDFrontier = NULL;																// the D-frontier gate which has the highest level of the D-frontier
-	IMPLICATION_STATUS implicationStatus;												// decide implication to go forward or backward
-	BACKTRACE_STATUS backtraceFlag;															// backtrace flag including    { INITIAL, CHECK_AND_SELECT, CURRENT_OBJ_DETERMINE, FAN_OBJ_DETERMINE }
+	int backwardImplicationLevel = 0;							// backward imply level
+	int numOfBacktrack = 0;										// backtrack times
+	bool Finish = false;										// Finish is true when whole pattern generation process is done
+	bool faultHasPropagatedToPO = false;						// faultHasPropagatedToPO is true when the fault is propagate to the PO
+	Gate *pFaultyLine = NULL;									// the gate pointer, whose fanOut is the target fault
+	Gate *pLastDFrontier = NULL;								// the D-frontier gate which has the highest level of the D-frontier
+	IMPLICATION_STATUS implicationStatus;						// decide implication to go forward or backward
+	BACKTRACE_STATUS backtraceFlag;								// backtrace flag including    { INITIAL, CHECK_AND_SELECT, CURRENT_OBJ_DETERMINE, FAN_OBJ_DETERMINE }
 	SINGLE_PATTERN_GENERATION_STATUS genStatus = PATTERN_FOUND; // the atpgStatus that will be return, including		{ PATTERN_FOUND, FAULT_UNTESTABLE, ABORT }
 
 	// Get the gate whose output is fault line and set the backwardImplicationLevel
@@ -1916,7 +1866,7 @@ bool Atpg::backtrack(int &backwardImplicationLevel)
 		}
 
 		backtrackImplicatedGateIDs_.resize(backtrackPoint + 1); // cut the last backtracked point and its associated gates
-		pDecisionGate->atpgVal_ = Val;													// toggle its value, do backtrack, ex: 1=>0, 0=>1
+		pDecisionGate->atpgVal_ = Val;							// toggle its value, do backtrack, ex: 1=>0, 0=>1
 
 		if (gateID_to_lineType_[pDecisionGate->gateId_] == HEAD_LINE)
 		{
@@ -2202,7 +2152,7 @@ void Atpg::findFinalObjective(BACKTRACE_STATUS &backtraceFlag, const bool &fault
 
 				// FAULT SIGNAL PROPAGATED TO A PRIMARY OUTPUT?
 				if (faultCanPropToPO) // YES
-				{											// do not add any gates
+				{					  // do not add any gates
 					pLastDFrontier = NULL;
 				}
 				else
@@ -2860,7 +2810,7 @@ int Atpg::setFaultyGate(Fault &fault)
 	Value valueTemp;
 	int backwardImplicationLevel = 0;
 	Gate *pFaultyGate = NULL;
-	Gate *pFaultyLine = NULL;											 // pFaultyLine is the gate before the fault (fanin gate of pFaultyGate)
+	Gate *pFaultyLine = NULL;					   // pFaultyLine is the gate before the fault (fanin gate of pFaultyGate)
 	bool isOutputFault = (fault.faultyLine_ == 0); // if the fault is SA0 or STR, then set faulty value to D (1/0)
 	Value FaultyValue = (fault.faultType_ == Fault::SA0 || fault.faultType_ == Fault::STR) ? D : B;
 
@@ -3272,7 +3222,7 @@ Atpg::BACKTRACE_RESULT Atpg::multipleBacktrace(BACKTRACE_STATUS atpgStatus, int 
 				{ // YES
 					// IS THE SET OF FANOUT-POINT OBJECTIVES EMPTY?
 					if (fanoutObjectives_.empty()) // YES
-					{															 // C, NO_CONTRADICTORY
+					{							   // C, NO_CONTRADICTORY
 						return NO_CONTRADICTORY;
 					}
 					else // NO
@@ -3700,7 +3650,7 @@ Gate *Atpg::findEasiestInput(Gate *pGate, Value atpgValOfpGate)
 
 	// if the fanIn amount is 1, just return the only fanIn
 	if (pGate->gateType_ == Gate::PO || pGate->gateType_ == Gate::PPO ||
-			pGate->gateType_ == Gate::BUF || pGate->gateType_ == Gate::INV)
+		pGate->gateType_ == Gate::BUF || pGate->gateType_ == Gate::INV)
 	{
 		return &pCircuit_->circuitGates_[pGate->faninVector_[0]];
 	}

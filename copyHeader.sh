@@ -1,3 +1,10 @@
+#! /bin/bash
+
+mkdir -p include/interface
+mkdir -p include/common
+mkdir -p include/core
+mkdir -p include/fan
+
 for header in pkg/common/src/*.h ;
 do
 cp ${header} include/common/;
