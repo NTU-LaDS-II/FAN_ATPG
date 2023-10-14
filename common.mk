@@ -82,7 +82,7 @@ YOBJS     = $(addsuffix .tab.o, $(basename $(addprefix \
 # Compiler variables
 LEX          = flex
 YACC         = bison
-CXX          = g++
+CXX          = g++ -std=c++11
 CC           = gcc
 OBJS         = $(COBJS) $(LOBJS) $(YOBJS)
 DEPS         = $(CDEPS) $(LDEPS) $(YDEPS)
@@ -90,10 +90,10 @@ INCLOC       = -I$(SRCDIR) -I$(G_INCDIR) -I$(LIBDIR)/$(MODE)/$(LNYDIR) \
                $(addprefix -I,$(EXTINCLOC))
 
 ifeq "$(MODE)" "$(DBGDIR)"
-    CFLAGS   = -std=c++11 -Wall -g -D DEBUG
+    CFLAGS   = -Wall -g -D DEBUG
     LIBLOC   = -L$(G_DBGDIR) $(addprefix -L,$(EXTDBGLIBLOC))
 else
-    CFLAGS   = -std=c++11 -Wall -O3 -Wno-stringop-truncation -Wno-restrict -Wno-format-overflow
+    CFLAGS   = -Wall -O3 -Wno-stringop-truncation -Wno-restrict -Wno-format-overflow
     LIBLOC   = -L$(G_OPTDIR) $(addprefix -L,$(EXTOPTLIBLOC))
 endif
 
