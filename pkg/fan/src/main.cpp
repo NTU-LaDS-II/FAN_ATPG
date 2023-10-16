@@ -79,7 +79,7 @@ void printWelcome()
 	std::cout << "#" << "\n";
 	std::cout << "#                                   FAN ATPG" << "\n";
 	std::cout << "#" << "\n";
-	std::cout << "#              Copyright(c) Laboratory of Dependable Systems(II)," << "\n";
+	std::cout << "#                Copyright(c) Laboratory of Dependable Systems," << "\n";
 	std::cout << "#                Graduate Institute of Electronics Engineering," << "\n";
 	std::cout << "#                          National Taiwan University" << "\n";
 	std::cout << "#                             All Rights Reserved." << "\n";

@@ -3,20 +3,20 @@
 
 <h1 align="center">FAN ATPG</h1>
 <div align="center"><small><i>version 2023<br>
-Laboratory of Dependable Systems(II), Graduate Institute of Electronics Engineering,  National Taiwan University, Taiwan</small></i></div>
+Laboratory of Dependable Systems, Graduate Institute of Electronics Engineering,  National Taiwan University, Taiwan</small></i></div>
 <br><br>
 <div align="center">
   <p><b>FAN (fan-out-oriented) ATPG (Automatic Test Pattern Generation) and Fault Simulation command line tool</b></p>
-  <p>This tool's main algorithm is implemented based on the following paper: <br>
-  <i>Fujiwara and Shimono, "On the Acceleration of Test Generation Algorithms," in IEEE Transactions on Computers, vol. C-32, no. 12, pp. 1137-1144, Dec. 1983.</i></p>
-  <p>
-    <a href="https://github.com/NTU-LaDS-II/FAN_ATPG/blob/main/ATPG_UserGuide.pdf">
-    <strong>User Guide »</strong></a>
-  </p>
   <p>
     <a href="https://youtu.be/YVTEh4qM6yE">
     <strong>Youtube Tutorial »</strong></a>
   </p>
+  <p>
+    <a href="https://github.com/NTU-LaDS-II/FAN_ATPG/blob/main/ATPG_UserGuide.pdf">
+    <strong>User Guide »</strong></a>
+  </p>
+  <p>This tool's main algorithm is implemented based on the following paper: <br>
+  <i>Fujiwara and Shimono, "On the Acceleration of Test Generation Algorithms," in IEEE Transactions on Computers, vol. C-32, no. 12, pp. 1137-1144, Dec. 1983.</i></p>
 </div>
 
 ## Table Contents
@@ -236,4 +236,4 @@ Distributed under the MIT License. See `LICENSE` for more information.<br>
 <p align="right">[<a href="#readme-top">back to top</a>]</p>
 <hr>
 
-<small><i>Copyright (c) Laboratory of Dependable Systems (II), Graduate Institute of Electronics Engineering,  National Taiwan University, Taiwan. All Rights Reserved.</i></small>
+<small><i>Copyright (c) Laboratory of Dependable Systems, Graduate Institute of Electronics Engineering,  National Taiwan University, Taiwan. All Rights Reserved.</i></small>
