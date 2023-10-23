@@ -152,7 +152,7 @@ Fault Coverage is the most important statistic for evaluation of an ATPG tool. I
 - Test Length (TL) \- <br>
 Under the same Fault Coverage, it is essential to compress the Test Length. The definition of Test Length is the ***total number of test patterns*** in a test pattern set. Low Test Length is desired in order to reduce test data (ATE cost), test time (test cost) while maintaining the same test quality (FC).
 
-### No Test Compression **OFF**
+### Both Test Compression **OFF**
 
   | Benchmark Circuit  | Fault Coverage (%) | Test Length (#) |
   | :----: | :----: | :----: |
