@@ -1,0 +1,13 @@
+read_lib techlib/mod_nangate45.mdt
+read_netlist mod_netlist/s208.v
+report_netlist
+build_circuit --frame 1
+report_circuit
+set_fault_type saf
+add_fault --all
+set_X-Fill on
+run_atpg
+report_statistics > rpt/FAN_s208.rpt
+write_pattern pat/FAN_s208.pat
+write_to_STIL pat/FAN_s208.stil
+exit
