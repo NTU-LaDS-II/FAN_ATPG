@@ -152,25 +152,43 @@ Fault Coverage is the most important statistic for evaluation of an ATPG tool. I
 - Test Length (TL) \- <br>
 Under the same Fault Coverage, it is essential to compress the Test Length. The definition of Test Length is the ***total number of test patterns*** in a test pattern set. Low Test Length is desired in order to reduce test data (ATE cost), test time (test cost) while maintaining the same test quality (FC).
 
-### Dynamic Test Compression : **OFF**
+### No Test Compression **OFF**
 
   | Benchmark Circuit  | Fault Coverage (%) | Test Length (#) |
   | :----: | :----: | :----: |
-  | s27    | 93.64  | 9      |
+  | s27    | 94.55  | 12     |
+  | s208   | 97.43  | 46     |
+  | s510   | 99.14  | 70     |
+  | s953   | 97.85  | 123    |
+  | s1196  | 98.84  | 183    |
+  | s1238  | 96.36  | 193    |
+  | s5378  | 96.04  | 478    |
+  | s9234  | 94.14  | 647    |
+  | s15850 | 94.62  | 817    |
+  | s35932 | 87.58  | 1764   |
+  | s38417 | 95.99  | 2428   |
+  | s38584 | 93.33  | 1832   |
+<br>
+
+### Static Test Compression **On** Dynamic Test Compression **OFF**
+
+  | Benchmark Circuit  | Fault Coverage (%) | Test Length (#) |
+  | :----: | :----: | :----: |
+  | s27    | 94.55  | 9      |
   | s208   | 97.43  | 36     |
-  | s510   | 99.07  | 65     |
+  | s510   | 99.14  | 65     |
   | s953   | 97.85  | 93     |
   | s1196  | 98.84  | 155    |
   | s1238  | 96.36  | 163    |
-  | s5378  | 95.61  | 327    |
-  | s9234  | 93.8   | 475    |
-  | s15850 | 94.17  | 583    |
-  | s35932 | 87.3   | 512    |
-  | s38417 | 95.65  | 1565   |
-  | s38584 | 93.26  | 1177   |
+  | s5378  | 96.04  | 327    |
+  | s9234  | 94.14  | 475    |
+  | s15850 | 94.62  | 583    |
+  | s35932 | 87.58  | 512    |
+  | s38417 | 95.99  | 1565   |
+  | s38584 | 93.33  | 1177   |
 <br>
 
-### Dynamic Test Compression : **ON**
+### Static & Dynamic Test Compression **OFF**
 
   | Benchmark Circuit  | Fault Coverage (%) | Test Length (#) |
   | :----: | :----: | :----: |

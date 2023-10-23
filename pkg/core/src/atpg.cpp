@@ -99,10 +99,11 @@ void Atpg::generatePatternSet(PatternProcessor *pPatternProcessor, FaultListExtr
 	if (pPatternProcessor->staticCompression_ == PatternProcessor::ON)
 	{
 		staticTestCompressionByReverseFaultSimulation(pPatternProcessor, faultPtrListForSTC);
+		originalFaultPtrList = faultPtrListForSTC;
 	}
 
-	// finsh calculation equivalent faults left
-	for (Fault *pFault : faultPtrListForSTC)
+	// finish calculation equivalent faults left
+	for (Fault *pFault : originalFaultPtrList)
 	{
 		numOfAtpgUntestableFaults += pFault->equivalent_;
 	}
@@ -3965,14 +3966,6 @@ Atpg::IMPLICATION_STATUS Atpg::evaluateAndSetFaultyGateAtpgVal(Gate *pGate)
 // **************************************************************************
 void Atpg::staticTestCompressionByReverseFaultSimulation(PatternProcessor *pPatternProcessor, FaultPtrList &originalFaultList)
 {
-	for (Fault *pFault : originalFaultList)
-	{
-		pFault->detection_ = 0;
-		if (pFault->faultState_ == Fault::DT)
-		{
-			pFault->faultState_ = Fault::UD;
-		}
-	}
 
 	std::vector<Pattern> tmp = pPatternProcessor->patternVector_;
 	pPatternProcessor->patternVector_.clear();
