@@ -94,7 +94,7 @@ We would also be extremely grateful if you star this project!
 ### Requisites Installation
 ```sh
 sudo apt install bison
-sudo apt install lex
+sudo apt install flex
 ```
 ### Check requisites Installation
 ```sh
@@ -188,7 +188,7 @@ Under the same Fault Coverage, it is essential to compress the Test Length. The 
   | s38584 | 93.33  | 1177   |
 <br>
 
-### Static & Dynamic Test Compression **OFF**
+### Static & Dynamic Test Compression **ON**
 
   | Benchmark Circuit  | Fault Coverage (%) | Test Length (#) |
   | :----: | :----: | :----: |
