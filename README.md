@@ -245,7 +245,7 @@ Under the same Fault Coverage, it is essential to compress the Test Length. The 
 <p align="right">[<a href="#readme-top">back to top</a>]</p>
 
 ## Contact
-Wang Wei-Shen - b08901051@ntu.edu.tw
+Lin Shang-Ting - b10901026@ntu.edu.tw
 
 <p align="right">[<a href="#readme-top">back to top</a>]</p>
 
