@@ -498,7 +498,7 @@ bool ReportFaultCmd::exec(const std::vector<std::string> &argv)
 	FaultPtrListIter it = fanMgr_->fListExtract->faultsInCircuit_.begin();
 	for (; it != fanMgr_->fListExtract->faultsInCircuit_.end(); ++it)
 	{
-		if (!stateSet || (*it)->faultState_ != state)
+		if (stateSet && (*it)->faultState_ != state)
 		{
 			continue;
 		}
@@ -545,9 +545,9 @@ bool ReportFaultCmd::exec(const std::vector<std::string> &argv)
 				std::cout << " AB     ";
 				break;
 		}
-		int cid = fanMgr_->cir->circuitGates_[(*it)->gateID_].cellId_;
+		int cid = (*it)->gateID_ < 0 ? -1 : fanMgr_->cir->circuitGates_[(*it)->gateID_].cellId_;
 		int pid = (*it)->faultyLine_;
-		int pmtid = fanMgr_->cir->circuitGates_[(*it)->gateID_].primitiveId_;
+		int pmtid = (*it)->gateID_ < 0 ? -1 : fanMgr_->cir->circuitGates_[(*it)->gateID_].primitiveId_;
 		if ((*it)->gateID_ == -1)
 		{ // CK
 			std::cout << "CK";
@@ -599,6 +599,14 @@ bool ReportFaultCmd::exec(const std::vector<std::string> &argv)
 				{
 					std::cout << c->name_ << "/QN ";
 				}
+			}
+			else if (fanMgr_->cir->circuitGates_[(*it)->gateID_].gateType_ == Gate::PPI)
+			{ // PPI represents the functional Q port, not library primitive zero.
+				std::cout << c->name_ << "/Q ";
+			}
+			else if (fanMgr_->cir->circuitGates_[(*it)->gateID_].gateType_ == Gate::PPO)
+			{ // PPO represents the functional D port in Circuit::createCircuitPPO.
+				std::cout << c->name_ << "/D ";
 			}
 			else if (pid == 0)
 			{ // output
@@ -678,7 +686,7 @@ bool ReportFaultCmd::exec(const std::vector<std::string> &argv)
 			}
 			std::cout << "(" << libc->name_ << ")";
 		}
-		std::cout << "\n";
+		std::cout << " [equivalent=" << (*it)->equivalent_ << "]\n";
 	}
 	std::cout << "\n";
 
